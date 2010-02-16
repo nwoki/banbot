@@ -1,0 +1,24 @@
+/*  UrtBanBot made by n3m3s1s & zamy
+ *  ********************************
+ *  
+ *  
+ *
+ *  Urban Terror clan "2Steps2Hell"
+ *             visit us 
+ *     www.x2s2hx.altervista.org 
+ */
+ 
+A simple bot made in C++ aimed to be simple and use few resources.
+It controls the urban terror game server and saves players guid's to sqlite3 database. Checks periodically for banned players and automatically kicks them and applies ban in case the server has been resetted.
+
+Only players guids that are saved on the "oplist" table can execute bot commands. For the moment they have to be inserted manually
+
+to compile you must have g++ compiler installed.
+
+HOW TO:
+
+~ $cd <directory>
+
+~ $make
+
+~ $./BanBot

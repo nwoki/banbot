@@ -8,21 +8,29 @@
 
 using namespace std;//std::string;
 
-
 class db
 {
     public:
         db();
         ~db();
         
-        string read();
+        void create();
+        void ban( string );
+        bool checkAuthGuid( string );
+        void checkBanGuid( string, string );
         void write();
-        string query( string );
+        bool execQuery( const char * );
+        bool resultQuery( const char * );
         void close();
         
     private:
+        int dbStatus;
         sqlite3 *database;
-        string queryStr;
+        sqlite3_stmt **stmt;
+        char *queryStr;
+        char *errorMsg;
+        const unsigned char *result;
+        string aux;
 };
 
 
