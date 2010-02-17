@@ -3,6 +3,8 @@
 
 #include <iostream>
 #include <fstream>
+#include <sys/stat.h>
+#include <stdlib.h>
 #include <string>
 #include "sqlite3.h"
 

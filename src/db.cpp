@@ -3,6 +3,25 @@
 db::db()
 {
     try{
+        struct stat st;
+        
+        cout<<"[*]checking for database directory..\n";
+        if( stat( "database", &st ) == 0 )
+            cout<<"[*]dir 'database/' found\n";
+        
+        else{
+            cout<<"[!]couldn't find dir 'database'! Creating it..\n";
+            
+            if( !system( "mkdir database" ))
+                cout<< "[*]created 'database' directory..\n";
+            else throw 0;
+        }
+    }
+    catch( int x ){
+        cout<<"----\n";
+    }
+    
+    try{
         ifstream IN( "database/db.sqlite" );
         if( !IN ) throw ( 0 );
         else IN.close();

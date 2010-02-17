@@ -1,18 +1,39 @@
 #ifndef CONNECTION_H
 #define CONNECTION_H
 
+#include <iostream>
+#include <netdb.h>
 #include <string>
-using std::string;//using namespace std;
+#include <string.h>
+#include <strings.h>
+#include <sys/socket.h>
+//#include <sys/types.h>
 
-class connection( string ip, int port )
+using namespace std;
+
+class connection
 {
     public:
-        connection();
+        connection( string, int, string );
         ~connection();
         
+        int ban( string );
+        //void kick( string );
+        
     private:
-        string ip;
-        int port;   
+        int create();
+        
+        //needed for socket
+        struct sockaddr_in server;   //server a cui mi connetto
+        struct hostent *hp;
+        char *buff;
+        int length; //message length
+        
+        
+        const char *ip;
+        const int port;   
+        int conn;
+        string rconPass;
 };
 
 
