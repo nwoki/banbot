@@ -18,7 +18,18 @@ to compile you must have g++ compiler installed.
 HOW TO:
 
 ~ $cd <directory>
-
 ~ $make
-
 ~ $./BanBot
+
+You can also specify a custom location for your bot's logfile and server logfile by adding them when executing the bot.
+You have 2 ways of starting up the bot:
+
+1 - you can specify only where the server logfile is    ( bot will use default logfile from it's config file)
+ex: ~ $./Banbot <path_To_Server_Logfile>
+
+2 - you can specify bot's server logfile and bot's personal logfile
+ex: ~ $./Banbot <path_To_Server_Logfile> <path_To_Bot_Logfile>
+
+**if nothing is specified the bot will use all default parameters found in it's config file**
+
+

@@ -50,10 +50,10 @@ int connection::ban( string str )
 
     
     //invio messaggio
-    int result = sendto( conn, buff, strlen( buff ), 0, server, length );
+    //int result = sendto( conn, buff, strlen( buff ), 0, server, length );
     
-    if ( result < 0 )
-        cout<<"[ ERR connection::ban ] can't send to server!\n";
+    //if ( result < 0 )
+      //  cout<<"[ ERR connection::ban ] can't send to server!\n";
     
 }
 

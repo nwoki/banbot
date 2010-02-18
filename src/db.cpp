@@ -2,7 +2,18 @@
 
 db::db()
 {
-    try{
+    try{    //check per il file log
+        ifstream IN( "lbotLog.log" );
+        if( !IN ) throw( 0 );
+        else IN.close();
+    }
+    catch( int x ){
+        cout<<"[!] Logfile doesn't exist..\n";
+        //create logfile
+        
+    }
+    
+    try{    //check della directory database
         struct stat st;
         
         cout<<"[*]checking for database directory..\n";
@@ -10,18 +21,18 @@ db::db()
             cout<<"[*]dir 'database/' found\n";
         
         else{
-            cout<<"[!]couldn't find dir 'database'! Creating it..\n";
+            cout<<"[!]couldn't find dir 'database'! Creating dir 'database'..\n";
             
             if( !system( "mkdir database" ))
-                cout<< "[*]created 'database' directory..\n";
+                cout<< "[ OK ]created 'database' directory..\n";
             else throw 0;
         }
     }
     catch( int x ){
-        cout<<"----\n";
+        cout<<"[ ERR ] couldn't create directory 'database'.Please check permissions!\n";
     }
     
-    try{
+    try{    //check per il database
         ifstream IN( "database/db.sqlite" );
         if( !IN ) throw ( 0 );
         else IN.close();
@@ -31,10 +42,10 @@ db::db()
         cout<<"[!] database doesn't exist!\n";
         //create database
         if( sqlite3_open( "database/db.sqlite", &database ) != SQLITE_OK )
-            cout<< "[ERR] " << sqlite3_errmsg( database ) << endl;
+            cout<< "[ ERR ] " << sqlite3_errmsg( database ) << endl;
         else
-            cout<< "[*] creating database 'db.sqlite' in 'database/'\n ";
-        create();
+            cout<< "[*] creating database 'db.sqlite' in 'database/'\n";
+        createDb();
     }       
 }
 
@@ -43,7 +54,7 @@ db::~db()
     //delete database;
 }
 
-void db::create()   //initial creation of database
+void db::createDb()   //initial creation of database
 {
     //create tables, oplist(nick, guid) and banned(guid)
     queryStr = "create table banned(guid text)";
@@ -59,6 +70,11 @@ void db::create()   //initial creation of database
     close();
 }
 
+void db::createLogFIle()
+{
+
+}
+
 //checks oplist for ops
 bool db::checkAuthGuid( string guid )
 {
@@ -69,36 +85,18 @@ bool db::checkAuthGuid( string guid )
     
     queryStr = (char *)aux.c_str();
     
-    bool check = resultQuery( queryStr );
-    return check;
+    return ( resultQuery( queryStr ) );
 }
 
-void db::checkBanGuid( string authGuid, string banGuid )
+bool db::checkBanGuid( string banGuid )
 {   
-    if( checkAuthGuid( authGuid ) ){
-        //clear aux if already used
-        if( !aux.empty() )
-            aux.clear();
-        
-        aux.append( "select guid from banned where guid='" );
-        aux.append( banGuid );
-        aux.append( "'" );
-        
-        queryStr = (char *)aux.c_str();
+    aux.append( "select guid from banned where guid='" );
+    aux.append( banGuid );
+    aux.append( "'" );
     
-        bool check = resultQuery( queryStr );
-        
-        if( check ){    //esiste, vai con kick!!
-            cout<<"found ban\n";
-            //kick through connect
-        }
-        else{
-            cout<<"no ban\nadding to db\n";
-            //add ban 
-            ban( banGuid );
-            //then kick
-        }
-    }
+    queryStr = (char *)aux.c_str();
+    
+    return ( resultQuery( queryStr ));
 }
 
 bool db::execQuery( const char *a )
@@ -117,12 +115,8 @@ bool db::execQuery( const char *a )
             sqlite3_free( errorMsg );
             
             answer = false;
-            cout<<"fuck\n";
         }
-        else{
-            answer = true;
-            cout<<"yeah\n";
-        }
+        else  answer = true;
     }
     //close db
     close();

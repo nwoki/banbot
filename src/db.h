@@ -16,11 +16,12 @@ class db
         db();
         ~db();
         
-        void create();
+        void createDb();
+        void createLogFIle();
         void ban( string );
         bool checkAuthGuid( string );
-        void checkBanGuid( string, string );
-        void write();
+        bool checkBanGuid( string );    //passa ( guid giocatore)
+        
         bool execQuery( const char * );
         bool resultQuery( const char * );
         void close();
@@ -32,7 +33,7 @@ class db
         char *queryStr;
         char *errorMsg;
         const unsigned char *result;
-        string aux;
+        string aux, logPathS;
 };
 
 
