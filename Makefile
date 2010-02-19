@@ -11,10 +11,10 @@ FILES = src/main.o \
 CPP=g++
 CC=gcc
 #compiler flags
-CFLAGS=-c -Wall
+CFLAGS=-c -Wall -DSQLITE_THREADSAFE=0
 
 BanBot : $(FILES)
-	 $(CPP) -lsqlite3 $(FILES) -o BanBot
+	 $(CPP) $(FILES) -o BanBot
 
 main.o : src/main.cpp
 	 $(CPP) $(CFLAGS) src/main.cpp
@@ -32,7 +32,7 @@ ConfigLoader.o : src/ConfigLoader.h src/ConfigLoader.cpp
 		 $(CPP) $(CFLAGS) src/ConfigLoader.h src/ConfigLoader.cpp
 
 logger.o	: src/logger.h src/logger.cpp
-		$(CPP $(CFLAGS) src/logger.h src/logger.cpp
+		$(CPP) $(CFLAGS) src/logger.h src/logger.cpp
 
 sqlite3.o	: src/sqlite3.c
 		$(CC) $(CFLAGS) sqlite3.c
