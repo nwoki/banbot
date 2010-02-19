@@ -1,60 +1,54 @@
 #include "db.h"
 
-db::db()
+Db::Db()
 {
-    try{    //check per il file log
-        ifstream IN( "lbotLog.log" );
-        if( !IN ) throw( 0 );
-        else IN.close();
-    }
-    catch( int x ){
-        cout<<"[!] Logfile doesn't exist..\n";
-        //create logfile
-        
-    }
+  //check per il file log
+  ifstream IN( "lbotLog.log" );
+  if( IN.is_open() ) IN.close();
+  else 
+  {
+    cout<<"[!] Logfile doesn't exist..\n";
+    //create logfile
+  }
     
-    try{    //check della directory database
-        struct stat st;
+  //check della directory database
+  struct stat st;
         
-        cout<<"[*]checking for database directory..\n";
-        if( stat( "database", &st ) == 0 )
-            cout<<"[*]dir 'database/' found\n";
-        
-        else{
-            cout<<"[!]couldn't find dir 'database'! Creating dir 'database'..\n";
-            
-            if( !system( "mkdir database" ))
-                cout<< "[ OK ]created 'database' directory..\n";
-            else throw 0;
-        }
-    }
-    catch( int x ){
-        cout<<"[ ERR ] couldn't create directory 'database'.Please check permissions!\n";
-    }
+  cout<<"[*]checking for database directory..\n";
+  if( stat( "database", &st ) == 0 )
+      cout<<"[*]dir 'database/' found\n";
+  
+  else
+  {
+    cout<<"[!]couldn't find dir 'database'! Creating dir 'database'..\n";
     
-    try{    //check per il database
-        ifstream IN( "database/db.sqlite" );
-        if( !IN ) throw ( 0 );
-        else IN.close();
-    }
+    if( !system( "mkdir database" ))
+	cout<< "[ OK ]created 'database' directory..\n";
+    else 
+      cout<<"[ ERR ] couldn't create directory 'database'.Please check permissions!\n";
+  }
     
-    catch( int x ){
-        cout<<"[!] database doesn't exist!\n";
-        //create database
-        if( sqlite3_open( "database/db.sqlite", &database ) != SQLITE_OK )
-            cout<< "[ ERR ] " << sqlite3_errmsg( database ) << endl;
-        else
-            cout<< "[*] creating database 'db.sqlite' in 'database/'\n";
-        createDb();
-    }       
+  //check per il database
+  ifstream IN( "database/db.sqlite" );
+  if( IN ) IN.close();
+  else 
+  {
+    cout<<"[!] database doesn't exist!\n";
+    //create database
+    if( sqlite3_open( "database/db.sqlite", &database ) != SQLITE_OK )
+	cout<< "[ ERR ] " << sqlite3_errmsg( database ) << endl;
+    else
+	cout<< "[*] creating database 'db.sqlite' in 'database/'\n";
+    createDb();
+  }       
 }
 
-db::~db()
+Db::~Db()
 {
     //delete database;
 }
 
-void db::createDb()   //initial creation of database
+void Db::createDb()   //initial creation of database
 {
     //create tables, oplist(nick, guid) and banned(guid)
     queryStr = "create table banned(guid text)";
@@ -70,13 +64,13 @@ void db::createDb()   //initial creation of database
     close();
 }
 
-void db::createLogFIle()
+void Db::createLogFIle()
 {
 
 }
 
 //checks oplist for ops
-bool db::checkAuthGuid( string guid )
+bool Db::checkAuthGuid( string guid )
 {
     aux.clear();
     aux.append( "select guid from oplist where guid='" );
@@ -88,7 +82,7 @@ bool db::checkAuthGuid( string guid )
     return ( resultQuery( queryStr ) );
 }
 
-bool db::checkBanGuid( string banGuid )
+bool Db::checkBanGuid( string banGuid )
 {   
     aux.append( "select guid from banned where guid='" );
     aux.append( banGuid );
@@ -99,7 +93,7 @@ bool db::checkBanGuid( string banGuid )
     return ( resultQuery( queryStr ));
 }
 
-bool db::execQuery( const char *a )
+bool Db::execQuery( const char *a )
 {
     bool answer;
     cout<<"exec query-> "<<a<<endl;
@@ -123,7 +117,7 @@ bool db::execQuery( const char *a )
     return answer;
 }
 
-bool db::resultQuery( const char *a )
+bool Db::resultQuery( const char *a )
 {    
     bool answer;
     
@@ -156,10 +150,10 @@ bool db::resultQuery( const char *a )
     return answer;
 }
 
-void db::ban( string guid )
+void Db::ban( string guid )
 {
     //add 
-    if( !aux.empty() )
+    //if( !aux.empty() )
         aux.clear();
     
     aux.append( "insert into banned values('" );
@@ -178,7 +172,7 @@ void db::ban( string guid )
 //entra persona con guid = 1234;
 //controllo guid e banno
 
-void db::close()
+void Db::close()
 {
     sqlite3_close( database );
 }

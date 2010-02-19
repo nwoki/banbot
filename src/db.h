@@ -10,11 +10,11 @@
 
 using namespace std;//std::string;
 
-class db
+class Db
 {
     public:
-        db();
-        ~db();
+        Db()
+        ~Db();
         
         void createDb();
         void createLogFIle();

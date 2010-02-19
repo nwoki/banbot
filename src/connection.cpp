@@ -1,6 +1,6 @@
 #include "connection.h"
 
-connection::connection( string a, int b, string c ):  //ho solo bisogno di inizializzarmi i valori qui
+Connection::Connection( string a, int b, string c ):  //ho solo bisogno di inizializzarmi i valori qui
     ip( (char *)a.c_str() ), 
     port( b ),
     rconPass( c )
@@ -8,12 +8,12 @@ connection::connection( string a, int b, string c ):  //ho solo bisogno di inizi
     create();
 }
 
-connection::~connection()
+Connection::~Connection()
 {
     
 }
 
-int connection::create()
+int Connection::create()
 {
     conn = socket( AF_INET, SOCK_DGRAM, 0 );
     
@@ -41,9 +41,9 @@ int connection::create()
     return 1;    
 }
 
-int connection::ban( string str )
+void Connection::kick( string str )
 {
-    string command = "rcon ban ";
+    string command = "rcon kick ";
     command.append( str );
     
     cout<<command<<endl;
@@ -53,11 +53,11 @@ int connection::ban( string str )
     //int result = sendto( conn, buff, strlen( buff ), 0, server, length );
     
     //if ( result < 0 )
-      //  cout<<"[ ERR connection::ban ] can't send to server!\n";
+      //  cout<<"[ ERR Connection::ban ] can't send to server!\n";
     
 }
 
-/*void connection::kick( string num )
+/*int Connection::ban( string num )
 {
 
 }*/

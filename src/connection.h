@@ -11,14 +11,14 @@
 
 using namespace std;
 
-class connection
+class Connection
 {
     public:
-        connection( string, int, string );
-        ~connection();
+        Connection( string, int, string );
+        ~Connection();
         
-        int ban( string );
-        //void kick( string );
+        //int ban( string );
+        void kick( string );
         
     private:
         int create();
