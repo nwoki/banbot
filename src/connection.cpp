@@ -50,18 +50,23 @@ int Connection::create()
     return 1;
 }
 
-void Connection::kick( string str )
+bool Connection::kick( string str )
 {
-    string command = "rcon kick ";
+    conn = socket( AF_INET, SOCK_DGRAM, 0 );
+
+    string command = "\xff\xff\xff\xffrcon ";
     command.append( str );
 
-    cout<<command<<endl;
-
+    buff = (char *)command.c_str();
+    cout<<buff<<endl;
 
     //invio messaggio
-    //int result = sendto( conn, buff, strlen( buff ), 0, server, length );
+    int result = sendto( conn, buff, strlen( buff )+1, 0, (struct sockaddr *)&server, length );
 
-    //if ( result < 0 )
-      //  cout<<"[ ERR connection::ban ] can't send to server!\n";
+    if ( result == -1 ){
+        cout<<"[ ERR connection::ban ] can't send to server!\n";
+        return false;
+    }
+    else return true;
 
 }

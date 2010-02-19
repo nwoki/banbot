@@ -18,7 +18,7 @@ class Connection
         ~Connection();
 
         int ban( string );  //faccio tornare la risposta del server??(string or *char)
-        void kick( string );
+        bool kick( string );
 
     private:
         int create();
