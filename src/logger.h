@@ -4,27 +4,21 @@
 #include <iostream>
 #include <fstream>
 #include <string>
-using namespace std;
 
-
-class logger
+class Logger
 {
     public:
-        logger( string );
-        ~logger();
+        Logger( std::string );
+        ~Logger();
 
         bool open();    //returns true if opened successfully
-        bool write( string );   //returns true if written
+	void changePath(std::string path);
+        bool write( std::string );   //returns true if written
         void close();
 
     private:
-        string path;    //location of logfile
+        std::string path;    //location of logfile
+	std::ofstream file;  //filestream
 
 };
-
-
-
-
-
-
 #endif //LOGGER_H
