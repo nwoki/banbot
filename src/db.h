@@ -15,25 +15,24 @@ class Db
     public:
         Db();
         ~Db();
-        
+
         void createDb();
-        void createLogFIle();
+        bool connect();
         void ban( string );
         bool checkAuthGuid( string );
         bool checkBanGuid( string );    //passa ( guid giocatore)
-        
+
         bool execQuery( const char * );
         bool resultQuery( const char * );
         void close();
-        
+
     private:
         int dbStatus;
         sqlite3 *database;
         sqlite3_stmt **stmt;
-        char *queryStr;
-        char *errorMsg;
+        char *queryStr, *errorMsg;
         const unsigned char *result;
-        string aux, logPathS;
+        string aux, botLog, serverLog;
 };
 
 

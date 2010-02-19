@@ -16,22 +16,22 @@ class Connection
     public:
         Connection( string, int, string );
         ~Connection();
-        
-        //int ban( string );
+
+        int ban( string );  //faccio tornare la risposta del server??(string or *char)
         void kick( string );
-        
+
     private:
         int create();
-        
+
         //needed for socket
         struct sockaddr_in server;   //server a cui mi connetto
         struct hostent *hp;
         char *buff;
         int length; //message length
-        
-        
+
+
         const char *ip;
-        const int port;   
+        const int port;
         int conn;
         string rconPass;
 };

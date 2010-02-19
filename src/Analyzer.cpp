@@ -15,7 +15,7 @@
 #include <regex.h>
 
 //costruttore
-Analyzer::Analyzer(Connection* conn,Db* db,std::string file)
+Analyzer::Analyzer( Connection* conn, Db* db, std::string file )
 {
   //imposto il file di log
   this->file=file;
@@ -42,7 +42,7 @@ Analyzer::~Analyzer()
 bool Analyzer::isA(char* line, std::string regex)
 {
   regex_t r;
-  
+
   if (regcomp(&r, regex.c_str(), REG_EXTENDED|REG_NOSUB) == 0)
   {
     int status=regexec(&r, line, (size_t)0, NULL, 0);
@@ -68,7 +68,7 @@ void Analyzer::main_loop()
     //provo ad aprire il file e a riprendere dalla riga dove ero arrivato
     log.open(file.c_str());
     log.seekg(row);
-    
+
     //se il file è aperto posso lavorare
     if (log.is_open())
     {
@@ -80,7 +80,7 @@ void Analyzer::main_loop()
 	log.getline(line,1500,'\n');
 	//se non è la fine del file, mi salvo la riga dove sono arrivato
 	if (!log.eof()) row=log.tellg();
-	
+
 	//comincio coi test
 	if (isA(line, CLIENT_USER_INFO))
 	{
@@ -95,7 +95,7 @@ void Analyzer::main_loop()
 	  pos=temp.find_first_not_of("\\",pos+7);
 	  end=temp.find_first_of("\\ ",pos);
 	  std::string guid=temp.substr(pos,end-pos);
-	  
+
 	  //il giocatore c'è per forza (nel gioco deve fare un ClientConnect prima di userinfo)
 	  //cerco il giocatore giusto all'interno della mia lista, e salvo il guid nelle info
 	  unsigned int i=0;
@@ -112,13 +112,13 @@ void Analyzer::main_loop()
 	      }
 	      else
 	      {
-		//tutto a posto =) 
+		//tutto a posto =)
 		giocatori[i]->GUID=guid;
 	      }
 	    }
 	    else i++;
 	  }
-	    
+
 	  //se ho il guid del giocatore procedo coi controlli
 	  if (!nonTrovato)
 	  {
@@ -148,24 +148,24 @@ void Analyzer::main_loop()
 	  //controllo se è la connessione di un utente
 	  if (isA(line, CLIENT_CONNECT))
 	  {
-	    //è un clientconnect: 
+	    //è un clientconnect:
 	    //prendo il numero del giocatore e mi creo il nuovo player corrispondente in memoria
 	    std::string temp=line;
 	    int pos=temp.find("ClientConnect:");
 	    pos=temp.find_first_not_of(" ",pos+14);
 	    int end=temp.find_first_of(" \n\0",pos);
 	    std::string numero=temp.substr(pos,end-pos);
-	    
+
 	    //per pignoleria controllo che non sia già presente
 	    unsigned int i=0;
 	    bool nonTrovato=true;
 	    while (nonTrovato && i<giocatori.size())
 	    {
-	      if (giocatori[i]->number.compare(numero)==0) 
-		nonTrovato=false;
+	      if (giocatori[i]->number.compare(numero)==0)
+            nonTrovato=false;
 	      else i++;
 	    }
-	    
+
 	    //se non è presente, lo inserisco
 	    if (nonTrovato)
 	    {
@@ -175,7 +175,7 @@ void Analyzer::main_loop()
 	    }
 	    else
 	    {
-	      //se c'è già, azzero il guid 
+	      //se c'è già, azzero il guid
 	      giocatori[i]->GUID="";
 	    }
 	    //ho finito le azioni in caso di clientConnect
@@ -193,31 +193,31 @@ void Analyzer::main_loop()
 	      pos=temp.find_first_not_of(" ",pos+17);
 	      int end=temp.find_first_of(" \n\0",pos);
 	      std::string numero=temp.substr(pos,end-pos);
-	      
+
 	      //cerco il player e lo elimino
 	      unsigned int i=0;
 	      bool nonTrovato=true;
 	      while(nonTrovato && i<giocatori.size())
 	      {
-		if (giocatori[i]->number.compare(numero)==0)
-		{
-		  //trovato. elimino prima l'oggetto puntato
-		  nonTrovato=false;
-		  delete giocatori[i];
-		  //elimino l'elemento in vector: prendo l'iteratore
-		  std::vector<Player*>::iterator iteratore=giocatori.begin();
-		  //scorro fino all'elemento corretto
-		  for (unsigned int j=0; j<i;j++) iteratore++;
-		  //elimino l'elemento
-		  giocatori.erase(iteratore);
-		}
-		else i++;
+            if (giocatori[i]->number.compare(numero)==0)
+            {
+                //trovato. elimino prima l'oggetto puntato
+                nonTrovato=false;
+                delete giocatori[i];
+                //elimino l'elemento in vector: prendo l'iteratore
+                std::vector<Player*>::iterator iteratore=giocatori.begin();
+                //scorro fino all'elemento corretto
+                for (unsigned int j=0; j<i;j++) iteratore++;
+                //elimino l'elemento
+                    giocatori.erase(iteratore);
+            }
+            else i++;
 	      }
-	      
+
 	      //finite le azioni in caso di disconnect
 	    }
 	    else
-	    { 
+	    {
 	      //non è neanche un clientDisconnect
 	      //controllo se è un comando di ban
 	      if (isA(line, SAY))
@@ -229,7 +229,7 @@ void Analyzer::main_loop()
 		pos=temp.find_first_not_of(" ",pos+4);
 		int end=temp.find_first_of(" ",pos);
 		std::string numero=temp.substr(pos,end-pos);
-		
+
 		//dal numero del richiedente, mi prendo il guid
 		std::string guid="";
 		unsigned int i=0;
@@ -242,7 +242,7 @@ void Analyzer::main_loop()
 		  }
 		  else i++;
 		}
-		
+
 		//controllo se ho trovato il giocatore e i suoi permessi, se la persona non è autorizzata non faccio nulla.
 		if (!nonTrovato && database->checkAuthGuid(guid))
 		{
@@ -252,7 +252,7 @@ void Analyzer::main_loop()
 		  pos=temp.find_first_not_of(" ",pos+4);
 		  end=temp.find_first_of(" ",pos);
 		  numero=temp.substr(pos,end-pos);
-			  
+
 		  //mi prendo il guid dalla lista dei giocatori (qua sto bene attento, un "utonto" potrebbe aver cappellato inserendo il numero)
 		  nonTrovato=true;
 		  i=0;
@@ -264,7 +264,7 @@ void Analyzer::main_loop()
 		    }
 		    else i++;
 		  }
-		  //se ho il guid, banno il player (le operazioni non sono eseguite "in diretta", 
+		  //se ho il guid, banno il player (le operazioni non sono eseguite "in diretta",
 		  //per pignoleria controllo anche se per una rarissima combinazione non è già bannato).
 		  if (!nonTrovato && !database->checkBanGuid(guid))
 		  {
@@ -295,7 +295,7 @@ void Analyzer::main_loop()
 	}
       }
     }
-    else 
+    else
       row=0;//se non riesco ad aprire il file, ricomincio dalla prima riga
     //chiudo il file e lascio passare un po' di tempo
     log.close();
