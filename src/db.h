@@ -13,7 +13,7 @@ using namespace std;//std::string;
 class Db
 {
     public:
-        Db()
+        Db();
         ~Db();
         
         void createDb();
