@@ -6,7 +6,8 @@
 #include <sys/stat.h>
 #include <stdlib.h>
 #include <string>
-#include "sqlite3.h"
+#include "ConfigLoader.h"
+#include "sqlite3/sqlite3.h"
 #include "logger.h"
 
 using namespace std;//std::string;
@@ -14,7 +15,7 @@ using namespace std;//std::string;
 class Db
 {
     public:
-        Db(Logger * log);
+        Db( Logger *, vector<ConfigLoader::Option> ); //passo array di guid secondo parametro
         ~Db();
 
         void createDb();
@@ -24,6 +25,7 @@ class Db
         bool checkBanGuid( string );    //passa ( guid giocatore)
 
         bool execQuery( const char * );
+        void setupAdmins();
         bool resultQuery( const char * );
         void close();
 
@@ -34,7 +36,8 @@ class Db
         char *queryStr, *errorMsg;
         const unsigned char *result;
         string aux, botLog, serverLog;
-	Logger * logger;
+        Logger *logger;
+        vector<ConfigLoader::Option> opzioni;
 };
 
 
