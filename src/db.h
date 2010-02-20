@@ -7,13 +7,14 @@
 #include <stdlib.h>
 #include <string>
 #include "sqlite3.h"
+#include "logger.h"
 
 using namespace std;//std::string;
 
 class Db
 {
     public:
-        Db();
+        Db(Logger * log);
         ~Db();
 
         void createDb();
@@ -33,6 +34,7 @@ class Db
         char *queryStr, *errorMsg;
         const unsigned char *result;
         string aux, botLog, serverLog;
+	Logger * logger;
 };
 
 

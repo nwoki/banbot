@@ -10,50 +10,53 @@
 
 #include "db.h"
 
-Db::Db()
+Db::Db(Logger * log)
 {
-    try{    //check della directory database
-        struct stat st;
+  logger=log;
+  //comincio il logging
+  logger->open();
+  //check della directory database
+  struct stat st;
 
-        cout<<"[-]checking for database directory..\n";
-        if( stat( "database", &st ) == 0 )
-            cout<<"[*]dir 'database/' found\n";
+  logger->write("[-]checking for database directory..");
+  if( stat( "database", &st ) == 0 )
+      logger->write("[*]dir 'database/' found");
 
-        else{
-            cout<<"[!]couldn't find dir 'database'! Creating dir 'database'..\n";
+  else
+  {
+      logger->write("[!]couldn't find dir 'database'! Creating dir 'database'..");
 
-            if( !system( "mkdir database" ))
-                cout<< "[OK]created 'database' directory..\n";
-            else throw 0;
-        }
-    }
-    catch( int x ){
-        cout<<"[ERR] couldn't create directory 'database'.Please check permissions!\n";
-    }
+      if( !system( "mkdir database" ))
+	  logger->write("[OK]created 'database' directory..");
+      else 
+        logger->write("[ERR] couldn't create directory 'database'.Please check permissions!");
+  }
 
-    try{    //check per il database
-        ifstream IN( "database/db.sqlite" );
-        if( !IN ) throw ( 0 );
-        else IN.close();
-    }
-    catch( int x ){
-        cout<<"[!] database doesn't exist!\n";
-        if( connect() ){//create database
+  //check per il database
+  ifstream IN( "database/db.sqlite" );
+  if( IN ) IN.close();
+  else
+  {
+         logger->write("[!] database doesn't exist!");
+        if( connect() )
+	{
+	  //create database
             createDb();
-            cout<< "[*] creating database 'db.sqlite' in 'database/'\n";
+            logger->write("[*] creating database 'db.sqlite' in 'database/'");
         }
     }
 }
 
 Db::~Db()
 {
-    //delete database;
+    logger->close();
+    delete logger;
 }
 
 bool Db::connect()
 {
     if( sqlite3_open( "database/db.sqlite", &database ) != SQLITE_OK ){
-        cout<< "[ERR] " << sqlite3_errmsg( database ) << endl;
+        logger->write("[ERR] " << sqlite3_errmsg( database ));
         sqlite3_free( errorMsg );
         return false;
     }
@@ -65,12 +68,12 @@ void Db::createDb()   //initial creation of database
     //create tables, oplist(nick, guid) and banned(guid)
     queryStr = "create table banned(guid text)";
     if( execQuery( queryStr ) )
-        cout<< "[*]created banned table..\n";
+        logger->write("[*]created banned table..");;
 
     //oplist
     queryStr = "create table oplist(nick text, guid text)";
     if ( execQuery( queryStr ) )
-        cout<< "[*]created oplist table..\n";
+        logger->write("[*]created oplist table..");
 
     close();    //close database
 }
@@ -90,6 +93,7 @@ bool Db::checkAuthGuid( string guid )
 
 bool Db::checkBanGuid( string banGuid )
 {
+    aux.clear();
     aux.append( "select guid from banned where guid='" );
     aux.append( banGuid );
     aux.append( "'" );
@@ -102,13 +106,13 @@ bool Db::checkBanGuid( string banGuid )
 bool Db::execQuery( const char *a )
 {
     bool answer;
-    cout<<"exec query-> "<<a<<endl;
+    //logger->write("exec query-> "+a);
 
     if( !connect() )    //went bad
         answer = false;
     else{
         if ( sqlite3_exec( database, a, NULL, NULL, &errorMsg ) != SQLITE_OK){
-            cout<<"[ERR] "<<errorMsg<<endl;
+            //logger->write("[ERR] "+errorMsg);
             sqlite3_free( errorMsg );
 
             answer = false;
@@ -126,7 +130,7 @@ bool Db::resultQuery( const char *a )
     if( !connect() )
         answer = false;   //went bad
     else{
-        cout<<"result query -> "<<a<<endl;
+        //logger->write("result query -> "+a);
 
         if( sqlite3_prepare_v2( database, a, -1, stmt, NULL ) == SQLITE_OK ){ //proceed
             sqlite3_step( *stmt );
@@ -134,11 +138,11 @@ bool Db::resultQuery( const char *a )
             sqlite3_finalize( *stmt );
 
             if( !result ){
-                cout<<"empty or can't exec query\n";
+                logger->write("empty or can't exec query");
                 answer = false;
             }
             else{
-                cout<<"got answer or execed the query\n";
+                logger->write("got answer or execed the query");
                 answer = true;
             }
         }
