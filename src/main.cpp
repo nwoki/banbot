@@ -14,7 +14,7 @@ using namespace std;
 #define IP "127.0.0.1"  //server ip
 #define PORT 27960  //server port
 #define RCON "asd" //server rcon password
-#define LOG "~/.q3a/q3ut4/game.log"  //where logfile is located
+#define LOG "logs/bot.log"  //where logfile is located
 
 int main( int argc, char *argv[] ){ //pass arguments to specify server logfile and bot logfile
 
@@ -35,15 +35,16 @@ int main( int argc, char *argv[] ){ //pass arguments to specify server logfile a
 
 
 
-    Logger *logGay = new Logger( "logs/bot.log" );
+    Logger *logGay = new Logger( LOG );
     Db *d = new Db( logGay, opzioni) ;
 
     string a="127.0.0.1", b="asd";
     int c = 27960;
 
-    Connection *serverCommand( a,c,b);
+    Connection *serverCommand = new Connection( a,c,b);
     string file = "~/.q3a/q3ut4/game.log";
-    //Analyzer anal( serverCommand, d, "~/.q3a/q3ut4/game.log" );
+    Analyzer anal( serverCommand, d, file );
+    anal.main_loop();
 
 
   //ho l'array con tutte le impostazioni

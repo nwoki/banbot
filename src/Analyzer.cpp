@@ -72,6 +72,7 @@ void Analyzer::main_loop()
     //se il file è aperto posso lavorare
     if (log.is_open())
     {
+        cout<<"found logfile\n";
       //il file è aperto, esamino le nuove righe (se ce ne sono)
       while (!log.eof())
       {
