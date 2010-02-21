@@ -35,14 +35,14 @@ int main( int argc, char *argv[] ){ //pass arguments to specify server logfile a
 
 
 
-    Logger *logGay = new Logger( LOG );
-    Db *d = new Db( logGay, opzioni) ;
+    //Logger *logGay = new Logger( LOG );
+    Db *d = new Db(opzioni) ;
 
     string a="127.0.0.1", b="asd";
     int c = 27960;
 
     Connection *serverCommand = new Connection( a,c,b);
-    string file = "~/.q3a/q3ut4/game.log";
+    string file = "q3ut4/games.log";
     Analyzer anal( serverCommand, d, file );
     anal.main_loop();
 

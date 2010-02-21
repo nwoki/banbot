@@ -30,6 +30,8 @@ Analyzer::Analyzer( Connection* conn, Db* db, std::string file )
   SAY=" *[0-9]+:[0-9]{2} +say: +[0-9]+ +[^ \t\n\r\f\v]+: +!ban [0-9]{1,2}";
   GUID="[A-F0-9]{32}";
   INITGAME=" *[0-9]+:[0-9]{2} +InitGame:";
+  
+  cout<<"[OK] Analyzer inizializzato.\n";
 }
 
 //distruttore
@@ -63,6 +65,7 @@ void Analyzer::expansion(char* line)
 //main loop
 void Analyzer::main_loop()
 {
+  cout<<"[OK] Analyzer avviato.\n";
   while (true)
   {
     //provo ad aprire il file e a riprendere dalla riga dove ero arrivato
@@ -72,7 +75,7 @@ void Analyzer::main_loop()
     //se il file è aperto posso lavorare
     if (log.is_open())
     {
-        cout<<"found logfile\n";
+        cout<<"[OK] logfile founded\n";
       //il file è aperto, esamino le nuove righe (se ce ne sono)
       while (!log.eof())
       {
@@ -81,10 +84,13 @@ void Analyzer::main_loop()
 	log.getline(line,1500,'\n');
 	//se non è la fine del file, mi salvo la riga dove sono arrivato
 	if (!log.eof()) row=log.tellg();
+	
+	cout<<line<<"\n";
 
 	//comincio coi test
 	if (isA(line, CLIENT_USER_INFO))
 	{
+	  cout<<"[-] Client user info\n";
 	  //ha passato il regex, è una clientUserinfo
 	  //prendo il numero giocatore e la guid, utilizzando le funzioni delle stringhe
 	  std::string temp=line;
@@ -97,6 +103,7 @@ void Analyzer::main_loop()
 	  end=temp.find_first_of("\\ ",pos);
 	  std::string guid=temp.substr(pos,end-pos);
 
+	  cout<<"[*]Estrapolati i dati: numero="<<numero<<" guid="<<guid<<"\n";
 	  //il giocatore c'è per forza (nel gioco deve fare un ClientConnect prima di userinfo)
 	  //cerco il giocatore giusto all'interno della mia lista, e salvo il guid nelle info
 	  unsigned int i=0;
@@ -109,6 +116,7 @@ void Analyzer::main_loop()
 	      if (!giocatori[i]->GUID.empty() && giocatori[i]->GUID.compare(guid)!=0)
 	      {
 		//cambio illegale del GUID => cheats
+		cout<<"[!] kick automatico per cheats.\n";
 		server->kick(numero);
 	      }
 	      else
@@ -120,28 +128,35 @@ void Analyzer::main_loop()
 	    else i++;
 	  }
 
+	  cout<<"[-] Inizio i controlli.\n";
 	  //se ho il guid del giocatore procedo coi controlli
 	  if (!nonTrovato)
 	  {
 	    //faccio un pò di controlli:
 	    //controllo che non sia stato già bannato
+	    cout<<"[-] CheckBanGUID()\n";
 	    if(database->checkBanGuid(guid))
 	    {
 	      //è stato bannato, lo butto fuori
+	      cout<<"[!] kick per ban.\n";
 	      server->kick(numero);
 	    }
 	    else
 	    {
+	      cout<<"[-]Checking for invalid GUID...\n";
 	      //ok, non è stato bannato (per il momento). Controllo se ha un GUID valido.
 	      if (isA(line, GUID))
 	      {
 		  //il guid è illegale, ban diretto
+		  cout<<"[!] kick automatico per GUID illegale\n";
 		  database->ban(guid);
 		  server->kick(numero);
 	      }
 	    }
 	  }
+	  
 	  //ho finito le azioni in caso di clientUserinfo
+	  cout<<"[OK] all done.";
 	}
 	else
 	{
@@ -149,6 +164,7 @@ void Analyzer::main_loop()
 	  //controllo se è la connessione di un utente
 	  if (isA(line, CLIENT_CONNECT))
 	  {
+	    cout<<"[-] Nuovo client connesso\n";
 	    //è un clientconnect:
 	    //prendo il numero del giocatore e mi creo il nuovo player corrispondente in memoria
 	    std::string temp=line;
@@ -156,26 +172,29 @@ void Analyzer::main_loop()
 	    pos=temp.find_first_not_of(" ",pos+14);
 	    int end=temp.find_first_of(" \n\0",pos);
 	    std::string numero=temp.substr(pos,end-pos);
-
+	    
+	    cout<<"[-] Estrapolati i dati. numero="<<numero<<"\n";
 	    //per pignoleria controllo che non sia già presente
 	    unsigned int i=0;
 	    bool nonTrovato=true;
 	    while (nonTrovato && i<giocatori.size())
 	    {
 	      if (giocatori[i]->number.compare(numero)==0)
-            nonTrovato=false;
+		nonTrovato=false;
 	      else i++;
 	    }
 
 	    //se non è presente, lo inserisco
 	    if (nonTrovato)
 	    {
+	      cout<<"[*] Inserisco il nuovo player\n";
 	      Player * gioc=new Player();
 	      gioc->number=numero;
 	      giocatori.push_back(gioc);
 	    }
 	    else
 	    {
+	      cout<<"[-] Player già presente, azzerata la GUID.\n";
 	      //se c'è già, azzero il guid
 	      giocatori[i]->GUID="";
 	    }
@@ -210,7 +229,7 @@ void Analyzer::main_loop()
                 //scorro fino all'elemento corretto
                 for (unsigned int j=0; j<i;j++) iteratore++;
                 //elimino l'elemento
-                    giocatori.erase(iteratore);
+                giocatori.erase(iteratore);
             }
             else i++;
 	      }
@@ -269,6 +288,7 @@ void Analyzer::main_loop()
 		  //per pignoleria controllo anche se per una rarissima combinazione non è già bannato).
 		  if (!nonTrovato && !database->checkBanGuid(guid))
 		  {
+		    cout<<"[!]banning "<<guid<<"\n";
 		    database->ban(guid);
 		    server->kick(guid);
 		  }

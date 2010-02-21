@@ -8,14 +8,15 @@
 #include <string>
 #include "ConfigLoader.h"
 #include "sqlite3/sqlite3.h"
-#include "logger.h"
+//#include "logger.h"
 
 using namespace std;//std::string;
 
 class Db
 {
     public:
-        Db( Logger *, vector<ConfigLoader::Option> ); //passo array di guid secondo parametro
+        //Db( Logger *, vector<ConfigLoader::Option> ); //passo array di guid secondo parametro
+	Db(vector<ConfigLoader::Option> );
         ~Db();
 
         void createDb();
@@ -36,7 +37,7 @@ class Db
         char *queryStr, *errorMsg;
         const unsigned char *result;
         string aux, botLog, serverLog;
-        Logger *logger;
+        //Logger *logger;
         vector<ConfigLoader::Option> opzioni;
 };
 

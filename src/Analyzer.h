@@ -28,6 +28,7 @@
 #include <fstream>
 #include <string>
 #include <vector>
+#include <iostream>
 #include "connection.h"
 #include "db.h"
 
@@ -42,7 +43,7 @@ class Analyzer
 	Player():GUID(std::string("")),number(""){};
     };
     std::vector<Player*> giocatori;
-    static const long TIME_SLEEPING = 10;
+    static const long TIME_SLEEPING = 5;
     std::ifstream log;
     const char* CLIENT_CONNECT;
     const char* CLIENT_USER_INFO;

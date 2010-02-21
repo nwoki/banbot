@@ -10,52 +10,55 @@
 
 #include "db.h"
 
-Db::Db( Logger * log, vector<ConfigLoader::Option> conf ):
-    logger( log ),
+//Db::Db( Logger * log, vector<ConfigLoader::Option> conf ):
+Db::Db(vector<ConfigLoader::Option> conf ):
+    //logger( log ),
     opzioni( conf )
 {
     //logger=log;
     //comincio il logging
-    logger->open();
+    //logger->open();
     //check della directory database
     struct stat st;
 
-    logger->write("[-]checking for database directory..");
+    cout<<"[-]checking for database directory..\n";
     if( stat( "database", &st ) == 0 )
-        logger->write("[*]dir 'database/' found");
+        cout<<"[*]dir 'database/' found";
     else{
-        logger->write("[!]couldn't find dir 'database'! Creating dir 'database'..");
+        "[!]couldn't find dir 'database'! Creating dir 'database'..\n";
 
         if( !system( "mkdir database" ))
-            logger->write("[OK]created 'database' directory..");
+            cout<<"[OK]created 'database' directory..\n";
         else
-            logger->write("[ERR] couldn't create directory 'database'.Please check permissions!");
+            cout<<"[ERR] couldn't create directory 'database'.Please check permissions!\n";
     }
 
     //check per il database
     ifstream IN( "database/db.sqlite" );
     if( IN ) IN.close();
     else{
-        logger->write("[!] database doesn't exist!");
+        cout<<"[!] database doesn't exist!\n";
         if( connect() ){
             //create database
             createDb();
-            logger->write("[*] creating database 'db.sqlite' in 'database/'");
-            setupAdmins();
+            cout<<"[*] creating database 'db.sqlite' in 'database/'\n";
         }
     }
+    
+    //azzero la tabella degli admins
+    setupAdmins();
 }
 
 Db::~Db()
 {
-    logger->close();
-    delete logger;
+    //logger->close();
+    //delete logger;
 }
 
 bool Db::connect()
 {
     if( sqlite3_open( "database/db.sqlite", &database ) != SQLITE_OK ){
-        //logger->write("[ERR] " << sqlite3_errmsg( database ));    //TODO
+        cout<<"[ERR] " << sqlite3_errmsg( database );    //TODO
         sqlite3_free( errorMsg );
         return false;
     }
@@ -67,12 +70,12 @@ void Db::createDb()   //initial creation of database
     //create tables, oplist(nick, guid) and banned(guid)
     queryStr = "create table banned(guid text)";
     if( execQuery( queryStr ) )
-        logger->write("[*]created banned table..");;
+        cout<<"[*]created banned table..\n";
 
     //oplist
     queryStr = "create table oplist(guid text)";
     if ( execQuery( queryStr ) )
-        logger->write("[*]created oplist table..");
+        cout<<"[*]created oplist table..\n";
 
     close();    //close database
 }
@@ -105,13 +108,13 @@ bool Db::checkBanGuid( string banGuid )
 bool Db::execQuery( const char *a )
 {
     bool answer;
-    //logger->write("exec query-> "+a);
+    cout<<"exec query-> "<<a<<"\n";
 
     if( !connect() )    //went bad
         answer = false;
     else{
         if ( sqlite3_exec( database, a, NULL, NULL, &errorMsg ) != SQLITE_OK){
-            //logger->write("[ERR] "+errorMsg);
+            cout<<"[ERR] "<<errorMsg<<"\n";
             sqlite3_free( errorMsg );
 
             answer = false;
@@ -124,28 +127,30 @@ bool Db::execQuery( const char *a )
 
 bool Db::resultQuery( const char *a )
 {
-    bool answer;
+    bool answer=false;
 
-    if( !connect() )
+    /*if( !connect() )
         answer = false;   //went bad
     else{
-        //logger->write("result query -> "+a);
+        cout<<"result query -> "<<a<<"\n";*/
 
-        if( sqlite3_prepare_v2( database, a, -1, stmt, NULL ) == SQLITE_OK ){ //proceed
+        if( sqlite3_prepare_v2( database, a, -1, stmt, NULL ) == SQLITE_OK )
+	{
+	  //proceed
             sqlite3_step( *stmt );
             result = sqlite3_column_text( *stmt, 0 );
             sqlite3_finalize( *stmt );
 
             if( !result ){
-                logger->write("empty or can't exec query");
+                cout<<"empty or can't exec query\n";
                 answer = false;
             }
             else{
-                logger->write("got answer or execed the query");
+                cout<<"got answer or execed the query\n";
                 answer = true;
             }
         }
-    }
+    //}
     close();    //close db
     return answer;
 }
@@ -181,7 +186,7 @@ void Db::setupAdmins()
     cout<<"[-]trying to repopulate database\n";
 
     for( int i = 0; i < opzioni.size(); i++){
-        if( opzioni[i].name == "GUID" ){
+        if( opzioni[i].name.compare("GUID")==0 ){
 
             string aux;
             aux.append("insert into oplist values('");
