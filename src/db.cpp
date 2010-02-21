@@ -44,7 +44,7 @@ Db::Db(vector<ConfigLoader::Option> conf ):
             cout<<"[*] creating database 'db.sqlite' in 'database/'\n";
         }
     }
-    
+
     //azzero la tabella degli admins
     setupAdmins();
 }
@@ -131,15 +131,25 @@ bool Db::resultQuery( const char *a )
     bool answer=false;
     cout<<"Diocane??\n";
 
-    if( !connect() )
+    if( !connect() ){
+        cout<<"[ ERR ]can't connect to db!\n";
+        return false;
         answer = false;   //went bad
+    }
     else{
         cout<<"result query -> "<<a<<"\n";
 
-        if( sqlite3_prepare_v2( database, a, -1, stmt, NULL ) == SQLITE_OK )
-	{
-	  cout<<"[-] entrato nell'if \n";
-	  //proceed
+        if ( execQuery( a ) ){
+            cout<<"empty or can't exec query\n";
+            answer = false;
+        }
+        else{
+            cout<<"got answer or execed the query\n";
+            answer = true;
+        }
+        /*if( sqlite3_prepare_v2( database, a, -1, stmt, NULL ) == SQLITE_OK ){
+            cout<<"[-] entrato nell'if \n";
+            //proceed
             sqlite3_step( *stmt );
             result = sqlite3_column_text( *stmt, 0 );
             sqlite3_finalize( *stmt );
@@ -152,7 +162,7 @@ bool Db::resultQuery( const char *a )
                 cout<<"got answer or execed the query\n";
                 answer = true;
             }
-        }
+        }*/
     }
     close();    //close db
     return answer;
@@ -204,6 +214,7 @@ void Db::setupAdmins()
             else cout<<"[ ERR ] can't add admin to database!\n";
         }
     }
+    close();
 }
 
 void Db::close()

@@ -30,7 +30,7 @@ Analyzer::Analyzer( Connection* conn, Db* db, std::string file )
   SAY=" *[0-9]+:[0-9]{2} +say: +[0-9]+ +[^ \t\n\r\f\v]+: +!ban [0-9]{1,2}";
   GUID="[A-F0-9]{32}";
   INITGAME=" *[0-9]+:[0-9]{2} +InitGame:";
-  
+
   cout<<"[OK] Analyzer inizializzato.\n";
 }
 
@@ -84,7 +84,7 @@ void Analyzer::main_loop()
 	log.getline(line,1500,'\n');
 	//se non è la fine del file, mi salvo la riga dove sono arrivato
 	if (!log.eof()) row=log.tellg();
-	
+
 	cout<<line<<"\n";
 
 	//comincio coi test
@@ -145,7 +145,7 @@ void Analyzer::main_loop()
 	    {
 	      cout<<"[-]Checking for invalid GUID...\n";
 	      //ok, non è stato bannato (per il momento). Controllo se ha un GUID valido.
-	      if (isA(line, GUID))
+	      if (!isA(line, GUID))
 	      {
 		  //il guid è illegale, ban diretto
 		  cout<<"[!] kick automatico per GUID illegale\n";
@@ -154,7 +154,7 @@ void Analyzer::main_loop()
 	      }
 	    }
 	  }
-	  
+
 	  //ho finito le azioni in caso di clientUserinfo
 	  cout<<"[OK] all done.";
 	}
@@ -172,7 +172,7 @@ void Analyzer::main_loop()
 	    pos=temp.find_first_not_of(" ",pos+14);
 	    int end=temp.find_first_of(" \n\0",pos);
 	    std::string numero=temp.substr(pos,end-pos);
-	    
+
 	    cout<<"[-] Estrapolati i dati. numero="<<numero<<"\n";
 	    //per pignoleria controllo che non sia già presente
 	    unsigned int i=0;

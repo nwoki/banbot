@@ -42,7 +42,9 @@ int main( int argc, char *argv[] ){ //pass arguments to specify server logfile a
     int c = 27960;
 
     Connection *serverCommand = new Connection( a,c,b);
-    string file = "q3ut4/games.log";
+
+    string file = "games.log";
+
     Analyzer anal( serverCommand, d, file );
     anal.main_loop();
 
