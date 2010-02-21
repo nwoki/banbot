@@ -2,10 +2,11 @@
 #define CONNECTION_H
 
 #include <iostream>
+#include <vector>
 #include <netdb.h>
 #include <string>
 #include <string.h>
-#include <strings.h>
+//#include <strings.h>
 #include <sys/socket.h>
 //#include <sys/types.h>
 
@@ -17,20 +18,20 @@ class Connection
         Connection( string, int, string );
         ~Connection();
 
-        int ban( string );  //faccio tornare la risposta del server??(string or *char)
-        bool kick( string );
+        //void ban( string );  //faccio tornare la risposta del server??(string or *char)
+        void kick( string );
+        //void asd();
 
     private:
-        int create();
-
-        //needed for socket
-        struct sockaddr_in server;   //server a cui mi connetto
+        sockaddr_in serverAdd, clientAdd;
+        int socketID;
         struct hostent *hp;
-        char *buff;
-        int length; //message length
+        int recvSize; //message length in risposta
 
-
-        const char *ip;
+	void prepareConnection();
+	vector<char> makeCmd( string);
+	
+        char *ip;
         const int port;
         int conn;
         string rconPass;

@@ -1,4 +1,4 @@
-/*              Analyzer.
+/*              Connection
  *
  *  Author:     [2s2h]n3m3s1s
  *
@@ -10,11 +10,12 @@
 #include "connection.h"
 
 Connection::Connection( string a, int b, string c ):  //ho solo bisogno di inizializzarmi i valori qui
-    ip( (char *)a.c_str() ),
+    ip( (char*)a.c_str() ),
     port( b ),
-    rconPass( c )
+    rconPass( c ),
+    recvSize(0)
 {
-    create();
+  
 }
 
 Connection::~Connection()
@@ -22,51 +23,86 @@ Connection::~Connection()
 
 }
 
-int Connection::create()
+vector<char> Connection::makeCmd( string cmd) //cmd = "rcon " + pass + azione da compiere
 {
-    conn = socket( AF_INET, SOCK_DGRAM, 0 );
-
-    if (conn < 0){
-        cout<<"[ ERR connection::create ] can't create socket!\n";
-        return conn;
-    }
-
-    cout<<ip<<endl;
-    server.sin_family = AF_INET;
-    hp = gethostbyname( ip );
-    cout<<hp;
-
-    if( hp == 0 ){
-        cout<<"[ ERR connection::create ] can't find host\n";
-        return 0;
-    }
-
-    //copies bytes
-    bcopy( (char *)hp->h_addr, (char *)&server.sin_addr, hp->h_length);
-    server.sin_port = htons( port );
-
-    length = sizeof( struct sockaddr_in );
-
-    return 1;
+  vector<char> command(cmd.begin(),cmd.end());
+  vector<char> specials;
+  for (int i=0;i<4;i++)
+  {
+    specials.push_back('\xff');
+  }
+  //specials.push_back('\x02');
+  for (int i=0;i<command.size();i++)
+  {
+    specials.push_back(command[i]);
+  }
+  return specials;
 }
 
-bool Connection::kick( string str )
+void Connection::prepareConnection()
 {
-    conn = socket( AF_INET, SOCK_DGRAM, 0 );
+    socketID = socket( AF_INET, SOCK_DGRAM, 0 );
 
-    string command = "\xff\xff\xff\xffrcon ";
-    command.append( str );
+    serverAdd.sin_family = AF_INET;
+    serverAdd.sin_port = htons( port );
+    recvSize = sizeof( serverAdd );
+    
+    hp = gethostbyname(ip);//127.0.0.1");"81.174.67.195"
+    memcpy( (char*)&serverAdd.sin_addr, (char*)hp->h_addr, hp->h_length );
+    
+    recvSize = sizeof( serverAdd );
+}
 
-    buff = (char *)command.c_str();
-    cout<<buff<<endl;
+/*void Connection::ban(string number)   //recv number
+{
 
-    //invio messaggio
-    int result = sendto( conn, buff, strlen( buff )+1, 0, (struct sockaddr *)&server, length );
+}
+*/
+void Connection::kick(string number)
+{
+  prepareConnection();
+  
+  string comando("rcon ");
+  comando.append(rconPass);
+  comando.append(" kick ");
+  comando.append(number);
+  
+  vector<char> command=makeCmd(comando);
+  int bufferSize = command.size();
+  sendto( socketID, command.data(), bufferSize, 0, &(sockaddr &)serverAdd, recvSize );
+  close(socketID);
+}
 
-    if ( result == -1 ){
-        cout<<"[ ERR connection::ban ] can't send to server!\n";
-        return false;
+
+/*void Connection::asd()
+{
+
+    prepareConnection();
+
+    //sockaddr &serverAddCast = (sockaddr &)serverAdd;
+    //sockaddr &clientAddCast = (sockaddr &)clientAdd;
+
+    //int size = sizeof( serverAdd );
+    recvSize = sizeof( serverAdd );
+
+    vector<char> command=makeCmd("rcon asd status");
+    cout<<"Result ";
+    for(int i=0;i<command.size();i++)
+    {
+      cout<<command[i];
     }
-    else return true;
+    cout<<":\n";
 
+    int bufferSize = command.size();
+
+
+    sendto( socketID, command.data(), bufferSize, 0, &(sockaddr &)serverAdd, recvSize );
+
+    close(socketID);
+}*/
+
+int main( int argc, char *argv[] )
+{
+  Connection *prova=new Connection("127.0.1.1",27960,"asd");
+  prova->kick("2");
 }
