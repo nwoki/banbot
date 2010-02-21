@@ -30,7 +30,7 @@ class Connection
 
 	void prepareConnection();
 	vector<char> makeCmd( string);
-	
+
         char *ip;
         const int port;
         int conn;

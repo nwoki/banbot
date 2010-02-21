@@ -15,7 +15,7 @@ Connection::Connection( string a, int b, string c ):  //ho solo bisogno di inizi
     rconPass( c ),
     recvSize(0)
 {
-  
+
 }
 
 Connection::~Connection()
@@ -46,27 +46,26 @@ void Connection::prepareConnection()
     serverAdd.sin_family = AF_INET;
     serverAdd.sin_port = htons( port );
     recvSize = sizeof( serverAdd );
-    
+
     hp = gethostbyname(ip);//127.0.0.1");"81.174.67.195"
     memcpy( (char*)&serverAdd.sin_addr, (char*)hp->h_addr, hp->h_length );
-    
+
     recvSize = sizeof( serverAdd );
 }
 
 /*void Connection::ban(string number)   //recv number
 {
-
 }
 */
 void Connection::kick(string number)
 {
   prepareConnection();
-  
+
   string comando("rcon ");
   comando.append(rconPass);
   comando.append(" kick ");
   comando.append(number);
-  
+
   vector<char> command=makeCmd(comando);
   int bufferSize = command.size();
   sendto( socketID, command.data(), bufferSize, 0, &(sockaddr &)serverAdd, recvSize );
@@ -74,6 +73,7 @@ void Connection::kick(string number)
 }
 
 
+//<<<<<<< Updated upstream
 /*void Connection::asd()
 {
 
@@ -101,8 +101,3 @@ void Connection::kick(string number)
     close(socketID);
 }*/
 
-int main( int argc, char *argv[] )
-{
-  Connection *prova=new Connection("127.0.1.1",27960,"asd");
-  prova->kick("2");
-}

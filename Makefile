@@ -5,7 +5,7 @@ FILES = src/main.o \
 	src/Analyzer.o \
 	src/ConfigLoader.o \
 	src/logger.o \
-	src/sqlite3.o
+	src/sqlite3/sqlite3.o
 
 #compiler
 CPP=g++
@@ -34,9 +34,10 @@ ConfigLoader.o : src/ConfigLoader.h src/ConfigLoader.cpp
 logger.o	: src/logger.h src/logger.cpp
 		$(CPP) $(CFLAGS) src/logger.h src/logger.cpp
 
-sqlite3.o	: src/sqlite3.c
+sqlite3.o	: src/sqlite3/sqlite3.c
 		$(CC) $(CFLAGS) sqlite3.c
 
 clean :
 	 rm -rf src/*.o src/*.h~ src/*.cpp~
+	 rm -rf src/sqlite3/*.o src/sqlite3/*.h~ src/sqlite3/*.cpp~
 	 echo "cleaned all makefiles"

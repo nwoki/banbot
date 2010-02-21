@@ -1,6 +1,6 @@
 /*              logger.
  *
- *  Author:     [2s2h]n3m3s1s
+ *  Author:         [2s2h]n3m3s1s
  *
  *  Description:    classe che gestisce il logfile del bot. Lo si inizializza
  *                  passandogli il percorso al file log. Se il file esiste usa

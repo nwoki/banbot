@@ -21,7 +21,7 @@ class ConfigLoader
   private:
     std::ifstream cfg;
   public:
-    ConfigLoader(std::string filePath);
+    ConfigLoader( std::string filePath );
     ~ConfigLoader();
     class Option
     {

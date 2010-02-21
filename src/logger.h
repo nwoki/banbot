@@ -12,13 +12,13 @@ class Logger
         ~Logger();
 
         bool open();    //returns true if opened successfully
-	void changePath(std::string path);
+        void changePath(std::string path);
         bool write( std::string );   //returns true if written
         void close();
 
     private:
         std::string path;    //location of logfile
-	std::ofstream file;  //filestream
+        std::ofstream file;  //filestream
 
 };
 #endif //LOGGER_H
