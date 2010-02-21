@@ -102,6 +102,7 @@ bool Db::checkBanGuid( string banGuid )
 
     queryStr = (char *)aux.c_str();
 
+    cout<<"[*] chiamata a resultquery\n";
     return ( resultQuery( queryStr ));
 }
 
@@ -128,14 +129,16 @@ bool Db::execQuery( const char *a )
 bool Db::resultQuery( const char *a )
 {
     bool answer=false;
+    cout<<"Diocane??\n";
 
-    /*if( !connect() )
+    if( !connect() )
         answer = false;   //went bad
     else{
-        cout<<"result query -> "<<a<<"\n";*/
+        cout<<"result query -> "<<a<<"\n";
 
         if( sqlite3_prepare_v2( database, a, -1, stmt, NULL ) == SQLITE_OK )
 	{
+	  cout<<"[-] entrato nell'if \n";
 	  //proceed
             sqlite3_step( *stmt );
             result = sqlite3_column_text( *stmt, 0 );
@@ -150,7 +153,7 @@ bool Db::resultQuery( const char *a )
                 answer = true;
             }
         }
-    //}
+    }
     close();    //close db
     return answer;
 }
