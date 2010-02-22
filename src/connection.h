@@ -20,6 +20,7 @@ class Connection
 
         //void ban( string );  //faccio tornare la risposta del server??(string or *char)
         void kick( string );
+	void say( string );
         //void asd();
 
     private:

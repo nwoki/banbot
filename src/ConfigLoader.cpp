@@ -31,19 +31,23 @@ std::vector<ConfigLoader::Option> ConfigLoader::getOptions()
   {
     while (!cfg.eof())
     {
-      ConfigLoader::Option opzione;
       //leggo una riga
-      char line [300];
+      char line [600];
       cfg.getline(line,300);
-      
-      //la trasformo in stringa e estraggo le coppie chiave-valore
-      std::string riga=line;
-      int end=riga.find("=");
-      opzione.name=riga.substr(0,end);
-      opzione.value=riga.substr(end+1,riga.size());
-      
-      //aggiungo al vettore
-      vettore.push_back(opzione);
+      //se non è un commento prendo le impostazioni
+      if (line[0]!='#' && !cfg.eof())
+      {
+	ConfigLoader::Option opzione;
+	
+	//la trasformo in stringa e estraggo le coppie chiave-valore
+	std::string riga=line;
+	int end=riga.find("=");
+	opzione.name=riga.substr(0,end);
+	opzione.value=riga.substr(end+1,riga.size());
+	
+	//aggiungo al vettore
+	vettore.push_back(opzione);
+      }
     }
   }
   return vettore;

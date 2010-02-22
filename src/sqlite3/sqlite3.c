@@ -17,13 +17,12 @@
 ** language. The code for the "sqlite3" command-line shell is also in a
 ** separate file. This file contains only code for the core SQLite library.
 */
-#define SQLITE_CORE 1
-#define SQLITE_AMALGAMATION 1
-
 //------------------------------------------modified by Zamy-------------------------------------------------------------
 #define SQLITE_OMIT_LOAD_EXTENSION
 //--------------------------------------------------------------------
 
+#define SQLITE_CORE 1
+#define SQLITE_AMALGAMATION 1
 #ifndef SQLITE_PRIVATE
 # define SQLITE_PRIVATE static
 #endif

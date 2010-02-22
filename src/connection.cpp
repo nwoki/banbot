@@ -72,32 +72,19 @@ void Connection::kick(string number)
   close(socketID);
 }
 
-
-//<<<<<<< Updated upstream
-/*void Connection::asd()
+void Connection::say(string frase)
 {
+  prepareConnection();
 
-    prepareConnection();
+  string comando("rcon ");
+  comando.append(rconPass);
+  comando.append(" say \"");
+  comando.append(frase);
+  comando.append("\"");
 
-    //sockaddr &serverAddCast = (sockaddr &)serverAdd;
-    //sockaddr &clientAddCast = (sockaddr &)clientAdd;
-
-    //int size = sizeof( serverAdd );
-    recvSize = sizeof( serverAdd );
-
-    vector<char> command=makeCmd("rcon asd status");
-    cout<<"Result ";
-    for(int i=0;i<command.size();i++)
-    {
-      cout<<command[i];
-    }
-    cout<<":\n";
-
-    int bufferSize = command.size();
-
-
-    sendto( socketID, command.data(), bufferSize, 0, &(sockaddr &)serverAdd, recvSize );
-
-    close(socketID);
-}*/
+  vector<char> command=makeCmd(comando);
+  int bufferSize = command.size();
+  sendto( socketID, command.data(), bufferSize, 0, &(sockaddr &)serverAdd, recvSize );
+  close(socketID);
+}
 

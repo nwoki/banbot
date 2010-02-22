@@ -11,10 +11,10 @@
 
 using namespace std;
 
-#define IP "127.0.0.1"  //server ip
+/*#define IP "127.0.0.1"  //server ip
 #define PORT 27960  //server port
 #define RCON "asd" //server rcon password
-#define LOG "logs/bot.log"  //where logfile is located
+#define LOG "logs/bot.log"  //where logfile is located*/
 
 int main( int argc, char *argv[] ){ //pass arguments to specify server logfile and bot logfile
 
@@ -26,26 +26,55 @@ int main( int argc, char *argv[] ){ //pass arguments to specify server logfile a
         caricatore = new ConfigLoader( CONFIG );
 
     std::vector<ConfigLoader::Option> opzioni = caricatore->getOptions();
-
+    
+    for (int i=0;i<opzioni.size();i++)
+    {
+      cout<<opzioni[i].name<<" = "<<opzioni[i].value<<"\n";
+    }
+    cout<<"\n";
+  
     delete caricatore;
 
-    cout<<opzioni[0].name<< " " <<opzioni[0].value<<endl;
-    cout<<opzioni[1].name<< " " <<opzioni[1].value<<endl;
-    cout<<opzioni[2].name<< " " <<opzioni[2].value<<endl;
-
-
-
-    //Logger *logGay = new Logger( LOG );
     Db *d = new Db(opzioni) ;
 
-    string a="127.0.0.1", b="asd";
-    int c = 27960;
+    int founded=0;
+    string ip;
+    int port=0;
+    string password;
+    string logpath;
+    for (int i=0;founded<4 && i<opzioni.size();i++)
+    {
+      if (opzioni[i].name.compare("IP")==0)
+      {
+	ip=opzioni[i].value;
+	founded++;
+      }
+      else if (opzioni[i].name.compare("PORT")==0)
+      {
+	port=atoi(opzioni[i].value.c_str());
+	founded++;
+      }
+      else if (opzioni[i].name.compare("RCONPASS")==0)
+      {
+	password=opzioni[i].value;
+	founded++;
+      }
+      else if (opzioni[i].name.compare("LOGPATH")==0)
+      {
+	logpath=opzioni[i].value;
+	founded++;
+      }
+    }
+    
+    cout<<"[+] Importing values from config file:\n";
+    cout<<"  [-] Ip of server: "<<ip<<"\n";
+    cout<<"  [-] Port of server: "<<port<<"\n";
+    cout<<"  [-] Rcon password: "<<password<<"\n";
+    cout<<"  [-] File di log: "<<logpath<<"\n";
 
-    Connection *serverCommand = new Connection( a,c,b);
+    Connection *serverCommand = new Connection(ip,port,password);
 
-    string file = "games.log";
-
-    Analyzer anal( serverCommand, d, file );
+    Analyzer anal( serverCommand, d, logpath );
     anal.main_loop();
 
 
