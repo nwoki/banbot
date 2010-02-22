@@ -13,12 +13,18 @@ class Logger
 
         bool open();    //returns true if opened successfully
         void changePath(std::string path);
-        bool write( std::string );   //returns true if written
+        void timestamp();   //writes a timestamp into file
         void close();
+	
+	void write(const char* valore); 
+	void write(const int valore); 
 
     private:
         std::string path;    //location of logfile
         std::ofstream file;  //filestream
 
 };
+
+Logger& operator<<(Logger& l,const char* valore);
+Logger& operator<<(Logger& l,const int valore);
 #endif //LOGGER_H

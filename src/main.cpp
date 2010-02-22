@@ -11,7 +11,6 @@
 
 using namespace std;
 
-
 int main( int argc, char *argv[] ){ //pass arguments to specify server logfile and bot logfile
 
     ConfigLoader * caricatore;
