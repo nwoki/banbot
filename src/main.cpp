@@ -11,10 +11,6 @@
 
 using namespace std;
 
-/*#define IP "127.0.0.1"  //server ip
-#define PORT 27960  //server port
-#define RCON "asd" //server rcon password
-#define LOG "logs/bot.log"  //where logfile is located*/
 
 int main( int argc, char *argv[] ){ //pass arguments to specify server logfile and bot logfile
 
