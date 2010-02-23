@@ -14,8 +14,10 @@
 #include <unistd.h>
 #include <regex.h>
 
+#define SOCKET_PAUSE 1   //per permettere al socket di funzionare bene, inserisco una pausa tra say e kick
+
 //costruttore
-Analyzer::Analyzer( Connection* conn, Db* db, std::string file )
+Analyzer::Analyzer( Connection* conn, Db* db, Logger* log, std::string file ):logger(log)
 {
   //imposto il file di log
   this->file=file;
@@ -31,7 +33,10 @@ Analyzer::Analyzer( Connection* conn, Db* db, std::string file )
   GUID="[A-F0-9]{32}";
   INITGAME=" *[0-9]+:[0-9]{2} +InitGame:";
 
-  cout<<"[OK] Analyzer inizializzato.\n";
+  logger->open();
+  std::cout<<"[OK] Analyzer inizializzato.\n";
+  *logger<<"[OK] Analyzer inizializzato.\n";
+  logger->close();
 }
 
 //distruttore
@@ -65,7 +70,9 @@ void Analyzer::expansion(char* line)
 //main loop
 void Analyzer::main_loop()
 {
-  cout<<"[OK] BanBot avviato.\n\n";
+  logger->open();
+  std::cout<<"[OK] BanBot avviato.\n\n";
+  logger->close();
   while (true)
   {
     //provo ad aprire il file e a riprendere dalla riga dove ero arrivato
@@ -75,6 +82,7 @@ void Analyzer::main_loop()
     //se il file è aperto posso lavorare
     if (log.is_open())
     {
+      logger->open();
       //il file è aperto, esamino le nuove righe (se ce ne sono)
       while (!log.eof())
       {
@@ -99,7 +107,9 @@ void Analyzer::main_loop()
 	  end=temp.find_first_of("\\ ",pos);
 	  std::string guid=temp.substr(pos,end-pos);
 
-	  cout<<"[-]Estrapolati i dati: numero="<<numero<<" guid="<<guid<<"\n";
+	  std::cout<<"[-]Estrapolati i dati: numero="<<numero<<" guid="<<guid<<"\n";
+	  logger->timestamp();
+	  *logger<<"[-]Estrapolati i dati: numero="<<numero<<" guid="<<guid<<"\n";
 	  //il giocatore c'è per forza (nel gioco deve fare un ClientConnect prima di userinfo)
 	  //cerco il giocatore giusto all'interno della mia lista, e salvo il guid nelle info
 	  unsigned int i=0;
@@ -114,10 +124,13 @@ void Analyzer::main_loop()
 	      {
 		kicked=true;
 		//cambio illegale del GUID => cheats
-		cout<<"  [!] kick automatico per cheats.\n";
-		string frase("BanBot: kicking player number ");
+		std::cout<<"  [!] kick automatico per cheats.\n";
+		*logger<<"  [!] kick automatico per cheats.\n";
+		std::string frase("BanBot: kicking player number ");
 		frase.append(numero);
 		frase.append(" for cheats.");  
+		server->say(frase);
+		sleep(SOCKET_PAUSE);
 		server->kick(numero);
 	      }
 	      else
@@ -137,10 +150,13 @@ void Analyzer::main_loop()
 	    if(database->checkBanGuid(guid))
 	    {
 	      //è stato bannato, lo butto fuori
-	      cout<<"  [+] kick per ban.\n";
-	      string frase("BanBot: kicking player number ");
+	      std::cout<<"  [+] kick per ban.\n";
+	      *logger<<"  [+] kick per ban.\n";
+	      std::string frase("BanBot: kicking player number ");
 	      frase.append(numero);
 	      frase.append(" for ban.");
+	      server->say(frase);
+	      sleep(SOCKET_PAUSE);
 	      server->kick(numero);
 	    }
 	    else
@@ -149,16 +165,20 @@ void Analyzer::main_loop()
 	      if (!isA(line, GUID))
 	      {
 		  //il guid è illegale, ban diretto
-		  cout<<"  [!] kick automatico per GUID illegale\n";
-		  string frase("BanBot: kicking player number ");
+		  std::cout<<"  [!] kick automatico per GUID illegale\n";
+		  *logger<<"  [!] kick automatico per GUID illegale\n";
+		  std::string frase("BanBot: kicking player number ");
 		  frase.append(numero);
 		  frase.append(" for invalid guid.");
+		  server->say(frase);
 		  database->ban(guid);
+		  sleep(SOCKET_PAUSE);
 		  server->kick(numero);
 	      }
 	      else
 	      {
-		  cout<<"  [OK] (s)he's ok.\n";
+		  std::cout<<"  [OK] (s)he's ok.\n";
+		  *logger<<"  [OK] (s)he's ok.\n";
 	      }
 	    }
 	  }
@@ -179,7 +199,9 @@ void Analyzer::main_loop()
 	    int end=temp.find_first_of(" \n\0",pos);
 	    std::string numero=temp.substr(pos,end-pos);
 
-	    cout<<"[-] Nuovo client connesso: "<<numero<<"\n";
+	    std::cout<<"[-] Nuovo client connesso: "<<numero<<"\n";
+	    logger->timestamp();
+	    *logger<<"[-] Nuovo client connesso: "<<numero<<"\n";
 	    //per pignoleria controllo che non sia già presente
 	    unsigned int i=0;
 	    bool nonTrovato=true;
@@ -219,6 +241,8 @@ void Analyzer::main_loop()
 	      std::string numero=temp.substr(pos,end-pos);
 	      
 	      std::cout<<"[-] Client disconnesso: "<<numero<<"\n";
+	      logger->timestamp();
+	      *logger<<"[-] Client disconnesso: "<<numero<<"\n";
 	      //cerco il player e lo elimino
 	      unsigned int i=0;
 	      bool nonTrovato=true;
@@ -269,10 +293,13 @@ void Analyzer::main_loop()
 		  else i++;
 		}
 		std::cout<<"[!] Ban requested by "<<guid<<"\n";
+		logger->timestamp();
+		*logger<<"[!] Ban requested by "<<guid<<"\n";
 		//controllo se ho trovato il giocatore e i suoi permessi, se la persona non è autorizzata non faccio nulla.
 		if (!nonTrovato && database->checkAuthGuid(guid))
 		{
 		  std::cout<<"  [OK] Is an admin. Applying ban.\n";
+		  *logger<<"  [OK] Is an admin. Applying ban.\n";
 		  //ok ha i permessi, eseguo.
 		  //prendo il numero del giocatore da bannare
 		  pos=temp.find("!ban",end);
@@ -296,13 +323,14 @@ void Analyzer::main_loop()
 		  //per pignoleria controllo anche se per una rarissima combinazione non è già bannato).
 		  if (!nonTrovato && !database->checkBanGuid(guid))
 		  {
-		    cout<<"  [+]banning "<<guid<<"\n";
-		    string frase("BanBot: banning player number ");
+		    std::cout<<"  [+]banning "<<guid<<"\n";
+		    *logger<<"  [+]banning "<<guid<<"\n";
+		    std::string frase("BanBot: banning player number ");
 		    frase.append(numero);
 		    frase.append(".");
 		    server->say(frase);
 		    database->ban(guid);
-		    sleep(2);
+		    sleep(SOCKET_PAUSE);
 		    server->kick(numero);
 		  }
 		}
@@ -333,6 +361,7 @@ void Analyzer::main_loop()
       row=0;//se non riesco ad aprire il file, ricomincio dalla prima riga
     //chiudo il file e lascio passare un po' di tempo
     log.close();
+    logger->close();
     sleep(TIME_SLEEPING);
   }
 }

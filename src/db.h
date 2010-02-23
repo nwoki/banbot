@@ -8,7 +8,7 @@
 #include <string>
 #include "ConfigLoader.h"
 #include "sqlite3/sqlite3.h"
-//#include "logger.h"
+#include "logger.h"
 
 #define DATABASE "database/db.sqlite"
 using namespace std;//std::string;
@@ -17,7 +17,7 @@ class Db
 {
     public:
         //Db( Logger *, vector<ConfigLoader::Option> ); //passo array di guid secondo parametro
-	Db(vector<ConfigLoader::Option> );
+	Db(vector<ConfigLoader::Option>,Logger *);
         ~Db();
 	
         void ban( string );
@@ -31,6 +31,7 @@ class Db
         int resultQuery( string ); //se fallisce la query, -1, altrimenti il numero degli elementi restituiti
         void close();
 	bool connect();
+	Logger * logger;
 	
 	class SQLITE3 
 	{

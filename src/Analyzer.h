@@ -31,6 +31,7 @@
 #include <iostream>
 #include "connection.h"
 #include "db.h"
+#include "logger.h"
 
 class Analyzer
 {
@@ -55,13 +56,14 @@ class Analyzer
     std::streampos row;
     Connection * server;
     Db * database;
+    Logger* logger;
 
   protected:
     bool isA(char* line,std::string regex);
     virtual void expansion(char* line);
 
   public:
-    Analyzer( Connection*, Db*, std::string = NULL );
+    Analyzer( Connection*, Db*,Logger* ,std::string = NULL );
     ~Analyzer();
     void main_loop();
     void setFile(std::string);
