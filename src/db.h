@@ -1,3 +1,29 @@
+/*
+    db.h is part of BanBot.
+
+    BanBot is free software: you can redistribute it and/or modify
+    it under the terms of the GNU General Public License as published by
+    the Free Software Foundation, either version 3 of the License, or
+    (at your option) any later version.
+
+    BanBot is distributed in the hope that it will be useful,
+    but WITHOUT ANY WARRANTY; without even the implied warranty of
+    MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+    GNU General Public License for more details.
+
+    You should have received a copy of the GNU General Public License
+    along with BanBot (look at GPL_License.txt).
+    If not, see <http://www.gnu.org/licenses/>.
+
+    Copyright © 2010, Zamy (Simone Daminato), N3m3s1s (Francesco Nwokeka)
+
+
+    BanBot uses SQLite3:
+    Copyright (C) 1994, 1995, 1996, 1999, 2000, 2001, 2002, 2004, 2005 Free
+    Software Foundation, Inc.
+*/
+
+
 #ifndef DB_H
 #define DB_H
 
@@ -19,7 +45,7 @@ class Db
         //Db( Logger *, vector<ConfigLoader::Option> ); //passo array di guid secondo parametro
 	Db(vector<ConfigLoader::Option>,Logger *);
         ~Db();
-	
+
         void ban( string );
         bool checkAuthGuid( string );
         bool checkBanGuid( string );    //passa ( guid giocatore)
@@ -32,8 +58,8 @@ class Db
         void close();
 	bool connect();
 	Logger * logger;
-	
-	class SQLITE3 
+
+	class SQLITE3
 	{
 	  private:
 	    sqlite3 *db;
@@ -48,7 +74,7 @@ class Db
 	    std::vector<std::string> vcol_head;
 	    std::vector<std::string> vdata;
 
-	    SQLITE3 (std::string tablename): zErrMsg(0), rc(0),db_open(0) 
+	    SQLITE3 (std::string tablename): zErrMsg(0), rc(0),db_open(0)
 	    {
 	      rc = sqlite3_open(tablename.c_str(), &db);
 	      if( rc ){
@@ -57,8 +83,8 @@ class Db
 	      }
 	      db_open=1;
 	    }
-	
-	    int exe(std::string s_exe) 
+
+	    int exe(std::string s_exe)
 	    {
 	      rc = sqlite3_get_table(
 			      db,              /* An open database */

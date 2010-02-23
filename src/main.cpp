@@ -1,5 +1,5 @@
 /*
-    This file is part of BanBot.
+    main.cpp is part of BanBot.
 
     BanBot is free software: you can redistribute it and/or modify
     it under the terms of the GNU General Public License as published by
@@ -14,12 +14,12 @@
     You should have received a copy of the GNU General Public License
     along with BanBot (look at GPL_License.txt).
     If not, see <http://www.gnu.org/licenses/>.
-    
+
     Copyright © 2010, Zamy (Simone Daminato), N3m3s1s (Francesco Nwokeka)
-    
-    
+
+
     BanBot uses SQLite3:
-    Copyright (C) 1994, 1995, 1996, 1999, 2000, 2001, 2002, 2004, 2005 Free 
+    Copyright (C) 1994, 1995, 1996, 1999, 2000, 2001, 2002, 2004, 2005 Free
     Software Foundation, Inc.
 */
 
@@ -51,7 +51,7 @@ int main( int argc, char *argv[] ){ //pass arguments to specify server logfile a
     }
     cout<<"\n";
     delete caricatore;
-    
+
     //inizializzo il logger
     int i=0;
     int founded=0;
@@ -95,13 +95,13 @@ int main( int argc, char *argv[] ){ //pass arguments to specify server logfile a
 	founded++;
       }
     }
-    
+
     cout<<"[+] Importing values from config file:\n";
     cout<<"  [-] Ip of server: "<<ip<<"\n";
     cout<<"  [-] Port of server: "<<port<<"\n";
     cout<<"  [-] Rcon password: "<<password<<"\n";
     cout<<"  [-] File di log: "<<logpath<<"\n";
-    
+
     botLog->open();
     botLog->timestamp();
     *botLog<<"\n[+] Importing values from config file:\n"<<"  [-] Ip of server: "<<ip<<"\n"<<"  [-] Port of server: "<<port<<"\n"

@@ -1,10 +1,26 @@
-/*		Implementazione di Analyzer.
- *
- *	Author: [2s2h]Zamy
- *
- *	Note:	In main_loop() sono presenti molti controlli per evitare errori (tra cui anche segmentation fault) che a prima vista
- *		potrebbero sembrare inutili, in realtà sono necessari perchè il logging del server non è molto affidabile.
- *
+/*
+    Analyzer.cpp is part of BanBot.
+
+    BanBot is free software: you can redistribute it and/or modify
+    it under the terms of the GNU General Public License as published by
+    the Free Software Foundation, either version 3 of the License, or
+    (at your option) any later version.
+
+    BanBot is distributed in the hope that it will be useful,
+    but WITHOUT ANY WARRANTY; without even the implied warranty of
+    MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+    GNU General Public License for more details.
+
+    You should have received a copy of the GNU General Public License
+    along with BanBot (look at GPL_License.txt).
+    If not, see <http://www.gnu.org/licenses/>.
+
+    Copyright © 2010, Zamy (Simone Daminato), N3m3s1s (Francesco Nwokeka)
+
+
+    BanBot uses SQLite3:
+    Copyright (C) 1994, 1995, 1996, 1999, 2000, 2001, 2002, 2004, 2005 Free
+    Software Foundation, Inc.
 */
 
 #ifndef _Analyzer_cpp_
@@ -127,7 +143,7 @@ void Analyzer::main_loop()
 		*logger<<"  [!] kick automatico per cheats.\n";
 		std::string frase("BanBot: kicking player number ");
 		frase.append(numero);
-		frase.append(" for cheats.");  
+		frase.append(" for cheats.");
 		server->say(frase);
 		sleep(SOCKET_PAUSE);
 		server->kick(numero);
@@ -238,7 +254,7 @@ void Analyzer::main_loop()
 	      pos=temp.find_first_not_of(" ",pos+17);
 	      int end=temp.find_first_of(" \n\0",pos);
 	      std::string numero=temp.substr(pos,end-pos);
-	      
+
 	      std::cout<<"[-] Client disconnesso: "<<numero<<"\n";
 	      logger->timestamp();
 	      *logger<<"[-] Client disconnesso: "<<numero<<"\n";
