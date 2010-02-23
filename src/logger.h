@@ -14,9 +14,9 @@ class Logger
         bool open();    //returns true if opened successfully
         void changePath(std::string path);
         void timestamp();   //writes a timestamp into file
-        void close();
+        void close();	//close the file
 	
-	void write(const char* valore); 
+	void write(const char* valore); //writes data on the file (but it's better to use the <<).
 	void write(const int valore); 
 
     private:

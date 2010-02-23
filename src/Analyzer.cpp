@@ -33,10 +33,8 @@ Analyzer::Analyzer( Connection* conn, Db* db, Logger* log, std::string file ):lo
   GUID="[A-F0-9]{32}";
   INITGAME=" *[0-9]+:[0-9]{2} +InitGame:";
 
-  logger->open();
   std::cout<<"[OK] Analyzer inizializzato.\n";
-  *logger<<"[OK] Analyzer inizializzato.\n";
-  logger->close();
+  *logger<<"[OK] Analyzer inizializzato.\n\n";
 }
 
 //distruttore
@@ -72,6 +70,7 @@ void Analyzer::main_loop()
 {
   logger->open();
   std::cout<<"[OK] BanBot avviato.\n\n";
+  *logger<<"[OK] BanBot avviato.\n\n";
   logger->close();
   while (true)
   {
@@ -109,7 +108,7 @@ void Analyzer::main_loop()
 
 	  std::cout<<"[-]Estrapolati i dati: numero="<<numero<<" guid="<<guid<<"\n";
 	  logger->timestamp();
-	  *logger<<"[-]Estrapolati i dati: numero="<<numero<<" guid="<<guid<<"\n";
+	  *logger<<"\n[-]Estrapolati i dati: numero="<<numero<<" guid="<<guid<<"\n";
 	  //il giocatore c'è per forza (nel gioco deve fare un ClientConnect prima di userinfo)
 	  //cerco il giocatore giusto all'interno della mia lista, e salvo il guid nelle info
 	  unsigned int i=0;
@@ -201,7 +200,7 @@ void Analyzer::main_loop()
 
 	    std::cout<<"[-] Nuovo client connesso: "<<numero<<"\n";
 	    logger->timestamp();
-	    *logger<<"[-] Nuovo client connesso: "<<numero<<"\n";
+	    *logger<<"\n[-] Nuovo client connesso: "<<numero<<"\n";
 	    //per pignoleria controllo che non sia già presente
 	    unsigned int i=0;
 	    bool nonTrovato=true;
@@ -294,7 +293,7 @@ void Analyzer::main_loop()
 		}
 		std::cout<<"[!] Ban requested by "<<guid<<"\n";
 		logger->timestamp();
-		*logger<<"[!] Ban requested by "<<guid<<"\n";
+		*logger<<"\n[!] Ban requested by "<<guid<<"\n";
 		//controllo se ho trovato il giocatore e i suoi permessi, se la persona non è autorizzata non faccio nulla.
 		if (!nonTrovato && database->checkAuthGuid(guid))
 		{

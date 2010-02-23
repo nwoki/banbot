@@ -85,6 +85,7 @@ int main( int argc, char *argv[] ){ //pass arguments to specify server logfile a
     Connection *serverCommand = new Connection(ip,port,password);
 
     Analyzer anal( serverCommand, d,botLog, logpath );
+    botLog->close();
     anal.main_loop();
 
 

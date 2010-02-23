@@ -12,16 +12,44 @@
 #include "logger.h"
 #include <time.h>
 #include <stdio.h>
+#include <sys/stat.h>
+#include <stdlib.h>
 
 Logger::Logger( std::string p ): path( p )
 {
+    size_t pos=path.find_last_of('/');
+    std::string cartella=path.substr(0,pos);
+    //std::string file=path.substr(pos+1);
+    
+    //check per la cartella
+    struct stat st;
+    if( stat( cartella.c_str(), &st ) == 0 )
+    {
+        std::cout<<"  [*]dir '"<<cartella<<"/' found\n";
+    }
+    else
+    {
+        std::cout<<"  [!]couldn't find dir '"<<cartella<<"/'! Creating dir '"<<cartella<<"/'..\n";
+
+	std::string command("mkdir \"");
+	command.append(cartella);
+	command.append("\"");
+        if( !system(command.c_str()))
+	{
+            std::cout<<"  [OK]created '"<<cartella<<"/' directory..\n";
+	}
+        else
+	{
+            std::cout<<"[EPIC FAIL] couldn't create directory '"<<cartella<<"/'.Please check permissions!\n";
+	}
+    }
     //check per il file log
     std::cout<<"[-] checking for logfile..\n";
     std::ifstream IN( path.c_str() );
     if( IN.is_open() ) IN.close();
     else
     {
-      std::cout<<"[!] Logfile doesn't exist..\n";
+      std::cout<<"[!] Logfile doesn't exist... I'll create it.\n";
       //create logfile
       std::ofstream OUT(path.c_str());
       if ( OUT.is_open() ) OUT.close();
@@ -62,7 +90,7 @@ void Logger::timestamp()
     time_t timestamp=time(NULL);
     std::string data(asctime(localtime(&timestamp)));
     data=data.substr(0,data.size()-1);
-    file<<"["<<data<<"] ";  //asctime(localtime(&timestamp))
+    file<<"\n["<<data<<"] ";  //asctime(localtime(&timestamp))
 }
 
 void Logger::close()

@@ -17,31 +17,39 @@ Db::Db(vector<ConfigLoader::Option> conf,Logger* log ):logger( log )
     logger->open();
     //check della directory database
     struct stat st;
+    
+    string path(DATABASE);
+    size_t pos=path.find_last_of('/');
+    string cartella=path.substr(0,pos);
+    string file=path.substr(pos+1);
 
     cout<<"[*]Starting up...\n";
     cout<<"[-]checking for database directory..\n";
+    *logger<<"\n**************************************************************************************\n";
     logger->timestamp();
     *logger<<"\n[*]Starting up...\n";
     *logger<<"[-]checking for database directory..\n";
-    if( stat( "database", &st ) == 0 )
+    if( stat( cartella.c_str(), &st ) == 0 )
     {
-        cout<<"  [*]dir 'database/' found\n";
-	*logger<<"  [*]dir 'database/' found\n";
+        cout<<"  [*]dir '"<<cartella<<"/' found\n";
+	*logger<<"  [*]dir '"<<cartella<<"/' found\n";
     }
     else{
-        cout<<"  [!]couldn't find dir 'database'! Creating dir 'database'..\n";
-	*logger<<"  [!]couldn't find dir 'database'! Creating dir 'database'..\n";
+        cout<<"  [!]couldn't find dir '"<<cartella<<"/'! Creating dir '"<<cartella<<"/'..\n";
+	*logger<<"  [!]couldn't find dir '"<<cartella<<"/'! Creating dir '"<<cartella<<"/'..\n";
 
-
-        if( !system( "mkdir database" ))
+	string command("mkdir \"");
+	command.append(cartella);
+	command.append("\"");
+        if( !system( command.c_str() ))
 	{
-            cout<<"  [OK]created 'database' directory..\n";
-	    *logger<<"  [OK]created 'database' directory..\n";
+            cout<<"  [OK]created '"<<cartella<<"/' directory..\n";
+	    *logger<<"  [OK]created '"<<cartella<<"/' directory..\n";
 	}
         else
 	{
-            cout<<"[EPIC FAIL] couldn't create directory 'database'.Please check permissions!\n";
-	    *logger<<"[EPIC FAIL] couldn't create directory 'database'.Please check permissions!\n";
+            cout<<"[EPIC FAIL] couldn't create directory '"<<cartella<<"/'.Please check permissions!\n";
+	    *logger<<"[EPIC FAIL] couldn't create directory '"<<cartella<<"/'.Please check permissions!\n";
 	}
     }
 
@@ -51,8 +59,8 @@ Db::Db(vector<ConfigLoader::Option> conf,Logger* log ):logger( log )
     {
          cout<<"  [!] database doesn't exist!\n";
          //create database
-         cout<<"    [*] creating database 'db.sqlite' in 'database/'\n";
-	 *logger<<"  [!] database doesn't exist!\n"<<"    [*] creating database 'db.sqlite' in 'database/'\n";
+         cout<<"    [*] creating database '"<<file<<"/' in '"<<cartella<<"/'\n";
+	 *logger<<"  [!] database doesn't exist!\n"<<"    [*] creating database '"<<file<<"/' in '"<<cartella<<"/'\n";
 	 createDb();
     }
     IN.close();
