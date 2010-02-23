@@ -1,11 +1,28 @@
-/*              db.
- *
- *  Author:     [2s2h]n3m3s1s
- *
- *  Description:    Classe che gestisce il database sqlite3 e restituisce i
- *                  risultati delle query alla classe analyzer che poi decide
- *                  come proseguire
+/*
+    db.cpp is part of BanBot.
+
+    BanBot is free software: you can redistribute it and/or modify
+    it under the terms of the GNU General Public License as published by
+    the Free Software Foundation, either version 3 of the License, or
+    (at your option) any later version.
+
+    BanBot is distributed in the hope that it will be useful,
+    but WITHOUT ANY WARRANTY; without even the implied warranty of
+    MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+    GNU General Public License for more details.
+
+    You should have received a copy of the GNU General Public License
+    along with BanBot (look at GPL_License.txt).
+    If not, see <http://www.gnu.org/licenses/>.
+
+    Copyright © 2010, Zamy (Simone Daminato), N3m3s1s (Francesco Nwokeka)
+
+
+    BanBot uses SQLite3:
+    Copyright (C) 1994, 1995, 1996, 1999, 2000, 2001, 2002, 2004, 2005 Free
+    Software Foundation, Inc.
 */
+
 
 
 #include "db.h"
@@ -17,7 +34,7 @@ Db::Db(vector<ConfigLoader::Option> conf,Logger* log ):logger( log )
     logger->open();
     //check della directory database
     struct stat st;
-    
+
     string path(DATABASE);
     size_t pos=path.find_last_of('/');
     string cartella=path.substr(0,pos);
@@ -66,7 +83,7 @@ Db::Db(vector<ConfigLoader::Option> conf,Logger* log ):logger( log )
     IN.close();
     //azzero la tabella degli admins
     setupAdmins(conf);
-    
+
     //chiudo il log.
     logger->close();
 }
@@ -79,7 +96,7 @@ void Db::setupAdmins(vector<ConfigLoader::Option> opzioni)
 {
     cout<<"  [-] setting up admin guid's.. \n";
     *logger<<"  [-] setting up admin guid's.. \n";
-    
+
     string clearQuery("delete from oplist;");
 
     if( resultQuery( clearQuery)==0 )
@@ -87,12 +104,12 @@ void Db::setupAdmins(vector<ConfigLoader::Option> opzioni)
         cout<<"    [*]cleaned admin table..\n";
 	*logger<<"    [*]cleaned admin table..\n";
     }
-    else 
+    else
     {
 	cout<<"    [EPIC FAIL] Db::setupAdmins can't execute query!\n";
 	*logger<<"    [EPIC FAIL] Db::setupAdmins can't execute query!\n";
     }
-    
+
     cout<<"    [-]trying to repopulate database\n";
     *logger<<"    [-]trying to repopulate database\n";
 
@@ -139,7 +156,7 @@ void Db::createDb()   //initial creation of database
         cout<<"    [*]created banned table..\n";
 	*logger<<"    [*]created banned table..\n";
     }
-    else 
+    else
     {
 	cout<<"    [FAIL]error creating banned table\n";
 	*logger<<"    [FAIL]error creating banned table\n";
@@ -153,7 +170,7 @@ void Db::createDb()   //initial creation of database
         cout<<"    [*]created oplist table..\n";
 	*logger<<"    [*]created oplist table..\n";
     }
-    else 
+    else
     {
 	cout<<"    [FAIL]error creating oplist table\n";
 	*logger<<"    [FAIL]error creating oplist table\n";
@@ -184,7 +201,7 @@ bool Db::checkBanGuid( string banGuid )
 int Db::resultQuery( string a )
 {
     int answer=0;
-    SQLITE3 *query=new SQLITE3(DATABASE);
+    SQLITE3 *query=new SQLITE3( DATABASE );
     //eseguo la query: se fallisce (ritorna true) imposto la risposta a -1
     if (query->exe(a)) answer=-1;
     //altrimenti restituisco la dimensione dell'array contenente i risultati (non mi interessa avere i risultati)
@@ -205,7 +222,7 @@ void Db::ban( string guid )
         cout<<"[OK] ban applied on "<<guid<<"\n";
 	*logger<<"[OK] ban applied on "<<guid<<"\n";
     }
-    else 
+    else
     {
 	cout<<"[FAIL] ban not applied on "<<guid<<"\n";
 	*logger<<"[FAIL] ban not applied on "<<guid<<"\n";

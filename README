@@ -1,19 +1,27 @@
-/*  UrtBanBot made by n3m3s1s & zamy
- *  ********************************
- *  
- *  
+/*  UrtBanBot made by [2s2h]n3m3s1s & [2s2h]zamy
+ *  ********************************************
  *
- *  Urban Terror clan "2Steps2Hell"
- *             visit us 
- *     www.x2s2hx.altervista.org 
+ *
+ *
+ *       Urban Terror clan "2Steps2Hell"
+ *                 visit us
+ *                    @
+ *         www.x2s2hx.altervista.org
  */
- 
-A simple bot made in C++ aimed to be simple and use few resources.
-It controls the urban terror game server and saves players guid's to sqlite3 database. Checks periodically for banned players and automatically kicks them and applies ban in case the server has been resetted.
 
-Only players guids that are saved on the "oplist" table can execute bot commands. For the moment they have to be inserted manually
+This file is written in English and Italian :)
 
-to compile you must have g++ compiler installed.
+
+[ENG]
+A simple bot made in C++ aimed to be simple and use few resources of the machine
+it's hosted on to prevent unwanted "lag" on the game server.
+It controls the URBAN TERROR 4.1 game server and uses an SQLite3 database to store information.
+It checks periodically for banned players and automatically kicks them from the server
+preventing their re-entry in the future.
+
+Created to run on Unix/linux servers ( windows server not tested! ).
+
+To compile you must have g++ compiler installed.
 
 HOW TO:
 
@@ -21,15 +29,29 @@ HOW TO:
 ~ $make
 ~ $./BanBot
 
-You can also specify a custom location for your bot's logfile and server logfile by adding them when executing the bot.
-You have 2 ways of starting up the bot:
-
-1 - you can specify only where the server logfile is    ( bot will use default logfile from it's config file)
-ex: ~ $./Banbot <path_To_Server_Logfile>
-
-2 - you can specify bot's server logfile and bot's personal logfile
-ex: ~ $./Banbot <path_To_Server_Logfile> <path_To_Bot_Logfile>
-
-**if nothing is specified the bot will use all default parameters found in it's config file**
+The bot's config file must be modified to your needs, specifying all the parameters
+indicated in the file.
+The config file is easy to use and commented.
 
 
+
+[ITA]
+Un semplice bot fatto in C++ che mira ad essere semplice e ad occupare poche risorse
+della macchina che lo hosta limitando ( addirittura eliminando ) "lag" non voluti del server.
+Controlla il gioco di URBAN TERROR 4.1 e utilizza un database SQLite3 per contenere i suoi dati.
+Controlla periodicamente per giocatori bannati e li elimina automaticamente dal server
+evitando il loro rientro nel futuro.
+
+Creato per andare su sistemi Unix/linux ( server Windows non testato! )
+
+Per compilare devi avere il compilatore g++ installato.
+
+COME FARE:
+
+~ $cd <directory>
+~ $make
+~ $./BanBot
+
+Il config file del bot dev'essere modificato in base ai tuoi bisogni specificando
+tutti i parametri richiesti nel file.
+Il file di configurazione è facile da utilizzare ed è commentato in vari punti.
