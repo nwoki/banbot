@@ -36,22 +36,108 @@ The config file is easy to use and commented.
 
 
 [ITA]
-Un semplice bot fatto in C++ che mira ad essere semplice e ad occupare poche risorse
+
+####  Descrizione generale e note #####
+
+Un bot fatto in C++ che mira ad essere semplice e ad occupare poche risorse
 della macchina che lo hosta limitando ( addirittura eliminando ) "lag" non voluti del server.
-Controlla il gioco di URBAN TERROR 4.1 e utilizza un database SQLite3 per contenere i suoi dati.
+Controlla il gioco di URBAN TERROR 4.1 e utilizza un database SQLite3 per contenere i suoi dati
+(la libreria SQLite3 è intergata nel bot, quindi non è richiesto che sia installata sulla macchina).
 Controlla periodicamente per giocatori bannati e li elimina automaticamente dal server
 evitando il loro rientro nel futuro.
 
 Creato per andare su sistemi Unix/linux ( server Windows non testato! )
 
-Per compilare devi avere il compilatore g++ installato.
+Forniamo un eseguibile già compilato che *dovrebbe* essere compatibile con la maggior parte
+dei server linux (per chi non ha la possibilità di compilarlo sul server) nella cartella
+"compiled".
+Consigliamo comunque di compilare il codice sorgente sul server, dove possibile.
 
-COME FARE:
+La versione attuale è ancora una beta, c'è soltanto il cuore del bot, e di conseguenza
+non è molto semplice da usare (per cancellare un ban, per esempio, bisogna accedere
+manualmente sul database e cancellare il record voluto).
+
+####      Requisiti:    #######
+
+Requisiti per la compilazione:
+-Sistema operativo Unix/Linux
+-compilatore g++
+-librerie standard
+
+####       Compilazione del bot:   #######
 
 ~ $cd <directory>
 ~ $make
-~ $./BanBot
 
-Il config file del bot dev'essere modificato in base ai tuoi bisogni specificando
+A questo punto, se la compilazione va a buon termine, viene creato l'eseguibile nella 
+cartella corrente.
+
+####      Configurazione:    #######
+
+Tutte le configurazioni si trovano su BanBot.cfg.
+Il config file del bot dev'essere modificato in base ai propri bisogni specificando
 tutti i parametri richiesti nel file.
-Il file di configurazione è facile da utilizzare ed è commentato in vari punti.
+
+è possibile fargli usare un altro file di configurazione (magari situato in una cartella diversa)
+passandogli l'indirizzo all'avvio. Per esempio:
+./BanBot          				 #usa il file di configurazione di default
+./BanBot "configs/bot.cfg" 		 #usa il file di configurazione "bot.cfg" nella sottocartella configs/
+
+Sul file è possibile inserire commenti (mettendo come primo carattere della riga 
+un cancelletto (#) ) e le opzioni.
+Sconsigliamo vivamente di lasciare linee completamente vuote, sia all'interno che all'inizio o alla 
+fine del file.
+
+Ogni opzione è strutturata nel modo seguente:
+
+Nome_opzione=valore
+
+senza spazi prima e dopo l'uguale!
+
+Le opzioni da settare sono le seguenti:
+
+-BOTLOG   : imposta dove salvare il log del bot.
+-IP       : ip del server urt (NB: inserire l'ip del server, non localhost o 127.0.0.1)
+-PORT     : porta di accesso al server urt
+-RCONPASS : password rcon del server (per poter kickare i player, è necessaria)
+-LOGPATH  : percorso del file di log del server urt.
+-GUID     : guid dell'admin.
+
+N.B.: tutte le opzioni vanno inserite una volta sola, tranne GUID: se ne possono
+inserire quante si vuole: ognuna di esse indica la GUID di un admin.
+Le GUID possono essere ricavate dai file di log del server, se sconosciute.
+Tutte le persone la cui GUID viene inserita del file di configurazione potranno
+usare il bot (il bot risponderà solo ai loro comandi ignorando tutti gli altri).
+Il che vuol dire che se non si imposta nessun GUID, BanBot ignorerà tutti i comandi a lui dati.
+
+#####     Avvio di BanBot   #####
+
+Qui è doveroso precisare una cosa: il bot è si di bassissimi consumi, però ad avviarlo
+con un log del server di 300'000 righe, è logico che scorrendole vi sfrutta un sacco di
+risorse per quei 30-40 secondi che ci impiega ad arrivare alla fine del file.
+
+Quindi quando lo dovete avviare (e non solo la prima volta!) cambiate file 
+di log del server (se non vi interessa un backup, basta anche solo cancellarlo, il server
+di gioco lo ricreerà automaticamente la mappa successiva).
+
+Detto questo, se volete solo vedere se funziona, è sufficiente avviarlo da terminale:
+~: ./BanBot
+
+Per lanciarlo in modo che resti avviato sul server, consigliamo di crearsi uno script per lanciarlo
+su un file di estensione .sh, e lanciarlo col comando screen.
+Per esempio, noi facciamo così:
+    script BotLauncher.sh:
+    /home/urts/BanBot
+    
+e avviamo il server con
+	screen -m -d sh BotLauncher.sh
+	
+######     Utilizzo di BanBot   ######
+
+I comandi attualmente disponibili sono:
+
+!ban <numero>  : banna permanentemente il giocatore <numero>
+				 per esempio, !ban 11 banna il giocatore 11. Per vedere il numero dei giocatori,
+				 da console del gioco scrivere \clientlist.
+				 
+
