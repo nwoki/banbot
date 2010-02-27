@@ -26,13 +26,23 @@
 
 #include "connection.h"
 
-Connection::Connection( string a, int b, string c ):  //ho solo bisogno di inizializzarmi i valori qui
-    ip( (char*)a.c_str() ),
-    port( b ),
-    rconPass( c ),
-    recvSize(0)
+Connection::Connection(vector<ConfigLoader::Option> opzioni):recvSize(0)
 {
-
+  for (int i=0;i<opzioni.size();i++)
+  {
+    if (opzioni[i].name.compare("IP")==0)
+    {
+      ip.push_back((char*)opzioni[i].value.c_str());
+    }
+    else if (opzioni[i].name.compare("PORT")==0)
+    {
+      port.push_back(atoi(opzioni[i].value.c_str()));
+    }
+    else if (opzioni[i].name.compare("RCONPASS")==0)
+    {
+      rconPass.push_back(opzioni[i].value);
+    }
+  }
 }
 
 Connection::~Connection()
@@ -56,30 +66,26 @@ vector<char> Connection::makeCmd( string cmd) //cmd = "rcon " + pass + azione da
   return specials;
 }
 
-void Connection::prepareConnection()
+void Connection::prepareConnection(int server)
 {
     socketID = socket( AF_INET, SOCK_DGRAM, 0 );
 
     serverAdd.sin_family = AF_INET;
-    serverAdd.sin_port = htons( port );
-    recvSize = sizeof( serverAdd );
+    serverAdd.sin_port = htons( port[server] );
+    //recvSize = sizeof( serverAdd );
 
-    hp = gethostbyname(ip);//127.0.0.1");"81.174.67.195"
+    hp = gethostbyname(ip[server]);//127.0.0.1");"81.174.67.195"
     memcpy( (char*)&serverAdd.sin_addr, (char*)hp->h_addr, hp->h_length );
 
     recvSize = sizeof( serverAdd );
 }
 
-/*void Connection::ban(string number)   //recv number
+void Connection::kick(string number,int server)
 {
-}
-*/
-void Connection::kick(string number)
-{
-  prepareConnection();
+  prepareConnection(server);
 
   string comando("rcon ");
-  comando.append(rconPass);
+  comando.append(rconPass[server]);
   comando.append(" kick ");
   comando.append(number);
 
@@ -89,12 +95,12 @@ void Connection::kick(string number)
   close(socketID);
 }
 
-void Connection::say(string frase)
+void Connection::say(string frase,int server)
 {
-  prepareConnection();
+  prepareConnection(server);
 
   string comando("rcon ");
-  comando.append(rconPass);
+  comando.append(rconPass[server]);
   comando.append(" say \"");
   comando.append(frase);
   comando.append("\"");

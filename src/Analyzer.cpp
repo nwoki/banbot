@@ -208,9 +208,9 @@ void Analyzer::main_loop()
 		  std::string frase("BanBot: kicking player number ");
 		  frase.append(numero);
 		  frase.append(" for cheats.");
-		  server->say(frase);
+		  server->say(frase,serverNumber);
 		  sleep(SOCKET_PAUSE);
-		  server->kick(numero);
+		  server->kick(numero,serverNumber);
 		}
 		else
 		{
@@ -239,9 +239,9 @@ void Analyzer::main_loop()
 		frase.append(", ");
 		frase.append(nick);
 		frase.append(" for ban.");
-		server->say(frase);
+		server->say(frase,serverNumber);
 		sleep(SOCKET_PAUSE);
-		server->kick(numero);
+		server->kick(numero,serverNumber);
 	      }
 	      else
 	      {
@@ -256,10 +256,10 @@ void Analyzer::main_loop()
 		    frase.append(", ");
 		    frase.append(nick);
 		    frase.append(" for invalid guid.");
-		    server->say(frase);
+		    server->say(frase,serverNumber);
 		    database->ban(guid);
 		    sleep(SOCKET_PAUSE);
-		    server->kick(numero);
+		    server->kick(numero,serverNumber);
 		}
 		else
 		{
@@ -400,10 +400,10 @@ void Analyzer::main_loop()
 		      frase.append(", ");
 		      frase.append(nick);
 		      frase.append(".");
-		      server->say(frase);
+		      server->say(frase,serverNumber);
 		      database->ban(guid);
 		      sleep(SOCKET_PAUSE);
-		      server->kick(numero);
+		      server->kick(numero,serverNumber);
 		    }
 		  }
 		}

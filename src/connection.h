@@ -35,33 +35,33 @@
 //#include <strings.h>
 #include <sys/socket.h>
 //#include <sys/types.h>
+#include "ConfigLoader.h"
+#include <stdlib.h>
 
 using namespace std;
 
 class Connection
 {
     public:
-        Connection( string, int, string );
+        Connection(vector<ConfigLoader::Option> opzioni);
         ~Connection();
 
-        //void ban( string );  //faccio tornare la risposta del server??(string or *char)
-        void kick( string );
-	void say( string );
-        //void asd();
+        void kick( string, int );
+	void say( string, int );
 
     private:
-        sockaddr_in serverAdd, clientAdd;
+        sockaddr_in serverAdd;// clientAdd;
         int socketID;
         struct hostent *hp;
         int recvSize; //message length in risposta
 
-	void prepareConnection();
+	void prepareConnection(int);
 	vector<char> makeCmd( string);
 
-        char *ip;
-        const int port;
-        int conn;
-        string rconPass;
+        vector<char *>ip;
+        vector<const int> port;
+        vector<string>rconPass;
+	//int conn;
 };
 
 
