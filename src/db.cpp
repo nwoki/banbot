@@ -55,7 +55,7 @@ Db::Db(vector<ConfigLoader::Option> conf,Logger* log ):logger( log )
         cout<<"  [!]couldn't find dir '"<<cartella<<"/'! Creating dir '"<<cartella<<"/'..\n";
         *logger<<"  [!]couldn't find dir '"<<cartella<<"/'! Creating dir '"<<cartella<<"/'..\n";
 
-        if( !mkdir( cartella.c_str() )) 
+        if( !mkdir( cartella.c_str(),0777 )) 
 	{
         cout<<"  [OK]created '"<<cartella<<"/' directory..\n";
 	    *logger<<"  [OK]created '"<<cartella<<"/' directory..\n";

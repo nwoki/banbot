@@ -27,6 +27,8 @@
 #ifndef _backup_cpp_
 #define _backup_cpp_
 #include "Backup.h"
+#include <stdlib.h>
+#include <sys/stat.h>
 
 Backup::Backup(std::vector<ConfigLoader::Option> opzioni)
 {
@@ -49,7 +51,12 @@ Backup::~Backup()
 
 void Backup::doJobs()
 {
-
+  //controllo se esiste la directory: se non esiste la creo.
+  struct std::stat st;
+  if (!stat(directory.c_str(),&st))
+  {
+    
+  }
 }
 
 #endif
