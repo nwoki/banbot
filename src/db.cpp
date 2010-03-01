@@ -49,20 +49,20 @@ Db::Db(vector<ConfigLoader::Option> conf,Logger* log ):logger( log )
     if( stat( cartella.c_str(), &st ) == 0 )
     {
         cout<<"  [*]dir '"<<cartella<<"/' found\n";
-	*logger<<"  [*]dir '"<<cartella<<"/' found\n";
+        *logger<<"  [*]dir '"<<cartella<<"/' found\n";
     }
     else{
         cout<<"  [!]couldn't find dir '"<<cartella<<"/'! Creating dir '"<<cartella<<"/'..\n";
-	*logger<<"  [!]couldn't find dir '"<<cartella<<"/'! Creating dir '"<<cartella<<"/'..\n";
+        *logger<<"  [!]couldn't find dir '"<<cartella<<"/'! Creating dir '"<<cartella<<"/'..\n";
 
         if( !mkdir( cartella.c_str() )) 
 	{
-            cout<<"  [OK]created '"<<cartella<<"/' directory..\n";
+        cout<<"  [OK]created '"<<cartella<<"/' directory..\n";
 	    *logger<<"  [OK]created '"<<cartella<<"/' directory..\n";
 	}
         else
 	{
-            cout<<"[EPIC FAIL] couldn't create directory '"<<cartella<<"/'.Please check permissions!\n";
+        cout<<"[EPIC FAIL] couldn't create directory '"<<cartella<<"/'.Please check permissions!\n";
 	    *logger<<"[EPIC FAIL] couldn't create directory '"<<cartella<<"/'.Please check permissions!\n";
 	}
     }
@@ -71,11 +71,11 @@ Db::Db(vector<ConfigLoader::Option> conf,Logger* log ):logger( log )
     ifstream IN( DATABASE );
     if( !IN )
     {
-         cout<<"  [!] database doesn't exist!\n";
-         //create database
-         cout<<"    [*] creating database '"<<file<<"/' in '"<<cartella<<"/'\n";
-	 *logger<<"  [!] database doesn't exist!\n"<<"    [*] creating database '"<<file<<"/' in '"<<cartella<<"/'\n";
-	 createDb();
+        cout<<"  [!] database doesn't exist!\n";
+        //create database
+        cout<<"    [*] creating database '"<<file<<"/' in '"<<cartella<<"/'\n";
+        *logger<<"  [!] database doesn't exist!\n"<<"    [*] creating database '"<<file<<"/' in '"<<cartella<<"/'\n";
+        createDb();
     }
     IN.close();
     //azzero la tabella degli admins
@@ -99,12 +99,12 @@ void Db::setupAdmins(vector<ConfigLoader::Option> opzioni)
     if( resultQuery( clearQuery)==0 )
     {
         cout<<"    [*]cleaned admin table..\n";
-	*logger<<"    [*]cleaned admin table..\n";
+        *logger<<"    [*]cleaned admin table..\n";
     }
     else
     {
-	cout<<"    [EPIC FAIL] Db::setupAdmins can't execute query!\n";
-	*logger<<"    [EPIC FAIL] Db::setupAdmins can't execute query!\n";
+        cout<<"    [EPIC FAIL] Db::setupAdmins can't execute query!\n";
+        *logger<<"    [EPIC FAIL] Db::setupAdmins can't execute query!\n";
     }
 
     cout<<"    [-]trying to repopulate database\n";
@@ -119,15 +119,15 @@ void Db::setupAdmins(vector<ConfigLoader::Option> opzioni)
             aux.append("');");;
 
             if ( resultQuery( aux )==0 )
-	    {
+            {
                 cout<<"      [+]added admin.. \n";
-		*logger<<"      [+]added admin.. \n";
-	    }
+                *logger<<"      [+]added admin.. \n";
+            }
             else
-	    {
-		cout<<"      [FAIL] can't add admin to database!\n";
-		*logger<<"      [FAIL] can't add admin to database!\n";
-	    }
+            {
+                cout<<"      [FAIL] can't add admin to database!\n";
+                *logger<<"      [FAIL] can't add admin to database!\n";
+            }
         }
     }
 }
@@ -137,7 +137,7 @@ bool Db::connect()
 {
     if(sqlite3_open( DATABASE, &database )){
         cout<<"[FAIL] " << sqlite3_errmsg( database );    //TODO
-	*logger<<"[FAIL] " << sqlite3_errmsg( database );
+        *logger<<"[FAIL] " << sqlite3_errmsg( database );
         close();
         return false;
     }
@@ -151,12 +151,12 @@ void Db::createDb()   //initial creation of database
     if( resultQuery( queryStr )==0 )
     {
         cout<<"    [*]created banned table..\n";
-	*logger<<"    [*]created banned table..\n";
+        *logger<<"    [*]created banned table..\n";
     }
     else
     {
-	cout<<"    [FAIL]error creating banned table\n";
-	*logger<<"    [FAIL]error creating banned table\n";
+        cout<<"    [FAIL]error creating banned table\n";
+        *logger<<"    [FAIL]error creating banned table\n";
     }
 
     //oplist
@@ -165,12 +165,12 @@ void Db::createDb()   //initial creation of database
     if ( resultQuery( queryStr )==0 )
     {
         cout<<"    [*]created oplist table..\n";
-	*logger<<"    [*]created oplist table..\n";
+        *logger<<"    [*]created oplist table..\n";
     }
     else
     {
-	cout<<"    [FAIL]error creating oplist table\n";
-	*logger<<"    [FAIL]error creating oplist table\n";
+        cout<<"    [FAIL]error creating oplist table\n";
+        *logger<<"    [FAIL]error creating oplist table\n";
     }
 }
 
@@ -217,12 +217,12 @@ void Db::ban( string guid )
     if( resultQuery( aux )==0 )
     {
         cout<<"[OK] ban applied on "<<guid<<"\n";
-	*logger<<"[OK] ban applied on "<<guid<<"\n";
+        *logger<<"[OK] ban applied on "<<guid<<"\n";
     }
     else
     {
-	cout<<"[FAIL] ban not applied on "<<guid<<"\n";
-	*logger<<"[FAIL] ban not applied on "<<guid<<"\n";
+        cout<<"[FAIL] ban not applied on "<<guid<<"\n";
+        *logger<<"[FAIL] ban not applied on "<<guid<<"\n";
     }
 }
 
