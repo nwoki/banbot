@@ -46,8 +46,7 @@ Db::Db(vector<ConfigLoader::Option> conf,Logger* log ):logger( log )
     logger->timestamp();
     *logger<<"\n[*]Starting up...\n";
     *logger<<"[-]checking for database directory..\n";
-    if( stat( cartella.c_str(), &st ) == 0 )
-    {
+    if( stat( cartella.c_str(), &st ) == 0 ){
         cout<<"  [*]dir '"<<cartella<<"/' found\n";
         *logger<<"  [*]dir '"<<cartella<<"/' found\n";
     }
@@ -55,22 +54,19 @@ Db::Db(vector<ConfigLoader::Option> conf,Logger* log ):logger( log )
         cout<<"  [!]couldn't find dir '"<<cartella<<"/'! Creating dir '"<<cartella<<"/'..\n";
         *logger<<"  [!]couldn't find dir '"<<cartella<<"/'! Creating dir '"<<cartella<<"/'..\n";
 
-        if( !mkdir( cartella.c_str(),0777 )) 
-	{
-        cout<<"  [OK]created '"<<cartella<<"/' directory..\n";
-	    *logger<<"  [OK]created '"<<cartella<<"/' directory..\n";
-	}
-        else
-	{
-        cout<<"[EPIC FAIL] couldn't create directory '"<<cartella<<"/'.Please check permissions!\n";
-	    *logger<<"[EPIC FAIL] couldn't create directory '"<<cartella<<"/'.Please check permissions!\n";
-	}
+        if( !mkdir( cartella.c_str(),0777 )){
+            cout<<"  [OK]created '"<<cartella<<"/' directory..\n";
+            *logger<<"  [OK]created '"<<cartella<<"/' directory..\n";
+        }
+        else{
+            cout<<"[EPIC FAIL] couldn't create directory '"<<cartella<<"/'.Please check permissions!\n";
+            *logger<<"[EPIC FAIL] couldn't create directory '"<<cartella<<"/'.Please check permissions!\n";
+        }
     }
 
     //check per il database
     ifstream IN( DATABASE );
-    if( !IN )
-    {
+    if( !IN ){
         cout<<"  [!] database doesn't exist!\n";
         //create database
         cout<<"    [*] creating database '"<<file<<"/' in '"<<cartella<<"/'\n";
@@ -96,13 +92,11 @@ void Db::setupAdmins(vector<ConfigLoader::Option> opzioni)
 
     string clearQuery("delete from oplist;");
 
-    if( resultQuery( clearQuery)==0 )
-    {
+    if( resultQuery( clearQuery)==0 ){
         cout<<"    [*]cleaned admin table..\n";
         *logger<<"    [*]cleaned admin table..\n";
     }
-    else
-    {
+    else{
         cout<<"    [EPIC FAIL] Db::setupAdmins can't execute query!\n";
         *logger<<"    [EPIC FAIL] Db::setupAdmins can't execute query!\n";
     }
@@ -112,19 +106,16 @@ void Db::setupAdmins(vector<ConfigLoader::Option> opzioni)
 
     for( int i = 0; i < opzioni.size(); i++){
         if( opzioni[i].name.compare("GUID")==0 ){
-
             string aux;
             aux.append("insert into oplist values('");
             aux.append(opzioni[i].value);
             aux.append("');");;
 
-            if ( resultQuery( aux )==0 )
-            {
+            if ( resultQuery( aux )==0 ){
                 cout<<"      [+]added admin.. \n";
                 *logger<<"      [+]added admin.. \n";
             }
-            else
-            {
+            else{
                 cout<<"      [FAIL] can't add admin to database!\n";
                 *logger<<"      [FAIL] can't add admin to database!\n";
             }

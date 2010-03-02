@@ -31,22 +31,23 @@
 #include <regex.h>
 
 //costruttore
-Analyzer::Analyzer( Connection* conn, Db* db,Logger* primaryLog,Logger* logs, std::vector<ConfigLoader::Option> opzioni ):logger(logs),server(conn),database(db),generalLog(primaryLog),serverNumber(0)
+Analyzer::Analyzer( Connection* conn, Db* db,Logger* primaryLog,Logger* logs, std::vector<ConfigLoader::Option> opzioni ):
+    logger( logs ),
+    server( conn ),
+    database( db ),
+    generalLog( primaryLog ),
+    serverNumber( 0 )
 {
   //imposto i file di log e i puntatori alla riga, ne sfrutto il numero per inizializzare pure l'array per i giocatori
-  for (int i=0;i<opzioni.size();i++)
-  {
-    if (opzioni[i].name.compare("LOGPATH")==0)
-    {
-      files.push_back(opzioni[i].value);
-      row.push_back(0);
-      std::vector<Player*> t;
-      giocatori.push_back(t);
-    }
-    if (opzioni[i].name.compare("BOTLOGPATH")==0)
-    {
-      BotLogFiles.push_back(opzioni[i].value);
-    }
+    for (int i = 0; i < opzioni.size(); i++ ){
+        if( opzioni[i].name.compare( "LOGPATH" ) == 0 ){
+            files.push_back( opzioni[i].value );
+            row.push_back( 0 );
+            std::vector<Player*> t;
+            giocatori.push_back( t );
+        }
+        if ( opzioni[i].name.compare( "BOTLOGPATH" ) == 0 )
+            BotLogFiles.push_back( opzioni[i].value );
   }
   //inizializzo il resto
   CLIENT_CONNECT=" *[0-9]+:[0-9]{2} +ClientConnect:";
@@ -66,57 +67,53 @@ Analyzer::Analyzer( Connection* conn, Db* db,Logger* primaryLog,Logger* logs, st
 //distruttore
 Analyzer::~Analyzer()
 {
-  if (log.is_open()) log.close();
+  if( log.is_open() ) log.close();
 }
 
 //testa l'array di caratteri passato col regex, torna true se la condizione imposta dal regex è soddisfatta.
-bool Analyzer::isA(char* line, std::string regex)
+bool Analyzer::isA( char* line, std::string regex )
 {
-  regex_t r;
+    regex_t r;
 
-  if (regcomp(&r, regex.c_str(), REG_EXTENDED|REG_NOSUB) == 0)
-  {
-    int status=regexec(&r, line, (size_t)0, NULL, 0);
-    regfree(&r);
-    if (status==0)
-    {
-      return true;
+    if ( regcomp( &r, regex.c_str(), REG_EXTENDED|REG_NOSUB ) == 0){
+        int status = regexec( &r, line, ( size_t )0, NULL, 0 );
+        regfree( &r );
+        if( status == 0 )
+            return true;
     }
-  }
-  return false;
+    return false;
 }
 
-bool Analyzer::isAdminSay(char* line)
+bool Analyzer::isAdminSay( char* line )
 {
-  //controllo se la persona che l'ha richiesto ha i permessi per farlo
-  std::string temp=line;
-  int pos=temp.find("say:");
-  pos=temp.find_first_not_of(" ",pos+4);
-  int end=temp.find_first_of(" ",pos);
-  std::string numero=temp.substr(pos,end-pos);
+    //controllo se la persona che l'ha richiesto ha i permessi per farlo
+    std::string temp = line;
+    int pos = temp.find( "say:" );
+    pos = temp.find_first_not_of( " ", pos+4 );
+    int end = temp.find_first_of( " ", pos );
+    std::string numero = temp.substr( pos, end-pos );
 
-  //dal numero del richiedente, mi prendo il guid
-  std::string guid("");
-  std::string nick("");
-  unsigned int i=0;
-  bool nonTrovato=true;
-  while(nonTrovato && i<giocatori[serverNumber].size())
-  {
-    if(giocatori[serverNumber][i]->number.compare(numero)==0)
-    {
-      guid=giocatori[serverNumber][i]->GUID;
-      nick=giocatori[serverNumber][i]->nick;
-      nonTrovato=false;
+    //dal numero del richiedente, mi prendo il guid
+    std::string guid( "" );
+    std::string nick( "" );
+    unsigned int i = 0;
+    bool nonTrovato = true;
+
+    while( nonTrovato && i < giocatori[serverNumber].size() ){
+        if( giocatori[serverNumber][i]->number.compare( numero ) == 0 ){
+            guid = giocatori[serverNumber][i]->GUID;
+            nick = giocatori[serverNumber][i]->nick;
+            nonTrovato = false;
+        }
+        else i++;
     }
-    else i++;
-  }
-  std::cout<<" requested by "<<nick<<", "<<guid<<"\n";
-  *logger<<" requested by "<<nick<<", "<<guid<<"\n";
-  if (!nonTrovato && database->checkAuthGuid(guid))
-  {
-    return true;
-  }
-  return false;
+
+    std::cout<<" requested by "<<nick<<", "<<guid<<"\n";
+    *logger<<" requested by "<<nick<<", "<<guid<<"\n";
+    if( !nonTrovato && database->checkAuthGuid(guid))
+        return true;
+
+    return false;
 }
 
 //funzione da sovrascrivere nelle eventuali espansioni
@@ -147,7 +144,7 @@ void Analyzer::main_loop()
         *generalLog<<"  [OK] Aperto!\n";
       }
       generalLog->close();
-      
+
       //se il file è aperto posso lavorare
       if (log.is_open())
       {
@@ -432,12 +429,12 @@ void Analyzer::main_loop()
                   {
                     std::cout<<"  [OK] Is an admin. Doing find.\n";
                     *logger<<"  [OK] Is an admin. Doing find.\n";
-                      
+
                     //estraggo il nick da cercare.
-                    std::string temp(line); 
+                    std::string temp(line);
                     int pos=temp.find("!find");
                     std::string nick=temp.substr(pos+6);
-                    
+
                     //ho il nick da cercare
                     std::cout<<"  [-]Searching for "<<nick<<".\n";
                     *logger<<"  [-]Searching for "<<nick<<".\n";
@@ -462,7 +459,7 @@ void Analyzer::main_loop()
                       pos=temp.find_first_not_of(" 0123456789",pos+4);
                       int end=temp.find_first_of(" ",pos);
                       std::string numero=temp.substr(pos,end-pos);
-                      
+
                       //ho il numero, elimino dal database tutti i record relativi.
                     }
                   }
@@ -491,7 +488,7 @@ void Analyzer::main_loop()
             }
           }
         }
-      
+
         }
       }
       else

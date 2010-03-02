@@ -26,22 +26,15 @@
 
 #include "connection.h"
 
-Connection::Connection(vector<ConfigLoader::Option> opzioni):recvSize(0)
+Connection::Connection(vector<ConfigLoader::Option> opzioni): recvSize( 0 )
 {
-  for (int i=0;i<opzioni.size();i++)
-  {
-    if (opzioni[i].name.compare("IP")==0)
-    {
-      ip.push_back((char*)opzioni[i].value.c_str());
-    }
-    else if (opzioni[i].name.compare("PORT")==0)
-    {
-      port.push_back(atoi(opzioni[i].value.c_str()));
-    }
-    else if (opzioni[i].name.compare("RCONPASS")==0)
-    {
-      rconPass.push_back(opzioni[i].value);
-    }
+  for (int i = 0; i < opzioni.size(); i++ ){
+      if ( opzioni[i].name.compare( "IP" ) == 0 )
+          ip.push_back( (char*)opzioni[i].value.c_str() );
+      else if ( opzioni[i].name.compare( "PORT" ) == 0 )
+        port.push_back( atoi( opzioni[i].value.c_str() ));
+      else if ( opzioni[i].name.compare( "RCONPASS" ) == 0 )
+          rconPass.push_back( opzioni[i].value);
   }
 }
 

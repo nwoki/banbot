@@ -22,7 +22,6 @@
     Copyright (C) 1994, 1995, 1996, 1999, 2000, 2001, 2002, 2004, 2005 Free
     Software Foundation, Inc.
 */
-
 #include <iostream>
 #include <string>
 #include <vector>
@@ -45,55 +44,49 @@ int main( int argc, char *argv[] ){ //pass arguments to specify server logfile a
     else
         caricatore = new ConfigLoader( CONFIG );
     std::vector<ConfigLoader::Option> opzioni = caricatore->getOptions();
-    for (int i=0;i<opzioni.size();i++)
-    {
-      cout<<opzioni[i].name<<" = "<<opzioni[i].value<<"\n";
-    }
-    cout<<"\n";
+    for ( int i = 0; i < opzioni.size(); i++ )
+        cout << opzioni[i].name << " = " << opzioni[i].value << "\n";
+
+    cout << "\n";
     delete caricatore;
 
     //inizializzo il logger
-    int i=0;
-    int founded=0;
-    Logger * botLog=NULL;
-    while(i<opzioni.size() && founded==0)
-    {
-      if (opzioni[i].name.compare("BOTLOG")==0)
-      {
-	botLog=new Logger(opzioni[i].value);
-	founded++;
-      }
+    int i = 0;
+    int found = 0;
+    Logger *botLog = NULL;
+
+    while( i < opzioni.size() && found == 0 ){
+        if( opzioni[i].name.compare( "BOTLOG" ) == 0 ){
+            botLog = new Logger( opzioni[i].value );
+            found++;
+        }
     }
 
-    Db *d = new Db(opzioni,botLog) ;
+    Db *d = new Db( opzioni, botLog ) ;
 
-    founded=0;
+    found = 0;
     string ip;
-    int port=0;
+    int port = 0;
     string password;
     string logpath;
-    for (i=0;founded<4 && i<opzioni.size();i++)
-    {
-      if (opzioni[i].name.compare("IP")==0)
-      {
-	ip=opzioni[i].value;
-	founded++;
-      }
-      else if (opzioni[i].name.compare("PORT")==0)
-      {
-	port=atoi(opzioni[i].value.c_str());
-	founded++;
-      }
-      else if (opzioni[i].name.compare("RCONPASS")==0)
-      {
-	password=opzioni[i].value;
-	founded++;
-      }
-      else if (opzioni[i].name.compare("LOGPATH")==0)
-      {
-	logpath=opzioni[i].value;
-	founded++;
-      }
+
+    for( i = 0; found < 4 && i < opzioni.size(); i++ ){
+        if( opzioni[i].name.compare( "IP" ) == 0 ){
+            ip=opzioni[i].value;
+            found++;
+        }
+        else if( opzioni[i].name.compare( "PORT" ) == 0 ){
+            port=atoi(opzioni[i].value.c_str());
+            found++;
+        }
+        else if( opzioni[i].name.compare( "RCONPASS" ) == 0 ){
+            password=opzioni[i].value;
+            found++;
+        }
+        else if( opzioni[i].name.compare( "LOGPATH" ) == 0 ){
+            logpath=opzioni[i].value;
+            found++;
+       }
     }
 
     cout<<"[+] Importing values from config file:\n";
@@ -107,11 +100,13 @@ int main( int argc, char *argv[] ){ //pass arguments to specify server logfile a
     *botLog<<"\n[+] Importing values from config file:\n"<<"  [-] Ip of server: "<<ip<<"\n"<<"  [-] Port of server: "<<port<<"\n"
     <<"  [-] Rcon password: "<<password<<"\n"<<"  [-] File di log: "<<logpath<<"\n";
 
-    Connection *serverCommand = new Connection(ip,port,password);
+    //Start connection
+    //Connection *serverCommand = new Connection(ip,port,password);   //need vector with options
 
-    Analyzer anal( serverCommand, d,botLog, logpath );
+    //Start analyzer
+    //Analyzer anal( serverCommand, d,botLog, logpath );
     botLog->close();
-    anal.main_loop();
+    //anal.main_loop();
 
 
   //ho l'array con tutte le impostazioni

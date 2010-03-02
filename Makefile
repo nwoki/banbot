@@ -40,4 +40,5 @@ sqlite3.o	: src/sqlite3/sqlite3.c
 clean :
 	 rm -rf src/*.o src/*.h~ src/*.cpp~
 	 rm -rf src/sqlite3/*.o src/sqlite3/*.h~ src/sqlite3/*.cpp~
+	 rm BanBot
 	 echo "cleaned all makefiles"

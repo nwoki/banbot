@@ -1,4 +1,4 @@
-/*				
+/*
  *
  *   	Analyzer.h is part of BanBot.
  *
@@ -57,13 +57,13 @@
 #include "logger.h"
 #include "ConfigLoader.h"
 
-#define TIME_SLEEPING 4  //tempo di attesa tra un giro e l'altro nell'analisi dei log (più è basso, più alto sarà il consumo (e spreco) di risorse,
-			 //d'altro canto più alto è, maggiore sarà il tempo di risposta del bot).
-#define SOCKET_PAUSE 1   //per permettere al socket di funzionare bene, inserisco una pausa tra say e kick
+#define TIME_SLEEPING 4 //tempo di attesa tra un giro e l'altro nell'analisi dei log (più è basso, più alto sarà il consumo (e spreco) di risorse,
+                        //d'altro canto più alto è, maggiore sarà il tempo di risposta del bot).
+#define SOCKET_PAUSE 1  //per permettere al socket di funzionare bene, inserisco una pausa tra say e kick
 
 class Analyzer
 {
-  private:
+private:
     std::ifstream log;
     const char* CLIENT_CONNECT;
     const char* CLIENT_USER_INFO;
@@ -79,7 +79,7 @@ class Analyzer
     std::vector<std::streampos> row;
     Logger* generalLog;
 
-  protected:
+protected:
     bool isA(char* line,std::string regex);
     bool isAdminSay(char *line);		//ritorna true se la richiesta è stata fatta da un admin.
     virtual void expansion(char* line);
@@ -89,16 +89,16 @@ class Analyzer
     int serverNumber;
     class Player
     {
-      public:
-	std::string GUID;
-	std::string number;
-	std::string nick;
-	std::string ip;
-	Player():GUID(std::string("")),number(""),nick(""),ip(""){};
+        public:
+        std::string GUID;
+        std::string number;
+        std::string nick;
+        std::string ip;
+        Player():GUID(std::string("")),number(""),nick(""),ip(""){};
     };
     std::vector< std::vector<Player*> > giocatori;    //array di array (un array di player per server)
 
-  public:
+public:
     Analyzer( Connection*, Db*,Logger*,Logger*, std::vector<ConfigLoader::Option>);
     ~Analyzer();
     void main_loop();

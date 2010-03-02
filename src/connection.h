@@ -47,7 +47,7 @@ class Connection
         ~Connection();
 
         void kick( string, int );
-	void say( string, int );
+        void say( string, int );
 
     private:
         sockaddr_in serverAdd;// clientAdd;
@@ -55,11 +55,11 @@ class Connection
         struct hostent *hp;
         int recvSize; //message length in risposta
 
-	void prepareConnection(int);
-	vector<char> makeCmd( string);
+        void prepareConnection(int);
+        vector<char> makeCmd( string);
 
         vector<char *>ip;
-        vector<const int> port;
+        vector<int> port;
         vector<string>rconPass;
 	//int conn;
 };
