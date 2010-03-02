@@ -33,17 +33,27 @@
 
 class ConfigLoader
 {
-  private:
+private:
     std::ifstream cfg;
-  public:
+
+public:
     ConfigLoader( std::string filePath );
     ~ConfigLoader();
+
     class Option
     {
-      public:
-	std::string name;
-	std::string value;
+    public:
+        std::string name;
+        std::string value;
     };
+
+    class Banlist
+    {
+    public:
+        std::string banGuid;
+    };
+
     std::vector<ConfigLoader::Option> getOptions();
+    std::vector<ConfigLoader::Banlist> getBanlist();
 };
 #endif

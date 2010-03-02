@@ -70,4 +70,29 @@ std::vector<ConfigLoader::Option> ConfigLoader::getOptions()
   return vettore;
 }
 
+std::vector<ConfigLoader::Banlist> ConfigLoader::getBanlist()
+{
+    std::vector<ConfigLoader::Banlist> vettore;
+
+    if( cfg.is_open() ){
+        while( !cfg.eof() ){
+            //leggo righe
+            char line[600];
+            cfg.getline( line, 300 );
+
+            if( line[0] != '#' && !cfg.eof() ){
+                ConfigLoader::Banlist banlist;
+
+                //la trasformo in stringa e estraggo le guid
+                std::string riga = line;
+                banlist.banGuid = riga.substr( 0, riga.size() );
+
+                //aggiungo a vettore
+                vettore.push_back( banlist );
+            }
+        }
+    }
+    return vettore;
+}
+
 #endif
