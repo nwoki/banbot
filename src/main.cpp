@@ -32,23 +32,25 @@
 #include "sqlite3/sqlite3.h"
 #include "logger.h"
 
-#define CONFIG "BanBot.cfg"
-
+#define BOTCONFIG "cfg/BanBot.cfg"
+#define BANLIST "cfg/Banlist"
 using namespace std;
 
 int main( int argc, char *argv[] ){ //pass arguments to specify server logfile and bot logfile
     //carico le impostazioni e le salvo su opzioni
-    ConfigLoader * caricatore;
-    if ( argc == 2 )
-        caricatore = new ConfigLoader(argv[1]);
-    else
-        caricatore = new ConfigLoader( CONFIG );
+    ConfigLoader * caricatore = new ConfigLoader( BOTCONFIG );
+    ConfigLoader * banList = new ConfigLoader( BANLIST );
+
     std::vector<ConfigLoader::Option> opzioni = caricatore->getOptions();
+    std::vector<ConfigLoader::Banlist> banned = banList->getBanlist();
+
     for ( int i = 0; i < opzioni.size(); i++ )
         cout << opzioni[i].name << " = " << opzioni[i].value << "\n";
 
-    cout << "\n";
+    cout << "\n";   //extra "a-capo"
+
     delete caricatore;
+    delete banList;
 
     //inizializzo il logger
     int i = 0;
@@ -62,7 +64,7 @@ int main( int argc, char *argv[] ){ //pass arguments to specify server logfile a
         }
     }
 
-    Db *d = new Db( opzioni, botLog ) ;
+    Db *d = new Db( opzioni, banned, botLog ) ;
 
     found = 0;
     string ip;
@@ -106,9 +108,14 @@ int main( int argc, char *argv[] ){ //pass arguments to specify server logfile a
     //Start analyzer
     //Analyzer anal( serverCommand, d,botLog, logpath );
     botLog->close();
-    //anal.main_loop();
+    //anal.main_loop()
 
 
+
+    /*string asd = "backup/dfghjk";
+    if ( d->checkDirAndFile( asd ) )
+        cout<<"true\n";
+    else cout<<"false";*/
   //ho l'array con tutte le impostazioni
 
 }

@@ -48,17 +48,17 @@ Logger::Logger( std::string p ): path( p )
     {
         std::cout<<"  [!]couldn't find dir '"<<cartella<<"/'! Creating dir '"<<cartella<<"/'..\n";
 
-	std::string command("mkdir \"");
-	command.append(cartella);
-	command.append("\"");
+        std::string command("mkdir \"");
+        command.append(cartella);
+        command.append("\"");
         if( !system(command.c_str()))
-	{
+        {
             std::cout<<"  [OK]created '"<<cartella<<"/' directory..\n";
-	}
+        }
         else
-	{
+        {
             std::cout<<"[EPIC FAIL] couldn't create directory '"<<cartella<<"/'.Please check permissions!\n";
-	}
+        }
     }
     //check per il file log
     std::cout<<"[-] checking for logfile..\n";
@@ -66,39 +66,38 @@ Logger::Logger( std::string p ): path( p )
     if( IN.is_open() ) IN.close();
     else
     {
-      std::cout<<"[!] Logfile doesn't exist... I'll create it.\n";
-      //create logfile
-      std::ofstream OUT(path.c_str());
-      if ( OUT.is_open() ) OUT.close();
-      else
-	std::cout<<"[ERR] couldn't create the log file.Please check permissions!\n";
+        std::cout<<"[!] Logfile doesn't exist... I'll create it.\n";
+        //create logfile
+        std::ofstream OUT(path.c_str());
+        if ( OUT.is_open() ) OUT.close();
+        else std::cout<<"[ERR] couldn't create the log file.Please check permissions!\n";
     }
 }
 
 Logger::~Logger()
 {
-  file.close();
+    file.close();
 }
 
 void Logger::write(const char* valore)
 {
-  file<<valore;
+    file<<valore;
 }
 
 void Logger::write(const int valore)
 {
-  file<<valore;
+    file<<valore;
 }
 
 void Logger::changePath(std::string path)
 {
-  this->path=path;
+    this->path=path;
 }
 
 bool Logger::open()
 {
-  file.open(path.c_str(),std::ios_base::app);
-  return file.is_open();
+    file.open(path.c_str(),std::ios_base::app);
+    return file.is_open();
 }
 
 void Logger::timestamp()
@@ -112,23 +111,23 @@ void Logger::timestamp()
 
 void Logger::close()
 {
-  file.close();
+    file.close();
 }
 
 //funzioni ESTERNE alla classe,di comodo
 Logger& operator<<(Logger& l,const char* valore)
 {
-  l.write(valore);
-  return l;
+    l.write(valore);
+    return l;
 }
 Logger& operator<<(Logger& l,std::string valore)
 {
-  l.write(valore.c_str());
-  return l;
+    l.write(valore.c_str());
+    return l;
 }
 Logger& operator<<(Logger& l,const int valore)
 {
-  l.write(valore);
-  return l;
+    l.write(valore);
+    return l;
 }
 #endif

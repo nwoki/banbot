@@ -36,25 +36,31 @@
 #include "sqlite3/sqlite3.h"
 #include "logger.h"
 
-#define DATABASE "database/db.sqlite"
+#define DATABASE "database/Db.sqlite"
+
 using namespace std;//std::string;
 
 class Db
 {
     public:
         //Db( Logger *, vector<ConfigLoader::Option> ); //passo array di guid secondo parametro
-        Db(vector<ConfigLoader::Option>,Logger *);
+        Db( vector<ConfigLoader::Option>, vector<ConfigLoader::Banlist>, Logger * );
         ~Db();
 
-        void ban( string );
-        bool checkAuthGuid( string );
-        bool checkBanGuid( string );    //passa ( guid giocatore)
+        void ban( string guid );
+        bool checkAuthGuid( string guid );
+        bool checkBanGuid( string guid );    //passa ( guid giocatore)
+        bool checkDirAndFile( string guid ); //passa url file compreso
+        void dumpBanned();
 
     private:
         sqlite3 *database;
         void createDb();
         void setupAdmins( vector<ConfigLoader::Option> );
+        //void loadAdminlist( vector<ConfigLoader::Option> ;  ///NEW
+        void loadBanlist( vector<ConfigLoader::Banlist> );
         int resultQuery( string ); //se fallisce la query, -1, altrimenti il numero degli elementi restituiti
+        std::vector<std::string> extractData( string query );   //returns vector with results as string
         void close();
         bool connect();
         Logger *logger;
@@ -74,12 +80,12 @@ class Db
 	    std::vector<std::string> vcol_head;
 	    std::vector<std::string> vdata;
 
-	    SQLITE3 ( std::string tablename ):
+	    SQLITE3 ( std::string database ):
             zErrMsg( 0 ),
             rc( 0 ),
             db_open( 0 )
 	    {
-	      rc = sqlite3_open(tablename.c_str(), &db);
+	      rc = sqlite3_open(database.c_str(), &db);
 
           if( rc ){
               cout<<"Can't open database\n";
@@ -99,8 +105,11 @@ class Db
                 &zErrMsg          /* Error msg written here */
                 );
 
-	        if( vcol_head.size() < 0 )  { vcol_head.clear(); }
-	        if( vdata.size() < 0 )  { vdata.clear(); }
+	        if( vcol_head.size() < 0 )
+                vcol_head.clear();
+
+            if( vdata.size() < 0 )
+                vdata.clear();
 
   	        if( rc == SQLITE_OK ){
                 for( int i = 0; i < ncol; ++i )
@@ -111,6 +120,7 @@ class Db
 	        sqlite3_free_table( result );
             return rc;
 	    }
+
 
 	    ~SQLITE3()
 	    {
