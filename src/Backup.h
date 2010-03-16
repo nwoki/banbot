@@ -45,5 +45,7 @@ class Backup
   private:
     std::vector<std::string> files;
     std::string directory;
+    void spostaFiles();
+    void checkFolder(std::string path);  //crea la cartella se non esiste.
 };
 #endif

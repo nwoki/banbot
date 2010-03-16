@@ -29,6 +29,11 @@
 #include "Backup.h"
 #include <stdlib.h>
 #include <sys/stat.h>
+#include <time.h>
+#include <stdio.h>
+
+
+#include <iostream>
 
 Backup::Backup(std::vector<ConfigLoader::Option> opzioni)
 {
@@ -49,14 +54,56 @@ Backup::~Backup()
 {
 }
 
-void Backup::doJobs()
+void Backup::checkFolder(std::string path)
 {
   //controllo se esiste la directory: se non esiste la creo.
-  struct std::stat st;
-  if (!stat(directory.c_str(),&st))
+  struct stat st;
+  if (stat(path.c_str(),&st))
   {
-    
+    mkdir(path.c_str(),0777);
   }
 }
 
+void Backup::spostaFiles()
+{
+  //creo la cartella con la data.
+  //prendo la data nel formato yyyy-mm-dd
+  char outstr[11];
+  time_t t;
+  struct tm *tmp;
+  t = time(NULL);
+  tmp = localtime(&t);
+  strftime(outstr, sizeof(outstr), "%F", tmp);
+  //ho la data salvata in outstr, creo la cartella.
+  std::string cartella=directory;
+  cartella.append("/");
+  cartella.append(outstr);
+  checkFolder(cartella);
+  //sposto i files.
+  for (int i=0; i<files.size(); i++)
+  {
+    //mi preparo la stringa con il file di destinazione
+    int pos=files[i].find_last_of("/");
+    if (pos==-1) pos=0;
+    std::cout<<"Dio cane: "<<files[i]<<" "<<pos;
+    std::string nomeFile=cartella;
+    nomeFile.append("/");
+    nomeFile.append(files[i].substr(pos));
+    //sposto il file
+    std::rename(files[i].c_str(),nomeFile.c_str());
+  }
+}
+
+void Backup::doJobs()
+{
+  checkFolder(directory);
+  spostaFiles();
+}
+
+int main ( int argc, char *argv[] )
+{
+  std::vector<ConfigLoader::Option> temp;
+  Backup t(temp);
+  t.doJobs();
+}
 #endif
