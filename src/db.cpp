@@ -54,19 +54,19 @@ Db::Db( vector<ConfigLoader::Option> conf, vector<ConfigLoader::Banlist> banned,
         *logger<<"  [*]dir '"<<cartella<<"/' found\n";
     }
     else{
-        cout<<"  [!]couldn't find dir '"<<cartella<<"/'! Creating dir '"<<cartella<<"/'..\n";
+        cout<<"\e[0;33m  [!]couldn't find dir '"<<cartella<<"/'! Creating dir '"<<cartella<<"/'..\e[0m \n";
         *logger<<"  [!]couldn't find dir '"<<cartella<<"/'! Creating dir '"<<cartella<<"/'..\n";
 
         if( mkdir( cartella.c_str(), 0777 ) != 0 ){
-            cout<<"[EPIC FAIL] couldn't create directory '"<<cartella<<"/'.Please check permissions!\n";
+            cout<<"\e[1;31m[EPIC FAIL] couldn't create directory '"<<cartella<<"/'.Please check permissions!\e[0m \n";
             *logger<<"[EPIC FAIL] couldn't create directory '"<<cartella<<"/'.Please check permissions!\n";
-            cout<<"[FAIL] need database for bot to work correctly. Please resolve this problem and launch application again\n";
+            cout<<"\e[1;31m[FAIL] need database for bot to work correctly. Please resolve this problem and launch application again\e[0m \n";
             *logger<<"[FAIL] can't create database! Haven't got permission to do so.. TERMINATING BOT!\n";
             //TODO! terminate program here!!!
 
         }
         else{
-            cout<<"  [OK]created '"<<cartella<<"/' directory..\n";
+            cout<<"\e[0;32m  [OK]created '"<<cartella<<"/' directory..\e[0m \n";
             *logger<<"  [OK]created '"<<cartella<<"/' directory..\n";
         }
     }
@@ -75,9 +75,9 @@ Db::Db( vector<ConfigLoader::Option> conf, vector<ConfigLoader::Banlist> banned,
     ifstream IN( DATABASE );
 
     if( !IN ){
-        cout<<"  [!] database doesn't exist!\n";
+        cout<<"\e[0;33m  [!] database doesn't exist!\e[0m \n";
         //create database
-        cout<<"    [*] creating database '"<<file<<"/' in '"<<cartella<<"/'\n";
+        cout<<"\e[0;33m    [!] creating database '"<<file<<"/' in '"<<cartella<<"/'\e[0m \n";
         *logger<<"  [!] database doesn't exist!\n"<<"    [*] creating database '"<<file<<"/' in '"<<cartella<<"/'\n";
         createDb();
     }
@@ -108,7 +108,7 @@ void Db::setupAdmins( vector<ConfigLoader::Option> opzioni )
         *logger<<"    [*]cleaned admin table..\n";
     }
     else{
-        cout<<"    [EPIC FAIL] Db::setupAdmins can't execute query!\n";
+        cout<<"\e[1;31m    [EPIC FAIL] Db::setupAdmins can't execute query!\e[0m \n";
         *logger<<"    [EPIC FAIL] Db::setupAdmins can't execute query!\n";
     }
 
@@ -123,11 +123,11 @@ void Db::setupAdmins( vector<ConfigLoader::Option> opzioni )
             aux.append("');");;
 
             if ( resultQuery( aux ) == 0 ){
-                cout<<"      [+]added admin: " << opzioni[i].value << "\n";
+                cout<<"\e[0;32m      [+]added admin: " << opzioni[i].value << "\e[0m \n";
                 *logger<<"      [+]added admin: " << opzioni[i].value << "\n";
             }
             else{
-                cout<<"      [FAIL] can't add admin to database!\n";
+                cout<<"\e[0;31m      [FAIL] can't add admin to database!\e[0m \n";
                 *logger<<"      [FAIL] can't add admin to database!\n";
             }
         }
@@ -137,7 +137,7 @@ void Db::setupAdmins( vector<ConfigLoader::Option> opzioni )
 void Db::loadBanlist( vector<ConfigLoader::Banlist> banned )
 {
     if( banned.size() == 0 ){
-        cout<<"[!]Banlist EMPTY\n";
+        cout<<"\e[0;33m[!]Banlist EMPTY\e[0m \n";
         *logger<<"[!]Banlist EMPTY\n";
         return;
     }
@@ -147,22 +147,22 @@ void Db::loadBanlist( vector<ConfigLoader::Banlist> banned )
     cout<<"\n[-]Adding banned users to database..\n\n";
 
     for( int i = 0; i < banned.size(); i++ ){
-        if( !checkBanGuid( banned[i].banGuid ) ){    //add if not on db
-            ban( banned[i].banGuid );   //if success, add 1 to counter
-            addedCounter++;
+        if( checkBanGuid( banned[i].banGuid ) == 0 ){    //add if not on db
+            if ( ban( banned[i].banGuid ) )   //if success, add 1 to counter
+                addedCounter++;
         }
         else onDbCounter++;
     }
 
-    cout << "\n\n[!] " << onDbCounter << " already on database\n";
-    cout << "[*] Added [ " << addedCounter << "/" << banned.size() << " ] guids from file to database banlist\n";
+    cout << "\n\n\e[0;33m[!] " << onDbCounter << " already on database\e[0m \n";
+    cout << "\e[0;32m[*] Added [ " << addedCounter << "/" << banned.size() << " ] guids from file to database banlist\e[0m \n";
 }
 
 
 bool Db::connect()
 {
     if(sqlite3_open( DATABASE, &database )){
-        cout<<"[FAIL] " << sqlite3_errmsg( database );
+        cout<<"\e[0;31m[FAIL] " << sqlite3_errmsg( database ) << "\e[0m \n";
         *logger<<"[FAIL] " << sqlite3_errmsg( database );
         close();
         return false;
@@ -172,33 +172,61 @@ bool Db::connect()
 
 void Db::createDb()   //initial creation of database
 {
-    //create tables, oplist(nick, guid) and banned(guid)
-    string queryStr("create table banned(guid text)");
+    //to dump db from terminal
+    //sqlite3  Db.sqlite ".dump" > test
 
-    if( resultQuery( queryStr ) == 0 ){
-        cout<<"    [*]created banned table..\n";
-        *logger<<"    [*]created banned table..\n";
+    //create tables, oplist(nick, guid) and banned(id(autoincrement),ip,date,time),nick(id,nick), guid(id,guid)
+    string createBannedTable(
+    "create table banned("
+    "id INTGER PRIMARY KEY,"    //autoincrement
+    "ip TEXT,"
+    "date TEXT,"
+    "time TEXT,"
+    "FOREIGN KEY( id ) REFERENCES nick( id ) );" );
+
+    string createNickTable(
+    "create table nick("
+    "id INTEGER PRIMARY KEY,"
+    "name TEXT );" );
+
+    string createGuidTable(
+    "create table guids("
+    "id INTEGER PRIMARY KEY,"
+    "guid TEXT,"
+    "FOREIGN KEY( id ) REFERENCES nick( id ) );" );
+
+    //checks...
+    if( resultQuery( createBannedTable ) == 0 ){
+        cout<<"\e[0;32m    [*]created 'banned' table..\e[0m \n";
+        *logger<<"    [*]created 'banned' table..\n";
     }
     else{
-        cout<<"    [FAIL]error creating banned table\n";
-        *logger<<"    [FAIL]error creating banned table\n";
+        cout<<"\e[0;31m    [FAIL]error creating 'banned' table\e[0m \n";
+        *logger<<"    [FAIL]error creating 'banned' table\n";
     }
 
-    //oplist
-    queryStr.clear();
-    queryStr.append("create table oplist(guid text)");
-    if ( resultQuery( queryStr ) == 0 ){
-        cout<<"    [*]created oplist table..\n";
-        *logger<<"    [*]created oplist table..\n";
+    if( resultQuery( createNickTable ) == 0 ){
+        cout<<"\e[0;32m    [*]created 'nick' table..\e[0m \n";
+        *logger<<"    [*]created 'nick' table..\n";
     }
     else{
-        cout<<"    [FAIL]error creating oplist table\n";
-        *logger<<"    [FAIL]error creating oplist table\n";
+        cout<<"\e[0;31m    [FAIL]error creating 'nick' table\e[0m \n";
+        *logger<<"    [FAIL]error creating 'nick' table\n";
     }
+
+    if( resultQuery( createGuidTable ) == 0 ){
+        cout<<"\e[0;32m     [*]created 'guid' table..\e[0m \n";
+        *logger<<"    [*]created 'guid' table..\n";
+    }
+    else{
+        cout<<"\e[0;31m    [FAIL]error creating 'guid' table\e[0m \n";
+        *logger<<"    [FAIL]error creating 'guid' table\n";
+    }
+
 }
 
 //checks oplist for ops
-bool Db::checkAuthGuid( string guid )
+bool Db::checkAuthGuid( const string &guid )
 {
     string aux( "select guid from oplist where guid='" );
     aux.append( guid );
@@ -207,7 +235,7 @@ bool Db::checkAuthGuid( string guid )
     return ( resultQuery( aux ) > 0 );
 }
 
-bool Db::checkBanGuid( string banGuid )
+bool Db::checkBanGuid( const string &banGuid )
 {
     string aux( "select guid from banned where guid='" );
     aux.append( banGuid );
@@ -219,49 +247,6 @@ bool Db::checkBanGuid( string banGuid )
     return ( resultQuery( aux ) > 0 );
 }
 
-/*bool Db::checkDirAndFile( string path ) //use to check dir and file. If not there, create them/it
-{
-    struct stat st;
-
-    bool checkStatus = false;
-
-    size_t pos = path.find_last_of( '/' );
-    string cartella = path.substr( 0, pos );
-    string file = path.substr( pos + 1 );
-
-    if( stat( cartella.c_str(), &st ) == 0 ){
-        cout<<"  [*]dir '"<<cartella<<"/' found\n";
-        //*logger<<"  [*]dir '"<<cartella<<"/' found\n";
-        checkStatus = true;
-    }
-    else{
-        cout<<"  [!]couldn't find dir '"<<cartella<<"/'! Creating dir '"<<cartella<<"/'..\n";
-        //*logger<<"  [!]couldn't find dir '"<<cartella<<"/'! Creating dir '"<<cartella<<"/'..\n";
-
-        if( !mkdir( cartella.c_str(), 0777 )){
-            cout<<"  [OK]created '"<<cartella<<"/' directory..\n";
-            //*logger<<"  [OK]created '"<<cartella<<"/' directory..\n";
-            checkStatus = true;
-        }
-        else{
-            cout<<"[EPIC FAIL] couldn't create directory '"<<cartella<<"/'.Please check permissions!\n";
-            //*logger<<"[EPIC FAIL] couldn't create directory '"<<cartella<<"/'.Please check permissions!\n";
-            checkStatus = false;
-        }
-    }
-
-    //check per il database
-    //ifstream IN( path.c_str() );
-    ofstream OUT( path.c_str() );
-
-    if( OUT.is_open() ){
-        OUT<<"TEST";
-        OUT.close();
-    }
-
-    return checkStatus; //true if both dir and file are there
-}*/
-
 void Db::dumpBanned()
 {
     string query( "select *from banned" );
@@ -270,8 +255,8 @@ void Db::dumpBanned()
     *logger<<"[-]Trying to dump banned guid's..\n";
 
     if( !resultQuery( query ) ){
-        cout<<"[!]no banned guids to dump to file";
-        *logger<<"[!]no banned guids to dump to file";
+        cout<<"\e[0;33m[!]no banned guids to dump to file\e[0m \n";
+        *logger<<"[!]no banned guids to dump to file\n";
         return;
     }
 
@@ -284,15 +269,15 @@ void Db::dumpBanned()
     if( stat( "backup/Banlist.backup", &st ) == 0 ){
         std::cout << "[-]deleting old banlist dump file..\n";
         if ( !system( "rm backup/Banlist.backup" ) )
-            cout<< "[!]deleted old backup file..creating new one..\n";
-        else cout<< "[ERR]couldn't delete old dump file!";
+            cout<< "\e[0;33m[!]deleted old backup file..creating new one..\e[0m \n";
+        else cout<< "\e[0;31m [ERR]couldn't delete old dump file!\e[0m \n";
     }
 
     //use logger class to save info to file
     Logger *output = new Logger( "backup/Banlist.backup" );
 
     if ( !output->open() ){
-        cout<<"[ERR] can't write Banlist backup file!\n";
+        cout<<"\e[0;31m[ERR] can't write Banlist backup file!\e[0m \n";
         *logger<<"[ERR] can't write Banlist backup file!\n";
         return;
     }
@@ -300,7 +285,7 @@ void Db::dumpBanned()
     for( int i = 0; i < dataToDump.size(); i++ )
         *output<<dataToDump[i]<<"\n";
 
-    cout<<"[OK] successfully written Banlist.backup file in 'backup/'\n";
+    cout<<"\e[0;32m[OK] successfully written Banlist.backup file in 'backup/'\e[0m \n";
     *logger<<"[OK] successfully written Banlist.backup file in 'backup/'\n";
 
     output->close();
@@ -308,7 +293,7 @@ void Db::dumpBanned()
     delete output;  //non mi serve più
 }
 
-std::vector<std::string> Db::extractData( string query )    //returns vector with results as string
+std::vector<std::string> Db::extractData( const string &query )    //returns vector with results as string
 {
     SQLITE3 data( DATABASE );
 
@@ -317,7 +302,7 @@ std::vector<std::string> Db::extractData( string query )    //returns vector wit
 }
 
 
-int Db::resultQuery( string a ) //ritorna quante corrispondenze ci sono all'interno del DB
+int Db::resultQuery( const string &a ) //ritorna quante corrispondenze ci sono all'interno del DB
 {
     int answer = 0;
     SQLITE3 *query = new SQLITE3( DATABASE );
@@ -330,7 +315,7 @@ int Db::resultQuery( string a ) //ritorna quante corrispondenze ci sono all'inte
     return answer;
 }
 
-void Db::ban( string guid ) //adds banned guid to database
+bool Db::ban( const string &guid ) //adds banned guid to database
 {
     //add
     string aux( "insert into banned values('" );
@@ -338,12 +323,14 @@ void Db::ban( string guid ) //adds banned guid to database
     aux.append( "');" );
 
     if( resultQuery( aux ) == 0 ){
-        cout<<"[OK] ban applied on "<<guid<<"\n";
+        cout<<"\e[0;32m[OK] ban applied on: "<<guid<<"\e[0m \n";
         *logger<<"[OK] ban applied on "<<guid<<"\n";
+        return true;
     }
     else{
-        cout<<"[FAIL] ban not applied on "<<guid<<"\n";
+        cout<<"\e[0;31m[FAIL] ban not applied on: "<<guid<<"\e[0m \n";
         *logger<<"[FAIL] ban not applied on "<<guid<<"\n";
+        return false;
     }
 }
 
