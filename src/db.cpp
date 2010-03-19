@@ -29,7 +29,7 @@
 #include "logger.h"
 
 //Db::Db( Logger * log, vector<ConfigLoader::Option> conf ):
-Db::Db( vector<ConfigLoader::Option> conf, vector<ConfigLoader::Banlist> banned, Logger* log ):
+Db::Db( vector<ConfigLoader::Option> conf, vector<ConfigLoader::Banlist> banned, vector<ConfigLoader::Option> admins, Logger* log ):
     logger( log )
 {
     //effettuo il logging del check up del database:
@@ -84,7 +84,7 @@ Db::Db( vector<ConfigLoader::Option> conf, vector<ConfigLoader::Banlist> banned,
     IN.close();
 
     //azzero la tabella degli admins
-    setupAdmins( conf );    //TODO make "loadAdmins" without deleting and re writing db
+    setupAdmins( admins );    //TODO make "loadAdmins" without deleting and re writing db
     loadBanlist( banned );
     dumpBanned();
 
@@ -96,7 +96,7 @@ Db::~Db()
 {
 }
 
-void Db::setupAdmins( vector<ConfigLoader::Option> opzioni )
+void Db::setupAdmins( vector<ConfigLoader::Option> admins )
 {
     cout<<"  [-] setting up admin guid's.. \n";
     *logger<<"  [-] setting up admin guid's.. \n";
@@ -108,28 +108,28 @@ void Db::setupAdmins( vector<ConfigLoader::Option> opzioni )
         *logger<<"    [*]cleaned admin table..\n";
     }
     else{
-        cout<<"\e[1;31m    [EPIC FAIL] Db::setupAdmins can't execute query!\e[0m \n";
-        *logger<<"    [EPIC FAIL] Db::setupAdmins can't execute query!\n";
+        cout<<"\e[1;31m    [EPIC FAIL] Db::setupAdmins can't clean table\e[0m \n";
+        *logger<<"    [EPIC FAIL] Db::setupAdmins can't clean table \n";
     }
 
     cout<<"    [-]trying to repopulate database\n";
     *logger<<"    [-]trying to repopulate database\n";
 
-    for( int i = 0; i < opzioni.size(); i++ ){
-        if( opzioni[i].name.compare("GUID") == 0 ){
-            string aux;
-            aux.append("insert into oplist values('");
-            aux.append(opzioni[i].value);
-            aux.append("');");;
+    for( int i = 0; i < admins.size(); i++ ){
+        string aux;
+        aux.append( "insert into oplist values('" );
+        aux.append( admins[i].name );
+        aux.append( "','" );
+        aux.append( admins[i].value );
+        aux.append( "');" );;
 
-            if ( resultQuery( aux ) == 0 ){
-                cout<<"\e[0;32m      [+]added admin: " << opzioni[i].value << "\e[0m \n";
-                *logger<<"      [+]added admin: " << opzioni[i].value << "\n";
-            }
-            else{
-                cout<<"\e[0;31m      [FAIL] can't add admin to database!\e[0m \n";
-                *logger<<"      [FAIL] can't add admin to database!\n";
-            }
+        if ( resultQuery( aux ) == 0 ){
+            cout<<"\e[0;32m      [+]added admin: " << admins[i].name << "\e[0m \n";//opzioni[i].value << "\e[0m \n";
+            *logger<<"      [+]added admin: " << admins[i].value << "\n";
+        }
+        else{
+            cout<<"\e[0;31m      [FAIL] can't add admin to database!\e[0m \n";
+            *logger<<"      [FAIL] can't add admin to database!\n";
         }
     }
 }
@@ -189,11 +189,16 @@ void Db::createDb()   //initial creation of database
     "id INTEGER PRIMARY KEY,"
     "name TEXT );" );
 
-    string createGuidTable(
+    string createGuidTable( //for banned users
     "create table guids("
     "id INTEGER PRIMARY KEY,"
     "guid TEXT,"
     "FOREIGN KEY( id ) REFERENCES nick( id ) );" );
+
+    string createOplistTable(
+    "create table oplist("
+    "nick TEXT PRIMARY KEY,"
+    "guid TEXT );" );
 
     //checks...
     if( resultQuery( createBannedTable ) == 0 ){
@@ -221,6 +226,15 @@ void Db::createDb()   //initial creation of database
     else{
         cout<<"\e[0;31m    [FAIL]error creating 'guid' table\e[0m \n";
         *logger<<"    [FAIL]error creating 'guid' table\n";
+    }
+
+    if( resultQuery( createOplistTable ) == 0 ){
+        cout<<"\e[0;32m     [*]created 'oplist' table..\e[0m \n";
+        *logger<<"    [*]created 'oplist' table..\n";
+    }
+    else{
+        cout<<"\e[0;31m    [FAIL]error creating 'oplist' table\e[0m \n";
+        *logger<<"    [FAIL]error creating 'oplist' table\n";
     }
 
 }

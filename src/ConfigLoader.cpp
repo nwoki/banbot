@@ -95,4 +95,5 @@ std::vector<ConfigLoader::Banlist> ConfigLoader::getBanlist()
     return vettore;
 }
 
+
 #endif

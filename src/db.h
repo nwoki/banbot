@@ -46,7 +46,7 @@ class Db
 {
     public:
         //Db( Logger *, vector<ConfigLoader::Option> ); //passo array di guid secondo parametro
-        Db( vector<ConfigLoader::Option>, vector<ConfigLoader::Banlist>, Logger * );
+        Db( vector<ConfigLoader::Option>, vector<ConfigLoader::Banlist>, vector<ConfigLoader::Option>, Logger * );
         ~Db();
 
         bool ban( const string &guid );
@@ -59,7 +59,7 @@ class Db
         sqlite3 *database;
         void createDb();
         void setupAdmins( vector<ConfigLoader::Option> );
-        //void loadAdminlist( vector<ConfigLoader::Option> ;  ///NEW
+        //void loadAdminlist( vector<ConfigLoader::Option> ;  //NEW
         void loadBanlist( vector<ConfigLoader::Banlist> );
         int resultQuery( const string & ); //se fallisce la query, -1, altrimenti il numero degli elementi restituiti
         std::vector<std::string> extractData( const string &query );   //returns vector with results as string

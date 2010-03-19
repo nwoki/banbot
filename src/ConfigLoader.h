@@ -40,7 +40,7 @@ public:
     ConfigLoader( std::string filePath );
     ~ConfigLoader();
 
-    class Option
+    class Option    //use for adminlist as well
     {
     public:
         std::string name;
@@ -53,7 +53,7 @@ public:
         std::string banGuid;
     };
 
-    std::vector<ConfigLoader::Option> getOptions();
-    std::vector<ConfigLoader::Banlist> getBanlist();
+    std::vector< ConfigLoader::Option > getOptions();
+    std::vector< ConfigLoader::Banlist > getBanlist();
 };
 #endif
