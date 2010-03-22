@@ -24,7 +24,7 @@
 */
 
 
-
+#include <sstream>  //per conversione int a str
 #include "db.h"
 #include "logger.h"
 
@@ -92,9 +92,11 @@ Db::Db( vector<ConfigLoader::Option> conf, vector<ConfigLoader::Banlist> banned,
     logger->close();
 }
 
+
 Db::~Db()
 {
 }
+
 
 void Db::setupAdmins( vector<ConfigLoader::Option> admins )
 {
@@ -134,9 +136,10 @@ void Db::setupAdmins( vector<ConfigLoader::Option> admins )
     }
 }
 
+
 void Db::loadBanlist( vector<ConfigLoader::Banlist> banned )
 {
-    if( banned.size() == 0 ){
+    /*if( banned.size() == 0 ){
         cout<<"\e[0;33m[!]Banlist EMPTY\e[0m \n";
         *logger<<"[!]Banlist EMPTY\n";
         return;
@@ -155,13 +158,13 @@ void Db::loadBanlist( vector<ConfigLoader::Banlist> banned )
     }
 
     cout << "\n\n\e[0;33m[!] " << onDbCounter << " already on database\e[0m \n";
-    cout << "\e[0;32m[*] Added [ " << addedCounter << "/" << banned.size() << " ] guids from file to database banlist\e[0m \n";
+    cout << "\e[0;32m[*] Added [ " << addedCounter << "/" << banned.size() << " ] guids from file to database banlist\e[0m \n";*/
 }
 
 
 bool Db::connect()
 {
-    if(sqlite3_open( DATABASE, &database )){
+    if( sqlite3_open( DATABASE, &database )){
         cout<<"\e[0;31m[FAIL] " << sqlite3_errmsg( database ) << "\e[0m \n";
         *logger<<"[FAIL] " << sqlite3_errmsg( database );
         close();
@@ -169,6 +172,7 @@ bool Db::connect()
     }
     else return true;
 }
+
 
 void Db::createDb()   //initial creation of database
 {
@@ -178,22 +182,18 @@ void Db::createDb()   //initial creation of database
     //create tables, oplist(nick, guid) and banned(id(autoincrement),ip,date,time),nick(id,nick), guid(id,guid)
     string createBannedTable(
     "create table banned("
-    "id INTGER PRIMARY KEY,"    //autoincrement
+    "id INTEGER PRIMARY KEY,"    //autoincrement
+    "nick TEXT,"
     "ip TEXT,"
     "date TEXT,"
-    "time TEXT,"
-    "FOREIGN KEY( id ) REFERENCES nick( id ) );" );
-
-    string createNickTable(
-    "create table nick("
-    "id INTEGER PRIMARY KEY,"
-    "name TEXT );" );
+    "time TEXT);" );
 
     string createGuidTable( //for banned users
     "create table guids("
-    "id INTEGER PRIMARY KEY,"
+    "id INTEGER PRIMARY KEY,"    //autoincrement
     "guid TEXT,"
-    "FOREIGN KEY( id ) REFERENCES nick( id ) );" );
+    "banId TEXT,"
+    "FOREIGN KEY( banId ) REFERENCES banned( id ) );" );
 
     string createOplistTable(
     "create table oplist("
@@ -208,15 +208,6 @@ void Db::createDb()   //initial creation of database
     else{
         cout<<"\e[0;31m    [FAIL]error creating 'banned' table\e[0m \n";
         *logger<<"    [FAIL]error creating 'banned' table\n";
-    }
-
-    if( resultQuery( createNickTable ) == 0 ){
-        cout<<"\e[0;32m    [*]created 'nick' table..\e[0m \n";
-        *logger<<"    [*]created 'nick' table..\n";
-    }
-    else{
-        cout<<"\e[0;31m    [FAIL]error creating 'nick' table\e[0m \n";
-        *logger<<"    [FAIL]error creating 'nick' table\n";
     }
 
     if( resultQuery( createGuidTable ) == 0 ){
@@ -239,6 +230,7 @@ void Db::createDb()   //initial creation of database
 
 }
 
+
 //checks oplist for ops
 bool Db::checkAuthGuid( const string &guid )
 {
@@ -248,6 +240,7 @@ bool Db::checkAuthGuid( const string &guid )
 
     return ( resultQuery( aux ) > 0 );
 }
+
 
 bool Db::checkBanGuid( const string &banGuid )
 {
@@ -260,6 +253,7 @@ bool Db::checkBanGuid( const string &banGuid )
 
     return ( resultQuery( aux ) > 0 );
 }
+
 
 void Db::dumpBanned()
 {
@@ -307,6 +301,14 @@ void Db::dumpBanned()
     delete output;  //non mi serve più
 }
 
+
+void Db::dumpDatabase() //to finish and understand
+//http://www.sqlite.org/backup.html
+{
+    //look at link
+}
+
+
 std::vector<std::string> Db::extractData( const string &query )    //returns vector with results as string
 {
     SQLITE3 data( DATABASE );
@@ -316,27 +318,45 @@ std::vector<std::string> Db::extractData( const string &query )    //returns vec
 }
 
 
-int Db::resultQuery( const string &a ) //ritorna quante corrispondenze ci sono all'interno del DB
+int Db::resultQuery( const string &query ) //ritorna quante corrispondenze ci sono all'interno del DB
 {
     int answer = 0;
-    SQLITE3 *query = new SQLITE3( DATABASE );
+    SQLITE3 *sql = new SQLITE3( DATABASE );
     //eseguo la query: se fallisce (ritorna true) imposto la risposta a -1
-    if ( query->exe( a ) ) answer = -1;
+    if ( sql->exe( query ) ) answer = -1;
     //altrimenti restituisco la dimensione dell'array contenente i risultati (non mi interessa avere i risultati)
-    else answer = query->vdata.size();
+    else answer = sql->vdata.size();
 
-    delete ( query );
+    delete ( sql );
     return answer;
 }
 
-bool Db::ban( const string &guid ) //adds banned guid to database
-{
-    //add
-    string aux( "insert into banned values('" );
-    aux.append( guid );
-    aux.append( "');" );
 
-    if( resultQuery( aux ) == 0 ){
+bool Db::execQuery( const string &query )
+{
+    SQLITE3 *sql = new SQLITE3( DATABASE );
+    bool success;
+
+    if( !sql->exe( query ) )
+        success = true;    //SUCCESS
+    else  success = false;  //FAIL
+
+    delete( sql );
+    return success;
+}
+
+bool Db::ban( const string &ip, const string &nick, const string &date, const string &time, const string &guid ) //adds banned guid to database
+{
+    int banId = insertNewBanned( nick, ip, date, time );    //get the autoincrement id
+
+    if( banId == -1 )    // -1 is ERROR, all other numbers are valid
+        return false;    //didn't write to database
+
+    if( insertNewGuid( guid, banId ) == -1 )    // -1 is ERROR, all other numbers are valid
+        return false;
+    //else went well
+
+    /*if( resultQuery( aux ) == 0 ){
         cout<<"\e[0;32m[OK] ban applied on: "<<guid<<"\e[0m \n";
         *logger<<"[OK] ban applied on "<<guid<<"\n";
         return true;
@@ -345,8 +365,63 @@ bool Db::ban( const string &guid ) //adds banned guid to database
         cout<<"\e[0;31m[FAIL] ban not applied on: "<<guid<<"\e[0m \n";
         *logger<<"[FAIL] ban not applied on "<<guid<<"\n";
         return false;
-    }
+    }*/
 }
+
+
+//BANTABLE METHODS
+int Db::insertNewBanned( const std::string& nick, const std::string& ip, const std::string& date, const std::string& time )
+{
+    string newBanQuery( "insert into banned(nick,ip,date,time) values('" );
+
+    newBanQuery.append( nick );
+    newBanQuery.append( "','" );
+    newBanQuery.append( ip );
+    newBanQuery.append( "','" );
+    newBanQuery.append( date );
+    newBanQuery.append( "','" );
+    newBanQuery.append( time );
+    newBanQuery.append( "');" );
+
+    if( !execQuery( newBanQuery ) )
+        return -1;  //FAIL
+
+    //else return last banId
+    std::vector<std::string> max;
+
+    max = extractData( "select max( id ) from banned" );
+    return atoi( max[0].c_str() );
+}
+
+//GUIDTABLE METHODS
+int Db::insertNewGuid( const std::string& guid, int banId )
+{
+    string newGuidQuery( "insert into guids(guid,banId) values('" );
+
+    newGuidQuery.append( guid );
+    newGuidQuery.append( "','" );
+    newGuidQuery.append( intToString( banId ) );
+    newGuidQuery.append( "');" );
+
+    if( !execQuery( newGuidQuery ) )
+        return -1;  //FAIL
+
+    //else return last banId
+    std::vector<std::string> max;
+
+    max = extractData( "select max( id ) from guids" );cout<<"max guid is"<<max[0]<<"\n";
+    return atoi( max[0].c_str() );
+}
+
+
+string Db::intToString( int number )
+{
+    stringstream out;
+    //barbatrucco ;)
+    out << number;
+    return out.str();
+}
+
 
 void Db::close()
 {
