@@ -57,7 +57,7 @@
 #include "logger.h"
 #include "ConfigLoader.h"
 
-#define TIME_SLEEPING 4 //tempo di attesa tra un giro e l'altro nell'analisi dei log (più è basso, più alto sarà il consumo (e spreco) di risorse,
+#define TIME_SLEEPING 3 //tempo di attesa tra un giro e l'altro nell'analisi dei log (più è basso, più alto sarà il consumo (e spreco) di risorse,
                         //d'altro canto più alto è, maggiore sarà il tempo di risposta del bot).
 #define SOCKET_PAUSE 1  //per permettere al socket di funzionare bene, inserisco una pausa tra say e kick
 
@@ -78,10 +78,17 @@ private:
     std::vector<std::string> BotLogFiles;
     std::vector<std::streampos> row;
     Logger* generalLog;
+    void clientUserInfo(char* line);
+    void clientConnect(char* line);
+    void clientDisconnect(char* line);
+    void ban(char* line);
+    void find(char* line);
+    void unban(char* line);
+    void op(char* line);
 
 protected:
     bool isA(char* line,std::string regex);
-    bool isAdminSay(char *line);		//ritorna true se la richiesta è stata fatta da un admin.
+    bool isAdminSay(char *line, std::string &numero);		//ritorna true se la richiesta è stata fatta da un admin, salva in numero il numero del giocatore che ha fatto la richiesta.
     virtual void expansion(char* line);
     Connection * server;
     Db * database;

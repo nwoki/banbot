@@ -84,14 +84,14 @@ bool Analyzer::isA( char* line, std::string regex )
     return false;
 }
 
-bool Analyzer::isAdminSay( char* line )
+bool Analyzer::isAdminSay( char* line, std::string &numero )
 {
     //controllo se la persona che l'ha richiesto ha i permessi per farlo
     std::string temp = line;
     int pos = temp.find( "say:" );
     pos = temp.find_first_not_of( " ", pos+4 );
     int end = temp.find_first_of( " ", pos );
-    std::string numero = temp.substr( pos, end-pos );
+    numero = temp.substr( pos, end-pos );
 
     //dal numero del richiedente, mi prendo il guid
     std::string guid( "" );
@@ -118,6 +118,254 @@ bool Analyzer::isAdminSay( char* line )
 
 //funzione da sovrascrivere nelle eventuali espansioni
 void Analyzer::expansion(char* line)
+{
+}
+
+void Analyzer::clientUserInfo(char* line)
+{
+  //prendo il numero giocatore e la guid, utilizzando le funzioni delle stringhe
+  std::string temp=line;
+  int pos=temp.find("ClientUserinfo:");
+  pos=temp.find_first_not_of(' ',pos+15);
+  int end=temp.find_first_of(' ',pos);
+  std::string numero=temp.substr(pos,end-pos);
+  pos=temp.find("ip",end);
+  pos=temp.find_first_not_of("\\",pos+3);
+  end=temp.find_first_of("\\ ",pos);
+  std::string ip=temp.substr(pos,end-pos);
+  pos=temp.find("name",end);
+  pos=temp.find_first_not_of("\\",pos+4);
+  end=temp.find_first_of("\\ ",pos);
+  std::string nick=temp.substr(pos,end-pos);
+  pos=temp.find("cl_guid",end);
+  pos=temp.find_first_not_of("\\",pos+7);
+  end=temp.find_first_of("\\ ",pos);
+  std::string guid=temp.substr(pos,end-pos);
+
+  std::cout<<"[-]Estrapolati i dati: numero="<<numero<<" guid="<<guid<<" nick="<<nick<<" ip="<<ip<<"\n";
+  logger->timestamp();
+  *logger<<"\n[-]Estrapolati i dati: numero="<<numero<<" guid="<<guid<<" nick="<<nick<<" ip="<<ip<<"\n";
+  //il giocatore c'è per forza (nel gioco deve fare un ClientConnect prima di userinfo)
+  //cerco il giocatore giusto all'interno della mia lista, e salvo il guid nelle info
+  unsigned int i=0;
+  bool nonTrovato=true;
+  bool kicked=false;
+  while (nonTrovato && i<giocatori[serverNumber].size())
+  {
+    if (giocatori[serverNumber][i]->number.compare(numero)==0)
+    {
+      nonTrovato=false;
+      if (!giocatori[serverNumber][i]->GUID.empty() && giocatori[serverNumber][i]->GUID.compare(guid)!=0)
+      {
+        kicked=true;
+        //cambio illegale del GUID => cheats
+        //è inutile inserirlo nel db, tanto cambia continuamente guid
+        std::cout<<"  [!] kick automatico per cheats.\n";
+        *logger<<"  [!] kick automatico per cheats.\n";
+        std::string frase("BanBot: kicking player number ");
+        frase.append(numero);
+        frase.append(" for cheats.");
+        server->say(frase,serverNumber);
+        sleep(SOCKET_PAUSE);
+        server->kick(numero,serverNumber);
+      }
+      else
+      {
+        //tutto a posto =)
+        //salvo guid e nick, inserisco il nick e l'ip nel db
+        giocatori[serverNumber][i]->nick=nick;
+        giocatori[serverNumber][i]->GUID=guid;
+        giocatori[serverNumber][i]->ip=ip;
+      }
+    }
+    else i++;
+  }
+
+  //se ho il guid del giocatore procedo coi controlli
+  if (!nonTrovato && !kicked)
+  {
+    //faccio un pò di controlli:
+    //controllo che non sia stato già bannato
+    if(database->checkBanGuid(guid))
+    {
+      //è stato bannato, lo butto fuori
+      std::cout<<"  [+] kick per ban.\n";
+      *logger<<"  [+] kick per ban.\n";
+      std::string frase("BanBot: kicking player number ");
+      frase.append(numero);
+      frase.append(", ");
+      frase.append(nick);
+      frase.append(" for ban.");
+      server->say(frase,serverNumber);
+      sleep(SOCKET_PAUSE);
+      server->kick(numero,serverNumber);
+    }
+    else
+    {
+      //ok, non è stato bannato (per il momento). Controllo se ha un GUID valido.
+      if (!isA(line, GUID))
+      {
+          //il guid è illegale, ban diretto
+          std::cout<<"  [!] kick automatico per GUID illegale\n";
+          *logger<<"  [!] kick automatico per GUID illegale\n";
+          std::string frase("BanBot: kicking player number ");
+          frase.append(numero);
+          frase.append(", ");
+          frase.append(nick);
+          frase.append(" for invalid guid.");
+          server->say(frase,serverNumber);
+          database->ban(guid);
+          sleep(SOCKET_PAUSE);
+          server->kick(numero,serverNumber);
+      }
+      else
+      {
+          std::cout<<"  [OK] (s)he's ok.\n";
+          *logger<<"  [OK] (s)he's ok.\n";
+      }
+    }
+  }
+  //ho finito le azioni in caso di clientUserinfo
+}
+
+void Analyzer::clientConnect(char* line)
+{
+  //prendo il numero del giocatore e mi creo il nuovo player corrispondente in memoria
+  std::string temp=line;
+  int pos=temp.find("ClientConnect:");
+  pos=temp.find_first_not_of(" ",pos+14);
+  int end=temp.find_first_of(" \n\0",pos);
+  std::string numero=temp.substr(pos,end-pos);
+
+  std::cout<<"[-] Nuovo client connesso: "<<numero<<"\n";
+  logger->timestamp();
+  *logger<<"\n[-] Nuovo client connesso: "<<numero<<"\n";
+  //per pignoleria controllo che non sia già presente
+  unsigned int i=0;
+  bool nonTrovato=true;
+  while (nonTrovato && i<giocatori[serverNumber].size())
+  {
+    if (giocatori[serverNumber][i]->number.compare(numero)==0)
+      nonTrovato=false;
+    else i++;
+  }
+
+  //se non è presente, lo inserisco
+  if (nonTrovato)
+  {
+    Player * gioc=new Player();
+    gioc->number=numero;
+    giocatori[serverNumber].push_back(gioc);
+  }
+  else
+  {
+    //se c'è già, azzero il guid
+    giocatori[serverNumber][i]->GUID="";
+  }
+  //ho finito le azioni in caso di clientConnect
+}
+
+void Analyzer::clientDisconnect(char* line)
+{
+  //prendo il numero del giocatore e lo elimino
+  std::string temp=line;
+  int pos=temp.find("ClientDisconnect:");
+  pos=temp.find_first_not_of(" ",pos+17);
+  int end=temp.find_first_of(" \n\0",pos);
+  std::string numero=temp.substr(pos,end-pos);
+
+  std::cout<<"[-] Client disconnesso: "<<numero<<"\n";
+  logger->timestamp();
+  *logger<<"[-] Client disconnesso: "<<numero<<"\n";
+  //cerco il player e lo elimino
+  unsigned int i=0;
+  bool nonTrovato=true;
+  while(nonTrovato && i<giocatori[serverNumber].size())
+  {
+    if (giocatori[serverNumber][i]->number.compare(numero)==0)
+    {
+    //trovato. elimino prima l'oggetto puntato
+    nonTrovato=false;
+    delete giocatori[serverNumber][i];
+    //elimino l'elemento in vector: prendo l'iteratore
+    std::vector<Player*>::iterator iteratore=giocatori[serverNumber].begin();
+    //scorro fino all'elemento corretto
+    for (unsigned int j=0; j<i;j++) iteratore++;
+    //elimino l'elemento
+    giocatori[serverNumber].erase(iteratore);
+    }
+    else i++;
+  }
+  //finite le azioni in caso di disconnect
+}
+
+void Analyzer::ban(char* line)
+{
+  std::cout<<"[!] Ban";
+  logger->timestamp();
+  *logger<<"\n[!] Ban";
+  //controllo se ho trovato il giocatore e i suoi permessi, se la persona non è autorizzata non faccio nulla.
+  std::string t;
+  if (isAdminSay(line,t))
+  {
+    std::cout<<"  [OK] Is an admin. Applying ban.\n";
+    *logger<<"  [OK] Is an admin. Applying ban.\n";
+    //ok ha i permessi, eseguo.
+    //prendo il numero del giocatore da bannare
+    std::string temp(line);
+    int pos=temp.find("!ban");
+    pos=temp.find_first_of("0123456789",pos+4);
+    int end=temp.find_first_of(" ",pos);
+    std::string numero=temp.substr(pos,end-pos);
+    pos=temp.find_first_not_of(" ",end);
+    int end=temp.find_first_of(" \n\0",pos);
+    std::string motivo=temp.substr(pos,end-pos);
+
+    //mi prendo il guid e il nick dalla lista dei giocatori (qua sto bene attento, un "utonto" potrebbe aver cappellato inserendo il numero)
+    bool nonTrovato=true;
+    std::string nick("");
+    std::string guid("");
+    int i=0;
+    while(nonTrovato && i<giocatori[serverNumber].size())
+    {
+      if(giocatori[serverNumber][i]->number.compare(numero)==0)
+      {
+        guid=giocatori[serverNumber][i]->GUID;
+        nick=giocatori[serverNumber][i]->nick;
+        nonTrovato=false;
+      }
+      else i++;
+    }
+    //se ho il guid, banno il player (le operazioni non sono eseguite "in diretta",
+    //per pignoleria controllo anche se per una rarissima combinazione non è già bannato).
+    if (!nonTrovato && !database->checkBanGuid(guid))
+    {
+      std::cout<<"  [+]banning "<<nick<<" with guid "<<guid<<"\n";
+      *logger<<"  [+]banning "<<nick<<" with guid "<<guid<<"\n";
+      std::string frase("BanBot: banning player number ");
+      frase.append(numero);
+      frase.append(", ");
+      frase.append(nick);
+      frase.append(" for ");
+      frase.append(motivo);
+      frase.append(".");
+      server->say(frase,serverNumber);
+      database->ban(guid);
+      sleep(SOCKET_PAUSE);
+      server->kick(numero,serverNumber);
+    }
+  }
+}
+
+void Analyzer::find(char* line)
+{
+}
+
+void Analyzer::unban(char* line)
+{
+}
+
+void Analyzer::op(char* line)
 {
 }
 
@@ -163,109 +411,7 @@ void Analyzer::main_loop()
         if (isA(line, CLIENT_USER_INFO))
         {
           //ha passato il regex, è una clientUserinfo
-          //prendo il numero giocatore e la guid, utilizzando le funzioni delle stringhe
-          std::string temp=line;
-          int pos=temp.find("ClientUserinfo:");
-          pos=temp.find_first_not_of(' ',pos+15);
-          int end=temp.find_first_of(' ',pos);
-          std::string numero=temp.substr(pos,end-pos);
-          pos=temp.find("ip",end);
-          pos=temp.find_first_not_of("\\",pos+3);
-          end=temp.find_first_of("\\ ",pos);
-          std::string ip=temp.substr(pos,end-pos);
-          pos=temp.find("name",end);
-          pos=temp.find_first_not_of("\\",pos+4);
-          end=temp.find_first_of("\\ ",pos);
-          std::string nick=temp.substr(pos,end-pos);
-          pos=temp.find("cl_guid",end);
-          pos=temp.find_first_not_of("\\",pos+7);
-          end=temp.find_first_of("\\ ",pos);
-          std::string guid=temp.substr(pos,end-pos);
-
-          std::cout<<"[-]Estrapolati i dati: numero="<<numero<<" guid="<<guid<<" nick="<<nick<<" ip="<<ip<<"\n";
-          logger->timestamp();
-          *logger<<"\n[-]Estrapolati i dati: numero="<<numero<<" guid="<<guid<<" nick="<<nick<<" ip="<<ip<<"\n";
-          //il giocatore c'è per forza (nel gioco deve fare un ClientConnect prima di userinfo)
-          //cerco il giocatore giusto all'interno della mia lista, e salvo il guid nelle info
-          unsigned int i=0;
-          bool nonTrovato=true;
-          bool kicked=false;
-          while (nonTrovato && i<giocatori[serverNumber].size())
-          {
-            if (giocatori[serverNumber][i]->number.compare(numero)==0)
-            {
-              nonTrovato=false;
-              if (!giocatori[serverNumber][i]->GUID.empty() && giocatori[serverNumber][i]->GUID.compare(guid)!=0)
-              {
-                kicked=true;
-                //cambio illegale del GUID => cheats
-                //è inutile inserirlo nel db, tanto cambia continuamente guid
-                std::cout<<"  [!] kick automatico per cheats.\n";
-                *logger<<"  [!] kick automatico per cheats.\n";
-                std::string frase("BanBot: kicking player number ");
-                frase.append(numero);
-                frase.append(" for cheats.");
-                server->say(frase,serverNumber);
-                sleep(SOCKET_PAUSE);
-                server->kick(numero,serverNumber);
-              }
-              else
-              {
-                //tutto a posto =)
-                //salvo guid e nick, inserisco il nick e l'ip nel db
-                giocatori[serverNumber][i]->nick=nick;
-                giocatori[serverNumber][i]->GUID=guid;
-                giocatori[serverNumber][i]->ip=ip;
-              }
-            }
-            else i++;
-          }
-
-          //se ho il guid del giocatore procedo coi controlli
-          if (!nonTrovato && !kicked)
-          {
-            //faccio un pò di controlli:
-            //controllo che non sia stato già bannato
-            if(database->checkBanGuid(guid))
-            {
-              //è stato bannato, lo butto fuori
-              std::cout<<"  [+] kick per ban.\n";
-              *logger<<"  [+] kick per ban.\n";
-              std::string frase("BanBot: kicking player number ");
-              frase.append(numero);
-              frase.append(", ");
-              frase.append(nick);
-              frase.append(" for ban.");
-              server->say(frase,serverNumber);
-              sleep(SOCKET_PAUSE);
-              server->kick(numero,serverNumber);
-            }
-            else
-            {
-              //ok, non è stato bannato (per il momento). Controllo se ha un GUID valido.
-              if (!isA(line, GUID))
-              {
-                  //il guid è illegale, ban diretto
-                  std::cout<<"  [!] kick automatico per GUID illegale\n";
-                  *logger<<"  [!] kick automatico per GUID illegale\n";
-                  std::string frase("BanBot: kicking player number ");
-                  frase.append(numero);
-                  frase.append(", ");
-                  frase.append(nick);
-                  frase.append(" for invalid guid.");
-                  server->say(frase,serverNumber);
-                  database->ban(guid);
-                  sleep(SOCKET_PAUSE);
-                  server->kick(numero,serverNumber);
-              }
-              else
-              {
-                  std::cout<<"  [OK] (s)he's ok.\n";
-                  *logger<<"  [OK] (s)he's ok.\n";
-              }
-            }
-          }
-          //ho finito le azioni in caso di clientUserinfo
+          clientUserInfo(line);
         }
         else
         {
@@ -274,39 +420,7 @@ void Analyzer::main_loop()
           if (isA(line, CLIENT_CONNECT))
           {
             //è un clientconnect:
-            //prendo il numero del giocatore e mi creo il nuovo player corrispondente in memoria
-            std::string temp=line;
-            int pos=temp.find("ClientConnect:");
-            pos=temp.find_first_not_of(" ",pos+14);
-            int end=temp.find_first_of(" \n\0",pos);
-            std::string numero=temp.substr(pos,end-pos);
-
-            std::cout<<"[-] Nuovo client connesso: "<<numero<<"\n";
-            logger->timestamp();
-            *logger<<"\n[-] Nuovo client connesso: "<<numero<<"\n";
-            //per pignoleria controllo che non sia già presente
-            unsigned int i=0;
-            bool nonTrovato=true;
-            while (nonTrovato && i<giocatori[serverNumber].size())
-            {
-              if (giocatori[serverNumber][i]->number.compare(numero)==0)
-                nonTrovato=false;
-              else i++;
-            }
-
-            //se non è presente, lo inserisco
-            if (nonTrovato)
-            {
-              Player * gioc=new Player();
-              gioc->number=numero;
-              giocatori[serverNumber].push_back(gioc);
-            }
-            else
-            {
-              //se c'è già, azzero il guid
-              giocatori[serverNumber][i]->GUID="";
-            }
-            //ho finito le azioni in caso di clientConnect
+            clientConnect(line);
           }
           else
           {
@@ -315,37 +429,7 @@ void Analyzer::main_loop()
             if (isA(line, CLIENT_DISCONNECT))
             {
               //è un clientDisconnect
-              //prendo il numero del giocatore e lo elimino
-              std::string temp=line;
-              int pos=temp.find("ClientDisconnect:");
-              pos=temp.find_first_not_of(" ",pos+17);
-              int end=temp.find_first_of(" \n\0",pos);
-              std::string numero=temp.substr(pos,end-pos);
-
-              std::cout<<"[-] Client disconnesso: "<<numero<<"\n";
-              logger->timestamp();
-              *logger<<"[-] Client disconnesso: "<<numero<<"\n";
-              //cerco il player e lo elimino
-              unsigned int i=0;
-              bool nonTrovato=true;
-              while(nonTrovato && i<giocatori[serverNumber].size())
-              {
-                if (giocatori[serverNumber][i]->number.compare(numero)==0)
-                {
-                //trovato. elimino prima l'oggetto puntato
-                nonTrovato=false;
-                delete giocatori[serverNumber][i];
-                //elimino l'elemento in vector: prendo l'iteratore
-                std::vector<Player*>::iterator iteratore=giocatori[serverNumber].begin();
-                //scorro fino all'elemento corretto
-                for (unsigned int j=0; j<i;j++) iteratore++;
-                //elimino l'elemento
-                giocatori[serverNumber].erase(iteratore);
-                }
-                else i++;
-              }
-
-              //finite le azioni in caso di disconnect
+              clientDisconnect(line);
             }
             else
             {
@@ -354,53 +438,7 @@ void Analyzer::main_loop()
               if (isA(line, BAN))
               {
                 //è una richiesta di ban:
-                std::cout<<"[!] Ban";
-                logger->timestamp();
-                *logger<<"\n[!] Ban";
-                //controllo se ho trovato il giocatore e i suoi permessi, se la persona non è autorizzata non faccio nulla.
-                if (isAdminSay(line))
-                {
-                  std::cout<<"  [OK] Is an admin. Applying ban.\n";
-                  *logger<<"  [OK] Is an admin. Applying ban.\n";
-                  //ok ha i permessi, eseguo.
-                  //prendo il numero del giocatore da bannare
-                  std::string temp(line);
-                  int pos=temp.find("!ban");
-                  pos=temp.find_first_not_of(" 0123456789",pos+4);
-                  int end=temp.find_first_of(" ",pos);
-                  std::string numero=temp.substr(pos,end-pos);
-
-                  //mi prendo il guid e il nick dalla lista dei giocatori (qua sto bene attento, un "utonto" potrebbe aver cappellato inserendo il numero)
-                  bool nonTrovato=true;
-                  std::string nick("");
-                  std::string guid("");
-                  int i=0;
-                  while(nonTrovato && i<giocatori[serverNumber].size())
-                  {
-                    if(giocatori[serverNumber][i]->number.compare(numero)==0)
-                    {
-                      guid=giocatori[serverNumber][i]->GUID;
-                      nick=giocatori[serverNumber][i]->nick;
-                      nonTrovato=false;
-                    }
-                    else i++;
-                }
-                //se ho il guid, banno il player (le operazioni non sono eseguite "in diretta",
-                //per pignoleria controllo anche se per una rarissima combinazione non è già bannato).
-                if (!nonTrovato && !database->checkBanGuid(guid))
-                {
-                  std::cout<<"  [+]banning "<<nick<<" with guid "<<guid<<"\n";
-                  *logger<<"  [+]banning "<<nick<<" with guid "<<guid<<"\n";
-                  std::string frase("BanBot: banning player number ");
-                  frase.append(numero);
-                  frase.append(", ");
-                  frase.append(nick);
-                  frase.append(".");
-                  server->say(frase,serverNumber);
-                  database->ban(guid);
-                  sleep(SOCKET_PAUSE);
-                  server->kick(numero,serverNumber);
-                }
+                ban(line);
               }
             }
               else
