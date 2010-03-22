@@ -35,7 +35,7 @@
 
 #include <iostream>
 
-Backup::Backup(std::vector<ConfigLoader::Option> opzioni)
+Backup::Backup(std::vector<ConfigLoader::Option> opzioni, Logger *logger)
 {
   for (unsigned int i=0;i<opzioni.size();i++)
   {
@@ -49,6 +49,7 @@ Backup::Backup(std::vector<ConfigLoader::Option> opzioni)
     }
   }
   done=false;
+  this->logger=logger;
 }
 
 Backup::~Backup()
@@ -79,7 +80,6 @@ bool Backup::isTimeToWork()
   std::string ofWork2=ofWork;
   ofWork.append(MINUTE);
   ofWork2.append(OVERMINUTE);
-  std::cout<<attuale<<" "<<ofWork<<" "<<ofWork2<<" "<<done<<"\n";
   if (attuale.compare(ofWork)>=0 && attuale.compare(ofWork2)<=0)
   {
     if (!done)
@@ -117,11 +117,12 @@ void Backup::spostaFiles()
     //mi preparo la stringa con il file di destinazione
     int pos=files[i].find_last_of("/");
     if (pos==-1) pos=0;
-    std::cout<<"Dio cane: "<<files[i]<<" "<<pos;
     std::string nomeFile=cartella;
     nomeFile.append("/");
     nomeFile.append(files[i].substr(pos));
     //sposto il file
+    std::cout<<" sposto "<<files[i]<<" in "<<nomeFile<<".\n";
+    *logger<<" sposto "<<files[i]<<" in "<<nomeFile<<".\n";
     std::rename(files[i].c_str(),nomeFile.c_str());
   }
 }
@@ -130,8 +131,13 @@ void Backup::doJobs()
 {
   if (isTimeToWork())
   {
+    std::cout<<"Inizio il backup...";
+    logger->timestamp();
+    *logger<<"\nInizio il backup...\n";
     checkFolder(directory);
     spostaFiles();
+    std::cout<<"Finito.\n";
+    *logger<<"Finito.\n";
   }
 }
 

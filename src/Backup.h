@@ -35,6 +35,7 @@
 #include <string>
 #include <vector>
 #include "ConfigLoader.h"
+#include "logger.h"
 
 //queste macro definiscono l'orario in cui effettuare l'archiviazione.
 //se il bot non e' utilizzato in simil-realtime, per comodita' si puo' definire
@@ -49,7 +50,7 @@
 class Backup
 {
   public:
-    Backup(std::vector<ConfigLoader::Option>);
+    Backup(std::vector<ConfigLoader::Option>,Logger *logger);
     ~Backup();
     void doJobs();
   private:
@@ -59,5 +60,6 @@ class Backup
     void checkFolder(std::string path);  //crea la cartella se non esiste.
     bool isTimeToWork();                //ritorna true se è il momento di fare il backup.
     bool done;
+    Logger *logger;
 };
 #endif
