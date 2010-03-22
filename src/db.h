@@ -45,26 +45,25 @@ using namespace std;//std::string;
 class Db
 {
     public:
-        Db( vector<ConfigLoader::Option>, vector<ConfigLoader::Banlist>, vector<ConfigLoader::Option>, Logger * );
+        Db( vector< ConfigLoader::Option >, vector< ConfigLoader::Banlist >, vector< ConfigLoader::Option >, Logger * );
         ~Db();
 
-        bool ban( const string &nick, const string &ip, const string &date, const string &time, const string &guid );
+        bool ban( const string &nick, const string &ip, const string &date, const string &time, const string &guid, const string &motive );
         bool checkAuthGuid( const string &guid );
         bool checkBanGuid( const string &guid );    //passa ( guid giocatore)
         bool checkDirAndFile( const string &guid ); //passa url file compreso
         void dumpBanned();
         void dumpDatabase();
 
-        //new func
         //banned table
-        int insertNewBanned( const string &nick, const string &ip,  const string &date, const string &time );
-        //bool modifyBanned( const string &query );
-        //bool deleteBanned( const string &query );
+        string insertNewBanned( const string &nick, const string &ip,  const string &date, const string &time, const string &motive );
+        bool modifyBanned( const string &nick, const string &ip,  const string &date, const string &time, const string &motive, const string &id );
+        bool deleteBanned( const string &id );
 
         //guid table
-        int insertNewGuid( const string &guid, int banId );
-        //bool modifyGuid( const string &query );
-        //bool deleteGuid( const string &query );
+        string insertNewGuid( const string &guid, const string &banId );
+        bool modifyGuid( const string &guid, const string &banId, const string &id );
+        bool deleteGuid( const string &id );
 
     private:
         sqlite3 *database;
@@ -74,7 +73,7 @@ class Db
         void loadBanlist( vector<ConfigLoader::Banlist> );
         int resultQuery( const string &query );    //se fallisce la query, -1, altrimenti il numero degli elementi restituiti
         bool execQuery( const string &query );    //per sapere se la query è andato a buon fine o meno senza sapere altro
-        std::vector<std::string> extractData( const string &query );   //returns vector with results as string
+        vector< string > extractData( const string &query );   //returns vector with results as string
         void close();
         bool connect();
         string intToString( int number );

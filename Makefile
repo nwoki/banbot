@@ -5,6 +5,7 @@ FILES = src/main.o \
 	src/Analyzer.o \
 	src/ConfigLoader.o \
 	src/logger.o \
+	src/Backup.o \
 	src/sqlite3/sqlite3.o
 
 #compiler
@@ -33,6 +34,9 @@ ConfigLoader.o : src/ConfigLoader.h src/ConfigLoader.cpp
 
 logger.o	: src/logger.h src/logger.cpp
 		$(CPP) $(CFLAGS) src/logger.h src/logger.cpp
+
+Backup.o	: src/Backup.h src/Backup.cpp
+		$(CPP) $(CFLAGS) src/Backup.h src/Backup.cpp
 
 sqlite3.o	: src/sqlite3/sqlite3.c
 		$(CC) $(CFLAGS) sqlite3.c

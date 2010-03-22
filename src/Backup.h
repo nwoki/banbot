@@ -1,4 +1,4 @@
-/*				
+/*
  *
  *   	Backup.h is part of BanBot.
  *
@@ -27,7 +27,7 @@
  *	Author:		[2s2h]Zamy
  *
  *	Description:	Questa classe si occupa di effettuare un backup giornaliero di tutti
- *			i file di log ad una determinata ora del giorno (di default le 5 A.M.).
+ *			i file di log ad una determinata ora del giorno (di default le 6:30 A.M.).
  *
  */
 #ifndef _backup_h_

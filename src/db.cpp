@@ -103,7 +103,7 @@ void Db::setupAdmins( vector<ConfigLoader::Option> admins )
     cout<<"  [-] setting up admin guid's.. \n";
     *logger<<"  [-] setting up admin guid's.. \n";
 
-    string clearQuery("delete from oplist;");
+    string clearQuery( "delete from oplist;" );
 
     if( resultQuery( clearQuery ) == 0 ){
         cout<<"    [*]cleaned admin table..\n";
@@ -119,7 +119,7 @@ void Db::setupAdmins( vector<ConfigLoader::Option> admins )
 
     for( int i = 0; i < admins.size(); i++ ){
         string aux;
-        aux.append( "insert into oplist values('" );
+        aux.append( "insert into oplist( nick, guid ) values('" );
         aux.append( admins[i].name );
         aux.append( "','" );
         aux.append( admins[i].value );
@@ -176,17 +176,14 @@ bool Db::connect()
 
 void Db::createDb()   //initial creation of database
 {
-    //to dump db from terminal
-    //sqlite3  Db.sqlite ".dump" > test
-
-    //create tables, oplist(nick, guid) and banned(id(autoincrement),ip,date,time),nick(id,nick), guid(id,guid)
     string createBannedTable(
     "create table banned("
     "id INTEGER PRIMARY KEY,"    //autoincrement
     "nick TEXT,"
     "ip TEXT,"
     "date TEXT,"
-    "time TEXT);" );
+    "time TEXT,"
+    "motive TEXT);" );
 
     string createGuidTable( //for banned users
     "create table guids("
@@ -197,8 +194,9 @@ void Db::createDb()   //initial creation of database
 
     string createOplistTable(
     "create table oplist("
-    "nick TEXT PRIMARY KEY,"
-    "guid TEXT );" );
+    "id INTEGER PRIMARY KEY,"
+    "nick TEXT,"
+    "guid TEXT);" );
 
     //checks...
     if( resultQuery( createBannedTable ) == 0 ){
@@ -259,42 +257,42 @@ void Db::dumpBanned()
 {
     string query( "select *from banned" );
 
-    cout<<"\n\n[-]Trying to dump banned guid's..\n";
-    *logger<<"[-]Trying to dump banned guid's..\n";
+    cout << "\n\n[-]Trying to dump banned guid's..\n";
+    *logger << "[-]Trying to dump banned guid's..\n";
 
     if( !resultQuery( query ) ){
-        cout<<"\e[0;33m[!]no banned guids to dump to file\e[0m \n";
-        *logger<<"[!]no banned guids to dump to file\n";
+        cout << "\e[0;33m[!]no banned guids to dump to file\e[0m \n";
+        *logger << "[!]no banned guids to dump to file\n";
         return;
     }
 
     //ready to dump to file
-    std::vector<std::string> dataToDump = extractData( query );
+    vector< string > dataToDump = extractData( query );
 
     //check for old file. If exists, delete it
     struct stat st;
 
     if( stat( "backup/Banlist.backup", &st ) == 0 ){
-        std::cout << "[-]deleting old banlist dump file..\n";
+        cout << "[-]deleting old banlist dump file..\n";
         if ( !system( "rm backup/Banlist.backup" ) )
-            cout<< "\e[0;33m[!]deleted old backup file..creating new one..\e[0m \n";
-        else cout<< "\e[0;31m [ERR]couldn't delete old dump file!\e[0m \n";
+            cout << "\e[0;33m[!]deleted old backup file..creating new one..\e[0m \n";
+        else cout << "\e[0;31m [ERR]couldn't delete old dump file!\e[0m \n";
     }
 
     //use logger class to save info to file
     Logger *output = new Logger( "backup/Banlist.backup" );
 
     if ( !output->open() ){
-        cout<<"\e[0;31m[ERR] can't write Banlist backup file!\e[0m \n";
-        *logger<<"[ERR] can't write Banlist backup file!\n";
+        cout << "\e[0;31m[ERR] can't write Banlist backup file!\e[0m \n";
+        *logger << "[ERR] can't write Banlist backup file!\n";
         return;
     }
 
     for( int i = 0; i < dataToDump.size(); i++ )
-        *output<<dataToDump[i]<<"\n";
+        *output << dataToDump[i] << "\n";
 
-    cout<<"\e[0;32m[OK] successfully written Banlist.backup file in 'backup/'\e[0m \n";
-    *logger<<"[OK] successfully written Banlist.backup file in 'backup/'\n";
+    cout << "\e[0;32m[OK] successfully written Banlist.backup file in 'backup/'\e[0m \n";
+    *logger << "[OK] successfully written Banlist.backup file in 'backup/'\n";
 
     output->close();
 
@@ -309,7 +307,7 @@ void Db::dumpDatabase() //to finish and understand
 }
 
 
-std::vector<std::string> Db::extractData( const string &query )    //returns vector with results as string
+vector< string > Db::extractData( const string &query )    //returns vector with results as string
 {
     SQLITE3 data( DATABASE );
 
@@ -345,14 +343,14 @@ bool Db::execQuery( const string &query )
     return success;
 }
 
-bool Db::ban( const string &ip, const string &nick, const string &date, const string &time, const string &guid ) //adds banned guid to database
+bool Db::ban( const string &ip, const string &nick, const string &date, const string &time, const string &guid, const string &motive ) //adds banned guid to database
 {
-    int banId = insertNewBanned( nick, ip, date, time );    //get the autoincrement id
+    string banId = insertNewBanned( nick, ip, date, time, motive );    //get the autoincrement id
 
-    if( banId == -1 )    // -1 is ERROR, all other numbers are valid
+    if( banId.empty() )    // empty string is ERROR
         return false;    //didn't write to database
 
-    if( insertNewGuid( guid, banId ) == -1 )    // -1 is ERROR, all other numbers are valid
+    if( insertNewGuid( guid, banId ).empty() )    // empty string is ERROR
         return false;
     //else went well
 
@@ -370,9 +368,9 @@ bool Db::ban( const string &ip, const string &nick, const string &date, const st
 
 
 //BANTABLE METHODS
-int Db::insertNewBanned( const std::string& nick, const std::string& ip, const std::string& date, const std::string& time )
+string Db::insertNewBanned( const string& nick, const string& ip, const string& date, const string &time, const string &motive )
 {
-    string newBanQuery( "insert into banned(nick,ip,date,time) values('" );
+    string newBanQuery( "insert into banned( nick, ip, date, time, motive ) values('" );
 
     newBanQuery.append( nick );
     newBanQuery.append( "','" );
@@ -381,43 +379,171 @@ int Db::insertNewBanned( const std::string& nick, const std::string& ip, const s
     newBanQuery.append( date );
     newBanQuery.append( "','" );
     newBanQuery.append( time );
+    newBanQuery.append( "','" );
+    newBanQuery.append( motive );
     newBanQuery.append( "');" );
 
     if( !execQuery( newBanQuery ) )
-        return -1;  //FAIL
+        return string();  //FAIL return empty string
 
     //else return last banId
-    std::vector<std::string> max;
+    vector< string > max;
 
-    max = extractData( "select max( id ) from banned" );
-    return atoi( max[0].c_str() );
+    max = extractData( "select max( id ) from banned;" );
+    return max[0];
 }
 
+
+bool Db::modifyBanned( const string &nick, const string &ip, const string &date, const string &time, const string &motive, const string &id )
+{
+    string query( "update banned set " );
+    bool paramCount = false;
+    //TODO semplificare questa funzione usando un vector o struct con chiave-valore
+
+    if( !nick.empty() ){
+        query.append( "nick = '" );
+        query.append( nick );
+        query.append( "' " );
+        paramCount = true;
+    }
+
+    if( !ip.empty() ){
+        if( paramCount )
+            query.append( "," );
+        query.append( "ip = '" );
+        query.append( ip );
+        query.append( "' " );
+        paramCount = true;
+    }
+
+    if( !date.empty() ){
+        if( paramCount )
+            query.append( "," );
+        query.append( "date = '" );
+        query.append( date );
+        query.append( "' " );
+        paramCount = true;
+    }
+
+    if( !time.empty() ){
+        if( paramCount )
+            query.append( "," );
+        query.append( "time = '" );
+        query.append( time );
+        query.append( "' " );
+    }
+
+    if( !motive.empty() ){
+        if( paramCount )
+            query.append( "," );
+        query.append( "motive = '" );
+        query.append( motive );
+        query.append( "' " );
+    }
+
+    query.append( "where id = '" );
+    query.append( id );
+    query.append( "';" );
+
+    //cout << "\nmodify banned" << query << "\n"
+    ;
+    if( !execQuery( query ) ){
+        cout << "\e[0;31m[FAIL] Db::modifyBanned : " << query << "\e[0m \n";
+        *logger << "[FAIL] Db::modifyBanned : " << query << "\n";
+        return false;
+    }
+    else return true;
+}
+
+
+bool Db::deleteBanned( const string &id )
+{
+    string query( "delete from banned where id ='" );
+    query.append( id );
+    query.append( "';" );
+
+    if( !execQuery( query ) ){
+        cout << "\e[0;31m[FAIL] Db::deleteBanned : " << query << "\e[0m \n";
+        *logger << "[FAIL] Db::deleteBaned : " << query << "\n";
+        return false;
+    }
+    else return true;
+}
+
+
 //GUIDTABLE METHODS
-int Db::insertNewGuid( const std::string& guid, int banId )
+string Db::insertNewGuid( const string& guid, const string &banId )
 {
     string newGuidQuery( "insert into guids(guid,banId) values('" );
 
     newGuidQuery.append( guid );
     newGuidQuery.append( "','" );
-    newGuidQuery.append( intToString( banId ) );
+    newGuidQuery.append( banId );
     newGuidQuery.append( "');" );
 
     if( !execQuery( newGuidQuery ) )
-        return -1;  //FAIL
+        return string();  //FAIL return empty string
 
     //else return last banId
-    std::vector<std::string> max;
+    vector< string > max;
 
-    max = extractData( "select max( id ) from guids" );cout<<"max guid is"<<max[0]<<"\n";
-    return atoi( max[0].c_str() );
+    max = extractData( "select max( id ) from guids" );
+    return max[0];
+}
+
+
+bool Db::modifyGuid( const string& guid, const string &banId, const string &id )
+{
+    string query( "update guids set ") ;
+    bool paramCount = false;
+
+    if( !guid.empty() ){
+        query.append( "guid = '" );
+        query.append( guid );
+        query.append( "' " );
+        paramCount = true;
+    }
+
+    if( !banId.empty() ){
+        if( paramCount )
+            query.append( "," );
+        query.append( "banId = '" );
+        query.append( banId );
+        query.append( "' " );
+    }
+
+    query.append( "where id = '" );
+    query.append( id );
+    query.append( "';" );
+
+    if( !execQuery( query ) ){
+        cout << "\e[0;31m[FAIL] Db::modifyGuid : " << query << "\e[0m \n";
+        *logger << "[FAIL] Db::modifyGuid : " << query << "\n";
+        return false;
+    }
+    else return true;
+}
+
+
+bool Db::deleteGuid( const string &id )
+{
+    string query( "delete from guids where id ='" );
+    query.append( id );
+    query.append( "';" );
+
+    if( !execQuery( query ) ){
+        cout << "\e[0;31m[FAIL] Db::deleteGuid : " << query << "\e[0m \n";
+        *logger << "[FAIL] Db::deleteGuid : " << query << "\n";
+        return false;
+    }
+    else return true;
 }
 
 
 string Db::intToString( int number )
 {
-    stringstream out;
-    //barbatrucco ;)
+    stringstream out;//barbatrucco ;)
+
     out << number;
     return out.str();
 }

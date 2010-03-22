@@ -34,15 +34,19 @@
 
 #define BOTCONFIG "cfg/BanBot.cfg"
 #define BANLIST "cfg/Banlist"
+#define ADMINLIST "cfg/Adminlist"
+
 using namespace std;
 
 int main( int argc, char *argv[] ){ //pass arguments to specify server logfile and bot logfile
     //carico le impostazioni e le salvo su opzioni
     ConfigLoader * caricatore = new ConfigLoader( BOTCONFIG );
     ConfigLoader * banList = new ConfigLoader( BANLIST );
+    ConfigLoader * adminList = new ConfigLoader( ADMINLIST );
 
     std::vector<ConfigLoader::Option> opzioni = caricatore->getOptions();
     std::vector<ConfigLoader::Banlist> banned = banList->getBanlist();
+    std::vector<ConfigLoader::Option> admins = adminList->getOptions();
 
     for ( int i = 0; i < opzioni.size(); i++ )
         cout << opzioni[i].name << " = " << opzioni[i].value << "\n";
@@ -51,6 +55,7 @@ int main( int argc, char *argv[] ){ //pass arguments to specify server logfile a
 
     delete caricatore;
     delete banList;
+    delete adminList;
 
     //inizializzo il logger
     int i = 0;
@@ -64,7 +69,7 @@ int main( int argc, char *argv[] ){ //pass arguments to specify server logfile a
         }
     }
 
-    Db *d = new Db( opzioni, banned, botLog ) ;
+    Db *d = new Db( opzioni, banned, admins, botLog ) ;
 
     found = 0;
     string ip;

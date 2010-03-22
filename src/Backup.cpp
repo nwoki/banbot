@@ -1,4 +1,4 @@
-/*				
+/*
  *
  *   	Backup.cpp is part of BanBot.
  *
@@ -135,10 +135,4 @@ void Backup::doJobs()
   }
 }
 
-int main ( int argc, char *argv[] )
-{
-  std::vector<ConfigLoader::Option> temp;
-  Backup t(temp);
-  t.doJobs();
-}
 #endif
