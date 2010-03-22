@@ -36,6 +36,16 @@
 #include <vector>
 #include "ConfigLoader.h"
 
+//queste macro definiscono l'orario in cui effettuare l'archiviazione.
+//se il bot non e' utilizzato in simil-realtime, per comodita' si puo' definire
+//un arco di tempo in cui il lavoro deve venir svolto.
+//per esempio, tra le 16:10 e le 16:32, diventa HOUR=15 MINUTE=10 OVERMINUTE=32
+//se il bot viene impostato per fare il suo lavoro più volte al minuto,
+//e' ragionevole impostare un solo minuto, e quindi con OVERMINUTE uguale a MINUTE
+#define HOUR "06"   //ora
+#define MINUTE "30"
+#define OVERMINUTE "31"
+
 class Backup
 {
   public:
@@ -47,5 +57,7 @@ class Backup
     std::string directory;
     void spostaFiles();
     void checkFolder(std::string path);  //crea la cartella se non esiste.
+    bool isTimeToWork();                //ritorna true se è il momento di fare il backup.
+    bool done;
 };
 #endif

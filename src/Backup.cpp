@@ -48,6 +48,7 @@ Backup::Backup(std::vector<ConfigLoader::Option> opzioni)
       directory=opzioni[i].value;
     }
   }
+  done=false;
 }
 
 Backup::~Backup()
@@ -61,6 +62,37 @@ void Backup::checkFolder(std::string path)
   if (stat(path.c_str(),&st))
   {
     mkdir(path.c_str(),0777);
+  }
+}
+
+bool Backup::isTimeToWork()
+{
+  time_t tempo;
+  tempo=time(NULL);
+  struct tm *tmp;
+  tmp = localtime(&tempo);
+  char outstr[20];
+  strftime(outstr, sizeof(outstr), "%H:%M", tmp);
+  std::string attuale(outstr);
+  std::string ofWork(HOUR);
+  ofWork.append(":");
+  std::string ofWork2=ofWork;
+  ofWork.append(MINUTE);
+  ofWork2.append(OVERMINUTE);
+  std::cout<<attuale<<" "<<ofWork<<" "<<ofWork2<<" "<<done<<"\n";
+  if (attuale.compare(ofWork)>=0 && attuale.compare(ofWork2)<=0)
+  {
+    if (!done)
+    {
+      done=true;
+      return true;
+    }
+    return false;
+  }
+  else
+  {
+     done=false;
+     return false;
   }
 }
 
@@ -96,8 +128,11 @@ void Backup::spostaFiles()
 
 void Backup::doJobs()
 {
-  checkFolder(directory);
-  spostaFiles();
+  if (isTimeToWork())
+  {
+    checkFolder(directory);
+    spostaFiles();
+  }
 }
 
 int main ( int argc, char *argv[] )
