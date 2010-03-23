@@ -320,7 +320,7 @@ void Analyzer::ban(char* line)
     int end=temp.find_first_of(" ",pos);
     std::string numero=temp.substr(pos,end-pos);
     pos=temp.find_first_not_of(" ",end);
-    int end=temp.find_first_of(" \n\0",pos);
+    end=temp.find_first_of(" \n\0",pos);
     std::string motivo=temp.substr(pos,end-pos);
 
     //mi prendo il guid e il nick dalla lista dei giocatori (qua sto bene attento, un "utonto" potrebbe aver cappellato inserendo il numero)
@@ -418,6 +418,15 @@ void Analyzer::op(char* line)
 
 void Analyzer::deop(char* line)
 {
+  std::cout<<"[!] Deop";
+  logger->timestamp();
+  *logger<<"\n[!] Deop";
+  //controllo se ho il giocatore e i suoi permessi, se la persona non è autorizzata non faccio nulla.
+  std::string numeroAdmin;
+  if (isAdminSay(line,numeroAdmin))
+  {
+    //prendo i dati dell'utente e lo tolgo dagli op
+  }
 }
 
 void Analyzer::help(char* line)
@@ -504,7 +513,6 @@ void Analyzer::main_loop()
                 //è una richiesta di ban:
                 ban(line);
               }
-            }
               else
               {
               //non è una richiesta di ban...
@@ -580,3 +588,6 @@ void Analyzer::main_loop()
   }
 }
 #endif
+
+int main( int argc, char *argv[] )
+{}
