@@ -61,6 +61,9 @@
                         //d'altro canto più alto è, maggiore sarà il tempo di risposta del bot).
 #define SOCKET_PAUSE 1  //per permettere al socket di funzionare bene, inserisco una pausa tra say e kick
 
+//stringa stampata all'utente con i comandi disponibili (quando viene dato il comando !help).
+#define COMMANDLIST "Comandi disponibili: !ban <number>, !unban <id>, !find <nick>, !op <number>, !deop <id>."
+
 class Analyzer
 {
 private:
@@ -74,6 +77,8 @@ private:
     const char* FIND;
     const char* UNBAN;
     const char* OP;
+    const char* DEOP;
+    const char* HELP;
     std::vector<std::string> files;
     std::vector<std::string> BotLogFiles;
     std::vector<std::streampos> row;
@@ -85,6 +90,8 @@ private:
     void find(char* line);
     void unban(char* line);
     void op(char* line);
+    void deop(char* line);
+    void help(char* line);
 
 protected:
     bool isA(char* line,std::string regex);

@@ -104,3 +104,20 @@ void Connection::say(string frase,int server)
   close(socketID);
 }
 
+void Connection::tell( string frase,string player, int server)
+{
+  prepareConnection(server);
+
+  string comando("rcon ");
+  comando.append(rconPass[server]);
+  comando.append(" tell ");
+  comando.append(player);
+  comando.append(" \"");
+  comando.append(frase);
+  comando.append("\"");
+
+  vector<char> command=makeCmd(comando);
+  int bufferSize = command.size();
+  sendto( socketID, command.data(), bufferSize, 0, &(sockaddr &)serverAdd, recvSize );
+  close(socketID);
+}

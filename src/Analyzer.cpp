@@ -54,11 +54,13 @@ Analyzer::Analyzer( Connection* conn, Db* db,Logger* primaryLog,Logger* logs, st
   CLIENT_USER_INFO=" *[0-9]+:[0-9]{2} +ClientUserinfo:";
   CLIENT_DISCONNECT=" *[0-9]+:[0-9]{2} +ClientDisconnect:";
   BAN=" *[0-9]+:[0-9]{2} +say: +[0-9]+ +[^ \t\n\r\f\v]+: +!ban [0-9]{1,2}";
-  FIND=" *[0-9]+:[0-9]{2} +say: +[0-9]+ +[^ \t\n\r\f\v]+: +!find ";
-  UNBAN=" *[0-9]+:[0-9]{2} +say: +[0-9]+ +[^ \t\n\r\f\v]+: +!find [0-9]+";
+  FIND=" *[0-9]+:[0-9]{2} +say: +[0-9]+ +[^ \t\n\r\f\v]+: +!find [^ \t\n\r\f\v]+";
+  UNBAN=" *[0-9]+:[0-9]{2} +say: +[0-9]+ +[^ \t\n\r\f\v]+: +!unban [0-9]+";
   OP=" *[0-9]+:[0-9]{2} +say: +[0-9]+ +[^ \t\n\r\f\v]+: +!op [0-9]{1,2}";
+  DEOP=" *[0-9]+:[0-9]{2} +say: +[0-9]+ +[^ \t\n\r\f\v]+: +!deop [0-9]+";
   GUID="[A-F0-9]{32}";
   INITGAME=" *[0-9]+:[0-9]{2} +InitGame:";
+  HELP=" *[0-9]+:[0-9]{2} +say: +[0-9]+ +[^ \t\n\r\f\v]+: +!help";
 
   std::cout<<"[OK] Analyzer inizializzato.\n";
   *generalLog<<"[OK] Analyzer inizializzato.\n\n";
@@ -359,14 +361,76 @@ void Analyzer::ban(char* line)
 
 void Analyzer::find(char* line)
 {
+  std::cout<<"[!] Find";
+  logger->timestamp();
+  *logger<<"\n[!] Find";
+  //controllo se ho il giocatore e i suoi permessi, se la persona non è autorizzata non faccio nulla.
+  std::string numero;
+  if (isAdminSay(line,numero))
+  {
+    std::cout<<"  [OK] Is an admin. Doing find.\n";
+    *logger<<"  [OK] Is an admin. Doing find.\n";
+
+    //estraggo il nick da cercare.
+    std::string temp(line);
+    int pos=temp.find("!find");
+    std::string nick=temp.substr(pos+6);
+
+    //ho il nick da cercare
+    std::cout<<"  [-]Searching for "<<nick<<".\n";
+    *logger<<"  [-]Searching for "<<nick<<".\n";
+    //eseguo la ricerca sul DB e invio i risultati al server di gioco.
+  }
 }
 
 void Analyzer::unban(char* line)
 {
+  std::cout<<"[!] Find";
+  logger->timestamp();
+  *logger<<"\n[!] Find";
+  //controllo se ho il giocatore e i suoi permessi, se la persona non è autorizzata non faccio nulla.
+  std::string numeroAdmin;
+  if (isAdminSay(line,numeroAdmin))
+  {
+    //prendo l'identificativo da sbannare
+    std::string temp(line);
+    int pos=temp.find("!ban");
+    pos=temp.find_first_not_of(" 0123456789",pos+4);
+    int end=temp.find_first_of(" ",pos);
+    std::string numero=temp.substr(pos,end-pos);
+
+    //ho il numero, elimino dal database tutti i record relativi.
+  }
 }
 
 void Analyzer::op(char* line)
 {
+  std::cout<<"[!] Op";
+  logger->timestamp();
+  *logger<<"\n[!] Op";
+  //controllo se ho il giocatore e i suoi permessi, se la persona non è autorizzata non faccio nulla.
+  std::string numeroAdmin;
+  if (isAdminSay(line,numeroAdmin))
+  {
+    //prendo i dati dell'utente e lo aggiungo tra gli op
+  }
+}
+
+void Analyzer::deop(char* line)
+{
+}
+
+void Analyzer::help(char* line)
+{
+  std::cout<<"[!] Help";
+  logger->timestamp();
+  *logger<<"\n[!] Help";
+  //controllo se ho il giocatore e i suoi permessi, se la persona non è autorizzata non faccio nulla.
+  std::string numero;
+  if (isAdminSay(line,numero))
+  {
+    server->tell(COMMANDLIST,numero,serverNumber);
+  }
 }
 
 //main loop
@@ -459,25 +523,7 @@ void Analyzer::main_loop()
                 if (isA(line,FIND))
                 {
                   //è un find.
-                  std::cout<<"[!] Find";
-                  logger->timestamp();
-                  *logger<<"\n[!] Find";
-                  //controllo se ho il giocatore e i suoi permessi, se la persona non è autorizzata non faccio nulla.
-                  if (isAdminSay(line))
-                  {
-                    std::cout<<"  [OK] Is an admin. Doing find.\n";
-                    *logger<<"  [OK] Is an admin. Doing find.\n";
-
-                    //estraggo il nick da cercare.
-                    std::string temp(line);
-                    int pos=temp.find("!find");
-                    std::string nick=temp.substr(pos+6);
-
-                    //ho il nick da cercare
-                    std::cout<<"  [-]Searching for "<<nick<<".\n";
-                    *logger<<"  [-]Searching for "<<nick<<".\n";
-                    //eseguo la ricerca sul DB e invio i risultati al server di gioco.
-                  }
+                  find(line);
                 }
                 else
                 {
@@ -485,39 +531,34 @@ void Analyzer::main_loop()
                   if (isA(line,UNBAN))
                   {
                     //è un comando di unban
-                    std::cout<<"[!] Find";
-                    logger->timestamp();
-                    *logger<<"\n[!] Find";
-                    //controllo se ho il giocatore e i suoi permessi, se la persona non è autorizzata non faccio nulla.
-                    if (isAdminSay(line))
-                    {
-                      //prendo l'identificativo da sbannare
-                      std::string temp(line);
-                      int pos=temp.find("!ban");
-                      pos=temp.find_first_not_of(" 0123456789",pos+4);
-                      int end=temp.find_first_of(" ",pos);
-                      std::string numero=temp.substr(pos,end-pos);
-
-                      //ho il numero, elimino dal database tutti i record relativi.
-                    }
+                    unban(line);
                   }
                   else
                   {
                     if (isA(line,OP))
                     {
                       //è un comando di op
-                      std::cout<<"[!] Op";
-                      logger->timestamp();
-                      *logger<<"\n[!] Op";
-                      //controllo se ho il giocatore e i suoi permessi, se la persona non è autorizzata non faccio nulla.
-                      if (isAdminSay(line))
-                      {
-                        //prendo i dati dell'utente e lo aggiungo tra gli op
-                      }
+                      op(line);
                     }
                     else
                     {
-                      expansion(line);
+                      if (isA(line,DEOP))
+                      {
+                        //è un comando di deop
+                        deop(line);
+                      }
+                      else
+                      {
+                        if (isA(line,HELP))
+                        {
+                          //è un help
+                          help(line);
+                        }
+                        else
+                        {
+                          expansion(line);
+                        }
+                      }
                     }
                   }
                 }
