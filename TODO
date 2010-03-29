@@ -1,0 +1,2 @@
+loggare gli errori del database su file e non sono stamparlo su schermo
+vedi riga 141 di db.h
