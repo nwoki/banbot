@@ -117,7 +117,7 @@ void Db::setupAdmins( vector<ConfigLoader::Option> admins )
     cout<<"    [-]trying to repopulate database\n";
     *logger<<"    [-]trying to repopulate database\n";
 
-    for( int i = 0; i < admins.size(); i++ ){
+    for( unsigned int i = 0; i < admins.size(); i++ ){
         string aux;
         aux.append( "insert into oplist( nick, guid ) values('" );
         aux.append( admins[i].name );
@@ -288,7 +288,7 @@ void Db::dumpBanned()
         return;
     }
 
-    for( int i = 0; i < dataToDump.size(); i++ )
+    for( unsigned int i = 0; i < dataToDump.size(); i++ )
         *output << dataToDump[i] << "\n";
 
     cout << "\e[0;32m[OK] successfully written Banlist.backup file in 'backup/'\e[0m \n";
@@ -313,6 +313,10 @@ vector< string > Db::extractData( const string &query )    //returns vector with
 
     if( !data.exe( query ) )  //found data
         return data.vdata; //get it
+    else {
+        vector< string > asd; //else return empty vector
+        return asd;
+    }
 }
 
 
@@ -352,6 +356,8 @@ bool Db::ban( const string &ip, const string &nick, const string &date, const st
 
     if( insertNewGuid( guid, banId ).empty() )    // empty string is ERROR
         return false;
+
+    return true;
     //else went well
 
     /*if( resultQuery( aux ) == 0 ){
@@ -390,7 +396,10 @@ string Db::insertNewBanned( const string& nick, const string& ip, const string& 
     vector< string > max;
 
     max = extractData( "select max( id ) from banned;" );
-    return max[0];
+
+    if( max.empty() )
+        return string();
+    else return max[0];
 }
 
 

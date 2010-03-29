@@ -28,7 +28,7 @@
 
 Connection::Connection(vector<ConfigLoader::Option> opzioni): recvSize( 0 )
 {
-  for (int i = 0; i < opzioni.size(); i++ ){
+  for ( unsigned int i = 0; i < opzioni.size(); i++ ){
       if ( opzioni[i].name.compare( "IP" ) == 0 )
           ip.push_back( (char*)opzioni[i].value.c_str() );
       else if ( opzioni[i].name.compare( "PORT" ) == 0 )
@@ -43,23 +43,23 @@ Connection::~Connection()
 
 }
 
-vector<char> Connection::makeCmd( string cmd) //cmd = "rcon " + pass + azione da compiere
+vector< char > Connection::makeCmd( string cmd ) //cmd = "rcon " + pass + azione da compiere
 {
-  vector<char> command(cmd.begin(),cmd.end());
-  vector<char> specials;
-  for (int i=0;i<4;i++)
+  vector< char > command( cmd.begin(), cmd.end() );
+  vector< char > specials;
+  for ( int i = 0; i < 4; i++ )
   {
-    specials.push_back('\xff');
+    specials.push_back( '\xff' );
   }
   //specials.push_back('\x02');
-  for (int i=0;i<command.size();i++)
+  for ( unsigned int i = 0; i < command.size(); i++ )
   {
-    specials.push_back(command[i]);
+    specials.push_back( command[i] );
   }
   return specials;
 }
 
-void Connection::prepareConnection(int server)
+void Connection::prepareConnection( int server )
 {
     socketID = socket( AF_INET, SOCK_DGRAM, 0 );
 
@@ -67,57 +67,57 @@ void Connection::prepareConnection(int server)
     serverAdd.sin_port = htons( port[server] );
     //recvSize = sizeof( serverAdd );
 
-    hp = gethostbyname(ip[server]);//127.0.0.1");"81.174.67.195"
+    hp = gethostbyname( ip[server] );
     memcpy( (char*)&serverAdd.sin_addr, (char*)hp->h_addr, hp->h_length );
 
     recvSize = sizeof( serverAdd );
 }
 
-void Connection::kick(string number,int server)
+void Connection::kick( string number, int server )
 {
-  prepareConnection(server);
+  prepareConnection( server );
 
-  string comando("rcon ");
-  comando.append(rconPass[server]);
-  comando.append(" kick ");
-  comando.append(number);
+  string comando( "rcon ");
+  comando.append( rconPass[server] );
+  comando.append( " kick " );
+  comando.append( number );
 
-  vector<char> command=makeCmd(comando);
+  vector< char > command = makeCmd( comando );
   int bufferSize = command.size();
   sendto( socketID, command.data(), bufferSize, 0, &(sockaddr &)serverAdd, recvSize );
-  close(socketID);
+  close( socketID );
 }
 
-void Connection::say(string frase,int server)
+void Connection::say( string frase, int server )
 {
-  prepareConnection(server);
+  prepareConnection( server );
 
-  string comando("rcon ");
-  comando.append(rconPass[server]);
-  comando.append(" say \"");
-  comando.append(frase);
-  comando.append("\"");
+  string comando( "rcon " );
+  comando.append( rconPass[server] );
+  comando.append( " say \"" );
+  comando.append( frase );
+  comando.append( "\"" );
 
-  vector<char> command=makeCmd(comando);
+  vector< char > command = makeCmd( comando );
   int bufferSize = command.size();
   sendto( socketID, command.data(), bufferSize, 0, &(sockaddr &)serverAdd, recvSize );
-  close(socketID);
+  close( socketID );
 }
 
-void Connection::tell( string frase,string player, int server)
+void Connection::tell( string frase, string player, int server )
 {
-  prepareConnection(server);
+  prepareConnection( server );
 
-  string comando("rcon ");
-  comando.append(rconPass[server]);
-  comando.append(" tell ");
-  comando.append(player);
-  comando.append(" \"");
-  comando.append(frase);
-  comando.append("\"");
+  string comando( "rcon " );
+  comando.append( rconPass[server] );
+  comando.append( " tell " );
+  comando.append( player );
+  comando.append( " \"" );
+  comando.append( frase );
+  comando.append( "\"" );
 
-  vector<char> command=makeCmd(comando);
+  vector< char > command = makeCmd( comando );
   int bufferSize = command.size();
   sendto( socketID, command.data(), bufferSize, 0, &(sockaddr &)serverAdd, recvSize );
-  close(socketID);
+  close( socketID );
 }
