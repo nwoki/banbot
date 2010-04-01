@@ -48,7 +48,6 @@ class Db
         Db( vector< ConfigLoader::Option >, vector< ConfigLoader::Banlist >, vector< ConfigLoader::Option >, Logger * );
         ~Db();
 
-        bool ban( const string &nick, const string &ip, const string &date, const string &time, const string &guid, const string &motive );
         bool checkAuthGuid( const string &guid );
         bool checkBanGuid( const string &guid );    //passa ( guid giocatore)
         bool checkDirAndFile( const string &guid ); //passa url file compreso
@@ -56,6 +55,7 @@ class Db
         void dumpDatabase();
 
         //banned table
+        bool ban( const string &nick, const string &ip, const string &date, const string &time, const string &guid, const string &motive );
         string insertNewBanned( const string &nick, const string &ip,  const string &date, const string &time, const string &motive );
         bool modifyBanned( const string &nick, const string &ip,  const string &date, const string &time, const string &motive, const string &id );
         bool deleteBanned( const string &id );
@@ -65,15 +65,20 @@ class Db
         bool modifyGuid( const string &guid, const string &banId, const string &id );
         bool deleteGuid( const string &id );
 
+        //oplist table
+        bool addOp( const string &nick, const string &guid );
+        bool modifyOp( const string &nick, const string &guid, const string &id );
+        bool deleteOp( const string &id );
+
     private:
         sqlite3 *database;
         void createDb();
         void setupAdmins( vector<ConfigLoader::Option> );
         //void loadAdminlist( vector<ConfigLoader::Option> ;  //NEW
         void loadBanlist( vector<ConfigLoader::Banlist> );
-        int resultQuery( const string &query );    //se fallisce la query, -1, altrimenti il numero degli elementi restituiti
+        int resultQuery( const string &query );    //se fallisce la query, -1, altrimenti restituisce il numero degli elementi trovati
         bool execQuery( const string &query );    //per sapere se la query è andato a buon fine o meno senza sapere altro
-        vector< string > extractData( const string &query );   //returns vector with results as string
+        vector< string > extractData( const string &query );   //ritorna un vettore con i/il risultato della query
         void close();
         bool connect();
         string intToString( int number );
@@ -102,10 +107,12 @@ class Db
 	      rc = sqlite3_open(database.c_str(), &db);
 
           if( rc ){
-              cout<<"\e[1;31m[FAIL] Can't open database: " << zErrMsg << "\e[0m \n";
+              cout<<"\e[1;31m[EPIC FAIL] Can't open database: " << zErrMsg << "\e[0m \n";
               sqlite3_close( db );
 	      }
 	      db_open = 1;
+          //debug msg
+          cout<< "\e[1;35mOPENED DB\e[0m \n";
 	    }
 
 	    int exe( const std::string &s_exe)
@@ -144,6 +151,8 @@ class Db
 	    ~SQLITE3()
 	    {
 	      sqlite3_close( db );
+          //debug msg
+          cout<< "\e[1;35mCLOSING DB\e[0m \n";
 	    }
 	};
 

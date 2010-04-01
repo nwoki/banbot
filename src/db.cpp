@@ -105,7 +105,7 @@ void Db::setupAdmins( vector<ConfigLoader::Option> admins )
 
     string clearQuery( "delete from oplist;" );
 
-    if( resultQuery( clearQuery ) == 0 ){
+    if( execQuery( clearQuery ) ){
         cout<<"    [*]cleaned admin table..\n";
         *logger<<"    [*]cleaned admin table..\n";
     }
@@ -117,15 +117,8 @@ void Db::setupAdmins( vector<ConfigLoader::Option> admins )
     cout<<"    [-]trying to repopulate database\n";
     *logger<<"    [-]trying to repopulate database\n";
 
-    for( int i = 0; i < admins.size(); i++ ){
-        string aux;
-        aux.append( "insert into oplist( nick, guid ) values('" );
-        aux.append( admins[i].name );
-        aux.append( "','" );
-        aux.append( admins[i].value );
-        aux.append( "');" );;
-
-        if ( resultQuery( aux ) == 0 ){
+    for( unsigned int i = 0; i < admins.size(); i++ ){
+        if( addOp( admins[i].name, admins[i].value ) ){
             cout<<"\e[0;32m      [+]added admin: " << admins[i].name << "\e[0m \n";//opzioni[i].value << "\e[0m \n";
             *logger<<"      [+]added admin: " << admins[i].value << "\n";
         }
@@ -288,7 +281,7 @@ void Db::dumpBanned()
         return;
     }
 
-    for( int i = 0; i < dataToDump.size(); i++ )
+    for( unsigned int i = 0; i < dataToDump.size(); i++ )
         *output << dataToDump[i] << "\n";
 
     cout << "\e[0;32m[OK] successfully written Banlist.backup file in 'backup/'\e[0m \n";
@@ -313,6 +306,10 @@ vector< string > Db::extractData( const string &query )    //returns vector with
 
     if( !data.exe( query ) )  //found data
         return data.vdata; //get it
+    else {
+        vector< string > asd; //else return empty vector
+        return asd;
+    }
 }
 
 
@@ -337,7 +334,11 @@ bool Db::execQuery( const string &query )
 
     if( !sql->exe( query ) )
         success = true;    //SUCCESS
-    else  success = false;  //FAIL
+    else{
+        success = false;  //FAIL
+        cout << "\e[1;31m[EPIC FAIL] Db::execQuery: " << query << " \e[0m \n";
+        *logger << "[EPIC FAIL] Db::execQuery: " << query << "\n";
+    }
 
     delete( sql );
     return success;
@@ -352,6 +353,8 @@ bool Db::ban( const string &ip, const string &nick, const string &date, const st
 
     if( insertNewGuid( guid, banId ).empty() )    // empty string is ERROR
         return false;
+
+    return true;
     //else went well
 
     /*if( resultQuery( aux ) == 0 ){
@@ -390,7 +393,10 @@ string Db::insertNewBanned( const string& nick, const string& ip, const string& 
     vector< string > max;
 
     max = extractData( "select max( id ) from banned;" );
-    return max[0];
+
+    if( max.empty() )
+        return string();
+    else return max[0];
 }
 
 
@@ -471,10 +477,10 @@ bool Db::deleteBanned( const string &id )
 }
 
 
-//GUIDTABLE METHODS
+//GUID TABLE METHODS
 string Db::insertNewGuid( const string& guid, const string &banId )
 {
-    string newGuidQuery( "insert into guids(guid,banId) values('" );
+    string newGuidQuery( "insert into guids( guid, banId ) values('" );
 
     newGuidQuery.append( guid );
     newGuidQuery.append( "','" );
@@ -537,6 +543,62 @@ bool Db::deleteGuid( const string &id )
         return false;
     }
     else return true;
+}
+
+
+//OPLIST TABLE METHODS
+bool Db::addOp( const string& nick, const string& guid )
+{
+    string addOpQuery( "insert into oplist( nick, guid ) values('" );
+    addOpQuery.append( nick );
+    addOpQuery.append( "','" );
+    addOpQuery.append( guid );
+    addOpQuery.append( "');" );
+
+    return execQuery( addOpQuery ); //true on success
+}
+
+
+bool Db::modifyOp( const string& nick, const string& guid, const string& id )
+{
+    string modifyQuery( "update oplist set ") ;
+    bool paramCount = false;
+
+    if( !nick.empty() ){
+        modifyQuery.append( "nick = '" );
+        modifyQuery.append( nick );
+        modifyQuery.append( "' " );
+        paramCount = true;
+    }
+
+    if( !guid.empty() ){
+        if( paramCount )
+            modifyQuery.append( "," );
+        modifyQuery.append( "guid = '" );
+        modifyQuery.append( guid );
+        modifyQuery.append( "' " );
+    }
+
+    modifyQuery.append( "where id = '" );
+    modifyQuery.append( id );
+    modifyQuery.append( "';" );
+
+    if( !execQuery( modifyQuery ) ){
+        cout << "\e[0;31m[FAIL] Db::modifyOp : " << modifyQuery << "\e[0m \n";
+        *logger << "[FAIL] Db::modifyOp : " << modifyQuery << "\n";
+        return false;
+    }
+    else return true;
+}
+
+
+bool Db::deleteOp( const string& id )
+{
+    string deleteQuery( "delete from oplist where id='" );
+    deleteQuery.append( id );
+    deleteQuery.append( "';" );
+
+    return execQuery( deleteQuery );
 }
 
 
