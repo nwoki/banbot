@@ -122,14 +122,14 @@ void Connection::tell( string frase, string player, int server )
   close(socketID);
 }
 
-void Connection::reload(int server=-1)
+void Connection::reload( int server )
 {
   if (server>=0)
   {
     string comando("rcon ");
     comando.append(rconPass[server]);
     comando.append(" reload");
-  
+
     vector<char> command=makeCmd(comando);
     int bufferSize = command.size();
     prepareConnection(server);
@@ -143,7 +143,7 @@ void Connection::reload(int server=-1)
       string comando("rcon ");
       comando.append(rconPass[i]);
       comando.append(" reload");
-    
+
       vector<char> command=makeCmd(comando);
       int bufferSize = command.size();
       prepareConnection(i);
