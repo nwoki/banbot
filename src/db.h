@@ -32,11 +32,11 @@
 #include <sys/stat.h>
 #include <stdlib.h>
 #include <string>
+#include <vector>
 #include "ConfigLoader.h"
 #include "sqlite3/sqlite3.h"
-//#include "logger.h"
-class Logger;
 
+class Logger;
 
 #define DATABASE "database/Db.sqlite"
 
@@ -50,6 +50,7 @@ class Db
 
         bool checkAuthGuid( const string &guid );
         bool checkBanGuid( const string &guid );    //passa ( guid giocatore)
+        bool checkBanNick( const string &nick );
         bool checkDirAndFile( const string &guid ); //passa url file compreso
         void dumpBanned();
         void dumpDatabase();
@@ -96,10 +97,10 @@ class Db
 
 	  public:
 
-	    std::vector<std::string> vcol_head;
-	    std::vector<std::string> vdata;
+	    vector< string > vcol_head;
+	    vector< string > vdata;
 
-	    SQLITE3 ( const std::string &database ):
+	    SQLITE3 ( const string &database ):
             zErrMsg( 0 ),
             rc( 0 ),
             db_open( 0 )
@@ -112,10 +113,12 @@ class Db
 	      }
 	      db_open = 1;
           //debug msg
-          cout<< "\e[1;35mOPENED DB\e[0m \n";
+          #ifdef DEBUG_MODE
+              cout<< "\e[1;35mOPENED DB\e[0m \n";
+          #endif
 	    }
 
-	    int exe( const std::string &s_exe)
+	    int exe( const string &s_exe)
 	    {
 	        rc = sqlite3_get_table(
                 db,              /* An open database */
@@ -139,7 +142,7 @@ class Db
                     vdata.push_back( result[ncol+i] );
 	        }
 	        else{
-                std::cout <<"\e[1;31m[EPIC FAIL] SQLITE3::exe() " << zErrMsg << "\e[0m \n";// sqlite3_errmsg( db );
+                cout <<"\e[1;31m[EPIC FAIL] SQLITE3::exe() " << zErrMsg << "\e[0m \n";// sqlite3_errmsg( db );
                 //come faccio a loggare l'errore che ricevo qui??? TODO
                 //*logger<< "[EPIC FAIL] SQLITE3::exe() " << zErrMsg << "\n";
             }
@@ -152,7 +155,9 @@ class Db
 	    {
 	      sqlite3_close( db );
           //debug msg
-          cout<< "\e[1;35mCLOSING DB\e[0m \n";
+          #ifdef DEBUG_MODE
+              cout<< "\e[1;36mCLOSING DB\e[0m \n";
+          #endif
 	    }
 	};
 

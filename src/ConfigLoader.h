@@ -37,7 +37,7 @@ private:
     std::ifstream cfg;
 
 public:
-    ConfigLoader( std::string filePath );
+    ConfigLoader( const std::string &filePath );
     ~ConfigLoader();
 
     class Option    //use for adminlist as well
@@ -50,7 +50,8 @@ public:
     class Banlist
     {
     public:
-        std::string banGuid;
+        std::string nick, ip, date, time, motive;
+        std::vector< std::string > guids;
     };
 
     std::vector< ConfigLoader::Option > getOptions();

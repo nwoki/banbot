@@ -29,9 +29,9 @@
 #include "ConfigLoader.h"
 
 //costruttore: apro il file
-ConfigLoader::ConfigLoader(std::string filePath)
+ConfigLoader::ConfigLoader( const std::string &filePath)
 {
-  cfg.open(filePath.c_str());
+  cfg.open( filePath.c_str() );
 }
 //distruttore:chiudo il file
 ConfigLoader::~ConfigLoader()
@@ -54,16 +54,16 @@ std::vector<ConfigLoader::Option> ConfigLoader::getOptions()
       //se non è un commento prendo le impostazioni
       if (line[0]!='#' && !cfg.eof())
       {
-	ConfigLoader::Option opzione;
+        ConfigLoader::Option opzione;
 
-	//la trasformo in stringa e estraggo le coppie chiave-valore
-	std::string riga=line;
-	int end=riga.find("=");
-	opzione.name=riga.substr(0,end);
-	opzione.value=riga.substr(end+1,riga.size());
+        //la trasformo in stringa e estraggo le coppie chiave-valore
+        std::string riga=line;
+        int end=riga.find("=");
+        opzione.name=riga.substr(0,end);
+        opzione.value=riga.substr(end+1,riga.size());
 
-	//aggiungo al vettore
-	vettore.push_back(opzione);
+        //aggiungo al vettore
+        vettore.push_back(opzione);
       }
     }
   }
@@ -80,17 +80,53 @@ std::vector<ConfigLoader::Banlist> ConfigLoader::getBanlist()
             char line[600];
             cfg.getline( line, 300 );
 
-            if( line[0] != '#' && !cfg.eof() ){
-                ConfigLoader::Banlist banlist;
+            ConfigLoader::Banlist banlist;
 
-                //la trasformo in stringa e estraggo le guid
-                std::string riga = line;
-                banlist.banGuid = riga.substr( 0, riga.size() );
+            //load banlist gen info ( nick, ip, date,ecc )
 
-                //aggiungo a vettore
-                vettore.push_back( banlist );
+            while( line[0] != '=' && !cfg.eof() ){
+                std::string riga = line;    //la trasformo in stringa e estraggo le guid
+                int end = riga.find( "=" );
+
+                //DEBUG
+                #ifdef DEBUG_MODE
+                    std::cout<< "\e[1;31m readline -> \e[0;m" << line << std::endl;
+                #endif
+                if( riga.substr( 0, end ) == "nick" )
+                    banlist.nick = riga.substr( end + 1, riga.size() );
+
+                else if ( riga.substr( 0, end ) == "ip" )
+                     banlist.ip = riga.substr( end + 1, riga.size() );
+
+                else if ( riga.substr( 0, end ) == "date" )
+                     banlist.date = riga.substr( end + 1, riga.size() );
+
+                else if ( riga.substr( 0, end ) == "time" )
+                     banlist.time = riga.substr( end + 1, riga.size() );
+
+                else if ( riga.substr( 0, end ) == "motive" )
+                     banlist.motive = riga.substr( end + 1, riga.size() );
+
+                cfg.getline( line, 300 );   //get new line
             }
+
+            while( line[0] != '#' && !cfg.eof() ){
+                std::string riga = line;
+                int end = riga.find( "=" );
+
+                //DEBUG
+                #ifdef DEBUG_MODE
+                    //std::cout<< "\e[1;31m readline -> \e[0;m" << riga << std::endl;
+                #endif
+
+                if( ( riga.substr( 0, end ) == "GUID" ) )
+                    banlist.guids.push_back( riga.substr( end + 1, riga.size() ) );
+
+                cfg.getline( line, 300 );
+            }
+            vettore.push_back( banlist );
         }
+        //vettore.push_back( banlist );
     }
     return vettore;
 }

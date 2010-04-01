@@ -25,6 +25,7 @@
 
 
 #include <sstream>  //per conversione int a str
+#include "ConfigLoader.h"
 #include "db.h"
 #include "logger.h"
 
@@ -132,26 +133,47 @@ void Db::setupAdmins( vector<ConfigLoader::Option> admins )
 
 void Db::loadBanlist( vector<ConfigLoader::Banlist> banned )
 {
-    /*if( banned.size() == 0 ){
+    cout << "\e[0;33m[!] Loading banlist to database.. \e[0m \n";
+
+    if( banned.empty() ){
         cout<<"\e[0;33m[!]Banlist EMPTY\e[0m \n";
         *logger<<"[!]Banlist EMPTY\n";
         return;
     }
 
-    int addedCounter = 0, onDbCounter = 0;
+    int playerCounter = 0,/* onDbCounter = 0,*/ addedGuidsCounter = 0;
+
     //adding banned users to db
     cout<<"\n[-]Adding banned users to database..\n\n";
 
-    for( int i = 0; i < banned.size(); i++ ){
-        if( checkBanGuid( banned[i].banGuid ) == 0 ){    //add if not on db
-            if ( ban( banned[i].banGuid ) )   //if success, add 1 to counter
-                addedCounter++;
-        }
-        else onDbCounter++;
-    }
+    for( unsigned int i = 0; i < banned.size() - 1; i++ ){  //TODO find out why it works with "-1" while for the guids i don't need the "-1"
 
-    cout << "\n\n\e[0;33m[!] " << onDbCounter << " already on database\e[0m \n";
-    cout << "\e[0;32m[*] Added [ " << addedCounter << "/" << banned.size() << " ] guids from file to database banlist\e[0m \n";*/
+        if( !checkBanNick( banned[i].nick ) ){   //if not on database
+
+            string banId = insertNewBanned( banned[i].nick, banned[i].ip, banned[i].date, banned[i].time, banned[i].motive );
+
+            if( banId.empty() ){
+                cout << "\e[0;31m[FAIL] can't add banned player: " << banned[i].nick << " to banned database!\e[0m \n";
+                *logger << "[FAIL] can't add banned player: " << banned[i].nick << " to banned database!\n";
+                return;
+            }
+
+            playerCounter++; //one user added
+
+            for( unsigned int j = 0; j < banned[i].guids.size(); j++ ){
+                string guidId = insertNewGuid( banned[i].guids[j], banId );
+
+                if( guidId.empty() ){
+                    cout << "\e[0;31m[FAIL] can't add banned player's guid: " << banned[i].nick << " to database!\e[0m \n";
+                    *logger << "[FAIL] can't add banned player: " << banned[i].nick << " to database!\n";
+                    return;
+                }
+                addedGuidsCounter++;
+            }
+        }
+    }
+    cout << "\e[0;33m Added " << playerCounter << " clients and " << addedGuidsCounter << " new guids to the database\e[0m \n";
+    *logger << "Added " << playerCounter << " clients and " << addedGuidsCounter << " new guids to the database \n";
 }
 
 
@@ -235,15 +257,30 @@ bool Db::checkAuthGuid( const string &guid )
 
 bool Db::checkBanGuid( const string &banGuid )
 {
-    string aux( "select guid from banned where guid='" );
-    aux.append( banGuid );
-    aux.append( "'" );
+    string query( "select guid from banned where guid='" );
+    query.append( banGuid );
+    query.append( "';" );
 
     cout << "[-] Test sul ban " << banGuid << "\n";
     *logger << "[-] Test sul ban "<< banGuid << "\n";
 
-    return ( resultQuery( aux ) > 0 );
+    if( resultQuery( query ) > 0 )
+        return true;
+    else return false;
 }
+
+
+bool Db::checkBanNick( const string& nick )
+{
+    string query( "select id from banned where nick='" );
+    query.append( nick );
+    query.append( "';" );
+
+    if( resultQuery( query ) > 0 )
+        return true;
+    else return false;
+}
+
 
 
 void Db::dumpBanned()

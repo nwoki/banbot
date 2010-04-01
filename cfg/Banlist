@@ -1,16 +1,25 @@
-#store you banned guid's here for bot to load ( just the GUID )
-#don't leave blank lines or the bot will take them in!
-#ex: 
-89JSGEOONSU837J
-SGEOONSU837J
-9JSGEOONSU837J
-JSGEOONSU837J
-389JSGEOONSU837J
-389JSGEOONS
-837J
-389JSGEOONSU
-389JSGEOONSUfghjklò
-sei
-una
-caccola
+#
+# DO NOT MODIFY THIS FILE!!
+# It is used by the bot to dump and reload banned players 
+# from it's database
+#
+nick=nick1
+ip=ip1
+date=date1
+time=time1
+motive=motive1
+=
+GUID=asdasad
+GUID=akakakakaka
+#####
+nick=nick2
+ip=ip2
+date=date2
+time=time2
+motive=motive2
+=
+GUID=asdasad2
+GUID=akakakakaka2
+GUID=number3
+#####
 #end
