@@ -50,9 +50,9 @@
 class Backup
 {
   public:
-    Backup(std::vector<ConfigLoader::Option>,Logger *logger);
+    Backup(std::vector<ConfigLoader::Option>,Logger *logger);  //da usare il log generale! Backup non apre e non chiude il file di log.
     ~Backup();
-    void doJobs();
+    bool doJobs();                       //ritorna true se ha effettuato il backup
   private:
     std::vector<std::string> files;
     std::string directory;

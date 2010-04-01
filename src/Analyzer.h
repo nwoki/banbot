@@ -56,6 +56,7 @@
 #include "db.h"
 #include "logger.h"
 #include "ConfigLoader.h"
+#include "Backup.h"
 
 #define TIME_SLEEPING 3 //tempo di attesa tra un giro e l'altro nell'analisi dei log (più è basso, più alto sarà il consumo (e spreco) di risorse,
                         //d'altro canto più alto è, maggiore sarà il tempo di risposta del bot).
@@ -82,6 +83,7 @@ private:
     std::vector<std::string> files;
     std::vector<std::string> BotLogFiles;
     std::vector<std::streampos> row;
+    Backup* backup;
     Logger* generalLog;
     void clientUserInfo(char* line);
     void clientConnect(char* line);
@@ -113,7 +115,7 @@ protected:
     std::vector< std::vector<Player*> > giocatori;    //array di array (un array di player per server)
 
 public:
-    Analyzer( Connection*, Db*,Logger*,Logger*, std::vector<ConfigLoader::Option>);
+    Analyzer( Connection*, Db*, Logger*, Logger*, Backup*, vector< ConfigLoader::Option > opzioni);
     ~Analyzer();
     void main_loop();
 };

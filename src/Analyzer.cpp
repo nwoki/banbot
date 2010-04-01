@@ -31,10 +31,11 @@
 #include <regex.h>
 
 //costruttore
-Analyzer::Analyzer( Connection* conn, Db* db,Logger* primaryLog,Logger* logs, std::vector<ConfigLoader::Option> opzioni ):
+Analyzer::Analyzer( Connection* conn, Db* db,Logger* primaryLog,Logger* logs, Backup* backup, std::vector<ConfigLoader::Option> opzioni ):
     logger( logs ),
     server( conn ),
     database( db ),
+    backup(backup),
     generalLog( primaryLog ),
     serverNumber( 0 )
 {
@@ -307,8 +308,8 @@ void Analyzer::ban(char* line)
   logger->timestamp();
   *logger<<"\n[!] Ban";
   //controllo se ho trovato il giocatore e i suoi permessi, se la persona non è autorizzata non faccio nulla.
-  std::string t;
-  if (isAdminSay(line,t))
+  std::string numeroAdmin;
+  if (isAdminSay(line,numeroAdmin))
   {
     std::cout<<"  [OK] Is an admin. Applying ban.\n";
     *logger<<"  [OK] Is an admin. Applying ban.\n";
@@ -355,6 +356,12 @@ void Analyzer::ban(char* line)
       database->ban(guid);
       sleep(SOCKET_PAUSE);
       server->kick(numero,serverNumber);
+    }
+    else
+    {
+      std::cout<<"  [!]fail: player not in-game or already banned\n";
+      *logger<<"  [!]fail: player not in-game or already banned\n";
+      server->tell("Banning error: player not in-game or already banned",numeroAdmin,serverNumber);
     }
   }
 }
@@ -464,6 +471,7 @@ void Analyzer::main_loop()
         std::cout<<"  [OK] Aperto!\n";
         *generalLog<<"  [OK] Aperto!\n";
       }
+      if(backup->doJobs()) server->reload();
       generalLog->close();
 
       //se il file è aperto posso lavorare

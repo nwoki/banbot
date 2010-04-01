@@ -35,7 +35,7 @@
 
 #include <iostream>
 
-Backup::Backup(std::vector<ConfigLoader::Option> opzioni, Logger *logger)
+Backup::Backup(std::vector<ConfigLoader::Option> opzioni, Logger *logger):done(false),logger(logger)
 {
   for (unsigned int i=0;i<opzioni.size();i++)
   {
@@ -48,8 +48,6 @@ Backup::Backup(std::vector<ConfigLoader::Option> opzioni, Logger *logger)
       directory=opzioni[i].value;
     }
   }
-  done=false;
-  this->logger=logger;
 }
 
 Backup::~Backup()
@@ -127,7 +125,7 @@ void Backup::spostaFiles()
   }
 }
 
-void Backup::doJobs()
+bool Backup::doJobs()
 {
   if (isTimeToWork())
   {
@@ -138,7 +136,9 @@ void Backup::doJobs()
     spostaFiles();
     std::cout<<"Finito.\n";
     *logger<<"Finito.\n";
+    return true;
   }
+  return false;
 }
 
 #endif

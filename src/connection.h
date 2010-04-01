@@ -49,6 +49,7 @@ class Connection
         void kick( string number, int server);  //prende il numero del giocatore da buttare fuori e il numero del server.
         void say( string frase, int server);    //prende la frase da scrivere pubblicamente ed il numero del server.
         void tell( string frase,string player, int server); //invia il messaggio privato "frase" al giocatore del numero contenuto in "player", nel server "server".
+        void reload(int server=-1);            //fa un reload della mappa. Se non indicato il server, lo fa su tutti i server.
 
     private:
         sockaddr_in serverAdd;// clientAdd;

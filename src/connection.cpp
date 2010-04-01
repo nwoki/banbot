@@ -121,3 +121,35 @@ void Connection::tell( string frase,string player, int server)
   sendto( socketID, command.data(), bufferSize, 0, &(sockaddr &)serverAdd, recvSize );
   close(socketID);
 }
+
+void Connection::reload(int server=-1)
+{
+  if (server>=0)
+  {
+    string comando("rcon ");
+    comando.append(rconPass[server]);
+    comando.append(" reload");
+  
+    vector<char> command=makeCmd(comando);
+    int bufferSize = command.size();
+    prepareConnection(server);
+    sendto( socketID, command.data(), bufferSize, 0, &(sockaddr &)serverAdd, recvSize );
+    close(socketID);
+  }
+  else
+  {
+    for (int i=0;i<ip.size();i++)
+    {
+      string comando("rcon ");
+      comando.append(rconPass[i]);
+      comando.append(" reload");
+    
+      vector<char> command=makeCmd(comando);
+      int bufferSize = command.size();
+      prepareConnection(i);
+      sendto( socketID, command.data(), bufferSize, 0, &(sockaddr &)serverAdd, recvSize );
+      close(socketID);
+      sleep(1);
+    }
+  }
+}
