@@ -510,7 +510,31 @@ bool Db::deleteBanned( const string &id )
         *logger << "[FAIL] Db::deleteBaned : " << query << "\n";
         return false;
     }
-    else return true;
+    //deleted banned user, and now to delete his saved guids
+    string getGuidQuery( "select id from guids where banId ='" );
+    getGuidQuery.append( id );
+    getGuidQuery.append( "';" );
+
+    vector< string > guidIds = extractData( getGuidQuery );
+
+    if( guidIds.empty() ){
+        cout << "\e[0;31m[FAIL] Db::deleteBanned : guidIds empty! \e[0m \n";
+        *logger << "[FAIL] Db::deleteBaned : guidIds empty! \n";
+        return false;
+    }
+    //delete all info with corrisponding id's
+    for( unsigned int i = 0; i < guidIds.size(); i++ ){
+        cout << "\e[1;35m guidid-> " <<  guidIds[i] << " \e[0m " << endl;
+        if ( deleteGuid( guidIds[i] ) ){
+            cout << "\e[0;32m[*] deleted guid with guidId: " << guidIds[i] << " \e[0m \n";
+            *logger << "[OK] Db::deleteBaned :deleted guid with guidId: " << guidIds[i] << "\n";
+        }
+        else{
+            cout << "\e[0;31m[FAIL] Db::deleteBanned : can't delete guid with guidId: " << guidIds[i] << " \e[0m \n";
+            *logger << "[FAIL] Db::deleteBaned : can't delete guid with guidId: " << guidIds[i] << " \n";
+        }
+    }
+    return true;
 }
 
 

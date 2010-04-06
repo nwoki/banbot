@@ -13,6 +13,9 @@ CPP=g++
 CC=gcc
 #compiler flags
 CFLAGS=-c -Wall -DSQLITE_THREADSAFE=0
+#defines
+#DEFINES=-DDEBUG
+
 
 BanBot : $(FILES)
 	 $(CPP) $(FILES) -o BanBot
@@ -42,7 +45,13 @@ sqlite3.o	: src/sqlite3/sqlite3.c
 		$(CC) $(CFLAGS) sqlite3.c
 
 clean :
-	 rm -rf src/*.o src/*.h~ src/*.cpp~
-	 rm -rf src/sqlite3/*.o src/sqlite3/*.h~ src/sqlite3/*.cpp~
-	 rm BanBot
-	 echo "cleaned all makefiles"
+	rm -rf cfg/~
+	rm -rf src/*.o src/*.h~ src/*.cpp~
+	rm -rf src/sqlite3/*.o src/sqlite3/*.h~ src/sqlite3/*.cpp~
+	rm BanBot
+	echo "cleaned all makefiles"
+
+tar :
+	make clean
+	tar cjvf Banbot.tar.gz src/ cfg/ Makefile README GPL_License.txt
+
