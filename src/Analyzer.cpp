@@ -30,6 +30,10 @@
 #include <unistd.h>
 #include <regex.h>
 
+//#include <time.h>
+//#include <stdlib.h>
+//#include <sys/stat.h>
+
 //costruttore
 Analyzer::Analyzer( Connection* conn, Db* db,Logger* primaryLog,Logger* logs, Backup* backup, std::vector<ConfigLoader::Option> opzioni ):
     logger( logs ),
@@ -74,7 +78,7 @@ Analyzer::~Analyzer()
 }
 
 //testa l'array di caratteri passato col regex, torna true se la condizione imposta dal regex è soddisfatta.
-bool Analyzer::isA( char* line, std::string regex )
+bool Analyzer::isA( char* line, const std::string& regex )
 {
     regex_t r;
 
@@ -169,6 +173,11 @@ void Analyzer::clientUserInfo(char* line)
         frase.append(numero);
         frase.append(" for cheats.");
         server->say(frase,serverNumber);
+        std::string ora;
+        std::string data;
+        std::string motivo("automated ban 4 cheats.");
+        getDateAndTime(data,ora);
+        database->ban(nick,ip,data,ora,guid,motivo);
         sleep(SOCKET_PAUSE);
         server->kick(numero,serverNumber);
       }
@@ -189,44 +198,90 @@ void Analyzer::clientUserInfo(char* line)
   {
     //faccio un pò di controlli:
     //controllo che non sia stato già bannato
+    //controllo se la guid è stata bannata
     if(database->checkBanGuid(guid))
     {
-      //è stato bannato, lo butto fuori
-      std::cout<<"  [+] kick per ban.\n";
-      *logger<<"  [+] kick per ban.\n";
-      std::string frase("BanBot: kicking player number ");
-      frase.append(numero);
-      frase.append(", ");
-      frase.append(nick);
-      frase.append(" for ban.");
-      server->say(frase,serverNumber);
-      sleep(SOCKET_PAUSE);
-      server->kick(numero,serverNumber);
-    }
-    else
-    {
-      //ok, non è stato bannato (per il momento). Controllo se ha un GUID valido.
-      if (!isA(line, GUID))
+      std::string query("SELECT banned.motive,banned.id FROM banned join guids ON banned.id=guids.banId WHERE guids.guid='");
+      query.append(guid);
+      query.append("';");
+      std::vector<std::string> risultato=database->extractData(query);
+      
+      //butto fuori la persona dal server
+      buttaFuori(risultato,numero,nick);
+      
+      //aggiorno i dati sul database
+      if (risultato.size()>1)
       {
-          //il guid è illegale, ban diretto
-          std::cout<<"  [!] kick automatico per GUID illegale\n";
-          *logger<<"  [!] kick automatico per GUID illegale\n";
-          std::string frase("BanBot: kicking player number ");
-          frase.append(numero);
-          frase.append(", ");
-          frase.append(nick);
-          frase.append(" for invalid guid.");
-          server->say(frase,serverNumber);
-          database->ban(guid);
-          sleep(SOCKET_PAUSE);
-          server->kick(numero,serverNumber);
-      }
-      else
-      {
-          std::cout<<"  [OK] (s)he's ok.\n";
-          *logger<<"  [OK] (s)he's ok.\n";
+        std::string ora;
+        std::string data;
+        getDateAndTime(data,ora);
+        database->modifyBanned(nick,ip,data,ora,NULL,risultato[1]);
       }
     }
+    else if (nickIsBanned(nick))
+      {
+        std::string query("SELECT motive,id FROM banned WHERE nick='");
+        query.append(guid);
+        query.append("';");
+        std::vector<std::string> risultato=database->extractData(query);
+    
+        buttaFuori(risultato, numero,nick);
+        
+        if (risultato.size()>1)
+        {
+          std::string ora;
+          std::string data;
+          getDateAndTime(data,ora);
+          database->modifyBanned(NULL,ip,data,ora,NULL,risultato[1]);
+          database->insertNewGuid(guid,risultato[1]);
+        }
+      }
+      else if (ipIsBanned(ip))
+        {
+          std::string query("SELECT motive,id FROM banned WHERE ip='");
+          query.append(ip);
+          query.append("';");
+          std::vector<std::string> risultato=database->extractData(query);
+      
+          buttaFuori(risultato, numero,nick);
+          
+          if (risultato.size()>1)
+          {
+            std::string ora;
+            std::string data;
+            getDateAndTime(data,ora);
+            database->modifyBanned(nick,NULL,data,ora,NULL,risultato[1]);
+            database->insertNewGuid(guid,risultato[1]);
+          }
+        }
+        else
+        {
+          //ok, non è stato bannato (per il momento). Controllo se ha un GUID valido.
+          if (!isA(line, GUID))
+          {
+              //il guid è illegale, ban diretto
+              std::cout<<"  [!] kick automatico per GUID illegale\n";
+              *logger<<"  [!] kick automatico per GUID illegale\n";
+              std::string frase("BanBot: kicking player number ");
+              frase.append(numero);
+              frase.append(", ");
+              frase.append(nick);
+              frase.append(" for invalid guid.");
+              server->say(frase,serverNumber);
+              std::string ora;
+              std::string data;
+              std::string motivo("automated ban 4 cheats.");
+              getDateAndTime(data,ora);
+              database->ban(nick,ip,data,ora,guid,motivo);
+              sleep(SOCKET_PAUSE);
+              server->kick(numero,serverNumber);
+          }
+          else
+          {
+              std::cout<<"  [OK] (s)he's ok.\n";
+              *logger<<"  [OK] (s)he's ok.\n";
+          }
+        }
   }
   //ho finito le azioni in caso di clientUserinfo
 }
@@ -353,7 +408,10 @@ void Analyzer::ban(char* line)
       frase.append(motivo);
       frase.append(".");
       server->say(frase,serverNumber);
-      database->ban(guid);
+      std::string ora;
+      std::string data;
+      getDateAndTime(data,ora);
+      database->ban(nick,giocatori[serverNumber][i]->ip,data,ora,guid,motivo);
       sleep(SOCKET_PAUSE);
       server->kick(numero,serverNumber);
     }
@@ -447,6 +505,93 @@ void Analyzer::help(char* line)
   {
     server->tell(COMMANDLIST,numero,serverNumber);
   }
+}
+
+void Analyzer::getDateAndTime(std::string &data,std::string &ora)
+{
+  time_t tempo;
+  tempo=time(NULL);
+  struct tm *tmp;
+  tmp = localtime(&tempo);
+  char outstr[20];
+  strftime(outstr, sizeof(outstr), "%H:%M", tmp);
+  ora=outstr;
+  
+  strftime(outstr, sizeof(outstr), "%F", tmp);
+  data=outstr;
+}
+
+void Analyzer::buttaFuori(const std::vector<std::string> &reason, const std::string numero, const std::string nick)
+{
+  //è stato bannato, lo butto fuori
+      std::cout<<"  [+] kick per ban.\n";
+      *logger<<"  [+] kick per ban.\n";
+      std::string frase("BanBot: kicking player number ");
+      frase.append(numero);
+      frase.append(", ");
+      frase.append(nick);
+      if (reason.size()>0)
+      {
+        frase.append(" banned for ");
+        frase.append(reason[0]);
+      }
+      frase.append(".");
+      server->say(frase,serverNumber);
+      sleep(SOCKET_PAUSE);
+      server->kick(numero,serverNumber);
+      
+      sleep(SOCKET_PAUSE);
+      frase.erase();
+      frase.append("Warning: the nick '");
+      frase.append(nick);
+      frase.append("' will be banned for an hour");
+      server->say(frase,serverNumber);
+}
+
+bool Analyzer::nickIsBanned(const std::string &nick)
+{
+  std::string ora;
+  std::string data;
+  getDateAndTime(data,ora);
+  
+  std::string query("SELECT date,time FROM banned WHERE nick='");
+  query.append(nick);
+  query.append("';");
+  std::vector<std::string> risultato=database->extractData(query);
+  
+  int oraAttuale=atoi(ora.substr(0,2).c_str());
+  int minutoAttuale=atoi(ora.substr(3,5).c_str());
+  for (int i=0;i<risultato.size();i+=2)
+  {
+    int oraBan=atoi(risultato[i+1].substr(0,2).c_str());
+    int minutoBan=atoi(risultato[i+1].substr(3,5).c_str());
+    int diff=(oraAttuale*60+minutoAttuale)-(oraBan*60+minutoBan);
+    if (data.compare(risultato[i])==0 && diff>0 && diff<60) return true;
+  }
+  return false;
+}
+
+bool Analyzer::ipIsBanned(const std::string &ip)
+{
+  std::string ora;
+  std::string data;
+  getDateAndTime(data,ora);
+  
+  std::string query("SELECT date,time FROM banned WHERE ip='");
+  query.append(ip);
+  query.append("';");
+  std::vector<std::string> risultato=database->extractData(query);
+  
+  int oraAttuale=atoi(ora.substr(0,2).c_str());
+  int minutoAttuale=atoi(ora.substr(3,5).c_str());
+  for (int i=0;i<risultato.size();i+=2)
+  {
+    int oraBan=atoi(risultato[i+1].substr(0,2).c_str());
+    int minutoBan=atoi(risultato[i+1].substr(3,5).c_str());
+    int diff=(oraAttuale*60+minutoAttuale)-(oraBan*60+minutoBan);
+    if (data.compare(risultato[i])==0 && diff>0 && diff<60) return true;
+  }
+  return false;
 }
 
 //main loop
@@ -596,6 +741,3 @@ void Analyzer::main_loop()
   }
 }
 #endif
-
-int main( int argc, char *argv[] )
-{}

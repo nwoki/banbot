@@ -122,7 +122,7 @@ void Connection::tell( string frase, string player, int server )
   close(socketID);
 }
 
-void Connection::reload( int server )
+void Connection::reload(int server)
 {
   if (server>=0)
   {

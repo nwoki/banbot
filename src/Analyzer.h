@@ -63,7 +63,7 @@
 #define SOCKET_PAUSE 1  //per permettere al socket di funzionare bene, inserisco una pausa tra say e kick
 
 //stringa stampata all'utente con i comandi disponibili (quando viene dato il comando !help).
-#define COMMANDLIST "Comandi disponibili: !ban <number>, !unban <id>, !find <nick>, !op <number>, !deop <id>."
+#define COMMANDLIST "Comandi disponibili: !ban <number> [<reason>], !unban <id>, !find <nick>, !op <number>, !deop <id>."
 
 class Analyzer
 {
@@ -96,9 +96,13 @@ private:
     void help(char* line);
 
 protected:
-    bool isA(char* line,std::string regex);
+    bool isA(char* line,const std::string &regex);
     bool isAdminSay(char *line, std::string &numero);		//ritorna true se la richiesta è stata fatta da un admin, salva in numero il numero del giocatore che ha fatto la richiesta.
     virtual void expansion(char* line);
+    void getDateAndTime(std::string &date,std::string &time); //salva nelle stringhe data e ora.
+    bool nickIsBanned(const std::string &nick);               //controlla se il nick è stato bannato.
+    bool ipIsBanned(const std::string &ip);               //controlla se il nick è stato bannato.
+    void buttaFuori(const std::vector< string >& reason, const std::string numero, const std::string nick);
     Connection * server;
     Db * database;
     Logger* logger;
