@@ -96,9 +96,10 @@ private:
     void help(char* line);
 
 protected:
-    bool isA(char* line,std::string regex);
+    bool isA(char* line,const std::string &regex);
     bool isAdminSay(char *line, std::string &numero);		//ritorna true se la richiesta è stata fatta da un admin, salva in numero il numero del giocatore che ha fatto la richiesta.
     virtual void expansion(char* line);
+    void getDateAndTime(std::string &date,std::string &time); //salva nelle stringhe data e ora.
     Connection * server;
     Db * database;
     Logger* logger;

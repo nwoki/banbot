@@ -30,6 +30,10 @@
 #include <unistd.h>
 #include <regex.h>
 
+//#include <time.h>
+//#include <stdlib.h>
+//#include <sys/stat.h>
+
 //costruttore
 Analyzer::Analyzer( Connection* conn, Db* db,Logger* primaryLog,Logger* logs, Backup* backup, std::vector<ConfigLoader::Option> opzioni ):
     logger( logs ),
@@ -74,7 +78,7 @@ Analyzer::~Analyzer()
 }
 
 //testa l'array di caratteri passato col regex, torna true se la condizione imposta dal regex è soddisfatta.
-bool Analyzer::isA( char* line, std::string regex )
+bool Analyzer::isA( char* line, const std::string& regex )
 {
     regex_t r;
 
@@ -169,6 +173,11 @@ void Analyzer::clientUserInfo(char* line)
         frase.append(numero);
         frase.append(" for cheats.");
         server->say(frase,serverNumber);
+        std::string ora;
+        std::string data;
+        std::string motivo("automated ban 4 cheats.");
+        getDateAndTime(data,ora);
+        database->insertNewBanned(nick,ip,data,ora,motivo);
         sleep(SOCKET_PAUSE);
         server->kick(numero,serverNumber);
       }
@@ -217,7 +226,11 @@ void Analyzer::clientUserInfo(char* line)
           frase.append(nick);
           frase.append(" for invalid guid.");
           server->say(frase,serverNumber);
-          database->ban(guid);
+          std::string ora;
+          std::string data;
+          std::string motivo("automated ban 4 cheats.");
+          getDateAndTime(data,ora);
+          database->insertNewBanned(nick,ip,data,ora,motivo);
           sleep(SOCKET_PAUSE);
           server->kick(numero,serverNumber);
       }
@@ -353,7 +366,10 @@ void Analyzer::ban(char* line)
       frase.append(motivo);
       frase.append(".");
       server->say(frase,serverNumber);
-      database->ban(guid);
+      std::string ora;
+      std::string data;
+      getDateAndTime(data,ora);
+      database->insertNewBanned(nick,giocatori[serverNumber][i]->ip,data,ora,motivo);
       sleep(SOCKET_PAUSE);
       server->kick(numero,serverNumber);
     }
@@ -447,6 +463,20 @@ void Analyzer::help(char* line)
   {
     server->tell(COMMANDLIST,numero,serverNumber);
   }
+}
+
+void Analyzer::getDateAndTime(std::string &data,std::string &ora)
+{
+  time_t tempo;
+  tempo=time(NULL);
+  struct tm *tmp;
+  tmp = localtime(&tempo);
+  char outstr[20];
+  strftime(outstr, sizeof(outstr), "%H:%M", tmp);
+  ora=outstr;
+  
+  strftime(outstr, sizeof(outstr), "%F", tmp);
+  data=outstr;
 }
 
 //main loop
@@ -596,6 +626,3 @@ void Analyzer::main_loop()
   }
 }
 #endif
-
-int main( int argc, char *argv[] )
-{}
