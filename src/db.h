@@ -69,6 +69,8 @@ class Db
         bool addOp( const string &nick, const string &guid );
         bool modifyOp( const string &nick, const string &guid, const string &id );
         bool deleteOp( const string &id );
+        
+        vector< string > extractData( const string &query );   //ritorna un vettore con i/il risultato della query
 
     private:
         sqlite3 *database;
@@ -78,7 +80,6 @@ class Db
         void loadBanlist( vector<ConfigLoader::Banlist> );
         int resultQuery( const string &query );    //se fallisce la query, -1, altrimenti restituisce il numero degli elementi trovati
         bool execQuery( const string &query );    //per sapere se la query è andato a buon fine o meno senza sapere altro
-        vector< string > extractData( const string &query );   //ritorna un vettore con i/il risultato della query
         void close();
         bool connect();
         string intToString( int number );
