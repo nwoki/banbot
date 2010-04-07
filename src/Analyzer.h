@@ -103,6 +103,7 @@ protected:
     bool nickIsBanned(const std::string &nick);               //controlla se il nick è stato bannato.
     bool ipIsBanned(const std::string &ip);               //controlla se il nick è stato bannato.
     void buttaFuori(const std::vector< string >& reason, const std::string numero, const std::string nick);
+    std::string correggi(std::string stringa);          //corregge la riga di testo per l'inserimento e l'utilizzo col database
     Connection * server;
     Db * database;
     Logger* logger;
