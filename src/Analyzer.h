@@ -63,7 +63,7 @@
 #define SOCKET_PAUSE 1  //per permettere al socket di funzionare bene, inserisco una pausa tra say e kick
 
 //stringa stampata all'utente con i comandi disponibili (quando viene dato il comando !help).
-#define COMMANDLIST "Comandi disponibili: !ban <number> [<reason>], !unban <id>, !find <nick>, !op <number>, !deop <id>."
+#define COMMANDLIST "Comandi disponibili: !ban <number> [<reason>], !unban <id>, !kick <number>, !find <nick>, !findop <nick>, !op <number>, !deop <id>."
 
 class Analyzer
 {
@@ -76,10 +76,12 @@ private:
     const char* GUID;
     const char* INITGAME;
     const char* FIND;
+    const char* FINDOP;
     const char* UNBAN;
     const char* OP;
     const char* DEOP;
     const char* HELP;
+    const char* KICK;
     std::vector<std::string> files;
     std::vector<std::string> BotLogFiles;
     std::vector<std::streampos> row;
@@ -90,10 +92,12 @@ private:
     void clientDisconnect(char* line);
     void ban(char* line);
     void find(char* line);
+    void findOp(char* line);
     void unban(char* line);
     void op(char* line);
     void deop(char* line);
     void help(char* line);
+    void kick(char* line);
 
 protected:
     bool isA(char* line,const std::string &regex);
