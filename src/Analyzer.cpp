@@ -215,7 +215,7 @@ void Analyzer::clientUserInfo(char* line)
         std::string ora;
         std::string data;
         getDateAndTime(data,ora);
-        database->modifyBanned(correggi(nick),ip,data,ora,NULL,risultato[1]);
+        database->modifyBanned(correggi(nick),ip,data,ora,std::string(),risultato[1]);
       }
     }
     //controllo se il nick è bannato
@@ -233,7 +233,7 @@ void Analyzer::clientUserInfo(char* line)
           std::string ora;
           std::string data;
           getDateAndTime(data,ora);
-          database->modifyBanned(NULL,ip,data,ora,NULL,risultato[1]);
+          database->modifyBanned(std::string(),ip,data,ora,std::string(),risultato[1]);
           database->insertNewGuid(correggi(guid),risultato[1]);
         }
       }
@@ -251,7 +251,7 @@ void Analyzer::clientUserInfo(char* line)
             std::string ora;
             std::string data;
             getDateAndTime(data,ora);
-            database->modifyBanned(correggi(nick),NULL,data,ora,NULL,risultato[1]);
+            database->modifyBanned(correggi(nick),std::string(),data,ora,std::string(),risultato[1]);
             database->insertNewGuid(correggi(guid),risultato[1]);
           }
         }
@@ -518,9 +518,9 @@ void Analyzer::find(char* line)
 
 void Analyzer::unban(char* line)
 {
-  std::cout<<"[!] Find";
+  std::cout<<"[!] Unban";
   logger->timestamp();
-  *logger<<"\n[!] Find";
+  *logger<<"\n[!] Unban";
   //controllo se ho il giocatore e i suoi permessi, se la persona non è autorizzata non faccio nulla.
   std::string numeroAdmin;
   if (isAdminSay(line,numeroAdmin))
@@ -533,6 +533,15 @@ void Analyzer::unban(char* line)
     std::string numero=temp.substr(pos,end-pos);
 
     //ho il numero, elimino dal database tutti i record relativi.
+    std::string query("DELETE FROM guids WHERE banId='");
+    query.append(numero);
+    query.append("';");
+    database->extractData(query);
+    std::string frase;
+    if (database->deleteBanned(numero))
+      frase.append("BanBot: utente sbannato con successo.");
+    else frase.append("BanBot: è stato riscontrato un errore, utente non sbannato.");
+    server->tell(frase,numeroAdmin,serverNumber);
   }
 }
 
@@ -545,7 +554,31 @@ void Analyzer::op(char* line)
   std::string numeroAdmin;
   if (isAdminSay(line,numeroAdmin))
   {
+    //prendo il numero del player da aggiungere tra gli admin
+    std::string temp(line);
+    int pos=temp.find("!unban");
+    pos=temp.find_first_of("0123456789",pos+6);
+    int end=temp.find_first_of(" ",pos);
+    std::string numero=temp.substr(pos,end-pos);
+    
     //prendo i dati dell'utente e lo aggiungo tra gli op
+    unsigned int i=0;
+    bool nonTrovato=true;
+    while (nonTrovato && i<giocatori[serverNumber].size())
+    {
+      if (giocatori[serverNumber][i]->number.compare(numero)==0)
+        nonTrovato=false;
+      else i++;
+    }
+    if (nonTrovato)
+      server->tell("Error: player not found.",numeroAdmin,serverNumber);
+    else
+    {
+      if(database->addOp(giocatori[serverNumber][i]->nick,giocatori[serverNumber][i]->GUID))
+        server->tell("BanBot: admin aggiunto con successo.",numeroAdmin,serverNumber);
+      else
+        server->tell("Fail: player non aggiunto alla lista admin.",numeroAdmin,serverNumber);
+    }
   }
 }
 
@@ -559,6 +592,18 @@ void Analyzer::deop(char* line)
   if (isAdminSay(line,numeroAdmin))
   {
     //prendo i dati dell'utente e lo tolgo dagli op
+    std::string temp(line);
+    int pos=temp.find("!unban");
+    pos=temp.find_first_of("0123456789",pos+6);
+    int end=temp.find_first_of(" ",pos);
+    std::string numero=temp.substr(pos,end-pos);
+
+    //ho il numero, elimino dal database tutti i record relativi.
+    std::string frase;
+    if (database->deleteOp(numero))
+      frase.append("BanBot: utente tolto con successo dalla lista admin.");
+    else frase.append("BanBot: è stato riscontrato un errore.");
+    server->tell(frase,numeroAdmin,serverNumber);
   }
 }
 
@@ -567,8 +612,12 @@ void Analyzer::help(char* line)
   std::cout<<"[!] Help";
   logger->timestamp();
   *logger<<"\n[!] Help";
-  //controllo se ho il giocatore e i suoi permessi, se la persona non è autorizzata non faccio nulla.
-  std::string numero;
+  
+  std::string temp = line;
+  int pos = temp.find( "say:" );
+  pos = temp.find_first_not_of( " ", pos+4 );
+  int end = temp.find_first_of( " ", pos );
+  std::string numero = temp.substr( pos, end-pos );
   
   server->tell(COMMANDLIST,numero,serverNumber);
 }
