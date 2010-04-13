@@ -7,7 +7,7 @@
  *   	the Free Software Foundation, either version 3 of the License, or
  *   	(at your option) any later version.
  *
- *	BanBot is distributed in the hope that it will be useful,
+ *      BanBot is distributed in the hope that it will be useful,
  *   	but WITHOUT ANY WARRANTY; without even the implied warranty of
  *   	MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
  *   	GNU General Public License for more details.
@@ -43,7 +43,7 @@
  *	Description:	Fa da interfaccia ai file di log, si preoccupa di controllare
  *                 	gli utenti connessi ed i ban. Utilizza un'altra classe per accedere
  *                  	al database (per controllare gli utenti bannati) e per accedere
- *                  	al server (per kickare i giocatori).
+ *                  	al server (per kickare i giocatori o inviare messaggi).
 */
 
 #ifndef _Analyzer_h_
@@ -63,7 +63,7 @@
 #define SOCKET_PAUSE 1  //per permettere al socket di funzionare bene, inserisco una pausa tra say e kick
 
 //stringa stampata all'utente con i comandi disponibili (quando viene dato il comando !help).
-#define COMMANDLIST "Comandi disponibili: !ban <number> [<reason>], !unban <id>, !kick <number>, !find <nick>, !findop <nick>, !op <number>, !deop <id>."
+#define COMMANDLIST "Comandi disponibili: !ban <number> [<reason>], !unban <id>, !kick <number>, !mute <number>, !unmute <number>, !find <nick>, !findop <nick>, !op <number>, !deop <id>."
 
 class Analyzer
 {
@@ -82,6 +82,8 @@ private:
     const char* DEOP;
     const char* HELP;
     const char* KICK;
+    const char* MUTE;
+    const char* UNMUTE;
     std::vector<std::string> files;
     std::vector<std::string> BotLogFiles;
     std::vector<std::streampos> row;
@@ -98,6 +100,8 @@ private:
     void deop(char* line);
     void help(char* line);
     void kick(char* line);
+    void mute(char* line);
+    void unmute(char* line);
 
 protected:
     bool isA(char* line,const std::string &regex);

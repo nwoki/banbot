@@ -153,3 +153,32 @@ void Connection::reload(int server)
     }
   }
 }
+
+void Connection::mute( string number, int server)
+{
+  prepareConnection( server );
+
+  string comando( "rcon " );
+  comando.append( rconPass[server] );
+  comando.append( " mute " );
+  comando.append( number );
+
+  vector< char > command = makeCmd( comando );
+  int bufferSize = command.size();
+  sendto( socketID, command.data(), bufferSize, 0, &(sockaddr &)serverAdd, recvSize );
+  close(socketID);
+}
+void Connection::unmute( string number, int server)
+{
+    prepareConnection( server );
+
+  string comando( "rcon " );
+  comando.append( rconPass[server] );
+  comando.append( " unmute " );
+  comando.append( number );
+
+  vector< char > command = makeCmd( comando );
+  int bufferSize = command.size();
+  sendto( socketID, command.data(), bufferSize, 0, &(sockaddr &)serverAdd, recvSize );
+  close(socketID);
+}

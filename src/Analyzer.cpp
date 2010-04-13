@@ -68,6 +68,8 @@ Analyzer::Analyzer( Connection* conn, Db* db,Logger* primaryLog,Logger* logs, Ba
   INITGAME=" *[0-9]+:[0-9]{2} +InitGame:";
   HELP=" *[0-9]+:[0-9]{2} +say: +[0-9]+ +[^ \t\n\r\f\v]+: +!help";
   KICK=" *[0-9]+:[0-9]{2} +say: +[0-9]+ +[^ \t\n\r\f\v]+: +!kick [0-9]{1,2}";
+  MUTE=" *[0-9]+:[0-9]{2} +say: +[0-9]+ +[^ \t\n\r\f\v]+: +!mute [0-9]{1,2}";
+  UNMUTE=" *[0-9]+:[0-9]{2} +say: +[0-9]+ +[^ \t\n\r\f\v]+: +!unmute [0-9]{1,2}";
 
   std::cout<<"[OK] Analyzer inizializzato.\n";
   *generalLog<<"[OK] Analyzer inizializzato.\n\n";
@@ -724,6 +726,54 @@ void Analyzer::kick(char* line)
   }
 }
 
+void Analyzer::mute(char* line)
+{
+  std::cout<<"[!] Mute";
+  logger->timestamp();
+  *logger<<"\n[!] Mute";
+  //controllo se ho il giocatore e i suoi permessi, se la persona non è autorizzata non faccio nulla.
+  std::string numeroAdmin;
+  if (isAdminSay(line,numeroAdmin))
+  {
+    std::string temp(line);
+    int pos=temp.find("!mute");
+    pos=temp.find_first_of("0123456789",pos+5);
+    int end=temp.find_first_of(" ",pos);
+    std::string numero=temp.substr(pos,end-pos);
+    
+    std::string frase("BanBot: muting player number ");
+    frase.append(numero);
+    frase.append("...");
+    server->say(frase,serverNumber);
+    sleep(1);
+    server->mute(numero,serverNumber);
+  }
+}
+
+void Analyzer::unmute(char* line)
+{
+  std::cout<<"[!] Unmute";
+  logger->timestamp();
+  *logger<<"\n[!] Unmute";
+  //controllo se ho il giocatore e i suoi permessi, se la persona non è autorizzata non faccio nulla.
+  std::string numeroAdmin;
+  if (isAdminSay(line,numeroAdmin))
+  {
+    std::string temp(line);
+    int pos=temp.find("!unmute");
+    pos=temp.find_first_of("0123456789",pos+7);
+    int end=temp.find_first_of(" ",pos);
+    std::string numero=temp.substr(pos,end-pos);
+    
+    std::string frase("BanBot: unmuting player number ");
+    frase.append(numero);
+    frase.append("...");
+    server->say(frase,serverNumber);
+    sleep(1);
+    server->unmute(numero,serverNumber);
+  }
+}
+
 void Analyzer::help(char* line)
 {
   std::cout<<"[!] Help";
@@ -736,7 +786,12 @@ void Analyzer::help(char* line)
   int end = temp.find_first_of( " ", pos );
   std::string numero = temp.substr( pos, end-pos );
   
-  server->tell(COMMANDLIST,numero,serverNumber);
+  std::string frase(COMMANDLIST);
+  for (int i=0;i<frase.size();i+=255)
+  {
+    server->tell(frase.substr(i,255),numero,serverNumber);
+    sleep(1);
+  }
 }
 
 void Analyzer::getDateAndTime(std::string &data,std::string &ora)
@@ -980,7 +1035,23 @@ void Analyzer::main_loop()
                                 }
                                 else
                                 {
-                                  expansion(line);
+                                  if (isA(line,MUTE))
+                                  {
+                                    //è un mute
+                                    mute(line);
+                                  }
+                                  else
+                                  {
+                                    if (isA(line,UNMUTE))
+                                    {
+                                      //è un unmute
+                                      unmute(line);
+                                    }
+                                    else
+                                    {
+                                      expansion(line);
+                                    }
+                                  }
                                 }
                               }
                             }
