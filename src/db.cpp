@@ -285,7 +285,7 @@ bool Db::checkBanNick( const string& nick )
 
 void Db::dumpBanned()
 {
-    string query( "select *from banned" );
+    string query( "select * from banned;" );
 
     cout << "\n\n[-]Trying to dump banned guid's..\n";
     *logger << "[-]Trying to dump banned guid's..\n";
@@ -297,17 +297,21 @@ void Db::dumpBanned()
     }
 
     //ready to dump to file
-    vector< string > dataToDump = extractData( query );
+    vector< string > dataToDump;
 
+    if( execQuery( query ) )
+        dataToDump = extractData( query );
+
+    //TODO vedi se serve la parte sottostante
     //check for old file. If exists, delete it
-    struct stat st;
+    /*struct stat st;
 
     if( stat( "backup/Banlist.backup", &st ) == 0 ){
         cout << "[-]deleting old banlist dump file..\n";
         if ( !system( "rm backup/Banlist.backup" ) )
             cout << "\e[0;33m[!]deleted old backup file..creating new one..\e[0m \n";
         else cout << "\e[0;31m [ERR]couldn't delete old dump file!\e[0m \n";
-    }
+    }*/
 
     //use logger class to save info to file
     Logger *output = new Logger( "backup/Banlist.backup" );
@@ -429,7 +433,17 @@ string Db::insertNewBanned( const string& nick, const string& ip, const string& 
     //else return last banId
     vector< string > max;
 
-    max = extractData( "select max( id ) from banned;" );
+    string selectLastInserted( "select id from banned where nick='" );
+    selectLastInserted.append( nick );
+    selectLastInserted.append( "' and ip='" );
+    selectLastInserted.append( ip );
+    selectLastInserted.append( "';" );
+
+    #ifdef DEBUG_MODE
+        cout << "Db::insertNewBanned : selectLastInserted query ->  " << selectLastInserted << endl;
+    #endif
+
+    max = extractData( selectLastInserted );
 
     if( max.empty() )
         return string();
