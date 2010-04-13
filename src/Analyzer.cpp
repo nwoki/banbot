@@ -35,8 +35,8 @@
 //#include <sys/stat.h>
 
 //costruttore
-Analyzer::Analyzer( Connection* conn, Db* db,Logger* primaryLog,Logger* logs, Backup* backup, std::vector<ConfigLoader::Option> opzioni ):
-    logger( logs ),
+Analyzer::Analyzer( Connection* conn, Db* db,Logger* primaryLog, Backup* backup, std::vector<ConfigLoader::Option> opzioni ):
+    logger( new Logger() ),
     server( conn ),
     database( db ),
     backup(backup),
@@ -912,13 +912,19 @@ void Analyzer::main_loop()
       //provo ad aprire il file e a riprendere dalla riga dove ero arrivato
       generalLog->open();
       std::cout<<"Provo ad aprire "<<files[serverNumber]<<"\n";
-      *generalLog<<"Provo ad aprire "<<files[serverNumber]<<"\n";
+      generalLog->timestamp();
+      *generalLog<<"\nProvo ad aprire "<<files[serverNumber]<<"\n";
       log.open(files[serverNumber].c_str());
       log.seekg(row[serverNumber]);
       if (log.is_open())
       {
         std::cout<<"  [OK] Aperto!\n";
         *generalLog<<"  [OK] Aperto!\n";
+      }
+      else 
+      {
+        std::cout<<"  [FAIL] Non sono riuscito ad aprirlo!\n";
+        *generalLog<<"  [FAIL] Non sono riuscito ad aprirlo!\n";
       }
       if(backup->doJobs()) server->reload();
       generalLog->close();

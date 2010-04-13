@@ -74,6 +74,10 @@ Logger::Logger( std::string p ): path( p )
     }
 }
 
+Logger::Logger():path("")
+{
+}
+
 Logger::~Logger()
 {
     file.close();

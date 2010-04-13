@@ -35,6 +35,7 @@ class Logger
 {
     public:
         Logger( std::string );
+        Logger();
         ~Logger();
 
         bool open();    //returns true if opened successfully

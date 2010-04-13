@@ -128,7 +128,7 @@ protected:
     std::vector< std::vector<Player*> > giocatori;    //array di array (un array di player per server)
 
 public:
-    Analyzer( Connection*, Db*, Logger*, Logger*, Backup*, vector< ConfigLoader::Option > opzioni);
+    Analyzer( Connection*, Db*, Logger*, Backup*, vector< ConfigLoader::Option >);
     ~Analyzer();
     void main_loop();
 };

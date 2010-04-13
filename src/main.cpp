@@ -31,6 +31,7 @@
 #include "ConfigLoader.h"
 #include "sqlite3/sqlite3.h"
 #include "logger.h"
+#include "Backup.h"
 
 #define BOTCONFIG "cfg/BanBot.cfg"
 #define BANLIST "cfg/Banlist"
@@ -71,49 +72,68 @@ int main( int argc, char *argv[] ){ //pass arguments to specify server logfile a
 
     Db *d = new Db( opzioni, banned, admins, botLog ) ;
 
-    found = 0;
-    string ip;
-    int port = 0;
-    string password;
-    string logpath;
+    found=0;
+    vector<string> ip;
+    vector<int> port;
+    vector<string> password;
+    vector<string> logpath;
 
-    for( i = 0; found < 4 && i < opzioni.size(); i++ ){
+    for(i=0;i < opzioni.size(); i++ ){
         if( opzioni[i].name.compare( "IP" ) == 0 ){
-            ip=opzioni[i].value;
+            ip.push_back( opzioni[i].value );
             found++;
         }
         else if( opzioni[i].name.compare( "PORT" ) == 0 ){
-            port=atoi(opzioni[i].value.c_str());
+            port.push_back( atoi(opzioni[i].value.c_str()) );
             found++;
         }
         else if( opzioni[i].name.compare( "RCONPASS" ) == 0 ){
-            password=opzioni[i].value;
+            password.push_back( opzioni[i].value );
             found++;
         }
         else if( opzioni[i].name.compare( "LOGPATH" ) == 0 ){
-            logpath=opzioni[i].value;
+            logpath.push_back( opzioni[i].value );
             found++;
+       }
+       if (found==4) 
+       {
+         found=0;
        }
     }
 
     cout<<"[+] Importing values from config file:\n";
-    cout<<"  [-] Ip of server: "<<ip<<"\n";
-    cout<<"  [-] Port of server: "<<port<<"\n";
-    cout<<"  [-] Rcon password: "<<password<<"\n";
-    cout<<"  [-] File di log: "<<logpath<<"\n";
+    for (int i=0;i<ip.size();i++)
+    {
+      cout<<"  [+] Server number "<<i<<":\n";
+      cout<<"  [-] Ip of server: "<<ip[i]<<"\n";
+      cout<<"  [-] Port of server: "<<port[i]<<"\n";
+      cout<<"  [-] Rcon password: "<<password[i]<<"\n";
+      cout<<"  [-] File di log: "<<logpath[i]<<"\n";
+      cout<<"\n";
+    }
+    cout<<"\n";
 
     botLog->open();
     botLog->timestamp();
-    *botLog<<"\n[+] Importing values from config file:\n"<<"  [-] Ip of server: "<<ip<<"\n"<<"  [-] Port of server: "<<port<<"\n"
-    <<"  [-] Rcon password: "<<password<<"\n"<<"  [-] File di log: "<<logpath<<"\n";
+    *botLog<<"\n[+] Importing values from config file:\n";
+    for (int i=0;i<ip.size();i++)
+    {
+      *botLog<<"  [+] Server number "<<i<<":\n";
+      *botLog<<"  [-] Ip of server: "<<ip[i]<<"\n";
+      *botLog<<"  [-] Port of server: "<<port[i]<<"\n";
+      *botLog<<"  [-] Rcon password: "<<password[i]<<"\n";
+      *botLog<<"  [-] File di log: "<<logpath[i]<<"\n";
+      *botLog<<"\n";
+    }
+    *botLog<<"\n";
 
     //Start connection
-    //Connection *serverCommand = new Connection(ip,port,password);   //need vector with options
+    Connection *serverCommand = new Connection(opzioni);   //need vector with options
 
+    Backup *back=new Backup(opzioni,botLog);
     //Start analyzer
-    //Analyzer anal( serverCommand, d,botLog, logpath );
-    botLog->close();
-    //anal.main_loop()
+    Analyzer anal( serverCommand, d,botLog, back, opzioni );
+    anal.main_loop();
 
 
 
