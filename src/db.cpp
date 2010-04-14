@@ -87,7 +87,7 @@ Db::Db( vector<ConfigLoader::Option> conf, vector<ConfigLoader::Banlist> banned,
     //azzero la tabella degli admins
     setupAdmins( admins );    //TODO make "loadAdmins" without deleting and re writing db
     loadBanlist( banned );
-    dumpBanned();
+    dumpBannedToFile();
 
     //chiudo il log.
     logger->close();
@@ -283,7 +283,7 @@ bool Db::checkBanNick( const string& nick )
 
 
 
-void Db::dumpBanned()
+void Db::dumpBannedToFile()
 {
     string query( "select * from banned;" );
 
@@ -296,22 +296,17 @@ void Db::dumpBanned()
         return;
     }
 
-    //ready to dump to file
-    vector< string > dataToDump;
+    //TODO trovare altro metodo invece di usare la struct "stat"
+    //Prepare file to write to...( check for old file. If exists, delete it )
 
-    if( execQuery( query ) )
-        dataToDump = extractData( query );
-
-    //TODO vedi se serve la parte sottostante
-    //check for old file. If exists, delete it
-    /*struct stat st;
+    struct stat st;
 
     if( stat( "backup/Banlist.backup", &st ) == 0 ){
         cout << "[-]deleting old banlist dump file..\n";
         if ( !system( "rm backup/Banlist.backup" ) )
             cout << "\e[0;33m[!]deleted old backup file..creating new one..\e[0m \n";
         else cout << "\e[0;31m [ERR]couldn't delete old dump file!\e[0m \n";
-    }*/
+    }
 
     //use logger class to save info to file
     Logger *output = new Logger( "backup/Banlist.backup" );
@@ -322,8 +317,72 @@ void Db::dumpBanned()
         return;
     }
 
-    for( unsigned int i = 0; i < dataToDump.size(); i++ )
-        *output << dataToDump[i] << "\n";
+    //backup file ready, preparation of info to dump to file
+    vector< string > bannedIds = extractData( "select id from banned;" );
+    vector< string > dataToDump;    // banned player info
+    vector< string > guidsToDump;   //banned player's guids
+    string auxQuery;
+
+#ifdef DEBUG_MODE   //stamps vector id's
+        for( int i = 0; i < bannedIds.size(); i++ )
+            cout<< "id " << i << " " << bannedIds[i] <<endl;
+#endif
+
+    *output << "#\n# THIS IS A BACKUP FILE OF BANLIST FOUND IN cfg/\n#\n";
+    //here i actually write to file
+    for( unsigned int i = 0; i < bannedIds.size(); i++ ) {
+
+        dataToDump.clear();
+
+        //get new banned player info
+        auxQuery.clear();
+        auxQuery.append( "select *from banned where id='" );
+        auxQuery.append( bannedIds[i] );
+        auxQuery.append( "';" );
+
+        dataToDump = extractData( auxQuery );
+
+        for( unsigned int j = 1; j < dataToDump.size(); j++ ) { // j = 1 because i start from the nick, don't need it's id
+            if( j == 1 )
+                *output << "nick=";
+            else if( j == 2 )
+                *output << "ip=";
+            else if( j == 3 )
+                *output << "date=";
+            else if( j == 4 )
+                *output << "time=";
+            else if( j == 5 )
+                *output << "motive=";
+
+            *output << dataToDump[j] << "\n";
+
+        #ifdef DEBUG_MODE
+            cout << "banned user data being dumped " << dataToDump[j] << endl;
+        #endif
+
+        }
+
+        *output << "====\n";
+
+        //new query to get banned players corrisponding guids
+        auxQuery.clear();
+        auxQuery.append( "select guid from guids where banId='" );
+        auxQuery.append( bannedIds[i] );
+        auxQuery.append( "';" );
+
+        guidsToDump.clear();
+        guidsToDump = extractData( auxQuery );
+
+        for( unsigned int k = 0; k < guidsToDump.size(); k++ ) {
+            *output << "GUID=" << guidsToDump[k] << "\n";
+
+        #ifdef DEBUG_MODE
+            cout << "banned user guids being dumped " << guidsToDump[k] << endl;
+        #endif
+        }
+
+        *output << "#####\n#end";
+    }
 
     cout << "\e[0;32m[OK] successfully written Banlist.backup file in 'backup/'\e[0m \n";
     *logger << "[OK] successfully written Banlist.backup file in 'backup/'\n";
@@ -538,7 +597,11 @@ bool Db::deleteBanned( const string &id )
     }
     //delete all info with corrisponding id's
     for( unsigned int i = 0; i < guidIds.size(); i++ ){
-        cout << "\e[1;35m guidid-> " <<  guidIds[i] << " \e[0m " << endl;
+
+    #ifdef DEBUG_MODE
+        cout << "\e[1;35m deleting guidid-> " <<  guidIds[i] << " \e[0m " << endl;
+    #endif
+
         if ( deleteGuid( guidIds[i] ) ){
             cout << "\e[0;32m[*] deleted guid with guidId: " << guidIds[i] << " \e[0m \n";
             *logger << "[OK] Db::deleteBaned :deleted guid with guidId: " << guidIds[i] << "\n";

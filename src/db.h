@@ -52,7 +52,7 @@ class Db
         bool checkBanGuid( const string &guid );    //passa ( guid giocatore)
         bool checkBanNick( const string &nick );
         bool checkDirAndFile( const string &guid ); //passa url file compreso
-        void dumpBanned();
+        void dumpBannedToFile();
         void dumpDatabase();
 
         //banned table
@@ -70,7 +70,7 @@ class Db
         bool addOp( const string &nick, const string &guid );
         bool modifyOp( const string &nick, const string &guid, const string &id );
         bool deleteOp( const string &id );
-        
+
         vector< string > extractData( const string &query );   //ritorna un vettore con i/il risultato della query
 
     private:
@@ -94,17 +94,17 @@ class Db
 	    char **result;
 	    int rc;
 	    int nrow, ncol;
-	    int db_open;
+	    //int db_open;
 
 	  public:
 
 	    vector< string > vcol_head;
 	    vector< string > vdata;
 
-	    SQLITE3 ( const string &database ):
-            zErrMsg( 0 ),
-            rc( 0 ),
-            db_open( 0 )
+	    SQLITE3 ( const string &database )
+            : zErrMsg( 0 )
+            , rc( 0 )
+            //db_open( 0 )
 	    {
 	      rc = sqlite3_open(database.c_str(), &db);
 
@@ -112,9 +112,9 @@ class Db
               cout<<"\e[1;31m[EPIC FAIL] Can't open database: " << zErrMsg << "\e[0m \n";
               sqlite3_close( db );
 	      }
-	      db_open = 1;
+	      //db_open = 1;
           //debug msg
-          #ifdef DEBUG_MODE
+          #ifdef DEBUG
               cout<< "\e[1;35mOPENED DB\e[0m \n";
           #endif
 	    }

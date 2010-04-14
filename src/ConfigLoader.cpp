@@ -116,7 +116,7 @@ std::vector<ConfigLoader::Banlist> ConfigLoader::getBanlist()
 
                 //DEBUG
                 #ifdef DEBUG_MODE
-                    //std::cout<< "\e[1;31m readline -> \e[0;m" << riga << std::endl;
+                    std::cout<< "\e[1;31m readline -> \e[0;m" << riga << std::endl;
                 #endif
 
                 if( ( riga.substr( 0, end ) == "GUID" ) )
