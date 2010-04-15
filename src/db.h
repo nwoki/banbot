@@ -48,10 +48,13 @@ class Db
         Db( vector< ConfigLoader::Option >, vector< ConfigLoader::Banlist >, vector< ConfigLoader::Option >, Logger * );
         ~Db();
 
-        bool checkAuthGuid( const string &guid );
+        //checks
+        bool checkAuthGuid( const string &guid );   //controlla l'esistenza del guid passato
         bool checkBanGuid( const string &guid );    //passa ( guid giocatore)
         bool checkBanNick( const string &nick );
-        bool checkDirAndFile( const string &guid ); //passa url file compreso
+        //bool checkDirAndFile( const string &guid ); //passa url file compreso
+
+        //dumps
         void dumpBannedToFile();
         void dumpDatabase();
 
@@ -74,16 +77,22 @@ class Db
         vector< string > extractData( const string &query );   //ritorna un vettore con i/il risultato della query
 
     private:
-        sqlite3 *database;
-        void createDb();
-        void setupAdmins( vector<ConfigLoader::Option> );
-        //void loadAdminlist( vector<ConfigLoader::Option> ;  //NEW
-        void loadBanlist( vector<ConfigLoader::Banlist> );
-        int resultQuery( const string &query );    //se fallisce la query, -1, altrimenti restituisce il numero degli elementi trovati
-        bool execQuery( const string &query );    //per sapere se la query è andato a buon fine o meno senza sapere altro
         void close();
         bool connect();
+        void createDb();
+        bool execQuery( const string &query );    //esegue e ritorna status per indicare se l'operazione è andato a buon fine
         string intToString( int number );
+        void loadBanlist( vector<ConfigLoader::Banlist> );
+        int resultQuery( const string &query );    //se fallisce la query, -1, altrimenti restituisce il numero degli elementi trovati
+        void setupAdmins( vector<ConfigLoader::Option> );
+        //void loadAdminlist( vector<ConfigLoader::Option> ;  //NEW
+
+
+
+
+
+
+        sqlite3 *database;
         Logger *logger;
 
 	class SQLITE3
