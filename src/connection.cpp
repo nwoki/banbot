@@ -138,7 +138,7 @@ void Connection::reload(int server)
   }
   else
   {
-    for (int i=0;i<ip.size();i++)
+    for (unsigned int i=0;i<ip.size();i++)
     {
       string comando("rcon ");
       comando.append(rconPass[i]);

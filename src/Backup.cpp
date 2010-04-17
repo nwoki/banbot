@@ -110,7 +110,7 @@ void Backup::spostaFiles()
   cartella.append(outstr);
   checkFolder(cartella);
   //sposto i files.
-  for (int i=0; i<files.size(); i++)
+  for (unsigned int i=0; i<files.size(); i++)
   {
     //mi preparo la stringa con il file di destinazione
     int pos=files[i].find_last_of("/");

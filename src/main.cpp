@@ -50,7 +50,7 @@ int main( int argc, char *argv[] ){ //pass arguments to specify server logfile a
     std::vector<ConfigLoader::Banlist> banned = banList->getBanlist();
     std::vector<ConfigLoader::Option> admins = adminList->getOptions();
 
-    for ( int i = 0; i < opzioni.size(); i++ )
+    for ( unsigned int i = 0; i < opzioni.size(); i++ )
         cout << opzioni[i].name << " = " << opzioni[i].value << "\n";
 
     cout << "\n";   //extra "a-capo"
@@ -60,7 +60,7 @@ int main( int argc, char *argv[] ){ //pass arguments to specify server logfile a
     delete adminList;
 
     //inizializzo il logger
-    int i = 0;
+    unsigned int i = 0;
     int found = 0;
     Logger *botLog = NULL;
 
@@ -103,7 +103,7 @@ int main( int argc, char *argv[] ){ //pass arguments to specify server logfile a
     }
 
     cout<<"[+] Importing values from config file:\n";
-    for (int i=0;i<ip.size();i++)
+    for (i=0;i<ip.size();i++)
     {
       cout<<"  [+] Server number "<<i<<":\n";
       cout<<"  [-] Ip of server: "<<ip[i]<<"\n";
@@ -117,7 +117,7 @@ int main( int argc, char *argv[] ){ //pass arguments to specify server logfile a
     botLog->open();
     botLog->timestamp();
     *botLog<<"\n[+] Importing values from config file:\n";
-    for (int i=0;i<ip.size();i++)
+    for (i=0;i<ip.size();i++)
     {
       *botLog<<"  [+] Server number "<<i<<":\n";
       *botLog<<"  [-] Ip of server: "<<ip[i]<<"\n";
