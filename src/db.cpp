@@ -394,34 +394,24 @@ bool Db::deleteBanned( const string &id )
         *logger << "[FAIL] Db::deleteBaned : " << query << "\n";
         return false;
     }
+
     //deleted banned user, and now to delete his saved guids
-    string getGuidQuery( "select id from guids where banId ='" );
-    getGuidQuery.append( id );
-    getGuidQuery.append( "';" );
-
-    vector< string > guidIds = extractData( getGuidQuery );
-
-    if( guidIds.empty() ){
-        cout << "\e[0;31m[FAIL] Db::deleteBanned : guidIds empty! \e[0m \n";
-        *logger << "[FAIL] Db::deleteBaned : guidIds empty! \n";
-        return false;
-    }
-    //delete all info with corrisponding id's
-    for( unsigned int i = 0; i < guidIds.size(); i++ ){
+    string deleteGuidsQuery( "delete from guids where banId='" );
+    deleteGuidsQuery.append( id );
+    deleteGuidsQuery.append( "';" );
 
     #ifdef DEBUG_MODE
-        cout << "\e[1;35m deleting guidid-> " <<  guidIds[i] << " \e[0m " << endl;
+        cout << "Db::deleteBanned query -> " << deleteGuidsQuery << "\n";
     #endif
 
-        if ( deleteGuid( guidIds[i] ) ){
-            cout << "\e[0;32m[*] deleted guid with guidId: " << guidIds[i] << " \e[0m \n";
-            *logger << "[OK] Db::deleteBaned :deleted guid with guidId: " << guidIds[i] << "\n";
-        }
-        else{
-            cout << "\e[0;31m[FAIL] Db::deleteBanned : can't delete guid with guidId: " << guidIds[i] << " \e[0m \n";
-            *logger << "[FAIL] Db::deleteBaned : can't delete guid with guidId: " << guidIds[i] << " \n";
-        }
+    if( !execQuery( deleteGuidsQuery ) ) {
+        cout << "\e[0;31m[FAIL] Db::deleteBanned can't delete guid with banId = " << id << "\e[0m \n ";
+        *logger << "[FAIL] Db::deleteBanned can't delete guid with banId = " << id << "\n";
+        return false;
     }
+
+    cout << "\e[0;31m[!] deleted all guids with ban id = " << id << "\e[0m \n";
+    *logger << "[FAIL] deleted all guids with ban id = " << id << "\n";
     return true;
 }
 

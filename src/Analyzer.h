@@ -95,7 +95,6 @@ private:
     void ban(char* line);
     void find(char* line);
     void findOp(char* line);
-    void unban(char* line);
     void op(char* line);
     void deop(char* line);
     void help(char* line);

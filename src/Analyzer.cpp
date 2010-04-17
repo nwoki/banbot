@@ -208,6 +208,7 @@ void Analyzer::clientUserInfo(char* line)
       std::string query("SELECT banned.motive,banned.id FROM banned join guids ON banned.id=guids.banId WHERE guids.guid='");
       query.append(correggi(guid));
       query.append("';");
+      std::cout<<query<<"\n";
       std::vector<std::string> risultato=database->extractData(query);
 
       //butto fuori la persona dal server
@@ -376,13 +377,13 @@ void Analyzer::ban(char* line)
     //ok ha i permessi, eseguo.
     //prendo il numero del giocatore da bannare
     std::string temp(line);
-    int pos=temp.find("!ban");
+    unsigned int pos=temp.find("!ban");
     pos=temp.find_first_of("0123456789",pos+4);
     int end=temp.find_first_of(" ",pos);
     std::string numero=temp.substr(pos,end-pos);
     pos=temp.find_first_not_of(" ",end);
-    end=temp.find_first_of(" \n\0",pos);
-    std::string motivo=temp.substr(pos,end-pos);
+    std::string motivo;
+    if (pos<temp.size()) motivo=temp.substr(pos,temp.size()-pos);
 
     //mi prendo il guid e il nick dalla lista dei giocatori (qua sto bene attento, un "utonto" potrebbe aver cappellato inserendo il numero)
     bool nonTrovato=true;
@@ -514,7 +515,7 @@ void Analyzer::find(char* line)
     
     for (unsigned int i=0;i<frase.size();i+=255)
     {
-      sleep(1);
+      sleep(SOCKET_PAUSE);
       server->tell(frase.substr(i,255),numero,serverNumber);
     }
   }
@@ -605,38 +606,9 @@ void Analyzer::findOp(char* line)
     
     for (unsigned int i=0;i<frase.size();i+=255)
     {
-      sleep(1);
+      sleep(SOCKET_PAUSE);
       server->tell(frase.substr(i,255),numero,serverNumber);
     }
-  }
-}
-
-void Analyzer::unban(char* line)
-{
-  std::cout<<"[!] Unban";
-  logger->timestamp();
-  *logger<<"\n[!] Unban";
-  //controllo se ho il giocatore e i suoi permessi, se la persona non è autorizzata non faccio nulla.
-  std::string numeroAdmin;
-  if (isAdminSay(line,numeroAdmin))
-  {
-    //prendo l'identificativo da sbannare
-    std::string temp(line);
-    int pos=temp.find("!unban");
-    pos=temp.find_first_of("0123456789",pos+6);
-    int end=temp.find_first_of(" ",pos);
-    std::string numero=temp.substr(pos,end-pos);
-
-    //ho il numero, elimino dal database tutti i record relativi.
-    std::string query("DELETE FROM guids WHERE banId='");
-    query.append(numero);
-    query.append("';");
-    database->extractData(query);
-    std::string frase;
-    if (database->deleteBanned(numero))
-      frase.append("BanBot: utente sbannato con successo.");
-    else frase.append("BanBot: è stato riscontrato un errore, utente non sbannato.");
-    server->tell(frase,numeroAdmin,serverNumber);
   }
 }
 
@@ -721,7 +693,7 @@ void Analyzer::kick(char* line)
     frase.append(numero);
     frase.append("...");
     server->say(frase,serverNumber);
-    sleep(1);
+    sleep(SOCKET_PAUSE);
     server->kick(numero,serverNumber);
   }
 }
@@ -745,7 +717,7 @@ void Analyzer::mute(char* line)
     frase.append(numero);
     frase.append("...");
     server->say(frase,serverNumber);
-    sleep(1);
+    sleep(SOCKET_PAUSE);
     server->mute(numero,serverNumber);
   }
 }
@@ -769,7 +741,7 @@ void Analyzer::unmute(char* line)
     frase.append(numero);
     frase.append("...");
     server->say(frase,serverNumber);
-    sleep(1);
+    sleep(SOCKET_PAUSE);
     server->unmute(numero,serverNumber);
   }
 }
@@ -787,10 +759,10 @@ void Analyzer::help(char* line)
   std::string numero = temp.substr( pos, end-pos );
   
   std::string frase(COMMANDLIST);
-  for (unsigned int i=0;i<frase.size();i+=255)
+  for (unsigned int i=0;i<frase.size();i+=130)
   {
-    server->tell(frase.substr(i,255),numero,serverNumber);
-    sleep(1);
+    server->tell(frase.substr(i,130),numero,serverNumber);
+    sleep(SOCKET_PAUSE);
   }
 }
 
@@ -1002,7 +974,7 @@ void Analyzer::main_loop()
                       if (isA(line,UNBAN))
                       {
                         //è un comando di unban
-                        unban(line);
+                        ban(line);
                       }
                       else
                       {
