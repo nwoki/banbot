@@ -113,7 +113,7 @@ bool Db::checkAuthGuid( const string &guid )    //checks oplist for ops
 
 bool Db::checkBanGuid( const string &banGuid )
 {
-    string query( "select guid from banned where guid='" );
+    string query( "select guid FROM guids WHERE guid='" );
     query.append( banGuid );
     query.append( "';" );
 
@@ -179,7 +179,7 @@ void Db::dumpBannedToFile()
     string auxQuery;
 
 #ifdef DEBUG_MODE   //stamps vector id's
-    for( int i = 0; i < bannedIds.size(); i++ )
+    for( unsigned int i = 0; i < bannedIds.size(); i++ )
         cout<< "id " << i << " " << bannedIds[i] <<endl;
 #endif
 
