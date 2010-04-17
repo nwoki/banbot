@@ -36,15 +36,15 @@
 
 //costruttore
 Analyzer::Analyzer( Connection* conn, Db* db,Logger* primaryLog, Backup* backup, std::vector<ConfigLoader::Option> opzioni ):
+    backup(backup),
+    generalLog( primaryLog ),
     logger( new Logger() ),
     server( conn ),
     database( db ),
-    backup(backup),
-    generalLog( primaryLog ),
     serverNumber( 0 )
 {
   //imposto i file di log e i puntatori alla riga, ne sfrutto il numero per inizializzare pure l'array per i giocatori
-    for (int i = 0; i < opzioni.size(); i++ ){
+    for (unsigned int i = 0; i < opzioni.size(); i++ ){
         if( opzioni[i].name.compare( "LOGPATH" ) == 0 ){
             files.push_back( opzioni[i].value );
             row.push_back( 0 );
@@ -388,7 +388,7 @@ void Analyzer::ban(char* line)
     bool nonTrovato=true;
     std::string nick("");
     std::string guid("");
-    int i=0;
+    unsigned int i=0;
     while(nonTrovato && i<giocatori[serverNumber].size())
     {
       if(giocatori[serverNumber][i]->number.compare(numero)==0)
@@ -474,7 +474,7 @@ void Analyzer::find(char* line)
     else
     {
       if (risultato.empty()) frase.append("none.");
-      else for (int i=0; i<risultato.size();i+=3)
+      else for (unsigned int i=0; i<risultato.size();i+=3)
         {
           frase.append(risultato[i]);
           frase.append(risultato[i+1]);
@@ -502,7 +502,7 @@ void Analyzer::find(char* line)
     else
     {
       if (risultato.empty()) frase.append("none.");
-      else for (int i=0; i<risultato.size();i+=3)
+      else for (unsigned int i=0; i<risultato.size();i+=3)
         {
           frase.append(risultato[i]);
           frase.append(risultato[i+1]);
@@ -512,7 +512,7 @@ void Analyzer::find(char* line)
         }
     }
     
-    for (int i=0;i<frase.size();i+=255)
+    for (unsigned int i=0;i<frase.size();i+=255)
     {
       sleep(1);
       server->tell(frase.substr(i,255),numero,serverNumber);
@@ -565,7 +565,7 @@ void Analyzer::findOp(char* line)
     else
     {
       if (risultato.empty()) frase.append("none.");
-      else for (int i=0; i<risultato.size();i+=3)
+      else for (unsigned int i=0; i<risultato.size();i+=3)
         {
           frase.append(risultato[i]);
           frase.append(risultato[i+1]);
@@ -593,7 +593,7 @@ void Analyzer::findOp(char* line)
     else
     {
       if (risultato.empty()) frase.append("none.");
-      else for (int i=0; i<risultato.size();i+=3)
+      else for (unsigned int i=0; i<risultato.size();i+=3)
         {
           frase.append(risultato[i]);
           frase.append(risultato[i+1]);
@@ -603,7 +603,7 @@ void Analyzer::findOp(char* line)
         }
     }
     
-    for (int i=0;i<frase.size();i+=255)
+    for (unsigned int i=0;i<frase.size();i+=255)
     {
       sleep(1);
       server->tell(frase.substr(i,255),numero,serverNumber);
@@ -787,7 +787,7 @@ void Analyzer::help(char* line)
   std::string numero = temp.substr( pos, end-pos );
   
   std::string frase(COMMANDLIST);
-  for (int i=0;i<frase.size();i+=255)
+  for (unsigned int i=0;i<frase.size();i+=255)
   {
     server->tell(frase.substr(i,255),numero,serverNumber);
     sleep(1);
@@ -848,7 +848,7 @@ bool Analyzer::nickIsBanned(const std::string &nick)
 
   int oraAttuale=atoi(ora.substr(0,2).c_str());
   int minutoAttuale=atoi(ora.substr(3,5).c_str());
-  for (int i=0;i<risultato.size();i+=2)
+  for (unsigned int i=0;i<risultato.size();i+=2)
   {
     int oraBan=atoi(risultato[i+1].substr(0,2).c_str());
     int minutoBan=atoi(risultato[i+1].substr(3,5).c_str());
@@ -871,7 +871,7 @@ bool Analyzer::ipIsBanned(const std::string &ip)
 
   int oraAttuale=atoi(ora.substr(0,2).c_str());
   int minutoAttuale=atoi(ora.substr(3,5).c_str());
-  for (int i=0;i<risultato.size();i+=2)
+  for (unsigned int i=0;i<risultato.size();i+=2)
   {
     int oraBan=atoi(risultato[i+1].substr(0,2).c_str());
     int minutoBan=atoi(risultato[i+1].substr(3,5).c_str());
@@ -883,7 +883,7 @@ bool Analyzer::ipIsBanned(const std::string &ip)
 
 std::string Analyzer::correggi(std::string stringa)
 {
-  int pos=0;
+  unsigned int pos=0;
   bool nonFinito=true;
   while (nonFinito)
   {
