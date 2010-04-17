@@ -209,10 +209,10 @@ void Analyzer::clientUserInfo(char* line)
       query.append(correggi(guid));
       query.append("';");
       std::vector<std::string> risultato=database->extractData(query);
-      
+
       //butto fuori la persona dal server
       buttaFuori(risultato,numero,nick);
-      
+
       //aggiorno i dati sul database
       if (risultato.size()>1)
       {
@@ -229,9 +229,9 @@ void Analyzer::clientUserInfo(char* line)
         query.append(correggi(guid));
         query.append("';");
         std::vector<std::string> risultato=database->extractData(query);
-    
+
         buttaFuori(risultato, numero,nick);
-        
+
         if (risultato.size()>1)
         {
           std::string ora;
@@ -247,9 +247,9 @@ void Analyzer::clientUserInfo(char* line)
           query.append(ip);
           query.append("';");
           std::vector<std::string> risultato=database->extractData(query);
-      
+
           buttaFuori(risultato, numero,nick);
-          
+
           if (risultato.size()>1)
           {
             std::string ora;
@@ -803,7 +803,7 @@ void Analyzer::getDateAndTime(std::string &data,std::string &ora)
   char outstr[20];
   strftime(outstr, sizeof(outstr), "%H:%M", tmp);
   ora=outstr;
-  
+
   strftime(outstr, sizeof(outstr), "%F", tmp);
   data=outstr;
 }
@@ -826,7 +826,7 @@ void Analyzer::buttaFuori(const std::vector<std::string> &reason, const std::str
       server->say(frase,serverNumber);
       sleep(SOCKET_PAUSE);
       server->kick(numero,serverNumber);
-      
+
       sleep(SOCKET_PAUSE);
       frase.erase();
       frase.append("Warning: the nick '");
@@ -840,12 +840,12 @@ bool Analyzer::nickIsBanned(const std::string &nick)
   std::string ora;
   std::string data;
   getDateAndTime(data,ora);
-  
+
   std::string query("SELECT date,time FROM banned WHERE nick='");
   query.append(correggi(nick));
   query.append("';");
   std::vector<std::string> risultato=database->extractData(query);
-  
+
   int oraAttuale=atoi(ora.substr(0,2).c_str());
   int minutoAttuale=atoi(ora.substr(3,5).c_str());
   for (int i=0;i<risultato.size();i+=2)
@@ -863,12 +863,12 @@ bool Analyzer::ipIsBanned(const std::string &ip)
   std::string ora;
   std::string data;
   getDateAndTime(data,ora);
-  
+
   std::string query("SELECT date,time FROM banned WHERE ip='");
   query.append(ip);
   query.append("';");
   std::vector<std::string> risultato=database->extractData(query);
-  
+
   int oraAttuale=atoi(ora.substr(0,2).c_str());
   int minutoAttuale=atoi(ora.substr(3,5).c_str());
   for (int i=0;i<risultato.size();i+=2)

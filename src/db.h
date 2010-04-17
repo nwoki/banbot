@@ -40,7 +40,7 @@ class Logger;
 
 #define DATABASE "database/Db.sqlite"
 
-using namespace std;//std::string;
+using namespace std;
 
 class Db
 {
@@ -86,11 +86,6 @@ class Db
         int resultQuery( const string &query );    //se fallisce la query, -1, altrimenti restituisce il numero degli elementi trovati
         void setupAdmins( vector<ConfigLoader::Option> );
         //void loadAdminlist( vector<ConfigLoader::Option> ;  //NEW
-
-
-
-
-
 
         sqlite3 *database;
         Logger *logger;

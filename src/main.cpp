@@ -40,6 +40,7 @@
 using namespace std;
 
 int main( int argc, char *argv[] ){ //pass arguments to specify server logfile and bot logfile
+
     //carico le impostazioni e le salvo su opzioni
     ConfigLoader * caricatore = new ConfigLoader( BOTCONFIG );
     ConfigLoader * banList = new ConfigLoader( BANLIST );
@@ -95,7 +96,7 @@ int main( int argc, char *argv[] ){ //pass arguments to specify server logfile a
             logpath.push_back( opzioni[i].value );
             found++;
        }
-       if (found==4) 
+       if (found==4)
        {
          found=0;
        }
@@ -134,13 +135,5 @@ int main( int argc, char *argv[] ){ //pass arguments to specify server logfile a
     //Start analyzer
     Analyzer anal( serverCommand, d,botLog, back, opzioni );
     anal.main_loop();
-
-
-
-    /*string asd = "backup/dfghjk";
-    if ( d->checkDirAndFile( asd ) )
-        cout<<"true\n";
-    else cout<<"false";*/
-  //ho l'array con tutte le impostazioni
 
 }
