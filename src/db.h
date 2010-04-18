@@ -49,14 +49,15 @@ class Db
         ~Db();
 
         //checks
-        bool checkAuthGuid( const string &guid );   //controlla l'esistenza del guid passato
+        bool checkAuthGuid( const string &guid );   //controlla l'esistenza del guid passato (OPLIST)
         bool checkBanGuid( const string &guid );    //passa ( guid giocatore)
-        bool checkBanNick( const string &nick );
+        bool checkBanNick( const string &nick );    //controlla l'esistenza del nick nella tabella dei bannati
         //bool checkDirAndFile( const string &guid ); //passa url file compreso
 
         //dumps
+        void dumpAdminsToFile();
         void dumpBannedToFile();
-        void dumpDatabase();
+        void dumpDatabase();    //TODO not yet implemented
 
         //banned table
         bool ban( const string &nick, const string &ip, const string &date, const string &time, const string &guid, const string &motive );
@@ -82,10 +83,10 @@ class Db
         void createDb();
         bool execQuery( const string &query );    //esegue e ritorna status per indicare se l'operazione è andato a buon fine
         string intToString( int number );
+        void loadAdminlist( vector<ConfigLoader::Option> );
         void loadBanlist( vector<ConfigLoader::Banlist> );
         int resultQuery( const string &query );    //se fallisce la query, -1, altrimenti restituisce il numero degli elementi trovati
-        void setupAdmins( vector<ConfigLoader::Option> );
-        //void loadAdminlist( vector<ConfigLoader::Option> ;  //NEW
+
 
         sqlite3 *database;
         Logger *logger;

@@ -15,9 +15,11 @@ CC=gcc
 #for debug : -ggdb -DDEBUG_MODE
 #for 32bit optimization: -m32
 #for 64bit optimization: -m64
-DEFINES=-ggdb -DDEBUG_MODE
+OPTIMIZ=-m64
+DEBUG=-ggdb -DDEBUG_MODE
+DEFINES=
 #compiler flags
-CFLAGS=-c -Wall
+CFLAGS=-c -Wall $(DEFINES)
 
 SQLITE3FLAGS = -DSQLITE_THREADSAFE=0
 

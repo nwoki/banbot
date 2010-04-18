@@ -87,8 +87,9 @@ Db::Db( vector<ConfigLoader::Option> conf, vector<ConfigLoader::Banlist> banned,
     IN.close();
 
     //azzero la tabella degli admins
-    setupAdmins( admins );    //TODO make "loadAdmins" without deleting and re writing db
+    loadAdminlist( admins );
     loadBanlist( banned );
+    dumpAdminsToFile();
     dumpBannedToFile();
 
     //chiudo il log.
@@ -138,6 +139,68 @@ bool Db::checkBanNick( const string& nick )
 }
 
 
+void Db::dumpAdminsToFile()
+{
+    string query( "select *from oplist;" );
+
+    cout << "\n\n[-]Trying to dump admins..\n";
+    *logger << "[-]Trying to dump admins..\n";
+
+    if( !resultQuery( query ) ) {   //FAILED
+        cout << "\e[0;33m[!]no banned guids to dump to file\e[0m \n";
+        *logger << "[!]no banned guids to dump to file\n";
+        return;
+    }
+
+    //TODO trovare altro metodo invece di usare la struct "stat"
+    //Prepare file to write to...( check for old file. If exists, delete it )
+    //=====================
+    struct stat st;
+
+    if( stat( "backup/Adminlist.backup", &st ) == 0 ) {
+
+        cout << "[-]deleting old adminlist dump file..\n";
+
+        if ( !system( "rm backup/Adminlist.backup" ) )
+            cout << "\e[0;33m[!]deleted old adminlist file..creating new one..\e[0m \n";
+        else{
+            cout << "\e[0;31m [ERR]couldn't delete old dump file!\e[0m \n";
+            return;
+        }
+    }
+    //=====================
+
+    //use logger class to save info to file
+    Logger *output = new Logger( "backup/Adminlist.backup" );
+
+    if ( !output->open() ) {
+        cout << "\e[0;31m[ERR] can't write Adminlist backup file!\e[0m \n";
+        *logger << "[ERR] can't write Adminlist backup file!\n";
+        return;
+    }
+
+    //backup file ready, preparation of info to dump to file
+    vector< string > adminIds = extractData( "select id from oplist;" );
+    vector< string >adminsNick, adminsGuid;
+
+    adminsNick = extractData( "select nick from oplist;" );
+    adminsGuid = extractData( "select guid from oplist;" );
+
+    *output << "#\n# THIS IS A BACKUP FILE OF ADMINLIST FOUND IN cfg/\n#\n";
+
+    //here i actually write to file
+    for( unsigned int i = 0; i < adminsNick.size(); i++ ) { //nick.size = guid.size
+        *output << "#admin" << i << "\n";
+        *output << adminsNick[i] << "=" << adminsGuid[i] << "\n";
+    }
+
+    *output << "####\n#end\n";
+    output->close();
+
+    delete output;
+}
+
+
 void Db::dumpBannedToFile()
 {
     string query( "select * from banned;" );
@@ -160,7 +223,10 @@ void Db::dumpBannedToFile()
         cout << "[-]deleting old banlist dump file..\n";
         if ( !system( "rm backup/Banlist.backup" ) )
             cout << "\e[0;33m[!]deleted old backup file..creating new one..\e[0m \n";
-        else cout << "\e[0;31m [ERR]couldn't delete old dump file!\e[0m \n";
+        else{
+            cout << "\e[0;31m [ERR]couldn't delete old dump file!\e[0m \n";
+            return;
+        }
     }
 
     //use logger class to save info to file
@@ -562,6 +628,7 @@ void Db::close()
     sqlite3_close( database );
 }
 
+
 bool Db::connect()
 {
     if( sqlite3_open( DATABASE, &database )){
@@ -572,6 +639,7 @@ bool Db::connect()
     }
     else return true;
 }
+
 
 void Db::createDb()   //initial creation of database
 {
@@ -627,6 +695,7 @@ void Db::createDb()   //initial creation of database
 
 }
 
+
 bool Db::execQuery( const string &query )   //executes and returns status
 {
     SQLITE3 *sql = new SQLITE3( DATABASE );
@@ -644,6 +713,7 @@ bool Db::execQuery( const string &query )   //executes and returns status
     return success;
 }
 
+
 string Db::intToString( int number )    //non serve se usiamo solo string, ma non si sa mai
 {
     stringstream out;//barbatrucco ;)
@@ -651,6 +721,7 @@ string Db::intToString( int number )    //non serve se usiamo solo string, ma no
     out << number;
     return out.str();
 }
+
 
 void Db::loadBanlist( vector<ConfigLoader::Banlist> banned )
 {
@@ -697,6 +768,38 @@ void Db::loadBanlist( vector<ConfigLoader::Banlist> banned )
     *logger << "Added " << playerCounter << " clients and " << addedGuidsCounter << " new guids to the database \n";
 }
 
+
+void Db::loadAdminlist( vector< ConfigLoader::Option > admins )
+{
+    cout << "\e[0;33m[!] Loading admins to database.. \e[0m \n";
+
+    if( admins.empty() ){
+        cout<<"\e[0;33m[!]Adminlist EMPTY\e[0m \n";
+        *logger<<"[!]Adminlist EMPTY\n";
+        return;
+    }
+
+    int addedCounter = 0;
+
+    //adding admins to db
+    cout<<"\n[-]Adding admins to database..\n\n";
+
+    for( unsigned int i = 0; i < admins.size(); i++ ) {
+        if( !checkAuthGuid( admins[i].value ) ) {    //non esiste sul database
+            //add to database
+            if ( addOp( admins[i].name, admins[i].value ) ) {
+                cout << "\e[0;32m      [+]added admin: " << admins[i].name << "\e[0m \n";
+                *logger<<"      [+]added admin: " << admins[i].value << "\n";
+                addedCounter++;
+            }
+        }
+    }
+
+    cout << "\e[0;33m Added " << addedCounter << " new admin/s to the database\e[0m \n\n";
+    *logger << "Added " << addedCounter << " new admin/s to the database\n";
+}
+
+
 int Db::resultQuery( const string &query ) //ritorna quante corrispondenze ci sono all'interno del DB
 {
     int answer = 0;
@@ -708,35 +811,4 @@ int Db::resultQuery( const string &query ) //ritorna quante corrispondenze ci so
 
     delete ( sql );
     return answer;
-}
-
-void Db::setupAdmins( vector<ConfigLoader::Option> admins )
-{
-    cout<<"  [-] setting up admin guid's.. \n";
-    *logger<<"  [-] setting up admin guid's.. \n";
-
-    string clearQuery( "delete from oplist;" );
-
-    if( execQuery( clearQuery ) ){
-        cout<<"    [*]cleaned admin table..\n";
-        *logger<<"    [*]cleaned admin table..\n";
-    }
-    else{
-        cout<<"\e[1;31m    [EPIC FAIL] Db::setupAdmins can't clean table\e[0m \n";
-        *logger<<"    [EPIC FAIL] Db::setupAdmins can't clean table \n";
-    }
-
-    cout<<"    [-]trying to repopulate database\n";
-    *logger<<"    [-]trying to repopulate database\n";
-
-    for( unsigned int i = 0; i < admins.size(); i++ ){
-        if( addOp( admins[i].name, admins[i].value ) ){
-            cout<<"\e[0;32m      [+]added admin: " << admins[i].name << "\e[0m \n";//opzioni[i].value << "\e[0m \n";
-            *logger<<"      [+]added admin: " << admins[i].value << "\n";
-        }
-        else{
-            cout<<"\e[0;31m      [FAIL] can't add admin to database!\e[0m \n";
-            *logger<<"      [FAIL] can't add admin to database!\n";
-        }
-    }
 }
