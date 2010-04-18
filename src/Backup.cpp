@@ -37,9 +37,10 @@
 
 Backup::Backup(std::vector<ConfigLoader::Option> opzioni, Logger *logger):done(false),logger(logger)
 {
+  std::cout<<"Inizializzazione backup....\n";
   for (unsigned int i=0;i<opzioni.size();i++)
   {
-    if (opzioni[i].name.compare("LOGPATH")==0 || opzioni[i].name.compare("BOTLOG")==0 || opzioni[i].name.compare("BOTLOGPATH"))
+    if (opzioni[i].name.compare("LOGPATH")==0 || opzioni[i].name.compare("BOTLOG")==0 || opzioni[i].name.compare("BOTLOGPATH")==0)
     {
       files.push_back(opzioni[i].value);
     }
@@ -48,6 +49,9 @@ Backup::Backup(std::vector<ConfigLoader::Option> opzioni, Logger *logger):done(f
       directory=opzioni[i].value;
     }
   }
+  std::cout<<"Eseguo il backup di avvio....\n";
+  avvio();
+  std::cout<<"Finito il backup di avvio....\n";
 }
 
 Backup::~Backup()
@@ -106,6 +110,41 @@ void Backup::spostaFiles()
   strftime(outstr, sizeof(outstr), "%F", tmp);
   //ho la data salvata in outstr, creo la cartella.
   std::string cartella=directory;
+  if(cartella.substr(cartella.size()-2,1).compare("/")!=0) cartella.append("/");
+  cartella.append(outstr);
+  checkFolder(cartella);
+  //sposto i files.
+  for (unsigned int i=0; i<files.size(); i++)
+  {
+    //mi preparo la stringa con il file di destinazione
+    int pos=files[i].find_last_of("/");
+    if (pos==-1) pos=0;
+    std::string nomeFile=cartella;
+    nomeFile.append("/");
+    nomeFile.append(files[i].substr(pos));
+    //sposto il file
+    std::cout<<" sposto "<<files[i]<<" in "<<nomeFile<<".\n";
+    *logger<<" sposto "<<files[i]<<" in "<<nomeFile<<".\n";
+    std::rename(files[i].c_str(),nomeFile.c_str());
+  }
+}
+
+void Backup::avvio()
+{
+  //creo la cartella con la data.
+  //prendo la data nel formato yyyy-mm-dd
+  char outstr[11];
+  time_t t;
+  struct tm *tmp;
+  t = time(NULL);
+  tmp = localtime(&t);
+  strftime(outstr, sizeof(outstr), "%F", tmp);
+  //ho la data salvata in outstr, creo la cartella.
+  std::string cartella=directory;
+  if(cartella.substr(cartella.size()-1).compare("/")!=0) cartella.append("/");
+  cartella.append(outstr);
+  checkFolder(cartella);
+  strftime(outstr, sizeof(outstr), "%H-%M", tmp);
   cartella.append("/");
   cartella.append(outstr);
   checkFolder(cartella);
@@ -115,6 +154,7 @@ void Backup::spostaFiles()
     //mi preparo la stringa con il file di destinazione
     int pos=files[i].find_last_of("/");
     if (pos==-1) pos=0;
+    else pos++;
     std::string nomeFile=cartella;
     nomeFile.append("/");
     nomeFile.append(files[i].substr(pos));

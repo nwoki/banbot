@@ -59,6 +59,7 @@ class Backup
     void spostaFiles();
     void checkFolder(std::string path);  //crea la cartella se non esiste.
     bool isTimeToWork();                //ritorna true se è il momento di fare il backup.
+    void avvio();
     bool done;
     Logger *logger;
 };
