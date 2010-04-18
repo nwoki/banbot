@@ -87,7 +87,7 @@ Db::Db( vector<ConfigLoader::Option> conf, vector<ConfigLoader::Banlist> banned,
     IN.close();
 
     //azzero la tabella degli admins
-    setupAdmins( admins );    //TODO make "loadAdmins" without deleting and re writing db
+    loadAdminlist( admins );
     loadBanlist( banned );
     dumpBannedToFile();
 
@@ -697,6 +697,36 @@ void Db::loadBanlist( vector<ConfigLoader::Banlist> banned )
     *logger << "Added " << playerCounter << " clients and " << addedGuidsCounter << " new guids to the database \n";
 }
 
+void Db::loadAdminlist( vector< ConfigLoader::Option > admins )
+{
+    cout << "\e[0;33m[!] Loading admins to database.. \e[0m \n";
+
+    if( admins.empty() ){
+        cout<<"\e[0;33m[!]Adminlist EMPTY\e[0m \n";
+        *logger<<"[!]Adminlist EMPTY\n";
+        return;
+    }
+
+    int addedCounter = 0;
+
+    //adding admins to db
+    cout<<"\n[-]Adding admins to database..\n\n";
+
+    for( unsigned int i = 0; i < admins.size(); i++ ) {
+        if( !checkAuthGuid( admins[i].value ) ) {    //non esiste sul database
+            //add to database
+            if ( addOp( admins[i].name, admins[i].value ) ) {
+                cout << "\e[0;32m      [+]added admin: " << admins[i].name << "\e[0m \n";
+                *logger<<"      [+]added admin: " << admins[i].value << "\n";
+                addedCounter++;
+            }
+        }
+    }
+
+    cout << "\e[0;33m Added " << addedCounter << " admin/s to the database\e[0m \n";
+    *logger << "Added " << addedCounter << " admin/s to the database\n";
+}
+
 int Db::resultQuery( const string &query ) //ritorna quante corrispondenze ci sono all'interno del DB
 {
     int answer = 0;
@@ -708,35 +738,4 @@ int Db::resultQuery( const string &query ) //ritorna quante corrispondenze ci so
 
     delete ( sql );
     return answer;
-}
-
-void Db::setupAdmins( vector<ConfigLoader::Option> admins )
-{
-    cout<<"  [-] setting up admin guid's.. \n";
-    *logger<<"  [-] setting up admin guid's.. \n";
-
-    string clearQuery( "delete from oplist;" );
-
-    if( execQuery( clearQuery ) ){
-        cout<<"    [*]cleaned admin table..\n";
-        *logger<<"    [*]cleaned admin table..\n";
-    }
-    else{
-        cout<<"\e[1;31m    [EPIC FAIL] Db::setupAdmins can't clean table\e[0m \n";
-        *logger<<"    [EPIC FAIL] Db::setupAdmins can't clean table \n";
-    }
-
-    cout<<"    [-]trying to repopulate database\n";
-    *logger<<"    [-]trying to repopulate database\n";
-
-    for( unsigned int i = 0; i < admins.size(); i++ ){
-        if( addOp( admins[i].name, admins[i].value ) ){
-            cout<<"\e[0;32m      [+]added admin: " << admins[i].name << "\e[0m \n";//opzioni[i].value << "\e[0m \n";
-            *logger<<"      [+]added admin: " << admins[i].value << "\n";
-        }
-        else{
-            cout<<"\e[0;31m      [FAIL] can't add admin to database!\e[0m \n";
-            *logger<<"      [FAIL] can't add admin to database!\n";
-        }
-    }
 }
