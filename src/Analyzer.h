@@ -93,6 +93,7 @@ private:
     void clientConnect(char* line);
     void clientDisconnect(char* line);
     void ban(char* line);
+    void unban(char* line);
     void find(char* line);
     void findOp(char* line);
     void op(char* line);
@@ -100,7 +101,6 @@ private:
     void help(char* line);
     void kick(char* line);
     void mute(char* line);
-    void unmute(char* line);
 
 protected:
     bool isA(char* line,const std::string &regex);
@@ -111,6 +111,7 @@ protected:
     bool ipIsBanned(const std::string &ip);               //controlla se il nick è stato bannato.
     void buttaFuori(const std::vector< string >& reason, const std::string numero, const std::string nick);
     std::string correggi(std::string stringa);          //corregge la riga di testo per l'inserimento e l'utilizzo col database
+    void tell(std::string frase, std::string player);  //invia la frase al giocatore usando connection::tell(), ma spezzettando automaticamente la stringa in più frasi se necessario.
     Logger* logger;
     Connection * server;
     Db * database;

@@ -208,7 +208,6 @@ void Analyzer::clientUserInfo(char* line)
       std::string query("SELECT banned.motive,banned.id FROM banned join guids ON banned.id=guids.banId WHERE guids.guid='");
       query.append(correggi(guid));
       query.append("';");
-      std::cout<<query<<"\n";
       std::vector<std::string> risultato=database->extractData(query);
 
       //butto fuori la persona dal server
@@ -430,6 +429,35 @@ void Analyzer::ban(char* line)
   }
 }
 
+void Analyzer::unban(char* line)
+{
+  std::cout<<"[!] Unban";
+  logger->timestamp();
+  *logger<<"\n[!] Unban";
+  //controllo se ho il giocatore e i suoi permessi, se la persona non è autorizzata non faccio nulla.
+  std::string numeroAdmin;
+  if (isAdminSay(line,numeroAdmin))
+  {
+    //prendo l'identificativo da sbannare
+    std::string temp(line);
+    int pos=temp.find("!unban");
+    pos=temp.find_first_of("0123456789",pos+6);
+    int end=temp.find_first_of(" ",pos);
+    std::string numero=temp.substr(pos,end-pos);
+
+    //ho il numero, elimino dal database tutti i record relativi.
+    std::string query("DELETE FROM guids WHERE banId='");
+    query.append(numero);
+    query.append("';");
+    database->extractData(query);
+    std::string frase;
+    if (database->deleteBanned(numero))
+      frase.append("BanBot: utente sbannato con successo.");
+    else frase.append("BanBot: è stato riscontrato un errore, utente non sbannato.");
+    server->tell(frase,numeroAdmin,serverNumber);
+  }
+}
+
 void Analyzer::find(char* line)
 {
   std::cout<<"[!] Find";
@@ -468,7 +496,9 @@ void Analyzer::find(char* line)
     {
       frase.append("troppi risultati, prova a migliorare la ricerca. Forse cercavi ");
       frase.append(risultato[0]);
-      frase.append(risultato[1]);
+      frase.append(" ");
+      frase.append(risultato[1]); 
+      frase.append(" ");
       frase.append(risultato[2]);
       frase.append(" ?");
     }
@@ -478,46 +508,49 @@ void Analyzer::find(char* line)
       else for (unsigned int i=0; i<risultato.size();i+=3)
         {
           frase.append(risultato[i]);
+          frase.append(" ");
           frase.append(risultato[i+1]);
+          frase.append(" ");
           frase.append(risultato[i+2]);
           if(i<risultato.size()-3) frase.append(", ");
           else frase.append(".");
         }
     }
-    server->tell(frase,numero,serverNumber);
+    tell(frase,numero);
     
     frase.clear();
     frase.append("Ricerca: ");
     if (risultatoApprossimativo.size()>45)
     {
       frase.append("troppi risultati, prova a migliorare la ricerca. Forse cercavi ");
-      frase.append(risultato[0]);
-      frase.append(risultato[1]);
-      frase.append(risultato[2]);
+      frase.append(risultatoApprossimativo[0]);
+      frase.append(" ");
+      frase.append(risultatoApprossimativo[1]);
+      frase.append(" ");
+      frase.append(risultatoApprossimativo[2]);
       frase.append(", ");
-      frase.append(risultato[3]);
-      frase.append(risultato[4]);
-      frase.append(risultato[5]);
+      frase.append(risultatoApprossimativo[3]);
+      frase.append(" ");
+      frase.append(risultatoApprossimativo[4]);
+      frase.append(" ");
+      frase.append(risultatoApprossimativo[5]);
       frase.append(" ?");
     }
     else
     {
-      if (risultato.empty()) frase.append("none.");
-      else for (unsigned int i=0; i<risultato.size();i+=3)
+      if (risultatoApprossimativo.empty()) frase.append("none.");
+      else for (unsigned int i=0; i<risultatoApprossimativo.size();i+=3)
         {
-          frase.append(risultato[i]);
-          frase.append(risultato[i+1]);
-          frase.append(risultato[i+2]);
-          if(i<risultato.size()-3) frase.append(", ");
+          frase.append(risultatoApprossimativo[i]);
+          frase.append(" ");
+          frase.append(risultatoApprossimativo[i+1]);
+          frase.append(" ");
+          frase.append(risultatoApprossimativo[i+2]);
+          if(i<risultatoApprossimativo.size()-3) frase.append(", ");
           else frase.append(".");
         }
     }
-    
-    for (unsigned int i=0;i<frase.size();i+=255)
-    {
-      sleep(SOCKET_PAUSE);
-      server->tell(frase.substr(i,255),numero,serverNumber);
-    }
+    tell(frase,numero);
   }
 }
 
@@ -543,7 +576,7 @@ void Analyzer::findOp(char* line)
     *logger<<"  [-]Searching for "<<nick<<".\n";
     //eseguo la ricerca sul DB e invio i risultati al server di gioco.
     
-    std::string query("SELECT id,nick FROM oplist WHERE nick='");
+    std::string query("SELECT id,nick FROM oplist WHERE nick LIKE '");
     query.append(correggi(nick));
     query.append("' LIMIT 7;");
     std::vector<std::string> risultato=database->extractData(query);
@@ -559,7 +592,9 @@ void Analyzer::findOp(char* line)
     {
       frase.append("troppi risultati, prova a migliorare la ricerca. Forse cercavi ");
       frase.append(risultato[0]);
+      frase.append(" ");
       frase.append(risultato[1]);
+      frase.append(" ");
       frase.append(risultato[2]);
       frase.append(" ?");
     }
@@ -569,7 +604,9 @@ void Analyzer::findOp(char* line)
       else for (unsigned int i=0; i<risultato.size();i+=3)
         {
           frase.append(risultato[i]);
+          frase.append(" ");
           frase.append(risultato[i+1]);
+          frase.append(" ");
           frase.append(risultato[i+2]);
           if(i<risultato.size()-3) frase.append(", ");
           else frase.append(".");
@@ -582,28 +619,34 @@ void Analyzer::findOp(char* line)
     if (risultatoApprossimativo.size()>45)
     {
       frase.append("troppi risultati, prova a migliorare la ricerca. Forse cercavi ");
-      frase.append(risultato[0]);
-      frase.append(risultato[1]);
-      frase.append(risultato[2]);
+      frase.append(risultatoApprossimativo[0]);
+      frase.append(" ");
+      frase.append(risultatoApprossimativo[1]);
+      frase.append(" ");
+      frase.append(risultatoApprossimativo[2]);
       frase.append(", ");
-      frase.append(risultato[3]);
-      frase.append(risultato[4]);
-      frase.append(risultato[5]);
+      frase.append(risultatoApprossimativo[3]);
+      frase.append(" ");
+      frase.append(risultatoApprossimativo[4]);
+      frase.append(" ");
+      frase.append(risultatoApprossimativo[5]);
       frase.append(" ?");
     }
     else
     {
-      if (risultato.empty()) frase.append("none.");
-      else for (unsigned int i=0; i<risultato.size();i+=3)
+      if (risultatoApprossimativo.empty()) frase.append("none.");
+      else for (unsigned int i=0; i<risultatoApprossimativo.size();i+=3)
         {
-          frase.append(risultato[i]);
-          frase.append(risultato[i+1]);
-          frase.append(risultato[i+2]);
-          if(i<risultato.size()-3) frase.append(", ");
+          frase.append(risultatoApprossimativo[i]);
+          frase.append(" ");
+          frase.append(risultatoApprossimativo[i+1]);
+          frase.append(" ");
+          frase.append(risultatoApprossimativo[i+2]);
+          if(i<risultatoApprossimativo.size()-3) frase.append(", ");
           else frase.append(".");
         }
     }
-    
+ 
     for (unsigned int i=0;i<frase.size();i+=255)
     {
       sleep(SOCKET_PAUSE);
@@ -713,7 +756,7 @@ void Analyzer::mute(char* line)
     int end=temp.find_first_of(" ",pos);
     std::string numero=temp.substr(pos,end-pos);
     
-    std::string frase("BanBot: muting player number ");
+    std::string frase("BanBot: muting/unmuting player number ");
     frase.append(numero);
     frase.append("...");
     server->say(frase,serverNumber);
@@ -722,48 +765,25 @@ void Analyzer::mute(char* line)
   }
 }
 
-void Analyzer::unmute(char* line)
-{
-  std::cout<<"[!] Unmute";
-  logger->timestamp();
-  *logger<<"\n[!] Unmute";
-  //controllo se ho il giocatore e i suoi permessi, se la persona non è autorizzata non faccio nulla.
-  std::string numeroAdmin;
-  if (isAdminSay(line,numeroAdmin))
-  {
-    std::string temp(line);
-    int pos=temp.find("!unmute");
-    pos=temp.find_first_of("0123456789",pos+7);
-    int end=temp.find_first_of(" ",pos);
-    std::string numero=temp.substr(pos,end-pos);
-    
-    std::string frase("BanBot: unmuting player number ");
-    frase.append(numero);
-    frase.append("...");
-    server->say(frase,serverNumber);
-    sleep(SOCKET_PAUSE);
-    server->unmute(numero,serverNumber);
-  }
-}
-
 void Analyzer::help(char* line)
 {
   std::cout<<"[!] Help";
   logger->timestamp();
   *logger<<"\n[!] Help";
-  
-  std::string temp = line;
-  int pos = temp.find( "say:" );
-  pos = temp.find_first_not_of( " ", pos+4 );
-  int end = temp.find_first_of( " ", pos );
-  std::string numero = temp.substr( pos, end-pos );
-  
-  std::string frase(COMMANDLIST);
-  for (unsigned int i=0;i<frase.size();i+=130)
+  std::string numero;
+  if (isAdminSay(line,numero))
   {
-    server->tell(frase.substr(i,130),numero,serverNumber);
-    sleep(SOCKET_PAUSE);
+    tell(COMMANDLIST,numero);
   }
+}
+
+void Analyzer::tell(std::string frase, std::string player)
+{
+  for (unsigned int i=0;i<frase.size();i+=130)
+    {
+      server->tell(frase.substr(i,130),player,serverNumber);
+      sleep(SOCKET_PAUSE);
+    }
 }
 
 void Analyzer::getDateAndTime(std::string &data,std::string &ora)
@@ -974,7 +994,7 @@ void Analyzer::main_loop()
                       if (isA(line,UNBAN))
                       {
                         //è un comando di unban
-                        ban(line);
+                        unban(line);
                       }
                       else
                       {
@@ -1023,7 +1043,7 @@ void Analyzer::main_loop()
                                     if (isA(line,UNMUTE))
                                     {
                                       //è un unmute
-                                      unmute(line);
+                                      mute(line);
                                     }
                                     else
                                     {
