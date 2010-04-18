@@ -51,10 +51,11 @@ class Db
         //checks
         bool checkAuthGuid( const string &guid );   //controlla l'esistenza del guid passato (OPLIST)
         bool checkBanGuid( const string &guid );    //passa ( guid giocatore)
-        bool checkBanNick( const string &nick );    //
+        bool checkBanNick( const string &nick );    //controlla l'esistenza del nick nella tabella dei bannati
         //bool checkDirAndFile( const string &guid ); //passa url file compreso
 
         //dumps
+        void dumpAdminsToFile();
         void dumpBannedToFile();
         void dumpDatabase();    //TODO not yet implemented
 
