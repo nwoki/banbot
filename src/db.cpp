@@ -324,6 +324,12 @@ void Db::dumpDatabase() //to finish and understand
 //BAN METHODS
 bool Db::ban( const string &ip, const string &nick, const string &date, const string &time, const string &guid, const string &motive ) //adds banned guid to database
 {
+    if ( checkBanGuid( guid ) ) {
+        cout << "\e[0;33m[!]guid: " << guid << " already banned\e[0m \n";
+        *logger << "[!]guid: " << guid << " already banned\n";
+        return false;
+    }
+
     string banId = insertNewBanned( nick, ip, date, time, motive );    //get the autoincrement id
 
     if( banId.empty() )    // empty string is ERROR
@@ -554,6 +560,12 @@ bool Db::deleteGuid( const string &id )
 //OPLIST TABLE METHODS
 bool Db::addOp( const string& nick, const string& guid )
 {
+    if ( checkAuthGuid( guid ) ) {
+        cout << "\e[0;33m[!]guid: " << guid << " already authed\e[0m \n";
+        *logger << "[!]guid: " << guid << " already authed";
+        return false;
+    }
+
     string addOpQuery( "insert into oplist( nick, guid ) values('" );
     addOpQuery.append( nick );
     addOpQuery.append( "','" );

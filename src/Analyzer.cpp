@@ -413,7 +413,6 @@ void Analyzer::ban(char* line)
       frase.append(" for ");
       frase.append(motivo);
       frase.append(".");
-      std::cout<<"Passo 1\n";
       server->say(frase,serverNumber);
       std::string ora;
       std::string data;
@@ -481,25 +480,22 @@ void Analyzer::find(char* line)
     std::cout<<"  [-]Searching for "<<nick<<".\n";
     *logger<<"  [-]Searching for "<<nick<<".\n";
     //eseguo la ricerca sul DB e invio i risultati al server di gioco.
-    
     std::string query("SELECT id,nick,motive FROM banned WHERE nick = '");
     query.append(correggi(nick));
     query.append("' LIMIT 7;");
     std::vector<std::string> risultato=database->extractData(query);
-    
     query.clear();
     query="SELECT id,nick,motive FROM banned WHERE nick LIKE '%";
     query.append(correggi(nick));
     query.append("%' LIMIT 16;");
     std::vector<std::string> risultatoApprossimativo=database->extractData(query);
-    
     std::string frase("Risultati esatti: ");
     if (risultato.size()>18)
     {
       frase.append("troppi risultati, prova a migliorare la ricerca. Forse cercavi ");
       frase.append(risultato[0]);
       frase.append(" ");
-      frase.append(risultato[1]); 
+      frase.append(risultato[1]);
       frase.append(" ");
       frase.append(risultato[2]);
       frase.append(" ?");
@@ -519,7 +515,7 @@ void Analyzer::find(char* line)
         }
     }
     tell(frase,numero);
-    
+
     frase.clear();
     frase.append("Ricerca: ");
     if (risultatoApprossimativo.size()>45)
@@ -577,18 +573,15 @@ void Analyzer::findOp(char* line)
     std::cout<<"  [-]Searching for "<<nick<<".\n";
     *logger<<"  [-]Searching for "<<nick<<".\n";
     //eseguo la ricerca sul DB e invio i risultati al server di gioco.
-    
     std::string query("SELECT id,nick FROM oplist WHERE nick = '");
     query.append(correggi(nick));
     query.append("' LIMIT 7;");
     std::vector<std::string> risultato=database->extractData(query);
-    
     query.clear();
     query="SELECT id,nick FROM oplist WHERE nick LIKE '%";
     query.append(correggi(nick));
     query.append("%' LIMIT 16;");
     std::vector<std::string> risultatoApprossimativo=database->extractData(query);
-    
     std::string frase("Risultati esatti: ");
     if (risultato.size()>18)
     {
@@ -615,7 +608,6 @@ void Analyzer::findOp(char* line)
         }
     }
     tell(frase,numero);
-    
     frase.clear();
     frase.append("Ricerca: ");
     if (risultatoApprossimativo.size()>45)
@@ -667,7 +659,7 @@ void Analyzer::op(char* line)
     pos=temp.find_first_of("0123456789",pos+3);
     int end=temp.find_first_of(" ",pos);
     std::string numero=temp.substr(pos,end-pos);
-    
+
     //prendo i dati dell'utente e lo aggiungo tra gli op
     unsigned int i=0;
     bool nonTrovato=true;
@@ -728,7 +720,7 @@ void Analyzer::kick(char* line)
     pos=temp.find_first_of("0123456789",pos+5);
     int end=temp.find_first_of(" ",pos);
     std::string numero=temp.substr(pos,end-pos);
-    
+
     std::string frase("BanBot: kicking player number ");
     frase.append(numero);
     frase.append("...");
@@ -752,7 +744,7 @@ void Analyzer::mute(char* line)
     pos=temp.find_first_of("0123456789",pos+5);
     int end=temp.find_first_of(" ",pos);
     std::string numero=temp.substr(pos,end-pos);
-    
+
     std::string frase("BanBot: muting/unmuting player number ");
     frase.append(numero);
     frase.append("...");
@@ -878,7 +870,7 @@ std::string Analyzer::correggi(std::string stringa)
   {
     nonFinito=false;
     pos=stringa.find("'",pos);
-    if (pos<stringa.size()) 
+    if (pos<stringa.size())
     {
       stringa=stringa.replace(pos,1,"''");
       pos+=2;
@@ -911,7 +903,7 @@ void Analyzer::main_loop()
         std::cout<<"  [OK] Aperto!\n";
         *generalLog<<"  [OK] Aperto!\n";
       }
-      else 
+      else
       {
         std::cout<<"  [FAIL] Non sono riuscito ad aprirlo!\n";
         *generalLog<<"  [FAIL] Non sono riuscito ad aprirlo!\n";
