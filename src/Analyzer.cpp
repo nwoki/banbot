@@ -413,6 +413,7 @@ void Analyzer::ban(char* line)
       frase.append(" for ");
       frase.append(motivo);
       frase.append(".");
+      std::cout<<"Passo 1\n";
       server->say(frase,serverNumber);
       std::string ora;
       std::string data;
@@ -481,7 +482,7 @@ void Analyzer::find(char* line)
     *logger<<"  [-]Searching for "<<nick<<".\n";
     //eseguo la ricerca sul DB e invio i risultati al server di gioco.
     
-    std::string query("SELECT id,nick,motive FROM banned WHERE nick='");
+    std::string query("SELECT id,nick,motive FROM banned WHERE nick = '");
     query.append(correggi(nick));
     query.append("' LIMIT 7;");
     std::vector<std::string> risultato=database->extractData(query);
@@ -570,14 +571,14 @@ void Analyzer::findOp(char* line)
     //estraggo il nick da cercare.
     std::string temp(line);
     int pos=temp.find("!findop");
-    std::string nick=temp.substr(pos+7);
+    std::string nick=temp.substr(pos+8);
 
     //ho il nick da cercare
     std::cout<<"  [-]Searching for "<<nick<<".\n";
     *logger<<"  [-]Searching for "<<nick<<".\n";
     //eseguo la ricerca sul DB e invio i risultati al server di gioco.
     
-    std::string query("SELECT id,nick FROM oplist WHERE nick LIKE '");
+    std::string query("SELECT id,nick FROM oplist WHERE nick = '");
     query.append(correggi(nick));
     query.append("' LIMIT 7;");
     std::vector<std::string> risultato=database->extractData(query);
@@ -613,7 +614,7 @@ void Analyzer::findOp(char* line)
           else frase.append(".");
         }
     }
-    server->tell(frase,numero,serverNumber);
+    tell(frase,numero);
     
     frase.clear();
     frase.append("Ricerca: ");
@@ -647,12 +648,7 @@ void Analyzer::findOp(char* line)
           else frase.append(".");
         }
     }
- 
-    for (unsigned int i=0;i<frase.size();i+=255)
-    {
-      sleep(SOCKET_PAUSE);
-      server->tell(frase.substr(i,255),numero,serverNumber);
-    }
+    tell(frase,numero);
   }
 }
 
@@ -685,7 +681,7 @@ void Analyzer::op(char* line)
       server->tell("Error: player not found.",numeroAdmin,serverNumber);
     else
     {
-      if(database->addOp(giocatori[serverNumber][i]->nick,giocatori[serverNumber][i]->GUID))
+      if(database->checkAuthGuid(giocatori[serverNumber][i]->GUID) && database->addOp(giocatori[serverNumber][i]->nick,giocatori[serverNumber][i]->GUID))
         server->tell("BanBot: admin aggiunto con successo.",numeroAdmin,serverNumber);
       else
         server->tell("Fail: player non aggiunto alla lista admin.",numeroAdmin,serverNumber);
@@ -885,6 +881,7 @@ std::string Analyzer::correggi(std::string stringa)
     if (pos<stringa.size()) 
     {
       stringa=stringa.replace(pos,1,"''");
+      pos+=2;
       nonFinito=true;
     }
   }
