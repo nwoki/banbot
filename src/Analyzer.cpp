@@ -404,22 +404,33 @@ void Analyzer::ban(char* line)
     //per pignoleria controllo anche se per una rarissima combinazione non è già bannato).
     if (!nonTrovato && !database->checkBanGuid(guid))
     {
-      std::cout<<"  [+]banning "<<nick<<" with guid "<<guid<<"\n";
-      *logger<<"  [+]banning "<<nick<<" with guid "<<guid<<"\n";
-      std::string frase("BanBot: banning player number ");
-      frase.append(numero);
-      frase.append(", ");
-      frase.append(nick);
-      frase.append(" for ");
-      frase.append(motivo);
-      frase.append(".");
-      server->say(frase,serverNumber);
-      std::string ora;
-      std::string data;
-      getDateAndTime(data,ora);
-      database->ban(correggi(nick),giocatori[serverNumber][i]->ip,data,ora,correggi(guid),correggi(motivo));
-      sleep(SOCKET_PAUSE);
-      server->kick(numero,serverNumber);
+      if (!database->checkAuthGuid(guid))
+      {
+        std::cout<<"  [+]banning "<<nick<<" with guid "<<guid<<"\n";
+        *logger<<"  [+]banning "<<nick<<" with guid "<<guid<<"\n";
+        std::string frase("BanBot: banning player number ");
+        frase.append(numero);
+        frase.append(", ");
+        frase.append(nick);
+        frase.append(" for ");
+        frase.append(motivo);
+        frase.append(".");
+        server->say(frase,serverNumber);
+        std::string ora;
+        std::string data;
+        getDateAndTime(data,ora);
+        database->ban(correggi(nick),giocatori[serverNumber][i]->ip,data,ora,correggi(guid),correggi(motivo));
+        sleep(SOCKET_PAUSE);
+        server->kick(numero,serverNumber);
+        std::cout<<"  [OK] player banned\n";
+        *logger<<"  [OK] player banned\n";
+      }
+      else
+      {
+        std::cout<<"  [!]fail: player is an admin\n";
+        *logger<<"  [!]fail: player is an admin\n";
+        server->tell("Banning error: (s)he's an admin.",numeroAdmin,serverNumber);
+      }
     }
     else
     {
