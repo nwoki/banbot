@@ -483,12 +483,16 @@ void Analyzer::find(char* line)
     std::string query("SELECT id,nick,motive FROM banned WHERE nick = '");
     query.append(correggi(nick));
     query.append("' LIMIT 7;");
+    std::cout<<query<<"\n";
     std::vector<std::string> risultato=database->extractData(query);
     query.clear();
     query="SELECT id,nick,motive FROM banned WHERE nick LIKE '%";
     query.append(correggi(nick));
     query.append("%' LIMIT 16;");
+    std::cout<<query<<"\n";
     std::vector<std::string> risultatoApprossimativo=database->extractData(query);
+    
+    std::cout<<"ricerca: "<<risultato.size()<<" "<<risultatoApprossimativo.size()<<"\n";
     std::string frase("Risultati esatti: ");
     if (risultato.size()>18)
     {
@@ -582,6 +586,7 @@ void Analyzer::findOp(char* line)
     query.append(correggi(nick));
     query.append("%' LIMIT 16;");
     std::vector<std::string> risultatoApprossimativo=database->extractData(query);
+    
     std::string frase("Risultati esatti: ");
     if (risultato.size()>18)
     {
@@ -589,54 +594,45 @@ void Analyzer::findOp(char* line)
       frase.append(risultato[0]);
       frase.append(" ");
       frase.append(risultato[1]);
-      frase.append(" ");
-      frase.append(risultato[2]);
       frase.append(" ?");
     }
     else
     {
       if (risultato.empty()) frase.append("none.");
-      else for (unsigned int i=0; i<risultato.size();i+=3)
+      else for (unsigned int i=0; i<risultato.size();i+=2)
         {
           frase.append(risultato[i]);
           frase.append(" ");
           frase.append(risultato[i+1]);
-          frase.append(" ");
-          frase.append(risultato[i+2]);
-          if(i<risultato.size()-3) frase.append(", ");
+          if(i<risultato.size()-2) frase.append(", ");
           else frase.append(".");
         }
     }
     tell(frase,numero);
+    
     frase.clear();
     frase.append("Ricerca: ");
-    if (risultatoApprossimativo.size()>45)
+    if (risultatoApprossimativo.size()>30)
     {
       frase.append("troppi risultati, prova a migliorare la ricerca. Forse cercavi ");
       frase.append(risultatoApprossimativo[0]);
       frase.append(" ");
       frase.append(risultatoApprossimativo[1]);
-      frase.append(" ");
-      frase.append(risultatoApprossimativo[2]);
       frase.append(", ");
+      frase.append(risultatoApprossimativo[2]);
+      frase.append(" ");
       frase.append(risultatoApprossimativo[3]);
-      frase.append(" ");
-      frase.append(risultatoApprossimativo[4]);
-      frase.append(" ");
-      frase.append(risultatoApprossimativo[5]);
       frase.append(" ?");
     }
     else
     {
       if (risultatoApprossimativo.empty()) frase.append("none.");
-      else for (unsigned int i=0; i<risultatoApprossimativo.size();i+=3)
+      else for (unsigned int i=0; i<risultatoApprossimativo.size();i+=2)
         {
           frase.append(risultatoApprossimativo[i]);
           frase.append(" ");
           frase.append(risultatoApprossimativo[i+1]);
-          frase.append(" ");
-          frase.append(risultatoApprossimativo[i+2]);
-          if(i<risultatoApprossimativo.size()-3) frase.append(", ");
+          if(i<risultatoApprossimativo.size()-2) frase.append(", ");
           else frase.append(".");
         }
     }
@@ -673,7 +669,7 @@ void Analyzer::op(char* line)
       server->tell("Error: player not found.",numeroAdmin,serverNumber);
     else
     {
-      if(database->checkAuthGuid(giocatori[serverNumber][i]->GUID) && database->addOp(giocatori[serverNumber][i]->nick,giocatori[serverNumber][i]->GUID))
+      if(!database->checkAuthGuid(giocatori[serverNumber][i]->GUID) && database->addOp(giocatori[serverNumber][i]->nick,giocatori[serverNumber][i]->GUID))
         server->tell("BanBot: admin aggiunto con successo.",numeroAdmin,serverNumber);
       else
         server->tell("Fail: player non aggiunto alla lista admin.",numeroAdmin,serverNumber);

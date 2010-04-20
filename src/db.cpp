@@ -322,7 +322,7 @@ void Db::dumpDatabase() //to finish and understand
 
 
 //BAN METHODS
-bool Db::ban( const string &ip, const string &nick, const string &date, const string &time, const string &guid, const string &motive ) //adds banned guid to database
+bool Db::ban(const string &nick, const string &ip, const string &date, const string &time, const string &guid, const string &motive ) //adds banned guid to database
 {
     if ( checkBanGuid( guid ) ) {
         cout << "\e[0;33m[!]guid: " << guid << " already banned\e[0m \n";
