@@ -122,7 +122,7 @@ The implemented commands so far are:
 ####  Descrizione generale e note #####
 
 Un bot fatto in C++ che mira ad essere semplice e ad occupare poche risorse
-della macchina che lo hosta limitando ( addirittura eliminando ) "lag" non voluti del server.
+della macchina che lo hosta limitando ( addirittura eliminando ) "lag" non voluti del server spesso provocati dai bot.
 Controlla il gioco di URBAN TERROR 4.1 e utilizza un database SQLite3 per contenere i suoi dati
 (la libreria SQLite3 è intergata nel bot, quindi non è richiesto che sia installata sulla macchina).
 Controlla periodicamente per giocatori bannati e li elimina automaticamente dal server
@@ -131,13 +131,22 @@ evitando il loro rientro nel futuro.
 Creato per andare su sistemi Unix/linux ( server Windows non testato! )
 
 Forniamo un eseguibile già compilato che *dovrebbe* essere compatibile con la maggior parte
-dei server linux (per chi non ha la possibilità di compilarlo sul server) nella cartella
+dei server linux (per chi non ha la possibilità di compilarlo sul server, architettura i386) nella cartella
 "compiled".
 Consigliamo comunque di compilare il codice sorgente sul server, dove possibile.
 
-La versione attuale è ancora una beta, c'è soltanto il cuore del bot, e di conseguenza
-non è molto semplice da usare (per cancellare un ban, per esempio, bisogna accedere
-manualmente sul database e cancellare il record voluto).
+Questa è la prima release (1.0) e le funzionalità sono limitate allo stretto necessario
+(pure qualche piccolo extra a dire la verità).
+Per segnalazioni di bug, suggerimenti, ecc., trovate una sezione apposita sul sito del nostro clan.
+Ogni vostro aiuto o commento sarà apprezzato :>
+
+Le principali funzionalità del bot:
+-ban permanente dal server.
+-rimozione ban.
+-aggiunta/rimozione admins.
+-kick, mute ed unmute
+-backup automatico giornaliero dei file di log.
+-controllo di più server sulla stessa macchina con una sola istanza del bot.
 
 ####      Requisiti:    #######
 
@@ -156,9 +165,12 @@ cartella corrente.
 
 ####      Configurazione:    #######
 
-Tutte le configurazioni si trovano su BanBot.cfg.
+Quasi tutte le configurazioni si trovano su BanBot.cfg.
 Il config file del bot dev'essere modificato in base ai propri bisogni specificando
 tutti i parametri richiesti nel file.
+La responsabilità di una corretta configurazione è totalmente a carico dell'utente.
+Se gli fate una configurazione sbagliata, il comportamento del bot può essere completamente
+imprevedibile.
 
 è possibile fargli usare un altro file di configurazione (magari situato in una cartella diversa)
 passandogli l'indirizzo all'avvio. Per esempio:
@@ -178,34 +190,44 @@ senza spazi prima e dopo l'uguale!
 
 Le opzioni da settare sono le seguenti:
 
--BOTLOG   : imposta dove salvare il log del bot.
--IP       : ip del server urt (NB: inserire l'ip del server, non localhost o 127.0.0.1)
--PORT     : porta di accesso al server urt
--RCONPASS : password rcon del server (per poter kickare i player, è necessaria)
--LOGPATH  : percorso del file di log del server urt.
--GUID     : guid dell'admin.
+-BOTLOG   		: imposta dove salvare il log generale del bot.
+-BACKUPPATH		: directory dove salvare tutti i backup dei file (se non esiste, viene creata).
+-IP       		: ip del server urt (NB: inserire l'ip del server, non localhost o 127.0.0.1)
+-PORT     		: porta di accesso al server urt
+-RCONPASS 		: password rcon del server (per poter kickare i player, è necessaria)
+-LOGPATH  		: percorso del file di log del server urt.
+-BOTLOGPATH		: file dove salvare il log specifico del bot (log di questa precisa istanza del gioco).
 
-N.B.: tutte le opzioni vanno inserite una volta sola, tranne GUID: se ne possono
-inserire quante si vuole: ognuna di esse indica la GUID di un admin.
+
+N.B.: IP, PORT, RCONPASS, LOGPATH e BOTLOGPATH vanno specificati (preferibilmente in quest'ordine)
+una volta per ogni server da controllare.
+Quindi se il bot deve controllare 3 server, dovete inserire 3 IP, 3 PORT, ecc.
+
+
+Al primo avvio, dovete indicare al bot almeno uno degli amministratori.
+Per questo esiste il file cfg/Adminlist:
+
+qui vanno inseriti il nick e la guid gli admin.
+Volendo, basta inserirne anche solo uno, che poi potrà aggiungere gli altri dal gioco
+utilizzando la funzione "!op".
+
+La regola per l'inserimento è:
+nick=GUID
+
 Le GUID possono essere ricavate dai file di log del server, se sconosciute.
 Tutte le persone la cui GUID viene inserita del file di configurazione potranno
 usare il bot (il bot risponderà solo ai loro comandi ignorando tutti gli altri).
-Il che vuol dire che se non si imposta nessun GUID, BanBot ignorerà tutti i comandi a lui dati.
+Il che vuol dire che se non si imposta nessuna GUID, BanBot ignorerà tutti i comandi a lui dati.
 
 #####     Avvio di BanBot   #####
 
-Qui è doveroso precisare una cosa: il bot è si di bassissimi consumi, però ad avviarlo
-con un log del server di 300'000 righe, è logico che scorrendole vi sfrutta un sacco di
-risorse per quei 30-40 secondi che ci impiega ad arrivare alla fine del file.
-
-Quindi quando lo dovete avviare (e non solo la prima volta!) cambiate file
-di log del server (se non vi interessa un backup, basta anche solo cancellarlo, il server
-di gioco lo ricreerà automaticamente la mappa successiva).
+Ad ogni avvio, per evitare di lavorare su file di log vecchi, BanBot esegue un backup di tutti i vecchi file di log
+e riavvia la partita su tutti i server (per maggiori info, vedere la sezione Backup).
 
 Detto questo, se volete solo vedere se funziona, è sufficiente avviarlo da terminale:
 ~: ./BanBot
 
-Per lanciarlo in modo che resti avviato sul server, consigliamo di crearsi uno script per lanciarlo
+Per lanciarlo in modo che resti avviato sul server, consigliamo di crearsi uno script per eseguirlo
 su un file di estensione .sh, e lanciarlo col comando screen.
 Per esempio, noi facciamo così:
     script BotLauncher.sh:
@@ -213,6 +235,20 @@ Per esempio, noi facciamo così:
 
 e avviamo il server con
 	screen -m -d sh BotLauncher.sh
+
+BanBot si crea da solo tutti i file e le cartelle a lui necessari (e quelle indicate nel file di configurazione, se
+non esistono), sempre se riesce a farlo.
+Nel caso il bot vi segnali errori, o non faccia i backup ecc., controllate i permessi delle cartelle.
+
+#####     Backup d'avvio e backup automatico   #####
+
+BanBot esegue due tipi di backup.
+Uno all'avvio del bot, in cui sposta tutti i file nella cartella:
+	*cartella di backup*/giorno/ora/
+dove cartella di backup è quella indicata nel file di configurazione, giorno è la data nel formato anno-mese-giorno, e l'ora
+è nel formato HH-MM.
+
+
 
 ######     Utilizzo di BanBot   ######
 

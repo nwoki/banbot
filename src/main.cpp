@@ -39,10 +39,14 @@
 
 using namespace std;
 
-int main( int argc, char *argv[] ){ //pass arguments to specify server logfile and bot logfile
+int main( int argc, char *argv[] ){ //pass argument to specify bot configfile
 
     //carico le impostazioni e le salvo su opzioni
-    ConfigLoader * caricatore = new ConfigLoader( BOTCONFIG );
+    ConfigLoader * caricatore;
+    if ( argc == 2 )
+        caricatore = new ConfigLoader(argv[1]);
+    else
+        caricatore = new ConfigLoader( BOTCONFIG );
     ConfigLoader * banList = new ConfigLoader( BANLIST );
     ConfigLoader * adminList = new ConfigLoader( ADMINLIST );
 
