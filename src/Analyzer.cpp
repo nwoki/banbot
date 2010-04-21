@@ -69,7 +69,6 @@ Analyzer::Analyzer( Connection* conn, Db* db,Logger* primaryLog, Backup* backup,
   HELP=" *[0-9]+:[0-9]{2} +say: +[0-9]+ +[^ \t\n\r\f\v]+: +!help";
   KICK=" *[0-9]+:[0-9]{2} +say: +[0-9]+ +[^ \t\n\r\f\v]+: +!kick [0-9]{1,2}";
   MUTE=" *[0-9]+:[0-9]{2} +say: +[0-9]+ +[^ \t\n\r\f\v]+: +!mute [0-9]{1,2}";
-  UNMUTE=" *[0-9]+:[0-9]{2} +say: +[0-9]+ +[^ \t\n\r\f\v]+: +!unmute [0-9]{1,2}";
 
   server->reload();
   std::cout<<"[OK] Analyzer inizializzato.\n";
@@ -1037,15 +1036,7 @@ void Analyzer::main_loop()
                                   }
                                   else
                                   {
-                                    if (isA(line,UNMUTE))
-                                    {
-                                      //è un unmute
-                                      mute(line);
-                                    }
-                                    else
-                                    {
-                                      expansion(line);
-                                    }
+                                    expansion(line);
                                   }
                                 }
                               }

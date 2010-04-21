@@ -83,7 +83,6 @@ private:
     const char* HELP;
     const char* KICK;
     const char* MUTE;
-    const char* UNMUTE;
     std::vector<std::string> files;
     std::vector<std::string> BotLogFiles;
     std::vector<std::streampos> row;
