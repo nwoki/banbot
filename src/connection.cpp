@@ -94,7 +94,7 @@ void Connection::say( string frase, int server )
 
   string comando( "rcon " );
   comando.append( rconPass[server] );
-  comando.append( " say \"" );
+  comando.append( " say \"^1" );
   comando.append( frase );
   comando.append( "\"" );
 
@@ -112,7 +112,7 @@ void Connection::tell( string frase, string player, int server )
   comando.append( rconPass[server] );
   comando.append( " tell " );
   comando.append( player );
-  comando.append( " \"" );
+  comando.append( " \"^1" );
   comando.append( frase );
   comando.append( "\"" );
 

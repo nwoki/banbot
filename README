@@ -122,7 +122,8 @@ The implemented commands so far are:
 ####  Descrizione generale e note #####
 
 Un bot fatto in C++ che mira ad essere semplice e ad occupare poche risorse
-della macchina che lo hosta limitando ( addirittura eliminando ) "lag" non voluti del server spesso provocati dai bot.
+della macchina che lo hosta limitando ( addirittura eliminando ) "lag"
+non voluti del server spesso provocati dai bot.
 Controlla il gioco di URBAN TERROR 4.1 e utilizza un database SQLite3 per contenere i suoi dati
 (la libreria SQLite3 è intergata nel bot, quindi non è richiesto che sia installata sulla macchina).
 Controlla periodicamente per giocatori bannati e li elimina automaticamente dal server
@@ -131,20 +132,22 @@ evitando il loro rientro nel futuro.
 Creato per andare su sistemi Unix/linux ( server Windows non testato! )
 
 Forniamo un eseguibile già compilato che *dovrebbe* essere compatibile con la maggior parte
-dei server linux (per chi non ha la possibilità di compilarlo sul server, architettura i386) nella cartella
-"compiled".
+dei server linux (per chi non ha la possibilità di compilarlo sul server, 
+architettura i386) nella cartella "compiled".
 Consigliamo comunque di compilare il codice sorgente sul server, dove possibile.
 
 Questa è la prima release (1.0) e le funzionalità sono limitate allo stretto necessario
 (pure qualche piccolo extra a dire la verità).
 Per segnalazioni di bug, suggerimenti, ecc., trovate una sezione apposita sul sito del nostro clan.
 Ogni vostro aiuto o commento sarà apprezzato :>
+In caso troviate bug o problemi, possibilmente inviateci anche i log (sia del bot che del server).
+
 
 Le principali funzionalità del bot:
 -ban permanente dal server.
 -rimozione ban.
 -aggiunta/rimozione admins.
--kick, mute ed unmute
+-kick, mute
 -backup automatico giornaliero dei file di log.
 -controllo di più server sulla stessa macchina con una sola istanza del bot.
 
@@ -203,6 +206,11 @@ N.B.: IP, PORT, RCONPASS, LOGPATH e BOTLOGPATH vanno specificati (preferibilment
 una volta per ogni server da controllare.
 Quindi se il bot deve controllare 3 server, dovete inserire 3 IP, 3 PORT, ecc.
 
+*IMPORTANTE*: i vari log DEVONO avere nomi diversi tra loro, indipendentemente dalla cartella 
+dove si trovano, sia quelli del bot che quelli del gioco.
+(quindi in caso vogliate controllare più server con lo stesso bot, modificate le cfg del gioco
+in modo che il nome del file di log sia diverso, per esempio server1.log, server2.log ecc).
+
 
 Al primo avvio, dovete indicare al bot almeno uno degli amministratori.
 Per questo esiste il file cfg/Adminlist:
@@ -238,6 +246,7 @@ e avviamo il server con
 
 BanBot si crea da solo tutti i file e le cartelle a lui necessari (e quelle indicate nel file di configurazione, se
 non esistono), sempre se riesce a farlo.
+In sostanza al primo avvio bastano l'eseguibile (BanBot) e la cartella cfg.
 Nel caso il bot vi segnali errori, o non faccia i backup ecc., controllate i permessi delle cartelle.
 
 #####     Backup d'avvio e backup automatico   #####
@@ -248,12 +257,64 @@ Uno all'avvio del bot, in cui sposta tutti i file nella cartella:
 dove cartella di backup è quella indicata nel file di configurazione, giorno è la data nel formato anno-mese-giorno, e l'ora
 è nel formato HH-MM.
 
-
+L'altro backup è automatico: 
+all'ora fissata (tra le 06:30 e le 06:31 AM) BanBot sposta tutti i file di log nella cartella
+	*cartella di backup*/giorno
+dove giorno ha sempre il formato anno-mese-giorno.
+Quindi avrete tutti i file di log divisi giorno per giorno, senza avere file di log enormi, in automatico.
+L'ora di backup è quella del server, e non è possibile al momento cambiarla dal file di configurazione.
+Se vi crea particolari problemi col fuso orario, è possibile modificare l'ora solo sul codice sorgente
+(su Backup.h: #define HOUR,#define MINUTE e #define OVERMINUTE). Ovviamente, se lo cambiate, dovrete compilare
+nuovamente il programma.
 
 ######     Utilizzo di BanBot   ######
 
+le <> indicano i parametri OBBLIGATORI, mentre [] sono i parametri opzionali.
+
+<numero> indica il numero assegnato dal server al giocatore: per vedere il numero dei giocatori,
+da console del gioco scrivere \clientlist.
+
+<id> indica il numero con cui la persona è memorizzata nel bot, sia come admin che come utente bannato,
+che si ottiene utilizzando le funzioni !find e !findop.
+
+<nick> indica il nick (completo o parziale) che si vuole cercare.
+
 I comandi attualmente disponibili sono:
 
-!ban <numero>  : banna permanentemente il giocatore <numero>
-				 per esempio, !ban 11 banna il giocatore 11. Per vedere il numero dei giocatori,
-				 da console del gioco scrivere \clientlist.
+!ban <numero> [reason]	  : banna permanentemente il giocatore <numero>
+							per esempio, !ban 11 banna il giocatore 11. 
+				 			reason indica il motivo per cui è stato bannato (sconsigliamo i poemi epici :) ),
+				 			per esempio !ban 11 wh+aim
+				 
+!op <numero>			  : registra il giocatore <numero> sul bot come operatore,
+							rendendolo in grado di usarne le funzionalità.
+				 
+!kick <numero> 			  : butta fuori dal server il giocatore <numero>.
+
+!mute <numero>			  : muta/smuta il giocatore <numero>.
+							Per esempio, !mute 5  muta il giocatore numero 5, facendo di nuovo
+							!mute 5  viene smutato.
+
+!find <nick>			  : cerca <nick> tra gli utenti bannati. Effettua due tipi di ricerche, una
+							precisa (cerca il nick esatto, considerando anche maiuscole/minuscole), ed
+							una approssimativa (cerca <nick> anche all'interno dei nick registrati,
+							ignorando maiuscole/minuscole).
+							Per esempio, !find Mye potrebbe restituire come ricerca esatta Mye e come
+							ricerca approssimativa Mye, Amye, *Malmyez*, ecc ecc.
+							Le liste restituite dalla ricerca sono così formate:
+							id nick motivo, id nick motivo, ecc ecc
+							dove id è il numero con cui la persona è memorizzata da BanBot, e motivo è
+							il motivo per cui è stata bannata. 
+
+!findop <nick>			  : cerca <nick> tra gli admin registrati al bot. La ricerca funziona come
+							per il comando !find.
+							Le liste restituite dalla ricerca sono così formate:
+							id nick, id nick, ecc ecc
+							dove id è il numero con cui la persona è memorizzata da BanBot.
+
+!unban <id>				  : sbanna la persona indicata da <id>. Per ottenere l'id, usare la funzione !find.
+
+!deop <id>				  : toglie lo stato di operatore alla persona indicata da <id>. Per ottenere l'id, 
+							usare la funzione !findop.
+
+

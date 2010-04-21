@@ -171,15 +171,17 @@ void Analyzer::clientUserInfo(char* line)
         kicked=true;
         //cambio illegale del GUID => cheats
         //è inutile inserirlo nel db, tanto cambia continuamente guid
-        std::cout<<"  [!] kick automatico per cheats.\n";
-        *logger<<"  [!] kick automatico per cheats.\n";
+        std::cout<<"  [!] kick automatico per cheats (GUID changed during the game).\n";
+        *logger<<"  [!] kick automatico per cheats (GUID changed during the game).\n";
         std::string frase("BanBot: kicking player number ");
         frase.append(numero);
+        frase.append(", ");
+        frase.append(nick);
         frase.append(" for cheats.");
         server->say(frase,serverNumber);
         std::string ora;
         std::string data;
-        std::string motivo("automated ban 4 cheats (guid changed during the game).");
+        std::string motivo("auto-ban 4 cheats.");
         getDateAndTime(data,ora);
         database->ban(correggi(nick),ip,data,ora,correggi(guid),correggi(motivo));
         sleep(SOCKET_PAUSE);
@@ -271,11 +273,11 @@ void Analyzer::clientUserInfo(char* line)
               frase.append(numero);
               frase.append(", ");
               frase.append(nick);
-              frase.append(" for invalid guid.");
+              frase.append(" for cheats.");
               server->say(frase,serverNumber);
               std::string ora;
               std::string data;
-              std::string motivo("automated ban 4 cheats (invalid GUID).");
+              std::string motivo("auto-ban 4 cheats.");
               getDateAndTime(data,ora);
               database->ban(correggi(nick),ip,data,ora,correggi(guid),correggi(motivo));
               sleep(SOCKET_PAUSE);
@@ -339,7 +341,7 @@ void Analyzer::clientDisconnect(char* line)
 
   std::cout<<"[-] Client disconnesso: "<<numero<<"\n";
   logger->timestamp();
-  *logger<<"[-] Client disconnesso: "<<numero<<"\n";
+  *logger<<"\n[-] Client disconnesso: "<<numero<<"\n";
   //cerco il player e lo elimino
   unsigned int i=0;
   bool nonTrovato=true;

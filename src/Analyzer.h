@@ -63,7 +63,7 @@
 #define SOCKET_PAUSE 1  //per permettere al socket di funzionare bene, inserisco una pausa tra say e kick
 
 //stringa stampata all'utente con i comandi disponibili (quando viene dato il comando !help).
-#define COMMANDLIST "Comandi disponibili: !ban <number> [<reason>], !unban <id>, !kick <number>, !mute <number>, !unmute <number>, !find <nick>, !findop <nick>, !op <number>, !deop <id>."
+#define COMMANDLIST "Comandi disponibili: !ban <number> [<reason>], !unban <id>, !kick <number>, !mute <number>, !find <nick>, !findop <nick>, !op <number>, !deop <id>."
 
 class Analyzer
 {
