@@ -69,6 +69,7 @@ Analyzer::Analyzer( Connection* conn, Db* db,Logger* primaryLog, Backup* backup,
   HELP=" *[0-9]+:[0-9]{2} +say: +[0-9]+ +[^ \t\n\r\f\v]+: +!help";
   KICK=" *[0-9]+:[0-9]{2} +say: +[0-9]+ +[^ \t\n\r\f\v]+: +!kick [0-9]{1,2}";
   MUTE=" *[0-9]+:[0-9]{2} +say: +[0-9]+ +[^ \t\n\r\f\v]+: +!mute [0-9]{1,2}";
+  COMMAND=" *[0-9]+:[0-9]{2} +say: +[0-9]+ +[^ \t\n\r\f\v]+: +![a-z]+";
 
   server->reload();
   std::cout<<"[OK] Analyzer inizializzato.\n";
@@ -933,14 +934,16 @@ void Analyzer::main_loop()
           //se non è la fine del file, mi salvo la riga dove sono arrivato
           if (!log.eof()) row[serverNumber]=log.tellg();
 
-          //comincio coi test
-          if (isA(line, CLIENT_USER_INFO))
+          if (isA(line,COMMAND))
           {
-            //ha passato il regex, è una clientUserinfo
-            clientUserInfo(line);
-          }
-          else
-          {
+            //se è un comando, comincio coi test
+            if (isA(line, CLIENT_USER_INFO))
+            {
+              //ha passato il regex, è una clientUserinfo
+              clientUserInfo(line);
+            }
+            else
+            {
             //non ha passato il test, non è un clientUserinfo: provo con gli altri regex
             //controllo se è la connessione di un utente
             if (isA(line, CLIENT_CONNECT))
@@ -1051,6 +1054,7 @@ void Analyzer::main_loop()
                 }
               }
             }
+          }
           }
         }
       }
