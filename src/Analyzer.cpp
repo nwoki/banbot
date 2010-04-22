@@ -69,7 +69,7 @@ Analyzer::Analyzer( Connection* conn, Db* db,Logger* primaryLog, Backup* backup,
   HELP=" *[0-9]+:[0-9]{2} +say: +[0-9]+ +[^ \t\n\r\f\v]+: +!help";
   KICK=" *[0-9]+:[0-9]{2} +say: +[0-9]+ +[^ \t\n\r\f\v]+: +!kick [0-9]{1,2}";
   MUTE=" *[0-9]+:[0-9]{2} +say: +[0-9]+ +[^ \t\n\r\f\v]+: +!mute [0-9]{1,2}";
-  COMMAND=" *[0-9]+:[0-9]{2} +say: +[0-9]+ +[^ \t\n\r\f\v]+: +![a-z]+";
+  COMMAND=" *[0-9]+:[0-9]{2} +say: +[0-9]+ +[^ \t\n\r\f\v]+: +![^ \t\n\r\f\v]+";
 
   server->reload();
   std::cout<<"[OK] Analyzer inizializzato.\n";
@@ -934,16 +934,14 @@ void Analyzer::main_loop()
           //se non è la fine del file, mi salvo la riga dove sono arrivato
           if (!log.eof()) row[serverNumber]=log.tellg();
 
-          if (isA(line,COMMAND))
+          //comincio coi test
+          if (isA(line, CLIENT_USER_INFO))
           {
-            //se è un comando, comincio coi test
-            if (isA(line, CLIENT_USER_INFO))
-            {
-              //ha passato il regex, è una clientUserinfo
-              clientUserInfo(line);
-            }
-            else
-            {
+            //ha passato il regex, è una clientUserinfo
+            clientUserInfo(line);
+          }
+          else
+          {
             //non ha passato il test, non è un clientUserinfo: provo con gli altri regex
             //controllo se è la connessione di un utente
             if (isA(line, CLIENT_CONNECT))
@@ -963,85 +961,86 @@ void Analyzer::main_loop()
               else
               {
                 //non è neanche un clientDisconnect
-                //controllo se è un comando di ban
-                if (isA(line, BAN))
+                if (isA(line, INITGAME))
                 {
-                  //è una richiesta di ban:
-                  ban(line);
+                  //ok, è l'inizio di una nuova partita, resetto i player:
+                  //elimino gli oggetti Player:
+                  for (unsigned int i=0;i<giocatori[serverNumber].size();i++) delete giocatori[serverNumber][i];
+                  //resetto il vector:
+                  giocatori[serverNumber].clear();
                 }
                 else
                 {
-                  //non è una richiesta di ban...
-                  //controllo se è l'initgame
-                  if (isA(line, INITGAME))
+                  if (isA(line,COMMAND))
                   {
-                    //ok, è l'inizio di una nuova partita, resetto i player:
-                    //elimino gli oggetti Player:
-                    for (unsigned int i=0;i<giocatori[serverNumber].size();i++) delete giocatori[serverNumber][i];
-                    //resetto il vector:
-                    giocatori[serverNumber].clear();
-                  }
-                  else
-                  {
-                    //controllo se è la richiesta di un find
-                    if (isA(line,FIND))
+                    //controllo se è un comando di ban
+                    if (isA(line, BAN))
                     {
-                      //è un find.
-                      find(line);
+                      //è una richiesta di ban:
+                      ban(line);
                     }
                     else
                     {
-                      //controllo se è una richiesta di unban
-                      if (isA(line,UNBAN))
+                      //controllo se è la richiesta di un find
+                      if (isA(line,FIND))
                       {
-                        //è un comando di unban
-                        unban(line);
+                        //è un find.
+                        find(line);
                       }
                       else
                       {
-                        if (isA(line,OP))
+                        //controllo se è una richiesta di unban
+                        if (isA(line,UNBAN))
                         {
-                          //è un comando di op
-                          op(line);
+                          //è un comando di unban
+                          unban(line);
                         }
                         else
                         {
-                          if (isA(line,DEOP))
+                          if (isA(line,OP))
                           {
-                            //è un comando di deop
-                            deop(line);
+                            //è un comando di op
+                            op(line);
                           }
                           else
                           {
-                            if (isA(line,HELP))
+                            if (isA(line,DEOP))
                             {
-                              //è un help
-                              help(line);
+                              //è un comando di deop
+                              deop(line);
                             }
                             else
                             {
-                              if (isA(line,FINDOP))
+                              if (isA(line,HELP))
                               {
-                                //è un findop
-                                findOp(line);
+                                //è un help
+                                help(line);
                               }
                               else
                               {
-                                if (isA(line,KICK))
+                                if (isA(line,FINDOP))
                                 {
-                                  //è un kick
-                                  kick(line);
+                                  //è un findop
+                                  findOp(line);
                                 }
                                 else
                                 {
-                                  if (isA(line,MUTE))
+                                  if (isA(line,KICK))
                                   {
-                                    //è un mute
-                                    mute(line);
+                                    //è un kick
+                                    kick(line);
                                   }
                                   else
                                   {
-                                    expansion(line);
+                                    if (isA(line,MUTE))
+                                    {
+                                      //è un mute
+                                      mute(line);
+                                    }
+                                    else
+                                    {
+                                      expansion(line);
+                                    }
                                   }
                                 }
                               }
@@ -1054,7 +1053,6 @@ void Analyzer::main_loop()
                 }
               }
             }
-          }
           }
         }
       }
