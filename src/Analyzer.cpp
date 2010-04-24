@@ -902,6 +902,7 @@ void Analyzer::main_loop()
     {
       //provo ad aprire il file e a riprendere dalla riga dove ero arrivato
       generalLog->open();
+      if(backup->doJobs()) server->reload();
       std::cout<<"Provo ad aprire "<<files[serverNumber]<<"\n";
       generalLog->timestamp();
       *generalLog<<"\nProvo ad aprire "<<files[serverNumber]<<"\n";
@@ -917,9 +918,7 @@ void Analyzer::main_loop()
         std::cout<<"  [FAIL] Non sono riuscito ad aprirlo!\n";
         *generalLog<<"  [FAIL] Non sono riuscito ad aprirlo!\n";
       }
-      if(backup->doJobs()) server->reload();
       generalLog->close();
-
       //se il file è aperto posso lavorare
       if (log.is_open())
       {

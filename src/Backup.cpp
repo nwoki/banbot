@@ -171,11 +171,14 @@ bool Backup::doJobs()
   {
     std::cout<<"Inizio il backup...";
     logger->timestamp();
-    *logger<<"\nInizio il backup...\n";
+    *logger<<"\nInizio il backup...";
+    logger->close();
     checkFolder(directory);
     spostaFiles();
     std::cout<<"Finito.\n";
-    *logger<<"Finito.\n";
+    logger->open();
+    logger->timestamp();
+    *logger<<"\nBackup eseguito.\n";
     return true;
   }
   return false;
