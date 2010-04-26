@@ -902,7 +902,18 @@ void Analyzer::main_loop()
     {
       //provo ad aprire il file e a riprendere dalla riga dove ero arrivato
       generalLog->open();
-      if(backup->doJobs()) server->reload();
+      if(backup->doJobs()) 
+      {
+        //eseguito il backup. Reload dei server
+        server->reload();
+        //e azzero anche la linea dove ero arrivato, se ha fatto il backup del file
+        for (unsigned int i=0;i<giocatori.size();i++)
+        {
+          log.open(files[i].c_str());
+          if (log.is_open() && sizeof(log)<row[serverNumber]) row[serverNumber]=0;
+          cout<<"Row: "<<row[serverNumber]<<" on sizeof "<<sizeof(log)<<"\n";
+        }
+      }
       std::cout<<"Provo ad aprire "<<files[serverNumber]<<"\n";
       generalLog->timestamp();
       *generalLog<<"\nProvo ad aprire "<<files[serverNumber]<<"\n";
