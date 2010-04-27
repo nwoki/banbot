@@ -110,7 +110,7 @@ void Backup::spostaFiles()
   strftime(outstr, sizeof(outstr), "%F", tmp);
   //ho la data salvata in outstr, creo la cartella.
   std::string cartella=directory;
-  if(cartella.substr(cartella.size()-2,1).compare("/")!=0) cartella.append("/");
+  if(cartella.substr(cartella.size()-1).compare("/")!=0) cartella.append("/");
   cartella.append(outstr);
   checkFolder(cartella);
   //sposto i files.
@@ -119,6 +119,7 @@ void Backup::spostaFiles()
     //mi preparo la stringa con il file di destinazione
     int pos=files[i].find_last_of("/");
     if (pos==-1) pos=0;
+    else pos++;
     std::string nomeFile=cartella;
     nomeFile.append("/");
     nomeFile.append(files[i].substr(pos));

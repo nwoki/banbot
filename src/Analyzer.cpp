@@ -910,9 +910,14 @@ void Analyzer::main_loop()
         for (unsigned int i=0;i<giocatori.size();i++)
         {
           log.open(files[i].c_str());
-          if (log.is_open() && sizeof(log)<row[serverNumber]) row[serverNumber]=0;
-          cout<<"Row: "<<row[serverNumber]<<" on sizeof "<<sizeof(log)<<"\n";
+          if (log.is_open() && sizeof(log)<row[i]) row[i]=0;
+          for (unsigned int j=0;j<giocatori[i].size();j++) delete giocatori[i][j];
+          //resetto il vector:
+          giocatori[i].clear();
+          log.clear();
+          serverNumber=0;
         }
+        sleep(3);
       }
       std::cout<<"Provo ad aprire "<<files[serverNumber]<<"\n";
       generalLog->timestamp();
@@ -931,18 +936,18 @@ void Analyzer::main_loop()
       }
       generalLog->close();
       //se il file è aperto posso lavorare
-      if (log.is_open())
+      if (log.is_open() && !log.bad())
       {
         logger->changePath(BotLogFiles[serverNumber]);
         logger->open();
         //il file è aperto, esamino le nuove righe (se ce ne sono)
-        while (!log.eof())
+        while (!log.eof() && !log.bad() && row[serverNumber]!=-1)
         {
           //leggo una riga
           char line [1500];
           log.getline(line,1500,'\n');
           //se non è la fine del file, mi salvo la riga dove sono arrivato
-          if (!log.eof()) row[serverNumber]=log.tellg();
+          if (!log.eof() && !log.bad()) row[serverNumber]=log.tellg();
 
           //comincio coi test
           if (isA(line, CLIENT_USER_INFO))
@@ -1068,6 +1073,7 @@ void Analyzer::main_loop()
       }
       else
         row[serverNumber]=0;//se non riesco ad aprire il file, ricomincio dalla prima riga
+      if (row[serverNumber]==-1) row[serverNumber]=0;
       //chiudo il file e lascio passare un po' di tempo
       log.close();
       logger->close();
