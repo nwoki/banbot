@@ -68,7 +68,7 @@
 class Analyzer
 {
 private:
-    std::ifstream log;
+    std::ifstream *log;
     const char* CLIENT_CONNECT;
     const char* CLIENT_USER_INFO;
     const char* CLIENT_DISCONNECT;

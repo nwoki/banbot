@@ -74,12 +74,14 @@ Analyzer::Analyzer( Connection* conn, Db* db,Logger* primaryLog, Backup* backup,
   server->reload();
   std::cout<<"[OK] Analyzer inizializzato.\n";
   *generalLog<<"[OK] Analyzer inizializzato.\n\n";
+  log=new ifstream();
 }
 
 //distruttore
 Analyzer::~Analyzer()
 {
-  if( log.is_open() ) log.close();
+  if( log->is_open() ) log->close();
+  delete log;
 }
 
 //testa l'array di caratteri passato col regex, torna true se la condizione imposta dal regex è soddisfatta.
@@ -174,7 +176,7 @@ void Analyzer::clientUserInfo(char* line)
         //è inutile inserirlo nel db, tanto cambia continuamente guid
         std::cout<<"  [!] kick automatico per cheats (GUID changed during the game).\n";
         *logger<<"  [!] kick automatico per cheats (GUID changed during the game).\n";
-        std::string frase("BanBot: kicking player number ");
+        std::string frase("BanBot: auto-banning player number ");
         frase.append(numero);
         frase.append(", ");
         frase.append(nick);
@@ -184,7 +186,7 @@ void Analyzer::clientUserInfo(char* line)
         std::string data;
         std::string motivo("auto-ban 4 cheats.");
         getDateAndTime(data,ora);
-        database->ban(correggi(nick),ip,data,ora,correggi(guid),correggi(motivo));
+        database->ban(correggi(nick),ip,data,ora,correggi(guid),correggi(motivo),std::string());
         sleep(SOCKET_PAUSE);
         server->kick(numero,serverNumber);
       }
@@ -222,7 +224,7 @@ void Analyzer::clientUserInfo(char* line)
         std::string ora;
         std::string data;
         getDateAndTime(data,ora);
-        database->modifyBanned(correggi(nick),ip,data,ora,std::string(),risultato[1]);
+        database->modifyBanned(correggi(nick),ip,data,ora,std::string(),risultato[1],std::string());
       }
     }
     //controllo se il nick è bannato
@@ -240,7 +242,7 @@ void Analyzer::clientUserInfo(char* line)
           std::string ora;
           std::string data;
           getDateAndTime(data,ora);
-          database->modifyBanned(std::string(),ip,data,ora,std::string(),risultato[1]);
+          database->modifyBanned(std::string(),ip,data,ora,std::string(),risultato[1],std::string());
           database->insertNewGuid(correggi(guid),risultato[1]);
         }
       }
@@ -258,7 +260,7 @@ void Analyzer::clientUserInfo(char* line)
             std::string ora;
             std::string data;
             getDateAndTime(data,ora);
-            database->modifyBanned(correggi(nick),std::string(),data,ora,std::string(),risultato[1]);
+            database->modifyBanned(correggi(nick),std::string(),data,ora,std::string(),risultato[1],std::string());
             database->insertNewGuid(correggi(guid),risultato[1]);
           }
         }
@@ -280,7 +282,7 @@ void Analyzer::clientUserInfo(char* line)
               std::string data;
               std::string motivo("auto-ban 4 cheats.");
               getDateAndTime(data,ora);
-              database->ban(correggi(nick),ip,data,ora,correggi(guid),correggi(motivo));
+              database->ban(correggi(nick),ip,data,ora,correggi(guid),correggi(motivo),std::string());
               sleep(SOCKET_PAUSE);
               server->kick(numero,serverNumber);
           }
@@ -421,7 +423,9 @@ void Analyzer::ban(char* line)
         std::string ora;
         std::string data;
         getDateAndTime(data,ora);
-        database->ban(correggi(nick),giocatori[serverNumber][i]->ip,data,ora,correggi(guid),correggi(motivo));
+        unsigned int j=0;
+        while (j<giocatori[serverNumber].size() && giocatori[serverNumber][j]->number.compare(numeroAdmin)!=0) j++;
+        database->ban(correggi(nick),giocatori[serverNumber][i]->ip,data,ora,correggi(guid),correggi(motivo),correggi(giocatori[serverNumber][j]->GUID));
         sleep(SOCKET_PAUSE);
         server->kick(numero,serverNumber);
         std::cout<<"  [OK] player banned\n";
@@ -493,13 +497,13 @@ void Analyzer::find(char* line)
     std::cout<<"  [-]Searching for "<<nick<<".\n";
     *logger<<"  [-]Searching for "<<nick<<".\n";
     //eseguo la ricerca sul DB e invio i risultati al server di gioco.
-    std::string query("SELECT id,nick,motive FROM banned WHERE nick = '");
+    std::string query("SELECT id,nick,motive,author FROM banned WHERE nick = '");
     query.append(correggi(nick));
     query.append("' LIMIT 7;");
     std::cout<<query<<"\n";
     std::vector<std::string> risultato=database->extractData(query);
     query.clear();
-    query="SELECT id,nick,motive FROM banned WHERE nick LIKE '%";
+    query="SELECT id,nick,motive,author FROM banned WHERE nick LIKE '%";
     query.append(correggi(nick));
     query.append("%' LIMIT 16;");
     std::cout<<query<<"\n";
@@ -507,27 +511,31 @@ void Analyzer::find(char* line)
     
     std::cout<<"ricerca: "<<risultato.size()<<" "<<risultatoApprossimativo.size()<<"\n";
     std::string frase("Risultati esatti: ");
-    if (risultato.size()>18)
+    if (risultato.size()>24)
     {
       frase.append("troppi risultati, prova a migliorare la ricerca. Forse cercavi ");
       frase.append(risultato[0]);
-      frase.append(" ");
+      frase.append(": ");
       frase.append(risultato[1]);
       frase.append(" ");
       frase.append(risultato[2]);
+      frase.append(" by ");
+      frase.append(risultato[3]);
       frase.append(" ?");
     }
     else
     {
       if (risultato.empty()) frase.append("none.");
-      else for (unsigned int i=0; i<risultato.size();i+=3)
+      else for (unsigned int i=0; i<risultato.size();i+=4)
         {
           frase.append(risultato[i]);
-          frase.append(" ");
+          frase.append(": ");
           frase.append(risultato[i+1]);
           frase.append(" ");
           frase.append(risultato[i+2]);
-          if(i<risultato.size()-3) frase.append(", ");
+          frase.append(" by ");
+          frase.append(risultato[i+3]);
+          if(i<risultato.size()-4) frase.append("; ");
           else frase.append(".");
         }
     }
@@ -535,7 +543,7 @@ void Analyzer::find(char* line)
 
     frase.clear();
     frase.append("Ricerca: ");
-    if (risultatoApprossimativo.size()>45)
+    if (risultatoApprossimativo.size()>60)
     {
       frase.append("troppi risultati, prova a migliorare la ricerca. Forse cercavi ");
       frase.append(risultatoApprossimativo[0]);
@@ -543,25 +551,31 @@ void Analyzer::find(char* line)
       frase.append(risultatoApprossimativo[1]);
       frase.append(" ");
       frase.append(risultatoApprossimativo[2]);
-      frase.append(", ");
+      frase.append(" by ");
       frase.append(risultatoApprossimativo[3]);
-      frase.append(" ");
+      frase.append(", o forse ");
       frase.append(risultatoApprossimativo[4]);
       frase.append(" ");
       frase.append(risultatoApprossimativo[5]);
+      frase.append(" ");
+      frase.append(risultatoApprossimativo[6]);
+      frase.append(" by ");
+      frase.append(risultatoApprossimativo[7]);
       frase.append(" ?");
     }
     else
     {
       if (risultatoApprossimativo.empty()) frase.append("none.");
-      else for (unsigned int i=0; i<risultatoApprossimativo.size();i+=3)
+      else for (unsigned int i=0; i<risultatoApprossimativo.size();i+=4)
         {
           frase.append(risultatoApprossimativo[i]);
           frase.append(" ");
           frase.append(risultatoApprossimativo[i+1]);
           frase.append(" ");
           frase.append(risultatoApprossimativo[i+2]);
-          if(i<risultatoApprossimativo.size()-3) frase.append(", ");
+          frase.append(" by ");
+          frase.append(risultatoApprossimativo[i+3]);
+          if(i<risultatoApprossimativo.size()-4) frase.append(", ");
           else frase.append(".");
         }
     }
@@ -906,25 +920,29 @@ void Analyzer::main_loop()
       {
         //eseguito il backup. Reload dei server
         server->reload();
+        sleep(4);
         //e azzero anche la linea dove ero arrivato, se ha fatto il backup del file
         for (unsigned int i=0;i<giocatori.size();i++)
         {
-          log.open(files[i].c_str());
-          if (log.is_open() && sizeof(log)<row[i]) row[i]=0;
+          delete log;
+          log=new ifstream();
+          log->open(files[i].c_str());
+          if (log->is_open() && sizeof(*log)<row[i]) row[i]=0;
+          log->close();
           for (unsigned int j=0;j<giocatori[i].size();j++) delete giocatori[i][j];
           //resetto il vector:
           giocatori[i].clear();
-          log.clear();
+          log->clear();
           serverNumber=0;
         }
-        sleep(3);
+        sleep(2);
       }
       std::cout<<"Provo ad aprire "<<files[serverNumber]<<"\n";
       generalLog->timestamp();
       *generalLog<<"\nProvo ad aprire "<<files[serverNumber]<<"\n";
-      log.open(files[serverNumber].c_str());
-      log.seekg(row[serverNumber]);
-      if (log.is_open())
+      log->open(files[serverNumber].c_str());
+      log->seekg(row[serverNumber]);
+      if (log->is_open())
       {
         std::cout<<"  [OK] Aperto!\n";
         *generalLog<<"  [OK] Aperto!\n";
@@ -936,18 +954,18 @@ void Analyzer::main_loop()
       }
       generalLog->close();
       //se il file è aperto posso lavorare
-      if (log.is_open() && !log.bad())
+      if (log->is_open() && !log->bad())
       {
         logger->changePath(BotLogFiles[serverNumber]);
         logger->open();
         //il file è aperto, esamino le nuove righe (se ce ne sono)
-        while (!log.eof() && !log.bad() && row[serverNumber]!=-1)
+        while (!log->eof() && !log->bad() && row[serverNumber]>=0)
         {
           //leggo una riga
           char line [1500];
-          log.getline(line,1500,'\n');
+          log->getline(line,1500,'\n');
           //se non è la fine del file, mi salvo la riga dove sono arrivato
-          if (!log.eof() && !log.bad()) row[serverNumber]=log.tellg();
+          if (!log->eof() && !log->bad()) row[serverNumber]=log->tellg();
 
           //comincio coi test
           if (isA(line, CLIENT_USER_INFO))
@@ -1073,9 +1091,9 @@ void Analyzer::main_loop()
       }
       else
         row[serverNumber]=0;//se non riesco ad aprire il file, ricomincio dalla prima riga
-      if (row[serverNumber]==-1) row[serverNumber]=0;
+      if (row[serverNumber]<0) row[serverNumber]=0;
       //chiudo il file e lascio passare un po' di tempo
-      log.close();
+      log->close();
       logger->close();
     }
     sleep(TIME_SLEEPING);
