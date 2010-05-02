@@ -60,9 +60,9 @@ class Db
         void dumpDatabase();    //TODO not yet implemented
 
         //banned table
-        bool ban( const string &nick, const string &ip, const string &date, const string &time, const string &guid, const string &motive );
-        string insertNewBanned( const string &nick, const string &ip,  const string &date, const string &time, const string &motive );
-        bool modifyBanned( const string &nick, const string &ip,  const string &date, const string &time, const string &motive, const string &id );
+        bool ban( const string &nick, const string &ip, const string &date, const string &time, const string &guid, const string &motive, const string &adminGuid );
+        string insertNewBanned( const string &nick, const string &ip,  const string &date, const string &time, const string &motive, const string &adminGuid );
+        bool modifyBanned( const string &nick, const string &ip,  const string &date, const string &time, const string &motive, const string &adminGuid, const string &id );
         bool deleteBanned( const string &id );
 
         //guid table
@@ -82,6 +82,7 @@ class Db
         bool connect();
         void createDb();
         bool execQuery( const string &query );    //esegue e ritorna status per indicare se l'operazione è andato a buon fine
+        string getAdminNick( const string &guid );  //return's admin's nick from his guid
         string intToString( int number );
         void loadAdminlist( vector<ConfigLoader::Option> );
         void loadBanlist( vector<ConfigLoader::Banlist> );

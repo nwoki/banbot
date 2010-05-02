@@ -107,6 +107,9 @@ std::vector<ConfigLoader::Banlist> ConfigLoader::getBanlist()
                 else if ( riga.substr( 0, end ) == "motive" )
                      banlist.motive = riga.substr( end + 1, riga.size() );
 
+                else if ( riga.substr( 0, end ) == "author" )
+                    banlist.author = riga.substr( end + 1, riga.size() );
+
                 cfg.getline( line, 300 );   //get new line
             }
 

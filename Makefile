@@ -1,44 +1,60 @@
 #project files needed for executable
-FILES = main.o \
-	db.o \
-	connection.o \
-	Analyzer.o \
-	ConfigLoader.o \
-	logger.o \
-	Backup.o \
-	sqlite3.o
+OBJECTS = main.o \
+	  db.o \
+	  connection.o \
+	  Analyzer.o \
+	  ConfigLoader.o \
+	  logger.o \
+	  Backup.o \
+	  sqlite3.o
 
 #compiler
-CPP=g++
-CC=gcc
+CPP = g++
+CC = gcc
 #======defines=======
 #for debug : -ggdb -DDEBUG_MODE
-#for 32bit optimization: -m32
-#for 64bit optimization: -m64
-OPTIMIZ=-m64
-DEBUG=-ggdb -DDEBUG_MODE
-DEFINES=
+#for 32bit optimization: -m32 -pipe -march=x86-32
+#for 64bit optimization: -m64 -pipe -march=x86-64
+OPTIMIZ =
+DEBUG = -ggdb -DDEBUG_MODE
+DEFINES = $(OPTIMIZ)
 #compiler flags
-CFLAGS=-c -Wall $(DEFINES)
+CFLAGS = -c -Wall $(DEFINES)
 
 SQLITE3FLAGS = -DSQLITE_THREADSAFE=0
 
-CLEAN_TARGETS=  src/*.gch \
-		src/*.h~ \
-		src/*.cpp~ \
-		src/sqlite3/*.o \
-		src/sqlite3/*.h~ \
-		src/sqlite3/*.cpp~ \
-		src/sqlite3/*.gch \
-		BanBot \
-		*.o
+CLEAN_TARGETS =  src/*.gch \
+		 src/*.h~ \
+		 src/*.cpp~ \
+		 src/sqlite3/*.o \
+		 src/sqlite3/*.h~ \
+		 src/sqlite3/*.cpp~ \
+		 src/sqlite3/*.gch \
+		 BanBot \
+		 $(OBJECTS)
 
-#default
-BanBot :
-	@make $(FILES)
-	@$(CPP) $(FILES) -o BanBot
+TARGET = BanBot
+
+#rules__________
+first: all
+
+all: Makefile $(TARGET)
+
+$(TARGET):	$(OBJECTS)
+	@$(CPP) $(OBJECTS) -o $(TARGET)
 	@echo ""
 	@echo "BanBot ready for use ;)"
+
+clean :
+	@rm -rf $(CLEAN_TARGETS)
+	@echo "cleaned all"
+
+tar :
+	@make clean
+	@tar cjvf BanBot.tar.gz src/ cfg/ Makefile README GPL_License.txt
+	@echo "BanBot.tar.gz archive created"
+
+#compile_______
 
 main.o : src/main.cpp
 	 $(CPP) $(CFLAGS) src/main.cpp
@@ -63,13 +79,3 @@ Backup.o	: src/Backup.h src/Backup.cpp
 
 sqlite3.o	: src/sqlite3/sqlite3.c src/sqlite3/sqlite3.h
 		$(CC) $(CFLAGS) $(SQLITE3FLAGS) src/sqlite3/sqlite3.c src/sqlite3/sqlite3.h
-
-clean :
-	@rm -rf $(CLEAN_TARGETS);
-	@echo "cleaned all"
-
-tar :
-	@make clean
-	@tar cjvf BanBot.tar.gz src/ cfg/ Makefile README GPL_License.txt
-	@echo "BanBot.tar.gz archive created"
-

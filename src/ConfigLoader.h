@@ -50,7 +50,7 @@ public:
     class Banlist
     {
     public:
-        std::string nick, ip, date, time, motive;
+        std::string nick, ip, date, time, motive, author;
         std::vector< std::string > guids;
     };
 

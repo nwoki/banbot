@@ -244,14 +244,13 @@ void Db::dumpBannedToFile()
     vector< string > guidsToDump;   //banned player's guids
     string auxQuery;
 
-#ifdef DEBUG_MODE   //stamps vector id's
-    for( unsigned int i = 0; i < bannedIds.size(); i++ )
-        cout<< "id " << i << " " << bannedIds[i] <<endl;
-#endif
-
     *output << "#\n# THIS IS A BACKUP FILE OF BANLIST FOUND IN cfg/\n#\n";
     //here i actually write to file
     for( unsigned int i = 0; i < bannedIds.size(); i++ ) {
+
+        #ifdef DEBUG_MODE   //stamps vector id's
+            cout<< "id " << i << " " << bannedIds[i] <<endl;
+        #endif
 
         dataToDump.clear();
 
@@ -274,6 +273,8 @@ void Db::dumpBannedToFile()
                 *output << "time=";
             else if( j == 5 )
                 *output << "motive=";
+            else if( j == 6 )
+                *output << "author=";
 
             *output << dataToDump[j] << "\n";
 
@@ -322,7 +323,7 @@ void Db::dumpDatabase() //to finish and understand
 
 
 //BAN METHODS
-bool Db::ban(const string &nick, const string &ip, const string &date, const string &time, const string &guid, const string &motive ) //adds banned guid to database
+bool Db::ban( const string &nick, const string &ip, const string &date, const string &time, const string &guid, const string &motive, const string &adminGuid ) //adds banned guid to database
 {
     if ( checkBanGuid( guid ) ) {
         cout << "\e[0;33m[!]guid: " << guid << " already banned\e[0m \n";
@@ -330,7 +331,8 @@ bool Db::ban(const string &nick, const string &ip, const string &date, const str
         return false;
     }
 
-    string banId = insertNewBanned( nick, ip, date, time, motive );    //get the autoincrement id
+    string adminNick = getAdminNick( adminGuid );
+    string banId = insertNewBanned( nick, ip, date, time, motive, adminNick );    //get the autoincrement id
 
     if( banId.empty() )    // empty string is ERROR
         return false;    //didn't write to database
@@ -338,8 +340,9 @@ bool Db::ban(const string &nick, const string &ip, const string &date, const str
     if( insertNewGuid( guid, banId ).empty() )    // empty string is ERROR
         return false;
 
+    //all went well, add admin to AUTHOR
+
     return true;
-    //else went well
 
     /*if( resultQuery( aux ) == 0 ){
         cout<<"\e[0;32m[OK] ban applied on: "<<guid<<"\e[0m \n";
@@ -354,9 +357,9 @@ bool Db::ban(const string &nick, const string &ip, const string &date, const str
 }
 
 
-string Db::insertNewBanned( const string& nick, const string& ip, const string& date, const string &time, const string &motive )
+string Db::insertNewBanned( const string& nick, const string& ip, const string& date, const string &time, const string &motive, const string &adminNick )
 {
-    string newBanQuery( "insert into banned( nick, ip, date, time, motive ) values('" );
+    string newBanQuery( "insert into banned( nick, ip, date, time, motive, author ) values('" );
 
     newBanQuery.append( nick );
     newBanQuery.append( "','" );
@@ -367,6 +370,8 @@ string Db::insertNewBanned( const string& nick, const string& ip, const string& 
     newBanQuery.append( time );
     newBanQuery.append( "','" );
     newBanQuery.append( motive );
+    newBanQuery.append( "','" );
+    newBanQuery.append( adminNick );
     newBanQuery.append( "');" );
 
     if( !execQuery( newBanQuery ) )
@@ -393,7 +398,7 @@ string Db::insertNewBanned( const string& nick, const string& ip, const string& 
 }
 
 
-bool Db::modifyBanned( const string &nick, const string &ip, const string &date, const string &time, const string &motive, const string &id )
+bool Db::modifyBanned( const string &nick, const string &ip, const string &date, const string &time, const string &motive, const string &adminNick, const string &id )
 {
     string query( "update banned set " );
     bool paramCount = false;
@@ -437,6 +442,14 @@ bool Db::modifyBanned( const string &nick, const string &ip, const string &date,
             query.append( "," );
         query.append( "motive = '" );
         query.append( motive );
+        query.append( "' " );
+    }
+
+    if( !adminNick.empty() ){
+        if( paramCount )
+            query.append( "," );
+        query.append( "author = '" );
+        query.append( adminNick );
         query.append( "' " );
     }
 
@@ -662,9 +675,10 @@ void Db::createDb()   //initial creation of database
     "ip TEXT,"
     "date TEXT,"
     "time TEXT,"
-    "motive TEXT);" );
+    "motive TEXT,"
+    "author TEXT);" );
 
-    string createGuidTable( //for banned users
+    string createGuidTable(     //for banned users
     "create table guids("
     "id INTEGER PRIMARY KEY,"    //autoincrement
     "guid TEXT,"
@@ -673,7 +687,7 @@ void Db::createDb()   //initial creation of database
 
     string createOplistTable(
     "create table oplist("
-    "id INTEGER PRIMARY KEY,"
+    "id INTEGER PRIMARY KEY,"   //autoincrement
     "nick TEXT,"
     "guid TEXT);" );
 
@@ -726,6 +740,21 @@ bool Db::execQuery( const string &query )   //executes and returns status
 }
 
 
+string Db::getAdminNick( const string& guid )
+{
+    string query( "select nick from oplist where guid='" );
+    query.append( guid );
+    query.append( "';" );
+
+    SQLITE3 data( DATABASE );
+
+    if( !data.exe( query ) )  //found data
+        return data.vdata[0]; //get it
+    else
+        return string();     //else return empty vector
+}
+
+
 string Db::intToString( int number )    //non serve se usiamo solo string, ma non si sa mai
 {
     stringstream out;//barbatrucco ;)
@@ -754,7 +783,7 @@ void Db::loadBanlist( vector<ConfigLoader::Banlist> banned )
 
         if( !checkBanNick( banned[i].nick ) ){   //if not on database
 
-            string banId = insertNewBanned( banned[i].nick, banned[i].ip, banned[i].date, banned[i].time, banned[i].motive );
+            string banId = insertNewBanned( banned[i].nick, banned[i].ip, banned[i].date, banned[i].time, banned[i].motive, banned[i].author );
 
             if( banId.empty() ){
                 cout << "\e[0;31m[FAIL] can't add banned player: " << banned[i].nick << " to banned database!\e[0m \n";
