@@ -924,15 +924,14 @@ void Analyzer::main_loop()
         //e azzero anche la linea dove ero arrivato, se ha fatto il backup del file
         for (unsigned int i=0;i<giocatori.size();i++)
         {
-          delete log;
           log=new ifstream();
           log->open(files[i].c_str());
           if (log->is_open() && sizeof(*log)<row[i]) row[i]=0;
           log->close();
+          delete log;
           for (unsigned int j=0;j<giocatori[i].size();j++) delete giocatori[i][j];
           //resetto il vector:
           giocatori[i].clear();
-          log->clear();
           serverNumber=0;
         }
         sleep(2);
@@ -940,6 +939,7 @@ void Analyzer::main_loop()
       std::cout<<"Provo ad aprire "<<files[serverNumber]<<"\n";
       generalLog->timestamp();
       *generalLog<<"\nProvo ad aprire "<<files[serverNumber]<<"\n";
+      log=new ifstream();
       log->open(files[serverNumber].c_str());
       log->seekg(row[serverNumber]);
       if (log->is_open())
@@ -1094,6 +1094,7 @@ void Analyzer::main_loop()
       if (row[serverNumber]<0) row[serverNumber]=0;
       //chiudo il file e lascio passare un po' di tempo
       log->close();
+      delete log;
       logger->close();
     }
     sleep(TIME_SLEEPING);
