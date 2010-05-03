@@ -435,6 +435,7 @@ bool Db::modifyBanned( const string &nick, const string &ip, const string &date,
         query.append( "time = '" );
         query.append( time );
         query.append( "' " );
+        paramCount = true;
     }
 
     if( !motive.empty() ){
@@ -443,6 +444,7 @@ bool Db::modifyBanned( const string &nick, const string &ip, const string &date,
         query.append( "motive = '" );
         query.append( motive );
         query.append( "' " );
+        paramCount = true;
     }
 
     if( !adminNick.empty() ){
@@ -458,7 +460,6 @@ bool Db::modifyBanned( const string &nick, const string &ip, const string &date,
     query.append( "';" );
 
     //cout << "\nmodify banned" << query << "\n"
-    ;
     if( !execQuery( query ) ){
         cout << "\e[0;31m[FAIL] Db::modifyBanned : " << query << "\e[0m \n";
         *logger << "[FAIL] Db::modifyBanned : " << query << "\n";
