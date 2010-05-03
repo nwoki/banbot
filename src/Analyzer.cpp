@@ -169,7 +169,7 @@ void Analyzer::clientUserInfo(char* line)
     if (giocatori[serverNumber][i]->number.compare(numero)==0)
     {
       nonTrovato=false;
-      if (!giocatori[serverNumber][i]->GUID.empty() && giocatori[serverNumber][i]->GUID.compare(guid)!=0)
+      if ((!giocatori[serverNumber][i]->GUID.empty() && giocatori[serverNumber][i]->GUID.compare(guid)!=0) || guid.empty())
       {
         kicked=true;
         //cambio illegale del GUID => cheats
