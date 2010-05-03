@@ -403,7 +403,7 @@ string Db::insertNewBanned( const string& nick, const string& ip, const string& 
 }
 
 
-bool Db::modifyBanned( const string &nick, const string &ip, const string &date, const string &time, const string &motive, const string &adminNick, const string &id )
+bool Db::modifyBanned( const string &nick, const string &ip, const string &date, const string &time, const string &motive, const string &id )
 {
     string query( "update banned set " );
     bool paramCount = false;
@@ -448,15 +448,6 @@ bool Db::modifyBanned( const string &nick, const string &ip, const string &date,
             query.append( "," );
         query.append( "motive = '" );
         query.append( motive );
-        query.append( "' " );
-        paramCount = true;
-    }
-
-    if( !adminNick.empty() ){
-        if( paramCount )
-            query.append( "," );
-        query.append( "author = '" );
-        query.append( adminNick );
         query.append( "' " );
     }
 

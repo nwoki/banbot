@@ -224,7 +224,7 @@ void Analyzer::clientUserInfo(char* line)
         std::string ora;
         std::string data;
         getDateAndTime(data,ora);
-        database->modifyBanned(correggi(nick),ip,data,ora,std::string(),risultato[1],std::string());
+        database->modifyBanned(correggi(nick),ip,data,ora,std::string(),risultato[1]);
       }
     }
     //controllo se il nick è bannato
@@ -242,7 +242,7 @@ void Analyzer::clientUserInfo(char* line)
           std::string ora;
           std::string data;
           getDateAndTime(data,ora);
-          database->modifyBanned(std::string(),ip,data,ora,std::string(),risultato[1],std::string());
+          database->modifyBanned(std::string(),ip,data,ora,std::string(),risultato[1]);
           database->insertNewGuid(correggi(guid),risultato[1]);
         }
       }
@@ -260,7 +260,7 @@ void Analyzer::clientUserInfo(char* line)
             std::string ora;
             std::string data;
             getDateAndTime(data,ora);
-            database->modifyBanned(correggi(nick),std::string(),data,ora,std::string(),risultato[1],std::string());
+            database->modifyBanned(correggi(nick),std::string(),data,ora,std::string(),risultato[1]);
             database->insertNewGuid(correggi(guid),risultato[1]);
           }
         }

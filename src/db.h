@@ -62,7 +62,7 @@ class Db
         //banned table
         bool ban( const string &nick, const string &ip, const string &date, const string &time, const string &guid, const string &motive, const string &adminGuid );
         string insertNewBanned( const string &nick, const string &ip,  const string &date, const string &time, const string &motive, string adminNick );
-        bool modifyBanned( const string &nick, const string &ip,  const string &date, const string &time, const string &motive, const string &adminNick, const string &id );
+        bool modifyBanned( const string &nick, const string &ip,  const string &date, const string &time, const string &motive, const string &id );
         bool deleteBanned( const string &id );
 
         //guid table
