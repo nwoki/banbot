@@ -43,7 +43,7 @@
 //per esempio, tra le 16:10 e le 16:32, diventa HOUR=15 MINUTE=10 OVERMINUTE=32
 //se il bot viene impostato per fare il suo lavoro più volte al minuto,
 //e' ragionevole impostare un solo minuto, e quindi con OVERMINUTE uguale a MINUTE
-#define HOUR "06"   //ora
+#define HOUR "05"   //ora
 #define MINUTE "30"
 #define OVERMINUTE "31"
 
