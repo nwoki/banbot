@@ -357,9 +357,14 @@ bool Db::ban( const string &nick, const string &ip, const string &date, const st
 }
 
 
-string Db::insertNewBanned( const string& nick, const string& ip, const string& date, const string &time, const string &motive, const string &adminNick )
+string Db::insertNewBanned( const string& nick, const string& ip, const string& date, const string &time, const string &motive, string adminNick )
 {
     string newBanQuery( "insert into banned( nick, ip, date, time, motive, author ) values('" );
+
+    if( adminNick.empty() ) {
+        adminNick.clear();
+        adminNick = "BanBot";
+    }
 
     newBanQuery.append( nick );
     newBanQuery.append( "','" );
@@ -394,7 +399,7 @@ string Db::insertNewBanned( const string& nick, const string& ip, const string& 
 
     if( max.empty() )
         return string();
-    else return max[0];
+    else return max[ max.size() ];  //così prendo ultimo inserito nel caso di Ban dal Bot
 }
 
 
