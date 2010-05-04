@@ -195,6 +195,10 @@ void Db::dumpAdminsToFile()
     }
 
     *output << "####\n#end\n";
+
+    cout << "\e[0;32m[OK] successfully written Adminlist.backup file in 'backup/'\e[0m \n";
+    *logger << "[OK] successfully written Adminlist.backup file in 'backup/'\n";
+
     output->close();
 
     delete output;
@@ -276,7 +280,8 @@ void Db::dumpBannedToFile()
             else if( j == 6 )
                 *output << "author=";
 
-            *output << dataToDump[j] << "\n";
+            if( dataToDump[j].empty() ) *output << "<empty record>\n";
+            else *output << dataToDump[j] << "\n";
 
         #ifdef DEBUG_MODE
             cout << "banned user data being dumped " << dataToDump[j] << endl;
@@ -399,7 +404,7 @@ string Db::insertNewBanned( const string& nick, const string& ip, const string& 
 
     if( max.empty() )
         return string();
-    else return max[ max.size() ];  //così prendo ultimo inserito nel caso di Ban dal Bot
+    else return max[ 0 ];
 }
 
 
@@ -780,6 +785,10 @@ void Db::loadBanlist( vector<ConfigLoader::Banlist> banned )
 
         if( !checkBanNick( banned[i].nick ) ){   //if not on database
 
+            #ifdef DEBUG_MODE
+            cout << "Db::loadBanlist ban info -> " << banned[i].nick << " " << banned[i].ip << " " << banned[i].date << " " << banned[i].time << " " << banned[i].motive << " " << banned[i].author << endl;
+            #endif
+
             string banId = insertNewBanned( banned[i].nick, banned[i].ip, banned[i].date, banned[i].time, banned[i].motive, banned[i].author );
 
             if( banId.empty() ){
@@ -833,8 +842,8 @@ void Db::loadAdminlist( vector< ConfigLoader::Option > admins )
         }
     }
 
-    cout << "\e[0;33m Added " << addedCounter << " new admin/s to the database\e[0m \n\n";
-    *logger << "Added " << addedCounter << " new admin/s to the database\n";
+    cout << "\e[0;33m Added " << addedCounter << "/" << admins.size() << " new admin/s from file to the database\e[0m \n\n";
+    *logger << "Added " << addedCounter << " new admin/s from file to the database\n";
 }
 
 

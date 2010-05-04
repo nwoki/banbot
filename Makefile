@@ -13,11 +13,12 @@ CPP = g++
 CC = gcc
 #======defines=======
 #for debug : -ggdb -DDEBUG_MODE
+#====optimization====
 #for 32bit optimization: -m32 -pipe -march=x86-32
 #for 64bit optimization: -m64 -pipe -march=x86-64
 OPTIMIZ =
-DEBUG = -ggdb -DDEBUG_MODE
-DEFINES = $(OPTIMIZ)
+DEBUG = 
+DEFINES = $(OPTIMIZ) $(DEBUG)
 #compiler flags
 CFLAGS = -c -Wall $(DEFINES)
 
@@ -36,8 +37,6 @@ CLEAN_TARGETS =  src/*.gch \
 TARGET = BanBot
 
 #rules__________
-first: all
-
 all: Makefile $(TARGET)
 
 $(TARGET):	$(OBJECTS)

@@ -84,8 +84,8 @@ class Db
         bool execQuery( const string &query );    //esegue e ritorna status per indicare se l'operazione è andato a buon fine
         string getAdminNick( const string &guid );  //return's admin's nick from his guid
         string intToString( int number );
-        void loadAdminlist( vector<ConfigLoader::Option> );
-        void loadBanlist( vector<ConfigLoader::Banlist> );
+        void loadAdminlist( vector<ConfigLoader::Option> admins );
+        void loadBanlist( vector<ConfigLoader::Banlist> banned );
         int resultQuery( const string &query );    //se fallisce la query, -1, altrimenti restituisce il numero degli elementi trovati
 
 
