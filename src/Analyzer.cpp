@@ -425,7 +425,16 @@ void Analyzer::ban(char* line)
         getDateAndTime(data,ora);
         unsigned int j=0;
         while (j<giocatori[serverNumber].size() && giocatori[serverNumber][j]->number.compare(numeroAdmin)!=0) j++;
-        database->ban(correggi(nick),giocatori[serverNumber][i]->ip,data,ora,correggi(guid),correggi(motivo),correggi(giocatori[serverNumber][j]->GUID));
+        if (database->ban(correggi(nick),giocatori[serverNumber][i]->ip,data,ora,correggi(guid),correggi(motivo),correggi(giocatori[serverNumber][j]->GUID)))
+        {
+          std::cout<<"  [OK] player banned\n";
+          *logger<<"  [OK] player banned\n";
+        }
+        else
+        {
+          std::cout<<"  [FAIL] error on db calls\n";
+          *logger<<"  [FAIL] error on db calls\n";
+        }
         sleep(SOCKET_PAUSE);
         server->kick(numero,serverNumber);
         std::cout<<"  [OK] player banned\n";
@@ -1097,6 +1106,9 @@ void Analyzer::main_loop()
       delete log;
       logger->close();
     }
+    generalLog->open();
+    *generalLog<<"Finito. \n";
+    generalLog->close();
     sleep(TIME_SLEEPING);
   }
 }
