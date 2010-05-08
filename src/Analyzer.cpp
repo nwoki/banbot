@@ -143,15 +143,15 @@ void Analyzer::clientUserInfo(char* line)
   pos=temp.find_first_not_of(' ',pos+15);
   int end=temp.find_first_of(' ',pos);
   std::string numero=temp.substr(pos,end-pos);
-  pos=temp.find("ip",end);
+  pos=temp.find("ip");
   pos=temp.find_first_not_of("\\",pos+3);
   end=temp.find_first_of("\\ ",pos);
   std::string ip=temp.substr(pos,end-pos);
-  pos=temp.find("name",end);
+  pos=temp.find("name");
   pos=temp.find_first_not_of("\\",pos+4);
   end=temp.find_first_of("\\ ",pos);
   std::string nick=temp.substr(pos,end-pos);
-  pos=temp.find("cl_guid",end);
+  pos=temp.find("cl_guid");
   pos=temp.find_first_not_of("\\",pos+7);
   end=temp.find_first_of("\\ ",pos);
   std::string guid=temp.substr(pos,end-pos);
@@ -174,8 +174,8 @@ void Analyzer::clientUserInfo(char* line)
         kicked=true;
         //cambio illegale del GUID => cheats
         //è inutile inserirlo nel db, tanto cambia continuamente guid
-        std::cout<<"  [!] kick automatico per cheats (GUID changed during the game).\n";
-        *logger<<"  [!] kick automatico per cheats (GUID changed during the game).\n";
+        std::cout<<"  [!] kick automatico per cheats (GUID changed during the game, or empty guid).\n";
+        *logger<<"  [!] kick automatico per cheats (GUID changed during the game, or empty guid).\n";
         std::string frase("BanBot: auto-banning player number ");
         frase.append(numero);
         frase.append(", ");
@@ -216,6 +216,8 @@ void Analyzer::clientUserInfo(char* line)
       std::vector<std::string> risultato=database->extractData(query);
 
       //butto fuori la persona dal server
+      std::cout<<"  [!] kicking "<<nick<<" for ban ("<<risultato[0]<<").\n";
+      *logger<<"  [!] kicking "<<nick<<" for ban ("<<risultato[0]<<").\n";
       buttaFuori(risultato,numero,nick);
 
       //aggiorno i dati sul database
@@ -235,6 +237,8 @@ void Analyzer::clientUserInfo(char* line)
         query.append("';");
         std::vector<std::string> risultato=database->extractData(query);
 
+        std::cout<<"  [!] kicking "<<nick<<" for ban ("<<risultato[0]<<").\n";
+        *logger<<"  [!] kicking "<<nick<<" for ban ("<<risultato[0]<<").\n";
         buttaFuori(risultato, numero,nick);
 
         if (risultato.size()>1)
@@ -253,6 +257,8 @@ void Analyzer::clientUserInfo(char* line)
           query.append("';");
           std::vector<std::string> risultato=database->extractData(query);
 
+          std::cout<<"  [!] kicking "<<nick<<" for ban ("<<risultato[0]<<").\n";
+          *logger<<"  [!] kicking "<<nick<<" for ban ("<<risultato[0]<<").\n";
           buttaFuori(risultato, numero,nick);
 
           if (risultato.size()>1)
