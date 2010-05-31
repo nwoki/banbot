@@ -63,7 +63,7 @@
 #define SOCKET_PAUSE 1  //per permettere al socket di funzionare bene, inserisco una pausa tra say e kick
 
 //stringa stampata all'utente con i comandi disponibili (quando viene dato il comando !help).
-#define COMMANDLIST "Comandi disponibili: !ban <number> [<reason>], !unban <id>, !kick <number>, !mute <number>, !find <nick>, !findop <nick>, !op <number>, !deop <id>."
+#define COMMANDLIST "Comandi disponibili: !ban <number> [<reason>], !unban <id>, !kick <number>, !mute <number>, !find <nick>, !findop <nick>, !op <number>, !deop <id>, !strict <ON/OFF>."
 
 class Analyzer
 {
@@ -83,10 +83,12 @@ private:
     const char* HELP;
     const char* KICK;
     const char* MUTE;
+    const char* STRICT;
     const char* COMMAND;
     std::vector<std::string> files;
     std::vector<std::string> BotLogFiles;
     std::vector<std::streampos> row;
+    std::vector<bool> strict;
     Backup* backup;
     Logger* generalLog;
     void clientUserInfo(char* line);
@@ -101,6 +103,7 @@ private:
     void help(char* line);
     void kick(char* line);
     void mute(char* line);
+    void setStrict(char* line);
 
 protected:
     bool isA(char* line,const std::string &regex);
@@ -112,6 +115,9 @@ protected:
     void buttaFuori(const std::vector< string >& reason, const std::string numero, const std::string nick);
     std::string correggi(std::string stringa);          //corregge la riga di testo per l'inserimento e l'utilizzo col database
     void tell(std::string frase, std::string player);  //invia la frase al giocatore usando connection::tell(), ma spezzettando automaticamente la stringa in più frasi se necessario.
+    bool isStrict();            //ritorna true se il server e' in strict mode.
+    std::vector<int> admins();   //restituisce gli indici dell'array dei player dei giocatori attualmente nel server che sono admin.
+    void tellToAdmins(std::string frase); //invia un messaggio a tutti gli admin attualmente in game (messaggio privato).
     Logger* logger;
     Connection * server;
     Db * database;

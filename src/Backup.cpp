@@ -49,9 +49,9 @@ Backup::Backup(std::vector<ConfigLoader::Option> opzioni, Logger *logger):done(f
       directory=opzioni[i].value;
     }
   }
-  std::cout<<"Eseguo il backup di avvio....\n";
+  /*std::cout<<"Eseguo il backup di avvio....\n";
   avvio();
-  std::cout<<"Finito il backup di avvio....\n";
+  std::cout<<"Finito il backup di avvio....\n";*/
 }
 
 Backup::~Backup()

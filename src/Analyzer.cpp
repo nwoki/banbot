@@ -47,9 +47,27 @@ Analyzer::Analyzer( Connection* conn, Db* db,Logger* primaryLog, Backup* backup,
     for (unsigned int i = 0; i < opzioni.size(); i++ ){
         if( opzioni[i].name.compare( "LOGPATH" ) == 0 ){
             files.push_back( opzioni[i].value );
-            row.push_back( 0 );
+            ifstream * temp=new ifstream();
+            temp->open(opzioni[i].value.c_str());
+            if (temp->is_open())
+            {
+              std::streampos pos;
+              while (!temp->eof()) 
+              {
+                char t [1500];
+                pos=temp->tellg();
+                temp->getline(t,1500,'\n');
+              }
+              row.push_back(pos);
+              #ifdef DEBUG_MODE
+                  std::cout << "Valore di partenza del file: "<< pos<<"\n";
+              #endif
+            }
+            else row.push_back(0);
+            delete temp;
             std::vector<Player*> t;
             giocatori.push_back( t );
+            strict.push_back(false);
         }
         if ( opzioni[i].name.compare( "BOTLOGPATH" ) == 0 )
             BotLogFiles.push_back( opzioni[i].value );
@@ -69,9 +87,10 @@ Analyzer::Analyzer( Connection* conn, Db* db,Logger* primaryLog, Backup* backup,
   HELP=" *[0-9]+:[0-9]{2} +say: +[0-9]+ +[^ \t\n\r\f\v]+: +!help";
   KICK=" *[0-9]+:[0-9]{2} +say: +[0-9]+ +[^ \t\n\r\f\v]+: +!kick [0-9]{1,2}";
   MUTE=" *[0-9]+:[0-9]{2} +say: +[0-9]+ +[^ \t\n\r\f\v]+: +!mute [0-9]{1,2}";
+  STRICT=" *[0-9]+:[0-9]{2} +say: +[0-9]+ +[^ \t\n\r\f\v]+: +!strict [[ON][on][OFF][off]]{1}";
   COMMAND=" *[0-9]+:[0-9]{2} +say: +[0-9]+ +[^ \t\n\r\f\v]+: +![^ \t\n\r\f\v]+";
 
-  server->reload();
+  //server->reload(); non devo riavviare il server. Comincio dalla fine del file.
   std::cout<<"[OK] Analyzer inizializzato.\n";
   *generalLog<<"[OK] Analyzer inizializzato.\n\n";
   log=new ifstream();
@@ -171,24 +190,61 @@ void Analyzer::clientUserInfo(char* line)
       nonTrovato=false;
       if ((!giocatori[serverNumber][i]->GUID.empty() && giocatori[serverNumber][i]->GUID.compare(guid)!=0) || guid.empty())
       {
-        kicked=true;
-        //cambio illegale del GUID => cheats
-        //è inutile inserirlo nel db, tanto cambia continuamente guid
-        std::cout<<"  [!] kick automatico per cheats (GUID changed during the game, or empty guid).\n";
-        *logger<<"  [!] kick automatico per cheats (GUID changed during the game, or empty guid).\n";
-        std::string frase("BanBot: auto-banning player number ");
-        frase.append(numero);
-        frase.append(", ");
-        frase.append(nick);
-        frase.append(" for cheats.");
-        server->say(frase,serverNumber);
-        std::string ora;
-        std::string data;
-        std::string motivo("auto-ban 4 cheats.");
-        getDateAndTime(data,ora);
-        database->ban(correggi(nick),ip,data,ora,correggi(guid),correggi(motivo),std::string());
-        sleep(SOCKET_PAUSE);
-        server->kick(numero,serverNumber);
+        if (!guid.empty())
+        {
+          //cambio illegale del GUID => cheats
+          kicked=true;
+          std::cout<<"  [!] kick automatico per cheats (GUID changed during the game).\n";
+          *logger<<"  [!] kick automatico per cheats (GUID changed during the game).\n";
+          std::string frase("BanBot: auto-banning player number ");
+          frase.append(numero);
+          frase.append(", ");
+          frase.append(nick);
+          frase.append(" for cheats.");
+          server->say(frase,serverNumber);
+          std::string ora;
+          std::string data;
+          std::string motivo("auto-ban 4 cheats.");
+          getDateAndTime(data,ora);
+          //non prendo la guid attuale, ma quella precedente (che spesso è quella vera e propria dell'utente prima che attivi i cheat)
+          database->ban(correggi(nick),ip,data,ora,correggi(giocatori[serverNumber][i]->GUID),correggi(motivo),std::string());
+          sleep(SOCKET_PAUSE);
+          server->kick(numero,serverNumber);
+        }
+        else if (guid.empty() && isStrict())
+          {
+            //guid vuota, probabili cheats, sono in modalità strict, butto fuori (ma la guid vuota non la banno).
+            kicked=true;
+            std::cout<<"  [!] kick automatico per GUID non valida (vuota).\n";
+            *logger<<"  [!] kick automatico per GUID non valida (vuota).\n";
+            std::string frase("BanBot: auto-banning player number ");
+            frase.append(numero);
+            frase.append(", ");
+            frase.append(nick);
+            frase.append(" for corrupted QKey.");
+            server->say(frase,serverNumber);
+            std::string ora;
+            std::string data;
+            std::string motivo("auto-ban 4 empty guid.");
+            getDateAndTime(data,ora);
+            //guardo se aveva una guid impostata precedentemente, in caso la banno.
+            if (!giocatori[serverNumber][i]->GUID.empty())
+             database->ban(correggi(nick),ip,data,ora,correggi(giocatori[serverNumber][i]->GUID),correggi(motivo),std::string());
+            //altrimenti banno solo in nickIsBanned
+            else database->insertNewBanned(correggi(nick),ip,data,ora,correggi(motivo),std::string());
+            sleep(SOCKET_PAUSE);
+            server->kick(numero,serverNumber);
+          }
+          else 
+            {
+              //guid vuota, ma non sono in strict mode. Semplicemente avviso gli amministratori.
+              std::string frase("BanBot warning: player number ");
+              frase.append(numero);
+              frase.append(", ");
+              frase.append(nick);
+              frase.append(" has a corrupted QKey.");
+              tellToAdmins(frase);
+            }
       }
       else
       {
@@ -804,6 +860,26 @@ void Analyzer::help(char* line)
   }
 }
 
+void Analyzer::setStrict(char* line)
+{
+  std::cout<<"[!] Strict";
+  logger->timestamp();
+  *logger<<"\n[!] Strict";
+  //controllo se ho il giocatore e i suoi permessi, se la persona non è autorizzata non faccio nulla.
+  std::string numeroAdmin;
+  if (isAdminSay(line,numeroAdmin))
+  {
+    std::string temp(line);
+    if (temp.find("!strict ON")<temp.size() || temp.find("!strict on")<temp.size())
+    {
+      strict[serverNumber]=true;
+    }
+    else
+    {
+    }
+  }
+}
+
 void Analyzer::tell(std::string frase, std::string player)
 {
   for (unsigned int i=0;i<frase.size();i+=130)
@@ -874,6 +950,16 @@ bool Analyzer::nickIsBanned(const std::string &nick)
     int diff=(oraAttuale*60+minutoAttuale)-(oraBan*60+minutoBan);
     if (data.compare(risultato[i])==0 && diff>0 && diff<60) return true;
   }
+  //se sono in modalità strict, se il nick è bannato, butto fuori anche se è passata un'ora.
+  if (risultato.size())
+    if (isStrict()) return true;
+    else 
+    {
+      std::string frase("BanBot warning: the nick '");
+      frase.append(nick);
+      frase.append("' was banned.");
+      tellToAdmins(frase);
+    }
   return false;
 }
 
@@ -918,6 +1004,29 @@ std::string Analyzer::correggi(std::string stringa)
   return stringa;
 }
 
+bool Analyzer::isStrict()
+{
+  return strict[serverNumber];
+}
+
+std::vector<int> Analyzer::admins()
+{
+  std::vector<int> temp;
+  for (int i=0;i<giocatori[serverNumber].size();i++)
+  {
+    if (database->checkAuthGuid(correggi(giocatori[serverNumber][i]->GUID)))
+      temp.push_back(i);
+  }
+  return temp;
+}
+
+void Analyzer::tellToAdmins(std::string frase)
+{
+  std::vector<int> indici=admins();
+  for (int i=0;i<indici.size();i++)
+    tell(frase,giocatori[serverNumber][indici[i]]->number);
+}
+
 //main loop
 void Analyzer::main_loop()
 {
@@ -941,7 +1050,14 @@ void Analyzer::main_loop()
         {
           log=new ifstream();
           log->open(files[i].c_str());
-          if (log->is_open() && sizeof(*log)<row[i]) row[i]=0;
+          if (log->is_open())
+          {
+            //se il file è aperto, controllo la dimensione
+            log->seekg (0, ios:: end); 
+            if (log->tellg ()<row[i]) row[i]=0;
+          }
+          //altrimenti se non c'è il file, sono già sicuro che il backup è stato fatto.
+          else row[i]=0;
           log->close();
           delete log;
           for (unsigned int j=0;j<giocatori[i].size();j++) delete giocatori[i][j];
@@ -961,6 +1077,10 @@ void Analyzer::main_loop()
       {
         std::cout<<"  [OK] Aperto!\n";
         *generalLog<<"  [OK] Aperto!\n";
+        #ifdef DEBUG_MODE
+          std::cout<< "  Al punto: "<< row[serverNumber]<<"\n";
+          *generalLog<< "  Al punto: "<< row[serverNumber]<<"\n";
+        #endif
       }
       else
       {
@@ -981,7 +1101,12 @@ void Analyzer::main_loop()
           log->getline(line,1500,'\n');
           //se non è la fine del file, mi salvo la riga dove sono arrivato
           if (!log->eof() && !log->bad()) row[serverNumber]=log->tellg();
-
+          
+          #ifdef DEBUG_MODE
+            std::cout<< "  Al punto: "<< row[serverNumber]<<" contenuto: "<<line<<"\n";
+            *logger<< "  Al punto: "<< row[serverNumber]<<" contenuto: "<<line<<"\n";
+          #endif
+          
           //comincio coi test
           if (isA(line, CLIENT_USER_INFO))
           {
@@ -1087,7 +1212,15 @@ void Analyzer::main_loop()
                                     }
                                     else
                                     {
-                                      expansion(line);
+                                      if (isA(line,STRICT))
+                                      {
+                                        //è uno strict
+                                        setStrict(line);
+                                      }
+                                      else
+                                      {
+                                        expansion(line);
+                                      }
                                     }
                                   }
                                 }
