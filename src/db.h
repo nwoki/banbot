@@ -39,6 +39,7 @@
 class Logger;
 
 #define DATABASE "database/Db.sqlite"
+#define DATABASE_DIR "database"
 
 using namespace std;
 

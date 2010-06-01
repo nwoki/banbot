@@ -99,6 +99,9 @@ Db::Db( vector<ConfigLoader::Option> conf, vector<ConfigLoader::Banlist> banned,
 
 Db::~Db()
 {
+    #ifdef DEBUG_MODE
+    cout << "\e[1;37mDb::~Db()\e[0m \n";
+    #endif
 }
 
 
@@ -320,10 +323,26 @@ void Db::dumpBannedToFile()
 }
 
 
-void Db::dumpDatabase() //to finish and understand
-//http://www.sqlite.org/backup.html
+void Db::dumpDatabase() //to finish and understand, there is more than one way
+//http://www.sqlite.org/backup.html for other methods
 {
-    //look at link
+    //close all db connections
+    close();
+
+    string cmd( "cp " );    //command creation
+    cmd.append( DATABASE );
+    cmd.append( " " );
+    cmd.append( DATABASE );
+    cmd.append( ".backup" );
+
+    if( system( cmd.c_str() ) != 0 ) {    //0 is success
+        cout << "\e[1;31mDb::dumpDatabase database dump failed!\e[0m \n";
+        *logger << "Db::dumpDatabase database dump failed!\n";
+        return;
+    }
+
+    //just log this call, no need for output
+    *logger << "Db::dumpDatabase SUCCESS, dumped the database\n";
 }
 
 
