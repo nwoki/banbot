@@ -41,11 +41,6 @@ Db::Db( vector<ConfigLoader::Option> conf, vector<ConfigLoader::Banlist> banned,
     //check della directory database
     struct stat st;
 
-    string path( DATABASE );
-    size_t pos = path.find_last_of( '/' );
-    string cartella = path.substr( 0, pos );
-    string file = path.substr( pos+1 );
-
     cout << "[*]Starting up...\n";
     cout << "[-]checking for database directory..\n";
     *logger << "\n**************************************************************************************\n";
@@ -53,24 +48,24 @@ Db::Db( vector<ConfigLoader::Option> conf, vector<ConfigLoader::Banlist> banned,
     *logger << "\n[*]Starting up...\n";
     *logger << "[-]checking for database directory..\n";
 
-    if( stat( cartella.c_str(), &st ) == 0 ){
-        cout << "  [*]dir '" << cartella << "/' found\n";
-        *logger << "  [*]dir '" << cartella << "/' found\n";
+    if( stat( DATABASE_DIR, &st ) == 0 ){
+        cout << "  [*]dir '" << DATABASE_DIR << "/' found\n";
+        *logger << "  [*]dir '" << DATABASE_DIR << "/' found\n";
     }
     else{
-        cout << "\e[0;33m  [!]couldn't find dir '" << cartella << "/'! Creating dir '" << cartella << "/'..\e[0m \n";
-        *logger << "  [!]couldn't find dir '" << cartella << "/'! Creating dir '" << cartella << "/'..\n";
+        cout << "\e[0;33m  [!]couldn't find dir '" << DATABASE_DIR << "/'! Creating dir '" << DATABASE_DIR << "/'..\e[0m \n";
+        *logger << "  [!]couldn't find dir '" << DATABASE_DIR << "/'! Creating dir '" << DATABASE_DIR << "/'..\n";
 
-        if( mkdir( cartella.c_str(), 0777 ) != 0 ){
-            cout << "\e[1;31m[EPIC FAIL] couldn't create directory '" << cartella << "/'.Please check permissions!\e[0m \n";
-            *logger << "[EPIC FAIL] couldn't create directory '" << cartella << "/'.Please check permissions!\n";
+        if( mkdir( DATABASE_DIR, 0777 ) != 0 ){
+            cout << "\e[1;31m[EPIC FAIL] couldn't create directory '" << DATABASE_DIR << "/'.Please check permissions!\e[0m \n";
+            *logger << "[EPIC FAIL] couldn't create directory '" << DATABASE_DIR << "/'.Please check permissions!\n";
             cout << "\e[1;31m[FAIL] need database for bot to work correctly. Please resolve this problem and launch application again\e[0m \n";
             *logger << "[FAIL] can't create database! Haven't got permission to do so.. TERMINATING BOT!\n";
-            //TODO! terminate program here!!!
+            #warning TODO terminate program here if i cant create database and/or database file!!!
         }
         else{
-            cout << "\e[0;32m  [OK]created '" << cartella << "/' directory..\e[0m \n";
-            *logger << "  [OK]created '" << cartella << "/' directory..\n";
+            cout << "\e[0;32m  [OK]created '" << DATABASE_DIR << "/' directory..\e[0m \n";
+            *logger << "  [OK]created '" << DATABASE_DIR << "/' directory..\n";
         }
     }
 
@@ -80,8 +75,8 @@ Db::Db( vector<ConfigLoader::Option> conf, vector<ConfigLoader::Banlist> banned,
     if( !IN ){
         cout << "\e[0;33m  [!] database doesn't exist!\e[0m \n";
         //create database
-        cout << "\e[0;33m    [!] creating database '" << file << "/' in '" << cartella << "/'\e[0m \n";
-        *logger << "  [!] database doesn't exist!\n" << "    [*] creating database '" << file << "/' in '" << cartella << "/'\n";
+        cout << "\e[0;33m    [!] creating database '" << DATABASE << "/' in '" << DATABASE_DIR << "/'\e[0m \n";
+        *logger << "  [!] database doesn't exist!\n" << "    [*] creating database '" << DATABASE << "/' in '" << DATABASE_DIR << "/'\n";
         createDb();
     }
     IN.close();
