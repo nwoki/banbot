@@ -1039,6 +1039,23 @@ void Analyzer::tellToAdmins(std::string frase)
     tell(frase,giocatori[serverNumber][indici[i]]->number);
 }
 
+int Analyzer::translatePlayer(std::string player)
+{
+  bool unique=true;
+  int index=-1;
+  for (int i=0;i<giocatori[serverNumber].size();i++)
+  {
+    if (giocatori[serverNumber][i]->nick.find(player)<giocatori[serverNumber][i]->nick.size())
+    {
+      //il giocatore corrisponde
+      if (index<0) index=i;
+      else unique=false;
+    }
+  }
+  if (!unique) index=-1;
+  return index;
+}
+
 //main loop
 void Analyzer::main_loop()
 {
