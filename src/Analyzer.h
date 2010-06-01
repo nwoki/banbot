@@ -68,6 +68,7 @@
 class Analyzer
 {
 private:
+    //regex
     std::ifstream *log;
     const char* CLIENT_CONNECT;
     const char* CLIENT_USER_INFO;
@@ -85,12 +86,14 @@ private:
     const char* MUTE;
     const char* STRICT;
     const char* COMMAND;
+    const char* VETO;
     std::vector<std::string> files;
     std::vector<std::string> BotLogFiles;
     std::vector<std::streampos> row;
     std::vector<bool> strict;
     Backup* backup;
     Logger* generalLog;
+    //funzioni associate ai regex (comandi dal server/eventi)
     void clientUserInfo(char* line);
     void clientConnect(char* line);
     void clientDisconnect(char* line);
@@ -104,6 +107,7 @@ private:
     void kick(char* line);
     void mute(char* line);
     void setStrict(char* line);
+    void veto(char* line);
 
 protected:
     bool isA(char* line,const std::string &regex);

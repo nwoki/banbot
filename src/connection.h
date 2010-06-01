@@ -49,6 +49,7 @@ class Connection
         void tell( string frase,string player, int server); //invia il messaggio privato "frase" al giocatore del numero contenuto in "player", nel server "server".
         void reload(int server=-1);            //fa un reload della mappa. Se non indicato il server, lo fa su tutti i server.
         void mute( string number, int server); //muta/smuta il player numero @number sul server @server
+        void veto(int server);                  //comando di veto sul server @server
 
     private:
         sockaddr_in serverAdd;// clientAdd;

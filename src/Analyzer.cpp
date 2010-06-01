@@ -51,14 +51,8 @@ Analyzer::Analyzer( Connection* conn, Db* db,Logger* primaryLog, Backup* backup,
             temp->open(opzioni[i].value.c_str());
             if (temp->is_open())
             {
-              std::streampos pos;
-              while (!temp->eof()) 
-              {
-                char t [1500];
-                pos=temp->tellg();
-                temp->getline(t,1500,'\n');
-              }
-              row.push_back(pos);
+              temp->seekg (0, ios:: end); 
+              row.push_back(temp->tellg());
               #ifdef DEBUG_MODE
                   std::cout << "Valore di partenza del file: "<< pos<<"\n";
               #endif
@@ -87,7 +81,8 @@ Analyzer::Analyzer( Connection* conn, Db* db,Logger* primaryLog, Backup* backup,
   HELP=" *[0-9]+:[0-9]{2} +say: +[0-9]+ +[^ \t\n\r\f\v]+: +!help";
   KICK=" *[0-9]+:[0-9]{2} +say: +[0-9]+ +[^ \t\n\r\f\v]+: +!kick [0-9]{1,2}";
   MUTE=" *[0-9]+:[0-9]{2} +say: +[0-9]+ +[^ \t\n\r\f\v]+: +!mute [0-9]{1,2}";
-  STRICT=" *[0-9]+:[0-9]{2} +say: +[0-9]+ +[^ \t\n\r\f\v]+: +!strict [[ON][on][OFF][off]]{1}";
+  STRICT=" *[0-9]+:[0-9]{2} +say: +[0-9]+ +[^ \t\n\r\f\v]+: +!strict ON|on|OFF|off";
+  VETO=" *[0-9]+:[0-9]{2} +say: +[0-9]+ +[^ \t\n\r\f\v]+: +!veto[\t\n\r\f\v]";
   COMMAND=" *[0-9]+:[0-9]{2} +say: +[0-9]+ +[^ \t\n\r\f\v]+: +![^ \t\n\r\f\v]+";
 
   //server->reload(); non devo riavviare il server. Comincio dalla fine del file.
@@ -795,7 +790,7 @@ void Analyzer::deop(char* line)
     std::string frase;
     if (database->deleteOp(numero))
       frase.append("BanBot: utente tolto con successo dalla lista admin.");
-    else frase.append("BanBot: è stato riscontrato un errore.");
+    else frase.append("BanBot fail: è stato riscontrato un errore.");
     server->tell(frase,numeroAdmin,serverNumber);
   }
 }
@@ -873,12 +868,29 @@ void Analyzer::setStrict(char* line)
     if (temp.find("!strict ON")<temp.size() || temp.find("!strict on")<temp.size())
     {
       strict[serverNumber]=true;
+      tell("BanBot: strict mode ON",numeroAdmin);
     }
     else
     {
+      strict[serverNumber]=false;
+      tell("BanBot: strict mode OFF",numeroAdmin);
     }
   }
 }
+
+void Analyzer::veto(char* line)
+{
+  std::cout<<"[!] Veto";
+  logger->timestamp();
+  *logger<<"\n[!] Veto";
+  //controllo se ho il giocatore e i suoi permessi, se la persona non è autorizzata non faccio nulla.
+  std::string numeroAdmin;
+  if (isAdminSay(line,numeroAdmin))
+  {
+    server->veto(serverNumber);
+  }
+}
+
 
 void Analyzer::tell(std::string frase, std::string player)
 {
@@ -952,7 +964,7 @@ bool Analyzer::nickIsBanned(const std::string &nick)
   }
   //se sono in modalità strict, se il nick è bannato, butto fuori anche se è passata un'ora.
   if (risultato.size())
-    if (isStrict()) return true;
+    if (isStrict()) {return true;}
     else 
     {
       std::string frase("BanBot warning: the nick '");
@@ -1219,7 +1231,15 @@ void Analyzer::main_loop()
                                       }
                                       else
                                       {
-                                        expansion(line);
+                                        if (isA(line,VETO))
+                                        {
+                                          //è un veto
+                                          veto(line);
+                                        }
+                                        else
+                                        {
+                                          expansion(line);
+                                        }
                                       }
                                     }
                                   }
