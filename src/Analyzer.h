@@ -74,15 +74,18 @@ private:
     const char* CLIENT_USER_INFO;
     const char* CLIENT_DISCONNECT;
     const char* BAN;
+    const char* BAN_NUMBER;
     const char* GUID;
     const char* INITGAME;
     const char* FIND;
     const char* FINDOP;
     const char* UNBAN;
     const char* OP;
+    const char* OP_NUMBER;
     const char* DEOP;
     const char* HELP;
     const char* KICK;
+    const char* KICK_NUMBER;
     const char* MUTE;
     const char* STRICT;
     const char* COMMAND;
@@ -103,6 +106,7 @@ private:
     void find(char* line);
     void findOp(char* line);
     void op(char* line);
+    void op_nick(char* line);
     void deop(char* line);
     void help(char* line);
     void kick(char* line);
