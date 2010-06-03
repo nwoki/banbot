@@ -50,8 +50,8 @@ class Db
         ~Db();
 
         //database connection
-        bool openDatabase();
-        void closeDatabase();
+        bool openDatabase();    //opens a connection with the sqlite3 database
+        void closeDatabase();   //closes a connection with the sqlit3 database
         //checks
         bool checkAuthGuid( const string &guid );   //controlla l'esistenza del guid passato (OPLIST)
         bool checkBanGuid( const string &guid );    //passa ( guid giocatore)
@@ -61,7 +61,7 @@ class Db
         //dumps
         void dumpAdminsToFile();
         void dumpBannedToFile();
-        void dumpDatabase();    //TODO not yet implemented
+        void dumpDatabase();
 
         //banned table
         bool ban( const string &nick, const string &ip, const string &date, const string &time, const string &guid, const string &motive, const string &adminGuid );
@@ -83,7 +83,6 @@ class Db
 
     private:
         //void close();
-        //void clearAfterOperation();
         bool connect();
         void createDb();
         bool execQuery( const string &query );    //esegue e ritorna status per indicare se l'operazione è andato a buon fine

@@ -90,9 +90,9 @@ Db::Db( vector<ConfigLoader::Option> conf, vector<ConfigLoader::Banlist> banned,
 
     //azzero la tabella degli admins
     loadAdminlist( admins );
-//    loadBanlist( banned );
-//    dumpAdminsToFile();
-//    dumpBannedToFile();
+    loadBanlist( banned );
+    dumpAdminsToFile();
+    dumpBannedToFile();
 
     //chiudo il log.
     logger->close();
@@ -151,10 +151,16 @@ bool Db::checkBanGuid( const string &banGuid )
 
 bool Db::checkBanNick( const string& nick )
 {
+
+#ifdef DEBUG_MODE
+    cout << "Db::checkBanNick\n";
+#endif
+
     string query( "select id from banned where nick='" );
     query.append( nick );
     query.append( "';" );
 
+    cout << query;
     if( resultQuery( query ) > 0 )
         return true;
     else
@@ -699,6 +705,11 @@ void Db::closeDatabase()
 {
     rc = sqlite3_close( database );
 
+    if( rc != SQLITE_OK ) {
+        cout << "\e[1;31[FAIL] Can't close database! Something's wrong\e[0m \n";
+        *logger << "[FAIL] Can't close database! Something's wrong\n";
+    }
+
     #ifdef DEBUG_MODE
         if( rc == SQLITE_OK )
             cout << "\e[1;35mDATABASE CLOSED\e[0m \n";
@@ -706,13 +717,6 @@ void Db::closeDatabase()
             cout << "\e[1;31mFAILED TO CLOSE DATABASE\e[0m \n";
     #endif
 }
-
-//void Db::clearAfterOperation()
-//{
-//    //clears info so i don't mess new info with old one
-//    vcol_head.clear();
-//    vdata.clear();
-//}
 
 
 bool Db::connect()  //called by Db::open ( public function )
@@ -782,12 +786,16 @@ void Db::createDb()   //initial creation of database
         cout<<"\e[0;31m    [FAIL]error creating 'oplist' table\e[0m \n";
         *logger<<"    [FAIL]error creating 'oplist' table\n";
     }
-
 }
 
 
 bool Db::execQuery( const string &query )   //executes and returns status
 {
+
+#ifdef DEBUG_MODE
+    cout << "Db::execQuery - " << query << "\n";
+#endif
+
     /*SQLITE3 *sql = new SQLITE3( DATABASE );
     bool success;
 
@@ -801,6 +809,14 @@ bool Db::execQuery( const string &query )   //executes and returns status
 
     delete( sql );
     return success;*/
+
+    //clean old vdata
+    if( !vdata.empty() )
+        vdata.clear();
+
+    //and check that database connection is open!
+    if( !database )
+        connect();
 
     rc = sqlite3_get_table( database, query.c_str(), &result, &nrow, &ncol, &zErrMsg );
     bool success;
@@ -818,6 +834,11 @@ bool Db::execQuery( const string &query )   //executes and returns status
             vdata.push_back( result[ncol+i] );
 
         success = true;
+
+        for( int i = 0; i < vdata.size(); i++ ) {
+            cout << "VDATA INFO\n";
+            cout << vdata[i] << "\n";
+        }
     }
     else{
         cout <<"\e[1;31m[EPIC FAIL] Db::execQuery '" << zErrMsg << "'\e[0m \n";// sqlite3_errmsg( db );
@@ -864,6 +885,11 @@ string Db::intToString( int number )    //non serve se usiamo solo string, ma no
 
 void Db::loadBanlist( vector<ConfigLoader::Banlist> banned )
 {
+
+#ifdef DEBUG_MODE
+    cout << "Db::loadBanlist\n";
+#endif
+
     cout << "\e[0;33m[!] Loading banlist to database.. \e[0m \n";
 
     if( banned.empty() ){
@@ -882,6 +908,7 @@ void Db::loadBanlist( vector<ConfigLoader::Banlist> banned )
         if( !checkBanNick( banned[i].nick ) ){   //if not on database
 
             #ifdef DEBUG_MODE
+            cout << "Db::loadAdminlist " << banned[i].nick << " not on database!\n";
             cout << "Db::loadBanlist ban info -> " << banned[i].nick << " " << banned[i].ip << " " << banned[i].date << " " << banned[i].time << " " << banned[i].motive << " " << banned[i].author << endl;
             #endif
 
@@ -906,6 +933,11 @@ void Db::loadBanlist( vector<ConfigLoader::Banlist> banned )
                 addedGuidsCounter++;
             }
         }
+#ifdef DEBUG_MODE
+        else
+            cout << banned[i].nick << " on database!\n";
+#endif
+
     }
     cout << "\e[0;33m Added " << playerCounter << " clients and " << addedGuidsCounter << " new guids to the database\e[0m \n";
     *logger << "Added " << playerCounter << " clients and " << addedGuidsCounter << " new guids to the database \n";
@@ -952,6 +984,7 @@ int Db::resultQuery( const string &query ) //ritorna quante corrispondenze ci so
 
 #ifdef DEBUG_MODE
     cout << "Db::resultQuery\n";
+    cout << "query to check : " << query << "\n";
 #endif
 
     int answer = 0;
@@ -964,8 +997,10 @@ int Db::resultQuery( const string &query ) //ritorna quante corrispondenze ci so
 //     delete ( sql );
 //     return answer;
     //execute query. If it fails answer = -1
-    if( !execQuery( query ) )
+    if( !execQuery( query ) ) {
+        cout << "query failed\n";
         answer = -1;
+    }
     else
         answer = vdata.size();
 
