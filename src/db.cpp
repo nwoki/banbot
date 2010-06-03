@@ -90,9 +90,9 @@ Db::Db( vector<ConfigLoader::Option> conf, vector<ConfigLoader::Banlist> banned,
 
     //azzero la tabella degli admins
     loadAdminlist( admins );
-    loadBanlist( banned );
-    dumpAdminsToFile();
-    dumpBannedToFile();
+//    loadBanlist( banned );
+//    dumpAdminsToFile();
+//    dumpBannedToFile();
 
     //chiudo il log.
     logger->close();
@@ -120,11 +120,16 @@ bool Db::openDatabase()
 
 bool Db::checkAuthGuid( const string &guid )    //checks oplist for ops
 {
+
+#ifdef DEBUG_MODE
+    cout << "Db::checkAuthGuid\n";
+#endif
+
     string aux( "select guid from oplist where guid='" );
     aux.append( guid );
     aux.append( "'" );
 
-    cout << "Db::checkAuthGuid RETURNING " << ( resultQuery( aux ) > 0 ) << "\n";
+    //cout << "Db::checkAuthGuid RETURNING " << ( resultQuery( aux ) > 0 ) << "\n";
     return ( resultQuery( aux ) > 0 );
 }
 
@@ -608,8 +613,8 @@ bool Db::deleteGuid( const string &id )
 bool Db::addOp( const string& nick, const string& guid )
 {
     if ( checkAuthGuid( guid ) ) {
-        cout << "\e[0;33m[!]guid: " << guid << " already authed\e[0m \n";
-        *logger << "[!]guid: " << guid << " already authed";
+        cout << "\e[0;33m[!]Admin: " << guid << " already exists on Database\e[0m \n";
+        *logger << "[!]Admin: " << guid << " already exists on Database\n";
         return false;
     }
 
@@ -922,21 +927,21 @@ void Db::loadAdminlist( vector< ConfigLoader::Option > admins )
     //adding admins to db
     cout<<"\n[-]Adding admins to database..\n\n";
 
-    for( unsigned int i = 0; i < admins.size(); i++ ) {
-        if( !checkAuthGuid( admins[i].value ) ) {    //non esiste sul database
-            //add to database
-            if ( addOp( admins[i].name, admins[i].value ) ) {
-                cout << "\e[0;32m      [+]added admin: " << admins[i].name << "\e[0m \n";
-                *logger<<"      [+]added admin: " << admins[i].value << "\n";
-                addedCounter++;
-            }
-        }
-        #ifdef DEBUG_MODE
-        else
-            cout << "\e[0;33m Admin " << admins[i].value << " exists on db \e[0m \n";
-        #endif
-    }
+#ifdef DEBUG_MODE
+    cout << "ADMIN SIZE-> " << admins.size() << "\n";
+#endif
 
+    for( unsigned int i = 0; i < admins.size(); i++ ) {
+
+//        addop already checks for guid on database. Don't need to do single check here!
+//        if( !checkAuthGuid( admins[i].value ) ) {    //non esiste sul database
+//            //add to database
+        if ( addOp( admins[i].name, admins[i].value ) ) {
+            cout << "\e[0;32m      [+]added admin: " << admins[i].name << "\e[0m \n";
+            *logger<<"      [+]added admin: " << admins[i].value << "\n";
+            addedCounter++;
+        }
+    }
     cout << "\e[0;33m Added " << addedCounter << "/" << admins.size() << " new admin/s from file to the database\e[0m \n\n";
     *logger << "Added " << addedCounter << " new admin/s from file to the database\n";
 }
@@ -944,6 +949,11 @@ void Db::loadAdminlist( vector< ConfigLoader::Option > admins )
 
 int Db::resultQuery( const string &query ) //ritorna quante corrispondenze ci sono all'interno del DB
 {
+
+#ifdef DEBUG_MODE
+    cout << "Db::resultQuery\n";
+#endif
+
     int answer = 0;
 //     SQLITE3 *sql = new SQLITE3( DATABASE );
 //     //eseguo la query: se fallisce (ritorna true) imposto la risposta a -1
