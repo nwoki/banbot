@@ -49,6 +49,9 @@ class Db
         Db( vector< ConfigLoader::Option >, vector< ConfigLoader::Banlist >, vector< ConfigLoader::Option >, Logger * );
         ~Db();
 
+        //database connection
+        bool openDatabase();
+        void closeDatabase();
         //checks
         bool checkAuthGuid( const string &guid );   //controlla l'esistenza del guid passato (OPLIST)
         bool checkBanGuid( const string &guid );    //passa ( guid giocatore)
@@ -79,7 +82,8 @@ class Db
         vector< string > extractData( const string &query );   //ritorna un vettore con i/il risultato della query
 
     private:
-        void close();
+        //void close();
+        //void clearAfterOperation();
         bool connect();
         void createDb();
         bool execQuery( const string &query );    //esegue e ritorna status per indicare se l'operazione è andato a buon fine
@@ -92,6 +96,19 @@ class Db
 
         sqlite3 *database;
         Logger *logger;
+
+        //testing
+        char *zErrMsg;
+        char **result;
+        int rc; //return int i get from query ( use to check query returns. SQLITE_OK ecc )
+        int nrow, ncol; //number of rows and columns
+
+        //data is stored here after query executions
+        vector< string > vcol_head; /*MUST clear otherwise i keep old values as well*/
+        vector< string > vdata; /*MUST clear otherwise i keep old values as well*/
+};
+
+/*
 
 	class SQLITE3
 	{
@@ -130,13 +147,13 @@ class Db
 	    {
 	        rc = sqlite3_get_table(
                 db,              /* An open database */
-                s_exe.c_str(),       /* SQL to be executed */
-                &result,       /* Result written to a char *[]  that this points to */
-                &nrow,             /* Number of result rows written here */
-                &ncol,          /* Number of result columns written here */
-                &zErrMsg          /* Error msg written here */
-                );
-
+                //s_exe.c_str(),       /* SQL to be executed */
+                //&result,       /* Result written to a char *[]  that this points to */
+                //&nrow,             /* Number of result rows written here */
+                //&ncol,          /* Number of result columns written here */
+                //&zErrMsg          /* Error msg written here */
+                //);
+/*
 	        if( vcol_head.size() < 0 )
                 vcol_head.clear();
 
@@ -146,7 +163,7 @@ class Db
   	        if( rc == SQLITE_OK ){
                 for( int i = 0; i < ncol; ++i )
                     vcol_head.push_back( result[i] );   /* First row heading */
-                for( int i = 0; i < ncol*nrow; ++i )
+                /*for( int i = 0; i < ncol*nrow; ++i )
                     vdata.push_back( result[ncol+i] );
 	        }
 	        else{
@@ -169,7 +186,7 @@ class Db
 	    }
 	};
 
-};
+};*/
 
 
 

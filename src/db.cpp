@@ -35,6 +35,9 @@
 
 Db::Db( vector<ConfigLoader::Option> conf, vector<ConfigLoader::Banlist> banned, vector<ConfigLoader::Option> admins, Logger* log )
     : logger( log )
+    //testing
+    , zErrMsg( 0 )
+    , result( 0 )
 {
     //effettuo il logging del check up del database:
     logger->open();
@@ -77,9 +80,13 @@ Db::Db( vector<ConfigLoader::Option> conf, vector<ConfigLoader::Banlist> banned,
         //create database
         cout << "\e[0;33m    [!] creating database '" << DATABASE << "/' in '" << DATABASE_DIR << "/'\e[0m \n";
         *logger << "  [!] database doesn't exist!\n" << "    [*] creating database '" << DATABASE << "/' in '" << DATABASE_DIR << "/'\n";
+        openDatabase();
         createDb();
     }
-    IN.close();
+    else {
+        IN.close();
+        openDatabase();
+    }
 
     //azzero la tabella degli admins
     loadAdminlist( admins );
@@ -99,6 +106,17 @@ Db::~Db()
     #endif
 }
 
+bool Db::openDatabase()
+{
+    if( !connect() ) {  //not opened
+        cout << "\e[1;31mDb::open() FAILED to open database!\e[0m \n";
+        *logger << "Db::open() FAILED to open database!\n";
+        return false;
+    }
+    else
+        return true;
+}
+
 
 bool Db::checkAuthGuid( const string &guid )    //checks oplist for ops
 {
@@ -106,6 +124,7 @@ bool Db::checkAuthGuid( const string &guid )    //checks oplist for ops
     aux.append( guid );
     aux.append( "'" );
 
+    cout << "Db::checkAuthGuid RETURNING " << ( resultQuery( aux ) > 0 ) << "\n";
     return ( resultQuery( aux ) > 0 );
 }
 
@@ -133,7 +152,8 @@ bool Db::checkBanNick( const string& nick )
 
     if( resultQuery( query ) > 0 )
         return true;
-    else return false;
+    else
+        return false;
 }
 
 
@@ -145,8 +165,8 @@ void Db::dumpAdminsToFile()
     *logger << "[-]Trying to dump admins..\n";
 
     if( !resultQuery( query ) ) {   //FAILED
-        cout << "\e[0;33m[!]no banned guids to dump to file\e[0m \n";
-        *logger << "[!]no banned guids to dump to file\n";
+        cout << "\e[0;33m[!]no admins to dump to file\e[0m \n";
+        *logger << "[!]no admins to dump to file\n";
         return;
     }
 
@@ -161,7 +181,7 @@ void Db::dumpAdminsToFile()
 
         if ( !system( "rm backup/Adminlist.backup" ) )
             cout << "\e[0;33m[!]deleted old adminlist file..creating new one..\e[0m \n";
-        else{
+        else {
             cout << "\e[0;31m [ERR]couldn't delete old dump file!\e[0m \n";
             return;
         }
@@ -231,20 +251,26 @@ void Db::dumpBannedToFile()
         }
     }
 
-    //use logger class to save info to file
-    Logger *output = new Logger( "backup/Banlist.backup" );
-
-    if ( !output->open() ){
-        cout << "\e[0;31m[ERR] can't write Banlist backup file!\e[0m \n";
-        *logger << "[ERR] can't write Banlist backup file!\n";
-        return;
-    }
-
     //backup file ready, preparation of info to dump to file
     vector< string > bannedIds = extractData( "select id from banned;" );
     vector< string > dataToDump;    // banned player info
     vector< string > guidsToDump;   //banned player's guids
     string auxQuery;
+
+    if( bannedIds.empty() ) {   //no need to go ahead, no data to dump!
+        cout << "\e[0;31 Db::dumpBannedToFile no banned id's to dump\e[0m \n";
+        *logger << "Db::dumpBannedToFile no banned id's to dump \n";
+        return;
+    }
+
+    //use logger class to save info to file
+    Logger *output = new Logger( "backup/Banlist.backup" );
+
+    if ( !output->open() ){
+        cout << "\e[1;31mDb::dumpBannedToFile [ERR] can't write Banlist backup file!\e[0m \n";
+        *logger << "Db::dumpBannedToFile [ERR] can't write Banlist backup file!\n";
+        return;
+    }
 
     *output << "#\n# THIS IS A BACKUP FILE OF BANLIST FOUND IN cfg/\n#\n";
     //here i actually write to file
@@ -322,7 +348,7 @@ void Db::dumpDatabase() //to finish and understand, there is more than one way
 //http://www.sqlite.org/backup.html for other methods
 {
     //close all db connections
-    close();
+    closeDatabase();
 
     string cmd( "cp " );    //command creation
     cmd.append( DATABASE );
@@ -360,19 +386,7 @@ bool Db::ban( const string &nick, const string &ip, const string &date, const st
         return false;
 
     //all went well, add admin to AUTHOR
-
     return true;
-
-    /*if( resultQuery( aux ) == 0 ){
-        cout<<"\e[0;32m[OK] ban applied on: "<<guid<<"\e[0m \n";
-        *logger<<"[OK] ban applied on "<<guid<<"\n";
-        return true;
-    }
-    else{
-        cout<<"\e[0;31m[FAIL] ban not applied on: "<<guid<<"\e[0m \n";
-        *logger<<"[FAIL] ban not applied on "<<guid<<"\n";
-        return false;
-    }*/
 }
 
 
@@ -415,6 +429,10 @@ string Db::insertNewBanned( const string& nick, const string& ip, const string& 
     #endif
 
     max = extractData( selectLastInserted );
+
+    cout << "SHOWING VDATA\n";
+    for( int i = 0; i < vdata.size(); i++ )
+        cout << max[i] << "\n";
 
     if( max.empty() )
         return string();
@@ -650,13 +668,21 @@ bool Db::deleteOp( const string& id )
 
 vector< string > Db::extractData( const string &query )    //returns vector with results as string
 {
-    SQLITE3 data( DATABASE );
+    //SQLITE3 data( DATABASE );
 
-    if( !data.exe( query ) )  //found data
+    /*if( !data.exe( query ) )  //found data
         return data.vdata; //get it
     else {
         vector< string > asd; //else return empty vector
         return asd;
+    }*/
+    //clearAfterOperation();
+
+    if( execQuery( query ) )
+        return vdata;
+    else {
+        vector< string > emptyVector;
+        return emptyVector;
     }
 }
 
@@ -664,21 +690,38 @@ vector< string > Db::extractData( const string &query )    //returns vector with
 /********************************
 *       PRIVATE METHODS         *
 ********************************/
-void Db::close()
+void Db::closeDatabase()
 {
-    sqlite3_close( database );
+    rc = sqlite3_close( database );
+
+    #ifdef DEBUG_MODE
+        if( rc == SQLITE_OK )
+            cout << "\e[1;35mDATABASE CLOSED\e[0m \n";
+        else
+            cout << "\e[1;31mFAILED TO CLOSE DATABASE\e[0m \n";
+    #endif
 }
 
+//void Db::clearAfterOperation()
+//{
+//    //clears info so i don't mess new info with old one
+//    vcol_head.clear();
+//    vdata.clear();
+//}
 
-bool Db::connect()
+
+bool Db::connect()  //called by Db::open ( public function )
 {
-    if( sqlite3_open( DATABASE, &database )){
-        cout<<"\e[0;31m[FAIL] " << sqlite3_errmsg( database ) << "\e[0m \n";
+    if( sqlite3_open( DATABASE, &database ) ) {
+        cout<<"\e[0;31m[EPIC FAIL] " << sqlite3_errmsg( database ) << "\e[0m \n";
         *logger<<"[FAIL] " << sqlite3_errmsg( database );
-        close();
+        sqlite3_close( database );
         return false;
     }
-    else return true;
+#ifdef DEBUG_MODE
+    cout<< "\e[1;35mOPENED DB\e[0m \n";
+#endif
+    return true;
 }
 
 
@@ -740,7 +783,7 @@ void Db::createDb()   //initial creation of database
 
 bool Db::execQuery( const string &query )   //executes and returns status
 {
-    SQLITE3 *sql = new SQLITE3( DATABASE );
+    /*SQLITE3 *sql = new SQLITE3( DATABASE );
     bool success;
 
     if( !sql->exe( query ) )
@@ -752,9 +795,38 @@ bool Db::execQuery( const string &query )   //executes and returns status
     }
 
     delete( sql );
+    return success;*/
+
+    rc = sqlite3_get_table( database, query.c_str(), &result, &nrow, &ncol, &zErrMsg );
+    bool success;
+
+    if( vcol_head.size() < 0 )
+        vcol_head.clear();
+
+    if( vdata.size() < 0 )
+        vdata.clear();
+
+    if( rc == SQLITE_OK ) {
+        for( int i = 0; i < ncol; ++i )
+            vcol_head.push_back( result[i] );   /* First row heading */
+        for( int i = 0; i < ncol*nrow; ++i )
+            vdata.push_back( result[ncol+i] );
+
+        success = true;
+    }
+    else{
+        cout <<"\e[1;31m[EPIC FAIL] Db::execQuery '" << zErrMsg << "'\e[0m \n";// sqlite3_errmsg( db );
+        //come faccio a loggare l'errore che ricevo qui??? TODO
+        *logger<< "[EPIC FAIL] Db::execQuery '" << zErrMsg << "'\n";
+        success = false;
+    }
+    sqlite3_free_table( result );
+    //clearAfterOperation();
+#ifdef DEBUG_MODE
+    cout <<"\e[1;37m Db::execQuery result code is > " << rc << "sending value " << success << "\e[0m \n";
+#endif
     return success;
 }
-
 
 string Db::getAdminNick( const string& guid )
 {
@@ -762,12 +834,17 @@ string Db::getAdminNick( const string& guid )
     query.append( guid );
     query.append( "';" );
 
-    SQLITE3 data( DATABASE );
+//     SQLITE3 data( DATABASE );
+// 
+//     if( !data.exe( query ) )  //found data
+//         return data.vdata[0]; //get it
+//     else
+//         return string();     //else return empty vector
 
-    if( !data.exe( query ) )  //found data
-        return data.vdata[0]; //get it
+    if( execQuery( query ) )
+        return vdata[0];
     else
-        return string();     //else return empty vector
+        return string();
 }
 
 
@@ -854,6 +931,10 @@ void Db::loadAdminlist( vector< ConfigLoader::Option > admins )
                 addedCounter++;
             }
         }
+        #ifdef DEBUG_MODE
+        else
+            cout << "\e[0;33m Admin " << admins[i].value << " exists on db \e[0m \n";
+        #endif
     }
 
     cout << "\e[0;33m Added " << addedCounter << "/" << admins.size() << " new admin/s from file to the database\e[0m \n\n";
@@ -864,12 +945,25 @@ void Db::loadAdminlist( vector< ConfigLoader::Option > admins )
 int Db::resultQuery( const string &query ) //ritorna quante corrispondenze ci sono all'interno del DB
 {
     int answer = 0;
-    SQLITE3 *sql = new SQLITE3( DATABASE );
-    //eseguo la query: se fallisce (ritorna true) imposto la risposta a -1
-    if ( sql->exe( query ) ) answer = -1;
-    //altrimenti restituisco la dimensione dell'array contenente i risultati (non mi interessa avere i risultati)
-    else answer = sql->vdata.size();
+//     SQLITE3 *sql = new SQLITE3( DATABASE );
+//     //eseguo la query: se fallisce (ritorna true) imposto la risposta a -1
+//     if ( sql->exe( query ) ) answer = -1;
+//     //altrimenti restituisco la dimensione dell'array contenente i risultati (non mi interessa avere i risultati)
+//     else answer = sql->vdata.size();
+// 
+//     delete ( sql );
+//     return answer;
+    //execute query. If it fails answer = -1
+    if( !execQuery( query ) )
+        answer = -1;
+    else
+        answer = vdata.size();
 
-    delete ( sql );
+#ifdef DEBUG_MODE
+    cout << "\e[1;37mDb::resultQuery ANSWER SIZE > " << vdata.size() << "\e[0m \n";
+    cout << "\e[1;37mDb::resultQuery ANSWER SENDING OUT IS > " << answer << "\e[0m \n";
+#endif
+
     return answer;
+
 }
