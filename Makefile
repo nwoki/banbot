@@ -12,7 +12,9 @@ OBJECTS = main.o \
 CPP = g++
 CC = gcc
 #======defines=======
-#for debug : -ggdb -DDEBUG_MODE
+#for debug : -ggdb
+# -DDEBUG_MODE
+# -DDB_DEBUG( for database debug messages )
 #====optimization====
 #for 32bit optimization: -m32 -pipe -march=x86-32
 #for 64bit optimization: -m64 -pipe -march=x86-64
