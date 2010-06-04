@@ -86,10 +86,15 @@ private:
     const char* HELP;
     const char* KICK;
     const char* KICK_NUMBER;
+    const char* SLAP;
+    const char* SLAP_NUMBER;
+    const char* SLAP_MORE;
     const char* MUTE;
+    const char* MUTE_NUMBER;
     const char* STRICT;
     const char* COMMAND;
     const char* VETO;
+    const char* STATUS;
     //variabili private
     std::vector<std::string> files;
     std::vector<std::string> BotLogFiles;
@@ -106,13 +111,14 @@ private:
     void find(char* line);
     void findOp(char* line);
     void op(char* line);
-    void op_nick(char* line);
     void deop(char* line);
     void help(char* line);
     void kick(char* line);
     void mute(char* line);
     void setStrict(char* line);
     void veto(char* line);
+    void slap(char* line);
+    void status(char* line);
 
 protected:
     bool isA(char* line,const std::string &regex);          //testa se la riga soddisfa il regex.
@@ -125,7 +131,7 @@ protected:
     std::string correggi(std::string stringa);          //corregge la riga di testo per l'inserimento e l'utilizzo col database
     void tell(std::string frase, std::string player);  //invia la frase al giocatore usando connection::tell(), ma spezzettando automaticamente la stringa in più frasi se necessario.
     bool isStrict();                                    //ritorna true se il server e' in strict mode.
-    std::vector<int> admins();                          //restituisce gli indici dell'array dei player dei giocatori attualmente nel server che sono admin.
+    std::vector<unsigned int> admins();                          //restituisce gli indici dell'array dei player dei giocatori attualmente nel server che sono admin.
     void tellToAdmins(std::string frase);               //invia un messaggio a tutti gli admin attualmente in game (messaggio privato).
     int translatePlayer(std::string player);            //@player rappresenta un nick o una parte del nick di un player in game, la funzione restituisce l'indice nell'array dei giocatori indicato da @player, se non trovato o non univoco restituisce -1.
     Logger* logger;

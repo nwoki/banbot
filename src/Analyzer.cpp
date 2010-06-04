@@ -83,10 +83,15 @@ Analyzer::Analyzer( Connection* conn, Db* db,Logger* primaryLog, Backup* backup,
   HELP=" *[0-9]+:[0-9]{2} +say: +[0-9]+ +[^ \t\n\r\f\v]+: +!help";
   KICK=" *[0-9]+:[0-9]{2} +say: +[0-9]+ +[^ \t\n\r\f\v]+: +!kick [^ \t\n\r\f\v]+";
   KICK_NUMBER=" *[0-9]+:[0-9]{2} +say: +[0-9]+ +[^ \t\n\r\f\v]+: +!kick [0-9]{1,2}";
-  MUTE=" *[0-9]+:[0-9]{2} +say: +[0-9]+ +[^ \t\n\r\f\v]+: +!mute [0-9]{1,2}";
+  MUTE=" *[0-9]+:[0-9]{2} +say: +[0-9]+ +[^ \t\n\r\f\v]+: +!mute [^ \t\n\r\f\v]+";
+  MUTE_NUMBER=" *[0-9]+:[0-9]{2} +say: +[0-9]+ +[^ \t\n\r\f\v]+: +!mute [0-9]{1,2}";
   STRICT=" *[0-9]+:[0-9]{2} +say: +[0-9]+ +[^ \t\n\r\f\v]+: +!strict ON|on|OFF|off";
   VETO=" *[0-9]+:[0-9]{2} +say: +[0-9]+ +[^ \t\n\r\f\v]+: +!veto[\t\n\r\f\v]";
+  SLAP=" *[0-9]+:[0-9]{2} +say: +[0-9]+ +[^ \t\n\r\f\v]+: +!slap [^ \t\n\r\f\v]+";
+  SLAP_NUMBER=" *[0-9]+:[0-9]{2} +say: +[0-9]+ +[^ \t\n\r\f\v]+: +!slap [0-9]{1,2}";
+  SLAP_MORE=" *[0-9]+:[0-9]{2} +say: +[0-9]+ +[^ \t\n\r\f\v]+: +!slap [^ \t\n\r\f\v]+ [2-5]{1}";
   COMMAND=" *[0-9]+:[0-9]{2} +say: +[0-9]+ +[^ \t\n\r\f\v]+: +![^ \t\n\r\f\v]+";
+  STATUS=" *[0-9]+:[0-9]{2} +say: +[0-9]+ +[^ \t\n\r\f\v]+: +!status";
 
   //server->reload(); non devo riavviare il server. Comincio dalla fine del file.
   std::cout<<"[OK] Analyzer inizializzato.\n";
@@ -816,7 +821,7 @@ void Analyzer::kick(char* line)
   {
     std::string temp(line);
     int pos=temp.find("!kick");
-    pos=temp.find_first_of("0123456789",pos+5);
+    pos=temp.find_first_not_of(" \t\n\r\f\v",pos+5);
     int end=temp.find_first_of(" ",pos);
     std::string player=temp.substr(pos,end-pos);
     
@@ -860,16 +865,36 @@ void Analyzer::mute(char* line)
   {
     std::string temp(line);
     int pos=temp.find("!mute");
-    pos=temp.find_first_of("0123456789",pos+5);
+    pos=temp.find_first_not_of(" \t\n\r\f\v",pos+5);
     int end=temp.find_first_of(" ",pos);
-    std::string numero=temp.substr(pos,end-pos);
+    std::string player=temp.substr(pos,end-pos);
 
-    std::string frase("BanBot: muting/unmuting player number ");
-    frase.append(numero);
-    frase.append("...");
-    server->say(frase,serverNumber);
-    sleep(SOCKET_PAUSE);
-    server->mute(numero,serverNumber);
+    if (isA(line,MUTE_NUMBER))
+    {
+      std::string frase("BanBot: muting/unmuting player number ");
+      frase.append(player);
+      frase.append("...");
+      server->say(frase,serverNumber);
+      sleep(SOCKET_PAUSE);
+      server->mute(player,serverNumber);
+    }
+    else
+    {
+      int i=translatePlayer(player);
+      if (i<0)
+      {
+        tell("BanBot: nick non trovato o non univoco",numeroAdmin);
+      }
+      else
+      {
+        std::string frase("BanBot: muting/unmuting ");
+        frase.append(giocatori[serverNumber][i]->nick);
+        frase.append("...");
+        server->say(frase,serverNumber);
+        sleep(SOCKET_PAUSE);
+        server->mute(giocatori[serverNumber][i]->number,serverNumber);
+      }
+    }
   }
 }
 
@@ -921,6 +946,96 @@ void Analyzer::veto(char* line)
   }
 }
 
+void Analyzer::slap(char* line)
+{
+  std::cout<<"[!] Slap";
+  logger->timestamp();
+  *logger<<"\n[!] Slap";
+  //controllo se ho il giocatore e i suoi permessi, se la persona non è autorizzata non faccio nulla.
+  std::string numeroAdmin;
+  if (isAdminSay(line,numeroAdmin))
+  {
+    std::string temp(line);
+    int pos=temp.find("!slap");
+    pos=temp.find_first_not_of(" \t\n\r\f\v",pos+5);
+    int end=temp.find_first_of(" ",pos);
+    std::string player=temp.substr(pos,end-pos);
+    int multiplier=1;
+    std::string mul_string;
+    if (isA(line,SLAP_MORE))
+    {
+      pos=temp.find_first_of("2345",end);
+      mul_string=temp.at(pos);
+      multiplier=atoi(mul_string.c_str());
+    }
+    if (isA(line,SLAP_NUMBER))
+    {
+      std::string frase("BanBot: slapping player number ");
+      frase.append(player);
+      frase.append(" ");
+      frase.append(mul_string);
+      frase.append(" times...");
+      server->say(frase,serverNumber);
+      for (int i=0;i<multiplier;i++)
+      {
+        sleep(SOCKET_PAUSE);
+        server->kick(player,serverNumber);
+      }
+    }
+    else
+    {
+      int number=translatePlayer(player);
+      if (number<0)
+      {
+        tell("BanBot: nick non trovato o non univoco.",numeroAdmin);
+      }
+      else
+      {
+        std::string frase("BanBot: slapping ");
+        frase.append(giocatori[serverNumber][number]->nick);
+        frase.append(" ");
+        frase.append(mul_string);
+        frase.append(" times...");
+        server->say(frase,serverNumber);
+        for (int i=0;i<multiplier;i++)
+        {
+          sleep(SOCKET_PAUSE);
+          server->kick(giocatori[serverNumber][number]->number,serverNumber);
+        }
+      }
+    }
+  }
+}
+
+void Analyzer::status(char* line)
+{
+  std::cout<<"[!] Status";
+  logger->timestamp();
+  *logger<<"\n[!] Status";
+  //controllo se ho il giocatore e i suoi permessi, se la persona non è autorizzata non faccio nulla.
+  std::string numeroAdmin;
+  if (isAdminSay(line,numeroAdmin))
+  {
+    server->say("BanBot status:  version 1.1b, coded by [2s2h]n3m3s1s & [2s2h]Zamy.",serverNumber);
+    std::string frase("Strict mode: ");
+    if (isStrict()) frase.append("ON");
+    else frase.append("OFF");
+    frase.append("\nNumber of admins: ");
+    std::string query("SELECT count(*) FROM oplist;");
+    std::vector<std::string> risultato=database->extractData(query);
+    if (risultato.size()>0) frase.append(risultato[0]);
+    query.clear();
+    risultato.clear();
+    frase.append("\nPlayers currently banned: ");
+    query="SELECT count(*) FROM banned;";
+    risultato=database->extractData(query);
+    if (risultato.size()>0) frase.append(risultato[0]);
+    server->say(frase,serverNumber);
+  }
+}
+
+
+/*************************************************************************** UTILS **************************************/
 
 void Analyzer::tell(std::string frase, std::string player)
 {
@@ -994,6 +1109,7 @@ bool Analyzer::nickIsBanned(const std::string &nick)
   }
   //se sono in modalità strict, se il nick è bannato, butto fuori anche se è passata un'ora.
   if (risultato.size())
+  {
     if (isStrict()) {return true;}
     else 
     {
@@ -1002,6 +1118,7 @@ bool Analyzer::nickIsBanned(const std::string &nick)
       frase.append("' was banned.");
       tellToAdmins(frase);
     }
+  }
   return false;
 }
 
@@ -1051,10 +1168,10 @@ bool Analyzer::isStrict()
   return strict[serverNumber];
 }
 
-std::vector<int> Analyzer::admins()
+std::vector<unsigned int> Analyzer::admins()
 {
-  std::vector<int> temp;
-  for (int i=0;i<giocatori[serverNumber].size();i++)
+  std::vector<unsigned int> temp;
+  for (unsigned int i=0;i<giocatori[serverNumber].size();i++)
   {
     if (database->checkAuthGuid(correggi(giocatori[serverNumber][i]->GUID)))
       temp.push_back(i);
@@ -1064,8 +1181,8 @@ std::vector<int> Analyzer::admins()
 
 void Analyzer::tellToAdmins(std::string frase)
 {
-  std::vector<int> indici=admins();
-  for (int i=0;i<indici.size();i++)
+  std::vector<unsigned int> indici=admins();
+   for (unsigned int i=0;i<indici.size();i++)
     tell(frase,giocatori[serverNumber][indici[i]]->number);
 }
 
@@ -1285,7 +1402,15 @@ void Analyzer::main_loop()
                                         }
                                         else
                                         {
-                                          expansion(line);
+                                          if (isA(line,SLAP))
+                                          {
+                                            //è uno slap
+                                            slap(line);
+                                          }
+                                          else
+                                          {
+                                            expansion(line);
+                                          }
                                         }
                                       }
                                     }
