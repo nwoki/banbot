@@ -866,12 +866,46 @@ string Db::intToString( int number )    //non serve se usiamo solo string, ma no
 }
 
 
-void Db::loadBanlist( vector<ConfigLoader::Banlist> banned )
+void Db::loadAdminlist( vector< ConfigLoader::Option > admins )
 {
+    cout << "\e[0;33m[!] Loading admins to database.. \e[0m \n";
+
+    if( admins.empty() ) {
+        cout<<"\e[0;33m[!]Adminlist EMPTY\e[0m \n";
+        *m_logger<<"[!]Adminlist EMPTY\n";
+        return;
+    }
+
+    int addedCounter = 0;
+
+    //adding admins to db
+    cout<<"\n[-]Adding admins to database..\n\n";
 
 #ifdef DB_DEBUG
-    cout << "Db::loadBanlist\n";
+    cout << "ADMIN SIZE-> " << admins.size() << "\n";
 #endif
+
+    for( unsigned int i = 0; i < admins.size(); i++ ) {
+
+//        addop already checks for guid on database. Don't need to do check here!
+//        if( !checkAuthGuid( admins[i].value ) ) {    //non esiste sul database
+//            //add to database
+        if ( addOp( admins[i].name, admins[i].value ) ) {
+            cout << "\e[0;32m      [+]added admin: " << admins[i].name << "\e[0m \n";
+            *m_logger<<"      [+]added admin: " << admins[i].value << "\n";
+            addedCounter++;
+        }
+    }
+    cout << "\e[0;33m Added " << addedCounter << "/" << admins.size() << " new admin/s from file to the database\e[0m \n\n";
+    *m_logger << "Added " << addedCounter << " new admin/s from file to the database\n";
+}
+
+
+void Db::loadBanlist( vector<ConfigLoader::Banlist> banned )
+{
+    #ifdef DB_DEBUG
+    cout << "Db::loadBanlist\n";
+    #endif
 
     cout << "\e[0;33m[!] Loading banlist to database.. \e[0m \n";
 
@@ -916,49 +950,14 @@ void Db::loadBanlist( vector<ConfigLoader::Banlist> banned )
                 addedGuidsCounter++;
             }
         }
-#ifdef DB_DEBUG
+    #ifdef DB_DEBUG
         else
             cout << banned[i].nick << " on database!\n";
-#endif
+    #endif
 
     }
     cout << "\e[0;33m Added " << playerCounter << " clients and " << addedGuidsCounter << " new guids to the database\e[0m \n";
     *m_logger << "Added " << playerCounter << " clients and " << addedGuidsCounter << " new guids to the database \n";
-}
-
-
-void Db::loadAdminlist( vector< ConfigLoader::Option > admins )
-{
-    cout << "\e[0;33m[!] Loading admins to database.. \e[0m \n";
-
-    if( admins.empty() ) {
-        cout<<"\e[0;33m[!]Adminlist EMPTY\e[0m \n";
-        *m_logger<<"[!]Adminlist EMPTY\n";
-        return;
-    }
-
-    int addedCounter = 0;
-
-    //adding admins to db
-    cout<<"\n[-]Adding admins to database..\n\n";
-
-#ifdef DB_DEBUG
-    cout << "ADMIN SIZE-> " << admins.size() << "\n";
-#endif
-
-    for( unsigned int i = 0; i < admins.size(); i++ ) {
-
-//        addop already checks for guid on database. Don't need to do check here!
-//        if( !checkAuthGuid( admins[i].value ) ) {    //non esiste sul database
-//            //add to database
-        if ( addOp( admins[i].name, admins[i].value ) ) {
-            cout << "\e[0;32m      [+]added admin: " << admins[i].name << "\e[0m \n";
-            *m_logger<<"      [+]added admin: " << admins[i].value << "\n";
-            addedCounter++;
-        }
-    }
-    cout << "\e[0;33m Added " << addedCounter << "/" << admins.size() << " new admin/s from file to the database\e[0m \n\n";
-    *m_logger << "Added " << addedCounter << " new admin/s from file to the database\n";
 }
 
 
@@ -980,7 +979,7 @@ int Db::resultQuery( const string &query ) //ritorna quante corrispondenze ci so
         answer = m_data.size();
 
 #ifdef DB_DEBUG
-cout << "\e[1;37mDb::resultQuery ANSWER SIZE > " << m_data.size() << "\e[0m \n";
+    cout << "\e[1;37mDb::resultQuery ANSWER SIZE > " << m_data.size() << "\e[0m \n";
     cout << "\e[1;37mDb::resultQuery ANSWER SENDING OUT IS > " << answer << "\e[0m \n";
 #endif
 
