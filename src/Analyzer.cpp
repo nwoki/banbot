@@ -51,10 +51,10 @@ Analyzer::Analyzer( Connection* conn, Db* db,Logger* primaryLog, Backup* backup,
             temp->open(opzioni[i].value.c_str());
             if (temp->is_open())
             {
-              temp->seekg (0, ios:: end); 
+              temp->seekg (0, ios:: end);
               row.push_back(temp->tellg());
               #ifdef DEBUG_MODE
-                  std::cout << "Valore di partenza del file: "<< pos<<"\n";
+                  std::cout << "Valore di partenza del file: "<<row[row.size()-1]<<"\n";
               #endif
             }
             else row.push_back(0);
