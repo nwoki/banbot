@@ -95,6 +95,7 @@ private:
     const char* COMMAND;
     const char* VETO;
     const char* STATUS;
+    const char* FORCE;
     //variabili private
     std::vector<std::string> files;
     std::vector<std::string> BotLogFiles;
