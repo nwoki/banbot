@@ -49,6 +49,10 @@ class Db
         Db( vector< ConfigLoader::Option >, vector< ConfigLoader::Banlist >, vector< ConfigLoader::Option >, Logger * );
         ~Db();
 
+        //database connection
+        bool openDatabase();    //opens a connection with the sqlite3 database
+        void closeDatabase();   //closes a connection with the sqlit3 database
+        
         //checks
         bool checkAuthGuid( const string &guid );   //controlla l'esistenza del guid passato (OPLIST)
         bool checkBanGuid( const string &guid );    //passa ( guid giocatore)
@@ -58,7 +62,7 @@ class Db
         //dumps
         void dumpAdminsToFile();
         void dumpBannedToFile();
-        void dumpDatabase();    //TODO not yet implemented
+        void dumpDatabase();
 
         //banned table
         bool ban( const string &nick, const string &ip, const string &date, const string &time, const string &guid, const string &motive, const string &adminGuid );
@@ -79,7 +83,6 @@ class Db
         vector< string > extractData( const string &query );   //ritorna un vettore con i/il risultato della query
 
     private:
-        void close();
         bool connect();
         void createDb();
         bool execQuery( const string &query );    //esegue e ritorna status per indicare se l'operazione è andato a buon fine
@@ -90,87 +93,18 @@ class Db
         int resultQuery( const string &query );    //se fallisce la query, -1, altrimenti restituisce il numero degli elementi trovati
 
 
-        sqlite3 *database;
-        Logger *logger;
+        sqlite3 *m_database;
+        Logger *m_logger;
 
-	class SQLITE3
-	{
-	  private:
-	    sqlite3 *db;
-	    char *zErrMsg;
-	    char **result;
-	    int rc;
-	    int nrow, ncol;
-	    //int db_open;
+        //testing
+        char *m_zErrMsg;
+        char **m_result;
+        int m_resultCode; //return code i get from query ( use to check query returns. SQLITE_OK ecc )
+        int m_nrow, m_ncol; //number of rows and columns
 
-	  public:
-
-	    vector< string > vcol_head;
-	    vector< string > vdata;
-
-	    SQLITE3 ( const string &database )
-            : zErrMsg( 0 )
-            , rc( 0 )
-            //db_open( 0 )
-	    {
-	      rc = sqlite3_open(database.c_str(), &db);
-
-          if( rc ){
-              cout<<"\e[1;31m[EPIC FAIL] Can't open database: " << zErrMsg << "\e[0m \n";
-              sqlite3_close( db );
-	      }
-	      //db_open = 1;
-          //debug msg
-          #ifdef DEBUG
-              cout<< "\e[1;35mOPENED DB\e[0m \n";
-          #endif
-	    }
-
-	    int exe( const string &s_exe)
-	    {
-	        rc = sqlite3_get_table(
-                db,              /* An open database */
-                s_exe.c_str(),       /* SQL to be executed */
-                &result,       /* Result written to a char *[]  that this points to */
-                &nrow,             /* Number of result rows written here */
-                &ncol,          /* Number of result columns written here */
-                &zErrMsg          /* Error msg written here */
-                );
-
-	        if( vcol_head.size() < 0 )
-                vcol_head.clear();
-
-            if( vdata.size() < 0 )
-                vdata.clear();
-
-  	        if( rc == SQLITE_OK ){
-                for( int i = 0; i < ncol; ++i )
-                    vcol_head.push_back( result[i] );   /* First row heading */
-                for( int i = 0; i < ncol*nrow; ++i )
-                    vdata.push_back( result[ncol+i] );
-	        }
-	        else{
-                cout <<"\e[1;31m[EPIC FAIL] SQLITE3::exe() " << zErrMsg << "\e[0m \n";// sqlite3_errmsg( db );
-                //come faccio a loggare l'errore che ricevo qui??? TODO
-                //*logger<< "[EPIC FAIL] SQLITE3::exe() " << zErrMsg << "\n";
-            }
-	        sqlite3_free_table( result );
-            return rc;
-	    }
-
-
-	    ~SQLITE3()
-	    {
-	      sqlite3_close( db );
-          //debug msg
-          #ifdef DEBUG_MODE
-              cout<< "\e[1;36mCLOSING DB\e[0m \n";
-          #endif
-	    }
-	};
-
+        //data is stored here after query executions
+        vector< string > m_vcolHead; /*MUST clear otherwise i keep old values as well*/
+        vector< string > m_data; /*MUST clear otherwise i keep old values as well*/
 };
-
-
 
 #endif //DB_H
