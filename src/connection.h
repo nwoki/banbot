@@ -50,6 +50,8 @@ class Connection
         void reload(int server=-1);            //fa un reload della mappa. Se non indicato il server, lo fa su tutti i server.
         void mute( string number, int server); //muta/smuta il player numero @number sul server @server
         void veto(int server);                  //comando di veto sul server @server
+        void slap( string number, int server ); //slappa il giocatore @number del server @server
+        void newsay( string frase, int server);    //prende la frase da scrivere pubblicamente ed il numero del server.
 
     private:
         sockaddr_in serverAdd;// clientAdd;

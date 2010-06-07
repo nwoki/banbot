@@ -86,7 +86,7 @@ Analyzer::Analyzer( Connection* conn, Db* db,Logger* primaryLog, Backup* backup,
   MUTE=" *[0-9]+:[0-9]{2} +say: +[0-9]+ +[^ \t\n\r\f\v]+: +!mute [^ \t\n\r\f\v]+";
   MUTE_NUMBER=" *[0-9]+:[0-9]{2} +say: +[0-9]+ +[^ \t\n\r\f\v]+: +!mute [0-9]{1,2}";
   STRICT=" *[0-9]+:[0-9]{2} +say: +[0-9]+ +[^ \t\n\r\f\v]+: +!strict ON|on|OFF|off";
-  VETO=" *[0-9]+:[0-9]{2} +say: +[0-9]+ +[^ \t\n\r\f\v]+: +!veto[\t\n\r\f\v]";
+  VETO=" *[0-9]+:[0-9]{2} +say: +[0-9]+ +[^ \t\n\r\f\v]+: +!veto";
   SLAP=" *[0-9]+:[0-9]{2} +say: +[0-9]+ +[^ \t\n\r\f\v]+: +!slap [^ \t\n\r\f\v]+";
   SLAP_NUMBER=" *[0-9]+:[0-9]{2} +say: +[0-9]+ +[^ \t\n\r\f\v]+: +!slap [0-9]{1,2}";
   SLAP_MORE=" *[0-9]+:[0-9]{2} +say: +[0-9]+ +[^ \t\n\r\f\v]+: +!slap [^ \t\n\r\f\v]+ [2-5]{1}";
@@ -176,7 +176,8 @@ void Analyzer::clientUserInfo(char* line)
   pos=temp.find("cl_guid");
   pos=temp.find_first_not_of("\\",pos+7);
   end=temp.find_first_of("\\ ",pos);
-  std::string guid=temp.substr(pos,end-pos);
+  std::string guid;
+  if (pos!=end) guid=temp.substr(pos,end-pos);
 
   std::cout<<"[-]Estrapolati i dati: numero="<<numero<<" guid="<<guid<<" nick="<<nick<<" ip="<<ip<<"\n";
   logger->timestamp();
@@ -979,7 +980,7 @@ void Analyzer::slap(char* line)
       for (int i=0;i<multiplier;i++)
       {
         sleep(SOCKET_PAUSE);
-        server->kick(player,serverNumber);
+        server->slap(player,serverNumber);
       }
     }
     else
@@ -1000,7 +1001,7 @@ void Analyzer::slap(char* line)
         for (int i=0;i<multiplier;i++)
         {
           sleep(SOCKET_PAUSE);
-          server->kick(giocatori[serverNumber][number]->number,serverNumber);
+          server->slap(giocatori[serverNumber][number]->number,serverNumber);
         }
       }
     }
@@ -1020,16 +1021,23 @@ void Analyzer::status(char* line)
     std::string frase("Strict mode: ");
     if (isStrict()) frase.append("ON");
     else frase.append("OFF");
-    frase.append("\nNumber of admins: ");
+    sleep(1);
+    server->say(frase,serverNumber);
+    frase.clear();
+    frase.append("Number of admins: ");
     std::string query("SELECT count(*) FROM oplist;");
     std::vector<std::string> risultato=database->extractData(query);
     if (risultato.size()>0) frase.append(risultato[0]);
     query.clear();
     risultato.clear();
-    frase.append("\nPlayers currently banned: ");
+    sleep(1);
+    server->say(frase,serverNumber);
+    frase.clear();
+    frase.append("Players currently banned: ");
     query="SELECT count(*) FROM banned;";
     risultato=database->extractData(query);
     if (risultato.size()>0) frase.append(risultato[0]);
+    sleep(1);
     server->say(frase,serverNumber);
   }
 }
@@ -1214,7 +1222,7 @@ void Analyzer::main_loop()
   {
     for (serverNumber=0;serverNumber<giocatori.size();serverNumber++)
     {
-      //provo ad aprire il file e a riprendere dalla riga dove ero arrivato
+      //vedo è il caso di fare il backup
       generalLog->open();
       if(backup->doJobs()) 
       {
@@ -1243,6 +1251,7 @@ void Analyzer::main_loop()
         }
         sleep(2);
       }
+      //provo ad aprire il file e a riprendere dalla riga dove ero arrivato
       std::cout<<"Provo ad aprire "<<files[serverNumber]<<"\n";
       generalLog->timestamp();
       *generalLog<<"\nProvo ad aprire "<<files[serverNumber]<<"\n";
@@ -1264,8 +1273,8 @@ void Analyzer::main_loop()
         *generalLog<<"  [FAIL] Non sono riuscito ad aprirlo!\n";
       }
       generalLog->close();
-      //se il file è aperto posso lavorare
-      if (log->is_open() && !log->bad())
+      //se il file è aperto posso lavorare, e provo ad aprire pure il db
+      if (log->is_open() && !log->bad() && database->openDatabase())
       {
         logger->changePath(BotLogFiles[serverNumber]);
         logger->open();
@@ -1409,7 +1418,15 @@ void Analyzer::main_loop()
                                           }
                                           else
                                           {
-                                            expansion(line);
+                                            if (isA(line,STATUS))
+                                            {
+                                              //è uno status
+                                              status(line);
+                                            }
+                                            else
+                                            {
+                                              expansion(line);
+                                            }
                                           }
                                         }
                                       }
@@ -1430,12 +1447,20 @@ void Analyzer::main_loop()
         }
       }
       else
+      {
         row[serverNumber]=0;//se non riesco ad aprire il file, ricomincio dalla prima riga
+        generalLog->open();
+        std::cout<<"Non riesco ad aprire il file di log o il database\n";
+        generalLog->timestamp();
+        *generalLog<<"\nNon riesco ad aprire il file di log o il database\n";
+        generalLog->close();
+      }
       if (row[serverNumber]<0) row[serverNumber]=0;
       //chiudo il file e lascio passare un po' di tempo
       log->close();
       delete log;
       logger->close();
+      database->closeDatabase();
     }
     generalLog->open();
     *generalLog<<"Finito. \n";
