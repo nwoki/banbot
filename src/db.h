@@ -42,64 +42,89 @@ class Logger;
 #define DATABASE_DIR "database"
 
 using namespace std;
-
+/*! \class Db db.h "src/db.h"
+*   \brief sqlite3 database interaction class
+*
+*   Class used by Analyzer for interaction with sqlite3 database where the bot stores it's information \n
+*   useful to keep track of banned players and admins that have power over it
+*   \author n3m3s1s
+*/
 class Db
 {
     public:
-        Db( vector< ConfigLoader::Option >, vector< ConfigLoader::Banlist >, vector< ConfigLoader::Option >, Logger * );
-        ~Db();
+        /*! \fn Db( vector< ConfigLoader::Option > conf, vector< ConfigLoader::Banlist > banned, vector< ConfigLoader::Option > admins, Logger *log )
+        *   Constructor for Db.
+        *   \param conf vector with configuration info for servers and bot configuration
+        *   \param banned vector with banned users info
+        *   \param admins vector with admin(s) info
+        *   \param log pointer to Logger class
+        *
+        *   Checks for existing database and uses it updating it's records with new information ( if there is new info )\n
+        *   If the database is not found, the class creates it populating it with the info passed
+        */
+        Db( vector< ConfigLoader::Option > conf, vector< ConfigLoader::Banlist > banned, vector< ConfigLoader::Option > admins, Logger *log );
+        ~Db();  /*!< Destructor for class Db*/
 
         //database connection
-        bool openDatabase();    //opens a connection with the sqlite3 database
-        void closeDatabase();   //closes a connection with the sqlit3 database
+        bool openDatabase();    /*!< opens a connection with the sqlite3 database.\nReturns true if connection succeded else returns false for failiure*/
+        void closeDatabase();   /*!< closes database connection*/
         
         //checks
-        bool checkAuthGuid( const string &guid );   //controlla l'esistenza del guid passato (OPLIST)
-        bool checkBanGuid( const string &guid );    //passa ( guid giocatore)
-        bool checkBanNick( const string &nick );    //controlla l'esistenza del nick nella tabella dei bannati
+        bool checkAuthGuid( const string &guid );   /*!< checks for the existance of "guid" in the oplist table*/
+        bool checkBanGuid( const string &guid );    /*!< checks if "guid" is present amongst the banned users*/
+        bool checkBanNick( const string &nick );    /*!< checks if "nick" is present amongst the banned users*/
         //bool checkDirAndFile( const string &guid ); //passa url file compreso
 
         //dumps
-        void dumpAdminsToFile();
-        void dumpBannedToFile();
-        void dumpDatabase();
+        void dumpAdminsToFile();    /*!< dumps admins to file ( backup/Adminlist.backup )*/
+        void dumpBannedToFile();    /*!< dumps banned users to file ( backup/Banlist.backup )*/
+        void dumpDatabase();    /*!< dumps database creating a copy*/
 
         //banned table
+        /*! \fn bool ban( const string &nick, const string &ip, const string &date, const string &time, const string &guid, const string &motive, const string &adminGuid )
+        *   \param nick nick of the player used in game
+        *   \param ip the players ip
+        *   \param date date the player gets banned
+        *   \param time timestamp of when the player gets banned
+        *   \param guid player's game guid
+        *   \param motive motive why the player got banned
+        *   \param adminGuid guid of the admin that applied the ban
+        *
+        *   bans player with given info. ALL variables MUST be given otherwise it'll end up in a FAIL
+        */
         bool ban( const string &nick, const string &ip, const string &date, const string &time, const string &guid, const string &motive, const string &adminGuid );
-        string insertNewBanned( const string &nick, const string &ip,  const string &date, const string &time, const string &motive, string adminNick );
-        bool modifyBanned( const string &nick, const string &ip,  const string &date, const string &time, const string &motive, const string &id );
-        bool deleteBanned( const string &id );
+        string insertNewBanned( const string &nick, const string &ip,  const string &date, const string &time, const string &motive, string adminNick );    /*!< insert banned player info into "banned" table*/
+        bool modifyBanned( const string &nick, const string &ip,  const string &date, const string &time, const string &motive, const string &id ); /*!< modify info for banned player with id = "id"*/
+        bool deleteBanned( const string &id );  /*!< deletes records for banned player with given "id"*/
 
         //guid table
-        string insertNewGuid( const string &guid, const string &banId );
-        bool modifyGuid( const string &guid, const string &banId, const string &id );
-        bool deleteGuid( const string &id );
+        string insertNewGuid( const string &guid, const string &banId );    /*!< inserts guid with specified "banId" to records*/
+        bool modifyGuid( const string &guid, const string &banId, const string &id );   /*!< modifies guid with given "guid" where banId and "id" find a match*/
+        bool deleteGuid( const string &id );    /*!< deletes records for guid with given "id"*/
 
         //oplist table
-        bool addOp( const string &nick, const string &guid );
-        bool modifyOp( const string &nick, const string &guid, const string &id );
-        bool deleteOp( const string &id );
+        bool addOp( const string &nick, const string &guid );   /*!< add's op with given "nick" and "guid"*/
+        bool modifyOp( const string &nick, const string &guid, const string &id );  /*!< modifies op's "nick" and/or "guid" where "id" finds a match*/
+        bool deleteOp( const string &id );  /*!< deletes records for op with given "id"*/
 
-        vector< string > extractData( const string &query );   //ritorna un vettore con i/il risultato della query
+        vector< string > extractData( const string &query );   /*!< extracts data from given "query"*/
 
     private:
-        bool connect();
-        void createDb();
-        bool execQuery( const string &query );    //esegue e ritorna status per indicare se l'operazione è andato a buon fine
+        bool connect(); //connects to the sqlite3 database
+        void createDb();    //creates database
+        bool execQuery( const string &query );    //executes query and returns status to tell if the operation went well or not
         string getAdminNick( const string &guid );  //return's admin's nick from his guid
         string intToString( int number );
         void loadAdminlist( vector<ConfigLoader::Option> admins );
         void loadBanlist( vector<ConfigLoader::Banlist> banned );
-        int resultQuery( const string &query );    //se fallisce la query, -1, altrimenti restituisce il numero degli elementi trovati
-
+        int resultQuery( const string &query );    //if query fails -> -1 else return number of elements
 
         sqlite3 *m_database;
         Logger *m_logger;
 
-        //testing
         char *m_zErrMsg;
         char **m_result;
-        int m_resultCode; //return code i get from query ( use to check query returns. SQLITE_OK ecc )
+        int m_resultCode;   //return code i get from query ( use to check query returns. SQLITE_OK ecc )
         int m_nrow, m_ncol; //number of rows and columns
 
         //data is stored here after query executions
