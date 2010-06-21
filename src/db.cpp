@@ -846,6 +846,11 @@ bool Db::execQuery( const string &query )   //executes and returns status
 
 string Db::getAdminNick( const string& guid )
 {
+    //if empty return empty string and don't do query
+    //otherwise it wil crash returning vdata[0] because it doesn't exist!
+    if( guid.empty() )
+        return string();
+
     string query( "select nick from oplist where guid='" );
     query.append( guid );
     query.append( "';" );
