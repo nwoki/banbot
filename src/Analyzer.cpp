@@ -186,7 +186,7 @@ void Analyzer::clientUserInfo(char* line)
   std::string ip=temp.substr(pos,end-pos);
   pos=temp.find("name");
   pos=temp.find_first_not_of("\\",pos+4);
-  end=temp.find_first_of("\\ ",pos);
+  end=temp.find_first_of("\\",pos);        //permetto anche spazi all'interno del nome, tutti i caratteri permessi tranne lo slash \
   std::string nick=temp.substr(pos,end-pos);
   pos=temp.find("cl_guid");
   pos=temp.find_first_not_of("\\",pos+7);
