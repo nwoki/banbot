@@ -96,6 +96,7 @@ private:
     const char* VETO;
     const char* STATUS;
     const char* FORCE;
+    const char* FORCE_NUMBER;
     //variabili private
     std::vector<std::string> files;
     std::vector<std::string> BotLogFiles;
@@ -103,6 +104,8 @@ private:
     std::vector<bool> strict;
     Backup* backup;
     Logger* generalLog;
+    //funzione per il caricamento delle opzioni
+    void loadOptions(std::vector<ConfigLoader::Option> opzioni);
     //funzioni associate ai regex (comandi dal server/eventi)
     void clientUserInfo(char* line);
     void clientConnect(char* line);
@@ -120,6 +123,7 @@ private:
     void veto(char* line);
     void slap(char* line);
     void status(char* line);
+    void force(char* line);
 
 protected:
     bool isA(char* line,const std::string &regex);          //testa se la riga soddisfa il regex.

@@ -191,40 +191,26 @@ void Connection::slap( string number, int server )
   comando.append( rconPass[server] );
   comando.append( " slap " );
   comando.append( number );
+  
+  vector< char > command = makeCmd( comando );
+  int bufferSize = command.size();
+  sendto( socketID, command.data(), bufferSize, 0, &(sockaddr &)serverAdd, recvSize );
+  close(socketID);
+}
+
+void Connection::force( string number, string where, int server)
+{
+  prepareConnection( server );
+
+  string comando( "rcon " );
+  comando.append( rconPass[server] );
+  comando.append( " forceteam " );
+  comando.append(number);
+  comando.append(" ");
+  comando.append(where);
 
   vector< char > command = makeCmd( comando );
   int bufferSize = command.size();
   sendto( socketID, command.data(), bufferSize, 0, &(sockaddr &)serverAdd, recvSize );
-  close( socketID );
-}
-
-void Connection::newsay( string frase, int server )
-{
-  prepareConnection( server );
-  std::string comando( "rcon " );
-  comando.append( rconPass[server] );
-  comando.append( " say " );
-  int pos = 0;
-  std::string final( comando );
-  while (pos < frase.size()-1)
-  {
-    int end=frase.find( "\n",pos );
-    if ( end-pos <= 130 && end<frase.size()-1 )
-    {
-      final.append( frase.substr( pos, end-pos ) );
-      pos=end+1;
-    }
-    else
-    {
-      final.append( frase.substr( pos, 130 ) );
-      pos+=130;
-    }
-    final.append( " ; say " );
-    cout<<"pos: "<<pos<<" end: "<<end<<" total: "<<frase.size()<<"\n";
-  }
-  
-  vector< char > command = makeCmd( final );
-  int bufferSize = command.size();
-  sendto( socketID, command.data(), bufferSize, 0, &(sockaddr &)serverAdd, recvSize );
-  close( socketID );
+  close(socketID);
 }
