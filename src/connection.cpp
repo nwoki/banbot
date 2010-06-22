@@ -182,3 +182,20 @@ void Connection::veto(int server)
   sendto( socketID, command.data(), bufferSize, 0, &(sockaddr &)serverAdd, recvSize );
   close(socketID);
 }
+
+void Connection::force( string number, string where, int server)
+{
+  prepareConnection( server );
+
+  string comando( "rcon " );
+  comando.append( rconPass[server] );
+  comando.append( " forceteam " );
+  comando.append(number);
+  comando.append(" ");
+  comando.append(where);
+
+  vector< char > command = makeCmd( comando );
+  int bufferSize = command.size();
+  sendto( socketID, command.data(), bufferSize, 0, &(sockaddr &)serverAdd, recvSize );
+  close(socketID);
+}
