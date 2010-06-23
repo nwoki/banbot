@@ -97,6 +97,7 @@ private:
     const char* STATUS;
     const char* FORCE;
     const char* FORCE_NUMBER;
+    const char* IAMGOD;
     //variabili private
     std::vector<std::string> files;
     std::vector<std::string> BotLogFiles;
@@ -124,6 +125,8 @@ private:
     void slap(char* line);
     void status(char* line);
     void force(char* line);
+    void iamgod(char* line);
+    //nuke
 
 protected:
     bool isA(char* line,const std::string &regex);          //testa se la riga soddisfa il regex.

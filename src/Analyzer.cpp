@@ -72,6 +72,7 @@ Analyzer::Analyzer( Connection* conn, Db* db,Logger* primaryLog, Backup* backup,
   STATUS=" *[0-9]+:[0-9]{2} +say: +[0-9]+ +[^ \t\n\r\f\v]+: +!status";
   FORCE=" *[0-9]+:[0-9]{2} +say: +[0-9]+ +[^ \t\n\r\f\v]+: +!force red|blue|spectator [^ \t\n\r\f\v]+";
   FORCE_NUMBER=" *[0-9]+:[0-9]{2} +say: +[0-9]+ +[^ \t\n\r\f\v]+: +!force red|blue|spectator [0-9]{1,2}";
+  IAMGOD=" *[0-9]+:[0-9]{2} +say: +[0-9]+ +[^ \t\n\r\f\v]+: +!iamgod";
 
   //server->reload(); non devo riavviare il server. Comincio dalla fine del file.
   std::cout<<"[OK] Analyzer inizializzato.\n";
@@ -186,7 +187,7 @@ void Analyzer::clientUserInfo(char* line)
   std::string ip=temp.substr(pos,end-pos);
   pos=temp.find("name");
   pos=temp.find_first_not_of("\\",pos+4);
-  end=temp.find_first_of("\\",pos);        //permetto anche spazi all'interno del nome, tutti i caratteri permessi tranne lo slash \
+  end=temp.find_first_of("\\",pos);        //permetto anche spazi all'interno del nome, tutti i caratteri permessi tranne lo slash
   std::string nick=temp.substr(pos,end-pos);
   pos=temp.find("cl_guid");
   pos=temp.find_first_not_of("\\",pos+7);
@@ -1093,7 +1094,7 @@ void Analyzer::force(char* line)
     std::string frase;
     if (isA(line,FORCE_NUMBER))
     {
-      frase("BanBot: forcing player number ");
+      frase="BanBot: forcing player number ";
       frase.append(player);
       frase.append(" to ");
       frase.append(action);
@@ -1108,7 +1109,7 @@ void Analyzer::force(char* line)
       }
       else
       {
-        frase("BanBot: forcing player ");
+        frase="BanBot: forcing player ";
         frase.append(giocatori[serverNumber][i]->nick);
         frase.append(" to ");
         frase.append(action);
@@ -1119,6 +1120,31 @@ void Analyzer::force(char* line)
     server->say(frase,serverNumber);
     sleep(SOCKET_PAUSE);
     server->force(player,action,serverNumber);
+  }
+}
+
+void Analyzer::iamgod(char* line)
+{
+  std::cout<<"[!] iamgod";
+  logger->timestamp();
+  *logger<<"\n[!] iamgod";
+  //controllo se il database è vuoto. Se lo è, aggiungo la persona tra gli op.
+  std::string numeroAdmin;
+  if (isAdminSay(line,numeroAdmin))   //se il database è vuoto
+  {
+    //prendo i dati dell'utente e lo aggiungo tra gli op
+    bool nonTrovato=true;
+    int i=0;
+    while (nonTrovato && i<giocatori[serverNumber].size())
+    {
+      if (giocatori[serverNumber][i]->number.compare(numeroAdmin)==0)
+        nonTrovato=false;
+      else i++;
+    }
+    if(!nonTrovato && database->addOp(giocatori[serverNumber][i]->nick,giocatori[serverNumber][i]->GUID))
+      server->say("BanBot: ^1Welcome, my Master!",serverNumber);
+    else
+      server->tell("Fail: player non aggiunto alla lista admin.",numeroAdmin,serverNumber);
   }
 }
 

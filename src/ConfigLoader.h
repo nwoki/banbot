@@ -30,16 +30,39 @@
 #include <string>
 #include <vector>
 #include <iostream>
+#include <sys/stat.h>
+#include <time.h>
 
 class ConfigLoader
 {
-private:
-    std::ifstream cfg;
-
-public:
+  public:
     ConfigLoader( const std::string &filePath );
     ~ConfigLoader();
 
+    class Server
+    {
+      public:
+        bool changed;
+        std::string file;                  //file di cfg del bot
+        struct stat infos;                 //contiene le info del file di configurazione, tra cui la data dell'ultima modifica
+        std::string rconpass;
+        std::string ip;
+        std::string port;
+        std::string backup;
+        std::string botlog;
+        std::string serverlog;
+        std::string dbFolder;
+    };
+    
+    class Options
+    {
+      public:
+        bool changed;
+        struct stat infos;                 //contiene le info del file di configurazione, tra cui la data dell'ultima modifica
+        std::string generalLog;
+        std::vector<Server> servers;
+    };
+    
     class Option    //use for adminlist as well
     {
     public:
@@ -56,5 +79,10 @@ public:
 
     std::vector< ConfigLoader::Option > getOptions();
     std::vector< ConfigLoader::Banlist > getBanlist();
+    bool testChanges();
+    
+  private:
+    std::string generalFile;
+    Options* opzioni;
 };
 #endif

@@ -31,28 +31,30 @@
 //costruttore: apro il file
 ConfigLoader::ConfigLoader( const std::string &filePath)
 {
-  cfg.open( filePath.c_str() );
+  generalFile=filePath;
 }
 //distruttore:chiudo il file
 ConfigLoader::~ConfigLoader()
 {
-  cfg.close();
+  if (opzioni!=0)
+    delete opzioni;
 }
-
 
 std::vector<ConfigLoader::Option> ConfigLoader::getOptions()
 {
+  std::ifstream * cfg=new std::ifstream();
+  cfg->open( generalFile.c_str() );
   std::vector<ConfigLoader::Option> vettore;
   //leggo il file fino alla fine
-  if (cfg.is_open())
+  if (cfg->is_open())
   {
-    while (!cfg.eof())
+    while (!cfg->eof())
     {
       //leggo una riga
       char line [600];
-      cfg.getline(line,300);
+      cfg->getline(line,300);
       //se non è un commento prendo le impostazioni
-      if (line[0]!='#' && !cfg.eof())
+      if (line[0]!='#' && !cfg->eof())
       {
         ConfigLoader::Option opzione;
 
@@ -67,24 +69,27 @@ std::vector<ConfigLoader::Option> ConfigLoader::getOptions()
       }
     }
   }
+  delete cfg;
   return vettore;
 }
 
 std::vector<ConfigLoader::Banlist> ConfigLoader::getBanlist()
 {
+    std::ifstream * cfg=new std::ifstream();
+    cfg->open( generalFile.c_str() );
     std::vector<ConfigLoader::Banlist> vettore;
 
-    if( cfg.is_open() ){
-        while( !cfg.eof() ){
+    if( cfg->is_open() ){
+        while( !cfg->eof() ){
             //leggo righe
             char line[600];
-            cfg.getline( line, 300 );
+            cfg->getline( line, 300 );
 
             ConfigLoader::Banlist banlist;
 
             //load banlist gen info ( nick, ip, date,ecc )
 
-            while( line[0] != '=' && !cfg.eof() ){
+            while( line[0] != '=' && !cfg->eof() ){
                 std::string riga = line;    //la trasformo in stringa e estraggo le guid
                 int end = riga.find( "=" );
 
@@ -110,10 +115,10 @@ std::vector<ConfigLoader::Banlist> ConfigLoader::getBanlist()
                 else if ( riga.substr( 0, end ) == "author" )
                     banlist.author = riga.substr( end + 1, riga.size() );
 
-                cfg.getline( line, 300 );   //get new line
+                cfg->getline( line, 300 );   //get new line
             }
 
-            while( line[0] != '#' && !cfg.eof() ){
+            while( line[0] != '#' && !cfg->eof() ){
                 std::string riga = line;
                 int end = riga.find( "=" );
 
@@ -125,14 +130,29 @@ std::vector<ConfigLoader::Banlist> ConfigLoader::getBanlist()
                 if( ( riga.substr( 0, end ) == "GUID" ) )
                     banlist.guids.push_back( riga.substr( end + 1, riga.size() ) );
 
-                cfg.getline( line, 300 );
+                cfg->getline( line, 300 );
             }
             vettore.push_back( banlist );
         }
         //vettore.push_back( banlist );
     }
+    delete cfg;
     return vettore;
 }
 
+bool ConfigLoader::testChanges()
+{
+  if (opzioni)
+  {
+    struct stat temp;
+    if (!stat(generalFile.c_str(),&temp))  //se riesco a prendere i dati del file
+    {
+      if (difftime(opzioni->infos.st_mtime,temp.st_mtime)>0)
+      {
+        //file generale cambiato
+      }
+    }
+  }
+}
 
 #endif
