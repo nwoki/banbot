@@ -23,110 +23,125 @@
     Software Foundation, Inc.
 */
 
-#ifndef _server_h_
-#define _server_h_
+#ifndef _server_cpp_
+#define _server_cpp_
 
 #include "server.h"
 
-Server::~Server()
+Server::Server()
 {
-  for (int i=0;i<giocatori.size();i++) 
-    delete giocatori[i];
+    //just empty so class compiles
 }
 
-Server::Player* Server::operator[] (int number)
+Server::~Server()
 {
-  return giocatori[number];
+    for( unsigned int i = 0; i < m_giocatori.size(); i++ )
+        delete m_giocatori[i];
+}
+
+Server::Player* Server::operator[] ( int pos )
+{
+    return m_giocatori[pos];
 }
 
 std::streampos Server::getRow()
 {
-  return row;
+    return m_row;
 }
+
 void Server::setRow( std::streampos pos )
 {
-  row=pos;
+    m_row = pos;
 }
 
 std::string Server::getConfigFile()
 {
-  return file;
+    return m_configFile;
 }
-void Server::setConfigFile(std::string configFile)
+
+void Server::setConfigFile( std::string configFile )
 {
-  file=configFile;
+    m_configFile = configFile;
 }
 
 std::string Server::getRcon()
 {
-  return rconpass;
+    return m_rconpass;
 }
-void Server::setRcon(std::string rconPassword)
+
+void Server::setRcon( std::string rconPassword )
 {
-  rconpass=rconPassword;
+    m_rconpass = rconPassword;
 }
 
 std::string Server::getIP()
 {
-  return ip;
+    return m_ip;
 }
-void Server::setIP(std::string ip)
+
+void Server::setIP( std::string ip )
 {
-  this->ip=ip;
+    m_ip = ip;
 }
 
 std::string Server::getPort()
 {
-  return port;
+    return m_port;
 }
-void Server::setPort(std::string port)
+
+void Server::setPort( std::string port )
 {
-  this->port=port;
+    m_port = port;
 }
 
 std::string Server::getBackupDir()
 {
-  return backup;
+    return m_backup;
 }
-void Server::setBackupDir(std::string backupDir)
+
+void Server::setBackupDir( std::string backupDir )
 {
-  backup=backupDir;
+    m_backup = backupDir;
 }
 
 std::string Server::getBotLog()
 {
-  return botlog;
+    return m_botlog;
 }
-void Server::setBotLog(std::string botLog)
+
+void Server::setBotLog( std::string botLog )
 {
-  botlog=botLog;
+    m_botlog = botLog;
 }
 
 std::string Server::getServerLog()
 {
-  return serverlog;
+    return m_serverlog;
 }
-void Server::setServerLog(std::string serverLog)
+
+void Server::setServerLog( std::string serverLog )
 {
-  serverlog=serverLog;
+    m_serverlog = serverLog;
 }
 
 std::string Server::getDbFolder()
 {
-  return dbfolder;
+    return m_dbfolder;
 }
-void Server::setDbFolder(std::string dbFolder)
+
+void Server::setDbFolder( std::string dbFolder )
 {
-  dbfolder=dbFolder;
+    m_dbfolder = dbFolder;
 }
 
 struct stat Server::getInfos()
 {
-  return infos;
+    return m_infos;
 }
-void Server::setInfos(struct stat fileInfos)
+
+void Server::setInfos( struct stat fileInfos )
 {
-  infos=fileInfos;
+    m_infos = fileInfos;
 }
 
 #endif

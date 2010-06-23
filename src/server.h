@@ -33,53 +33,59 @@
 
 class Server
 {
-  private:
-    bool changed;
-    std::string file;                  //file di cfg del bot (quella relativa al singolo server, con rcon e file)
-    struct stat infos;                 //contiene le info del file di configurazione, tra cui la data dell'ultima modifica
-    std::string rconpass;
-    std::string ip;
-    std::string port;
-    std::string backup;
-    std::string botlog;
-    std::string serverlog;
-    std::string dbfolder;
-    std::streampos row;
-    
+    private:
+        bool m_changed;
+        std::string m_configFile;   //file di cfg del bot (quella relativa al singolo server, con rcon e file)
+        struct stat m_infos;    //contiene le info del file di configurazione, tra cui la data dell'ultima modifica
+        std::string m_rconpass;
+        std::string m_ip;
+        std::string m_port;
+        std::string m_backup;
+        std::string m_botlog;
+        std::string m_serverlog;
+        std::string m_dbfolder;
+        std::streampos m_row;
+
     class Player
     {
         public:
-        std::string GUID;
-        std::string number;
-        std::string nick;
-        std::string ip;
+            std::string GUID;
+            std::string number;
+            std::string nick;
+            std::string ip;
     };
-    
-    std::vector<Player*> giocatori;
-    
-  public:
-    Server();
-    Player* operator[] (int);    //overloading dell'operatore [int]
-    std::streampos getRow();
-    void setRow( std::streampos );
-    std::string getConfigFile();
-    void setConfigFile(std::string);
-    std::string getRcon();
-    void setRcon(std::string);
-    std::string getIP();
-    void setIP(std::string);
-    std::string getPort();
-    void setPort(std::string);
-    std::string getBackupDir();
-    void setBackupDir(std::string);
-    std::string getBotLog();
-    void setBotLog(std::string);
-    std::string getServerLog();
-    void setServerLog(std::string);
-    std::string getDbFolder();
-    void setDbFolder(std::string);
-    struct stat getInfos();
-    void setInfos(struct stat);
+
+    std::vector<Player*> m_giocatori;
+
+    public:
+        Server();
+        ~Server();
+
+        Player* operator[] ( int pos );    //overloading dell'operatore [int]
+
+        //getters
+        std::string getBackupDir();
+        std::string getBotLog();
+        std::string getConfigFile();
+        std::string getDbFolder();
+        struct stat getInfos();
+        std::string getIP();
+        std::string getPort();
+        std::string getRcon();
+        std::streampos getRow();
+        std::string getServerLog();
+
+        //setters
+        void setBackupDir( std::string backupDir );
+        void setBotLog( std::string botLog );
+        void setConfigFile( std::string configFile );
+        void setDbFolder( std::string dbFolder );
+        void setInfos( struct stat infos );
+        void setIP( std::string ip );
+        void setPort( std::string port );
+        void setRcon( std::string rcon );
+        void setRow( std::streampos row );
+        void setServerLog( std::string serverLog );
 };
 
 #endif

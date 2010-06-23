@@ -1,12 +1,14 @@
 #project files needed for executable
 OBJECTS = main.o \
 	  db.o \
-	  connection.o \
 	  Analyzer.o \
+	  connection.o \
 	  ConfigLoader.o \
 	  logger.o \
 	  Backup.o \
+	  server.o \
 	  sqlite3.o
+
 
 #compiler
 CPP = g++
@@ -80,3 +82,6 @@ Backup.o	: src/Backup.h src/Backup.cpp
 
 sqlite3.o	: src/sqlite3/sqlite3.c src/sqlite3/sqlite3.h
 		$(CC) $(CFLAGS) $(SQLITE3FLAGS) src/sqlite3/sqlite3.c src/sqlite3/sqlite3.h
+
+server.o	: src/server.cpp src/server.h
+		$(CPP) $(CFLAGS) src/server.cpp src/server.h
