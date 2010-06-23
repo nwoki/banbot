@@ -122,12 +122,12 @@ bool Db::openDatabase()
 void Db::closeDatabase()
 {
     m_resultCode = sqlite3_close( m_database );
-    
+
     if( m_resultCode != SQLITE_OK ) {
         cout << "\e[1;31[FAIL] Can't close database! Something's wrong\e[0m \n";
         *m_logger << "[FAIL] Can't close database! Something's wrong\n";
     }
-    
+
     #ifdef DB_DEBUG
     if( m_resultCode == SQLITE_OK )
         cout << "\e[1;35mDATABASE CLOSED\e[0m \n";
@@ -184,6 +184,15 @@ bool Db::checkBanNick( const string& nick )
 
     if( resultQuery( query ) > 0 )
         return true;
+    else
+        return false;
+}
+
+
+bool Db::isOpTableEmpty()
+{
+    if( resultQuery( "select * from oplist;" ) > 0 )   //got results so not empty
+        return false;
     else
         return false;
 }
@@ -722,7 +731,7 @@ bool Db::connect()  //called by Db::open ( public function )
         sqlite3_close( m_database );
         return false;
     }
-    
+
 #ifdef DB_DEBUG
     cout<< "\e[1;35mOPENED DB\e[0m \n";
 #endif
