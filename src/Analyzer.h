@@ -126,7 +126,7 @@ private:
     void status(char* line);
     void force(char* line);
     void iamgod(char* line);
-    //nuke
+    //da fare la funzione nuke
 
 protected:
     bool isA(char* line,const std::string &regex);          //testa se la riga soddisfa il regex.
@@ -146,16 +146,7 @@ protected:
     Connection * server;
     Db * database;
     unsigned int serverNumber;
-    class Player
-    {
-        public:
-        std::string GUID;
-        std::string number;
-        std::string nick;
-        std::string ip;
-        Player():GUID(std::string("")),number(""),nick(""),ip(""){};
-    };
-    std::vector< std::vector<Player*> > giocatori;    //array di array (un array di player per server)
+    
 
 public:
     Analyzer( Connection*, Db*, Logger*, Backup*, vector< ConfigLoader::Option >);

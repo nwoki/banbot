@@ -1129,22 +1129,26 @@ void Analyzer::iamgod(char* line)
   logger->timestamp();
   *logger<<"\n[!] iamgod";
   //controllo se il database è vuoto. Se lo è, aggiungo la persona tra gli op.
-  std::string numeroAdmin;
-  if (isAdminSay(line,numeroAdmin))   //se il database è vuoto
+  if (database->isOpTableEmpty())   //se il database è vuoto
   {
+    std::string temp = line;
+    int pos = temp.find( "say:" );
+    pos = temp.find_first_not_of( " ", pos+4 );
+    int end = temp.find_first_of( " ", pos );
+    std::string numero = temp.substr( pos, end-pos );
     //prendo i dati dell'utente e lo aggiungo tra gli op
     bool nonTrovato=true;
     int i=0;
     while (nonTrovato && i<giocatori[serverNumber].size())
     {
-      if (giocatori[serverNumber][i]->number.compare(numeroAdmin)==0)
+      if (giocatori[serverNumber][i]->number.compare(numero)==0)
         nonTrovato=false;
       else i++;
     }
     if(!nonTrovato && database->addOp(giocatori[serverNumber][i]->nick,giocatori[serverNumber][i]->GUID))
       server->say("BanBot: ^1Welcome, my Master!",serverNumber);
     else
-      server->tell("Fail: player non aggiunto alla lista admin.",numeroAdmin,serverNumber);
+      server->tell("Fail: player non aggiunto alla lista admin.",numero,serverNumber);
   }
 }
 
@@ -1530,7 +1534,15 @@ void Analyzer::main_loop()
                                             }
                                             else
                                             {
-                                              expansion(line);
+                                              if (isA(line,IAMGOD))
+                                              {
+                                                //è un iamgod
+                                                iamgod(line);
+                                              }
+                                              else
+                                              {
+                                                expansion(line);
+                                              }
                                             }
                                           }
                                         }

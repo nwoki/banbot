@@ -32,6 +32,7 @@
 #include <iostream>
 #include <sys/stat.h>
 #include <time.h>
+#include "server.h"
 
 class ConfigLoader
 {
@@ -61,6 +62,8 @@ class ConfigLoader
         struct stat infos;                 //contiene le info del file di configurazione, tra cui la data dell'ultima modifica
         std::string generalLog;
         std::vector<Server> servers;
+        
+        Server operator[] (int number){return servers[number];}
     };
     
     class Option    //use for adminlist as well
