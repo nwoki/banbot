@@ -39,10 +39,6 @@ Server::~Server()
         delete m_giocatori[i];
 }
 
-Server::Player* Server::operator[] ( int pos )
-{
-    return m_giocatori[pos];
-}
 
 std::streampos Server::getRow()
 {
@@ -54,6 +50,7 @@ void Server::setRow( std::streampos pos )
     m_row = pos;
 }
 
+
 std::string Server::getConfigFile()
 {
     return m_configFile;
@@ -63,6 +60,7 @@ void Server::setConfigFile( std::string configFile )
 {
     m_configFile = configFile;
 }
+
 
 std::string Server::getRcon()
 {
@@ -74,6 +72,7 @@ void Server::setRcon( std::string rconPassword )
     m_rconpass = rconPassword;
 }
 
+
 std::string Server::getIP()
 {
     return m_ip;
@@ -83,6 +82,7 @@ void Server::setIP( std::string ip )
 {
     m_ip = ip;
 }
+
 
 std::string Server::getPort()
 {
@@ -94,6 +94,7 @@ void Server::setPort( std::string port )
     m_port = port;
 }
 
+
 std::string Server::getBackupDir()
 {
     return m_backup;
@@ -104,35 +105,39 @@ void Server::setBackupDir( std::string backupDir )
     m_backup = backupDir;
 }
 
+
 std::string Server::getBotLog()
 {
-    return m_botlog;
+    return m_botLog;
 }
 
 void Server::setBotLog( std::string botLog )
 {
-    m_botlog = botLog;
+    m_botLog = botLog;
 }
+
 
 std::string Server::getServerLog()
 {
-    return m_serverlog;
+    return m_serverLog;
 }
 
 void Server::setServerLog( std::string serverLog )
 {
-    m_serverlog = serverLog;
+    m_serverLog = serverLog;
 }
+
 
 std::string Server::getDbFolder()
 {
-    return m_dbfolder;
+    return m_dbFolder;
 }
 
 void Server::setDbFolder( std::string dbFolder )
 {
-    m_dbfolder = dbFolder;
+    m_dbFolder = dbFolder;
 }
+
 
 struct stat Server::getInfos()
 {
@@ -142,6 +147,60 @@ struct stat Server::getInfos()
 void Server::setInfos( struct stat fileInfos )
 {
     m_infos = fileInfos;
+}
+
+
+bool Server::isStrict()
+{
+  return m_strict;
+}
+
+void Server::setStrict( bool active )
+{
+  m_strict=active;
+}
+
+
+bool Server::isChanged()
+{
+  return m_changed;
+}
+
+void Server::setChanged( bool changed )
+{
+  m_changed=changed;
+}
+
+
+//**************************************** funzioni per l'accesso diretto all'array di giocatori ************************
+unsigned int Server::size()
+{
+  return m_giocatori.size();
+}
+
+Server::Player* Server::operator[] ( int pos )
+{
+    return m_giocatori[pos];
+}
+
+void Server::push_back( Player* player )
+{
+  m_giocatori.push_back( player );
+}
+
+std::vector<Server::Player*>::iterator Server::begin()
+{
+  m_giocatori.begin();
+}
+
+void Server::erase( std::vector<Server::Player*>::iterator iteratore)
+{
+  m_giocatori.erase( iteratore );
+}
+
+void Server::clear()
+{
+  m_giocatori.clear();
 }
 
 #endif

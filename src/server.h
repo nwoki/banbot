@@ -33,36 +33,19 @@
 
 class Server
 {
-    private:
-        bool m_changed;
-        std::string m_configFile;   //file di cfg del bot (quella relativa al singolo server, con rcon e file)
-        struct stat m_infos;    //contiene le info del file di configurazione, tra cui la data dell'ultima modifica
-        std::string m_rconpass;
-        std::string m_ip;
-        std::string m_port;
-        std::string m_backup;
-        std::string m_botlog;
-        std::string m_serverlog;
-        std::string m_dbfolder;
-        std::streampos m_row;
-
-    class Player
-    {
-        public:
-            std::string GUID;
-            std::string number;
-            std::string nick;
-            std::string ip;
-    };
-
-    std::vector<Player*> m_giocatori;
-
     public:
         Server();
         ~Server();
 
-        Player* operator[] ( int pos );    //overloading dell'operatore [int]
-
+        class Player
+        {
+            public:
+                std::string GUID;
+                std::string number;
+                std::string nick;
+                std::string ip;
+        };
+        
         //getters
         std::string getBackupDir();
         std::string getBotLog();
@@ -74,6 +57,8 @@ class Server
         std::string getRcon();
         std::streampos getRow();
         std::string getServerLog();
+        bool isStrict();
+        bool isChanged();
 
         //setters
         void setBackupDir( std::string backupDir );
@@ -86,6 +71,32 @@ class Server
         void setRcon( std::string rcon );
         void setRow( std::streampos row );
         void setServerLog( std::string serverLog );
+        void setStrict( bool active = true );
+        void setChanged( bool changed = true );
+        
+        //funzioni per l'accesso diretto all'array dei giocatori
+        unsigned int size();
+        Player* operator[] ( int pos );    //overloading dell'operatore [int]
+        void push_back( Player* player ); 
+        std::vector<Server::Player*>::iterator begin();
+        void erase( std::vector<Server::Player*>::iterator iteratore );
+        void clear();
+        
+  private:
+        bool m_changed;
+        std::string m_configFile;   //file di cfg del bot (quella relativa al singolo server, con rcon e file)
+        struct stat m_infos;    //contiene le info del file di configurazione, tra cui la data dell'ultima modifica
+        std::string m_rconpass;
+        std::string m_ip;
+        std::string m_port;
+        std::string m_backup;
+        std::string m_botLog;
+        std::string m_serverLog;
+        std::string m_dbFolder;
+        std::streampos m_row;
+        bool m_strict;
+
+        std::vector<Player*> m_giocatori;
 };
 
 #endif

@@ -99,14 +99,10 @@ private:
     const char* FORCE_NUMBER;
     const char* IAMGOD;
     //variabili private
-    std::vector<std::string> files;
-    std::vector<std::string> BotLogFiles;
-    std::vector<std::streampos> row;
-    std::vector<bool> strict;
     Backup* backup;
     Logger* generalLog;
-    //funzione per il caricamento delle opzioni
-    void loadOptions(std::vector<ConfigLoader::Option> opzioni);
+    //funzione per il caricamento delle opzioni (le controlla ed in caso corregge la riga del file di log)
+    void loadOptions();
     //funzioni associate ai regex (comandi dal server/eventi)
     void clientUserInfo(char* line);
     void clientConnect(char* line);
@@ -146,10 +142,11 @@ protected:
     Connection * server;
     Db * database;
     unsigned int serverNumber;
+    ConfigLoader::Options m_dati;       //contiente tutte le opzioni e i dati dei server (giocatori compresi).
     
 
 public:
-    Analyzer( Connection*, Db*, Logger*, Backup*, vector< ConfigLoader::Option >);
+    Analyzer( Connection*, Db*, Logger*, Backup*, ConfigLoader::Options);
     ~Analyzer();
     void main_loop();
 };
