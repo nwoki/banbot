@@ -35,15 +35,16 @@
 //#include <sys/stat.h>
 
 //costruttore
-Analyzer::Analyzer( Connection* conn, Db* db,Logger* primaryLog, Backup* backup, ConfigLoader::Options opzioni ):
+Analyzer::Analyzer( Connection* conn, Db* db, Backup* backup, ConfigLoader * configLoader ):
     backup(backup),
-    generalLog( primaryLog ),
-    logger( new Logger() ),
     server( conn ),
     database( db ),
     serverNumber( 0 ),
-    m_dati( opzioni )
+    m_configLoader(configLoader),
+    //m_dati( ConfigLoader.)
 {
+  logger=new Logger(m_dati.generalLog);
+  logger->open();
   loadOptions();
   //inizializzo il resto
   CLIENT_CONNECT=" *[0-9]+:[0-9]{2} +ClientConnect:";
@@ -74,10 +75,11 @@ Analyzer::Analyzer( Connection* conn, Db* db,Logger* primaryLog, Backup* backup,
   FORCE=" *[0-9]+:[0-9]{2} +say: +[0-9]+ +[^ \t\n\r\f\v]+: +!force red|blue|spectator [^ \t\n\r\f\v]+";
   FORCE_NUMBER=" *[0-9]+:[0-9]{2} +say: +[0-9]+ +[^ \t\n\r\f\v]+: +!force red|blue|spectator [0-9]{1,2}";
   IAMGOD=" *[0-9]+:[0-9]{2} +say: +[0-9]+ +[^ \t\n\r\f\v]+: +!iamgod";
-
+  
   std::cout<<"[OK] Analyzer inizializzato.\n";
-  *generalLog<<"[OK] Analyzer inizializzato.\n\n";
+  *logger<<"[OK] Analyzer inizializzato.\n\n";
   log=new ifstream();
+  logger->close();
 }
 
 //distruttore
@@ -85,6 +87,8 @@ Analyzer::~Analyzer()
 {
   if( log->is_open() ) log->close();
   delete log;
+  logger->close();
+  delete logger;
 }
 
 //caricatore delle opzioni
@@ -109,8 +113,8 @@ void Analyzer::loadOptions()
       }
   }
   std::cout<<"Nuove opzioni caricate.\n";
-  generalLog->timestamp();
-  *generalLog<<"\nNuove opzioni caricate.\n";
+  logger->timestamp();
+  *logger<<"\nNuove opzioni caricate.\n";
 }
 
 //testa l'array di caratteri passato col regex, torna true se la condizione imposta dal regex è soddisfatta.
@@ -1318,16 +1322,16 @@ int Analyzer::translatePlayer(std::string player)
 //main loop
 void Analyzer::main_loop()
 {
-  generalLog->open();
+  logger->open();
   std::cout<<"[OK] BanBot avviato.\n\n";
-  *generalLog<<"[OK] BanBot avviato.\n\n";
-  generalLog->close();
+  *logger<<"[OK] BanBot avviato.\n\n";
+  logger->close();
   while (true)
   {
     for (serverNumber=0;serverNumber<m_dati.size();serverNumber++)
     {
       //vedo è il caso di fare il backup
-      generalLog->open();
+      logger->open();
       if(backup->doJobs()) 
       {
         //eseguito il backup. Reload dei server
@@ -1357,26 +1361,26 @@ void Analyzer::main_loop()
       }
       //provo ad aprire il file e a riprendere dalla riga dove ero arrivato
       std::cout<<"Provo ad aprire "<<m_dati[serverNumber].getServerLog()<<"\n";
-      generalLog->timestamp();
-      *generalLog<<"\nProvo ad aprire "<<m_dati[serverNumber].getServerLog()<<"\n";
+      logger->timestamp();
+      *logger<<"\nProvo ad aprire "<<m_dati[serverNumber].getServerLog()<<"\n";
       log=new ifstream();
       log->open(m_dati[serverNumber].getServerLog().c_str());
       log->seekg(m_dati[serverNumber].getRow());
       if (log->is_open())
       {
         std::cout<<"  [OK] Aperto!\n";
-        *generalLog<<"  [OK] Aperto!\n";
+        *logger<<"  [OK] Aperto!\n";
         #ifdef DEBUG_MODE
           std::cout<< "  Al punto: "<< row[serverNumber]<<"\n";
-          *generalLog<< "  Al punto: "<< row[serverNumber]<<"\n";
+          *logger<< "  Al punto: "<< row[serverNumber]<<"\n";
         #endif
       }
       else
       {
         std::cout<<"  [FAIL] Non sono riuscito ad aprirlo!\n";
-        *generalLog<<"  [FAIL] Non sono riuscito ad aprirlo!\n";
+        *logger<<"  [FAIL] Non sono riuscito ad aprirlo!\n";
       }
-      generalLog->close();
+      logger->close();
       //se il file è aperto posso lavorare, e provo ad aprire pure il db
       if (log->is_open() && !log->bad() && database->openDatabase())
       {
@@ -1561,11 +1565,11 @@ void Analyzer::main_loop()
       else
       {
         m_dati[serverNumber].setRow(0);//se non riesco ad aprire il file, ricomincio dalla prima riga
-        generalLog->open();
+        logger->open();
         std::cout<<"Non riesco ad aprire il file di log o il database\n";
-        generalLog->timestamp();
-        *generalLog<<"\nNon riesco ad aprire il file di log o il database\n";
-        generalLog->close();
+        logger->timestamp();
+        *logger<<"\nNon riesco ad aprire il file di log o il database\n";
+        logger->close();
       }
       if (m_dati[serverNumber].getRow()<0) m_dati[serverNumber].setRow(0);
       //chiudo il file e lascio passare un po' di tempo
@@ -1574,9 +1578,10 @@ void Analyzer::main_loop()
       logger->close();
       database->closeDatabase();
     }
-    generalLog->open();
-    *generalLog<<"Finito. \n";
-    generalLog->close();
+    logger->changePath(m_dati.generalLog);
+    logger->open();
+    *logger<<"Finito. \n";
+    logger->close();
     sleep(TIME_SLEEPING);
   }
 }

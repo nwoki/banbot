@@ -40,6 +40,17 @@ Server::~Server()
 }
 
 
+std::string Server::getName()
+{
+  return m_name;
+}
+
+void Server::setName( std::string name )
+{
+  m_name=name;
+}
+
+
 std::streampos Server::getRow()
 {
     return m_row;

@@ -47,6 +47,7 @@ class Server
         };
         
         //getters
+        std::string getName();
         std::string getBackupDir();
         std::string getBotLog();
         std::string getConfigFile();
@@ -61,6 +62,7 @@ class Server
         bool isChanged();
 
         //setters
+        void setName( std::string name );
         void setBackupDir( std::string backupDir );
         void setBotLog( std::string botLog );
         void setConfigFile( std::string configFile );
@@ -84,6 +86,7 @@ class Server
         
   private:
         bool m_changed;
+        std::string m_name;
         std::string m_configFile;   //file di cfg del bot (quella relativa al singolo server, con rcon e file)
         struct stat m_infos;    //contiene le info del file di configurazione, tra cui la data dell'ultima modifica
         std::string m_rconpass;

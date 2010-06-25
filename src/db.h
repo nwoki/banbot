@@ -52,9 +52,9 @@ using namespace std;
 class Db
 {
     public:
-        /*! \fn Db( vector< ConfigLoader::Option > conf, vector< ConfigLoader::Banlist > banned, vector< ConfigLoader::Option > admins, Logger *log )
+        /*! \fn Db( ConfigLoader::Options* conf, vector< ConfigLoader::Banlist > banned, vector< ConfigLoader::AdminList > admins )
         *   Constructor for Db.
-        *   \param conf vector with configuration info for servers and bot configuration
+        *   \param conf pointer to object with configuration info for servers and bot configuration
         *   \param banned vector with banned users info
         *   \param admins vector with admin(s) info
         *   \param log pointer to Logger class
@@ -62,7 +62,7 @@ class Db
         *   Checks for existing database and uses it updating it's records with new information ( if there is new info )\n
         *   If the database is not found, the class creates it populating it with the info passed
         */
-        Db( vector< ConfigLoader::Option > conf, vector< ConfigLoader::Banlist > banned, vector< ConfigLoader::Option > admins, Logger *log );
+        Db( ConfigLoader::Options* conf, vector< ConfigLoader::Banlist > banned, vector< ConfigLoader::AdminList > admins );
         ~Db();  /*!< Destructor for class Db*/
 
         //database connection
@@ -116,12 +116,12 @@ class Db
         bool execQuery( const string &query );    //executes query and returns status to tell if the operation went well or not
         string getAdminNick( const string &guid );  //return's admin's nick from his guid
         string intToString( int number );
-        void loadAdminlist( vector<ConfigLoader::Option> admins );
+        void loadAdminlist( vector<ConfigLoader::AdminList> admins );
         void loadBanlist( vector<ConfigLoader::Banlist> banned );
         int resultQuery( const string &query );    //if query fails -> -1 else return number of elements
 
         sqlite3 *m_database;
-        Logger *m_logger;
+        ConfigLoader::Options* m_options;
 
         char *m_zErrMsg;
         char **m_result;

@@ -32,13 +32,27 @@
 #include <sys/stat.h>
 #include <stdlib.h>
 
-Logger::Logger( std::string p ): path( p )
+Logger::Logger( std::string p ): path( p ),isOpen( false )
 {
-    size_t pos=path.find_last_of('/');
-    std::string cartella=path.substr(0,pos);
-    //std::string file=path.substr(pos+1);
+  checkFile();
+}
 
-    //check per la cartella
+Logger::Logger():path( "" ),isOpen( false )
+{
+}
+
+void Logger::checkFile()
+{
+  int end=path.find_last_of('/');
+  int pos=0;
+  bool ok=true;
+  
+  //check per la cartella
+  while (pos<end && ok)
+  {
+    pos=path.find('/',pos+1);
+    std::string cartella=path.substr(0,pos);
+
     struct stat st;
     if( stat( cartella.c_str(), &st ) == 0 )
     {
@@ -46,36 +60,35 @@ Logger::Logger( std::string p ): path( p )
     }
     else
     {
-        std::cout<<"  [!]couldn't find dir '"<<cartella<<"/'! Creating dir '"<<cartella<<"/'..\n";
+      std::cout<<"  [!]couldn't find dir '"<<cartella<<"/'! Creating dir '"<<cartella<<"/'..\n";
 
-        std::string command("mkdir \"");
-        command.append(cartella);
-        command.append("\"");
-        if( !system(command.c_str()))
-        {
-            std::cout<<"  [OK]created '"<<cartella<<"/' directory..\n";
-        }
-        else
-        {
-            std::cout<<"[EPIC FAIL] couldn't create directory '"<<cartella<<"/'.Please check permissions!\n";
-        }
+      if( mkdir( cartella.c_str(), 0777 ) == 0 )
+      {
+          std::cout<<"  [OK]created '"<<cartella<<"/' directory..\n";
+      }
+      else
+      {
+          std::cout<<"[EPIC FAIL] couldn't create directory '"<<cartella<<"/'.Please check permissions!\n";
+          ok=false;
+      }
     }
-    //check per il file log
+  }
+    
+  //check per il file log
+  if( ok )
+  {
     std::cout<<"[-] checking for logfile..\n";
-    std::ifstream IN( path.c_str() );
-    if( IN.is_open() ) IN.close();
+    struct stat st;
+    if( stat( path.c_str(), &st ) == 0 ) std::cout<<"Found!\n";
     else
     {
-        std::cout<<"[!] Logfile doesn't exist... I'll create it.\n";
-        //create logfile
-        std::ofstream OUT(path.c_str());
-        if ( OUT.is_open() ) OUT.close();
-        else std::cout<<"[ERR] couldn't create the log file.Please check permissions!\n";
+      std::cout<<"[!] Logfile doesn't exist... I'll create it.\n";
+      //create logfile
+      std::ofstream OUT(path.c_str());
+      if ( OUT.is_open() ) OUT.close();
+      else std::cout<<"[EPIC FAIL] couldn't create the log file.Please check permissions!\n";
     }
-}
-
-Logger::Logger():path("")
-{
+  }
 }
 
 Logger::~Logger()
@@ -85,37 +98,49 @@ Logger::~Logger()
 
 void Logger::write(const char* valore)
 {
+  if ( isOpen || open() )
     file<<valore;
 }
 
 void Logger::write(const int valore)
 {
+  if ( isOpen || open() )
     file<<valore;
 }
 
 void Logger::changePath(std::string path)
 {
+    if (isOpen) close();
     this->path=path;
+    checkFile();
 }
 
 bool Logger::open()
 {
     file.open(path.c_str(),std::ios_base::app);
-    return file.is_open();
+    isOpen=file.is_open();
+    return isOpen;
 }
 
 void Logger::timestamp()
 {
+  if( isOpen )
+  {
     //stampo il timestamp e il messaggio
     time_t timestamp=time(NULL);
     std::string data(asctime(localtime(&timestamp)));
     data=data.substr(0,data.size()-1);
     file<<"\n["<<data<<"] ";  //asctime(localtime(&timestamp))
+  }
 }
 
 void Logger::close()
 {
+  if (isOpen)
+  {
     file.close();
+    isOpen=false;
+  }
 }
 
 //funzioni ESTERNE alla classe,di comodo

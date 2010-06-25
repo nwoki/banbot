@@ -100,7 +100,7 @@ private:
     const char* IAMGOD;
     //variabili private
     Backup* backup;
-    Logger* generalLog;
+    ConfigLoader * m_configLoader;
     //funzione per il caricamento delle opzioni (le controlla ed in caso corregge la riga del file di log)
     void loadOptions();
     //funzioni associate ai regex (comandi dal server/eventi)
@@ -146,7 +146,7 @@ protected:
     
 
 public:
-    Analyzer( Connection*, Db*, Logger*, Backup*, ConfigLoader::Options);
+    Analyzer( Connection*, Db*, Backup*, ConfigLoader* );
     ~Analyzer();
     void main_loop();
 };

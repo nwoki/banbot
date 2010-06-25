@@ -33,6 +33,7 @@
 #include <sys/stat.h>
 #include <time.h>
 #include "server.h"
+#include "logger.h"
 
 class ConfigLoader
 {
@@ -47,12 +48,15 @@ class ConfigLoader
         struct stat infos;                 //contiene le info del file di configurazione, tra cui la data dell'ultima modifica
         std::string generalLog;
         std::vector<Server> servers;
+        Logger* errors;                     //log dedicato a notifiche ed errori
+        Logger* log;                        //log dedicato ai server (cambia di file)
+        int serverNumber;                   //numero del server su cui sto lavorando
         
         Server operator[] (int number){return servers[number];}
         unsigned int size(){return servers.size();}
     };
     
-    class Option    //use for adminlist as well
+    class AdminList    //use for adminlist as well
     {
     public:
         std::string name;
@@ -66,9 +70,11 @@ class ConfigLoader
         std::vector< std::string > guids;
     };
 
-    std::vector< ConfigLoader::Option > getOptions();
+    Options* getOptions();
+    std::vector< ConfigLoader::AdminList > getAdminlist();
     std::vector< ConfigLoader::Banlist > getBanlist();
     bool testChanges();
+    void reloadOptions();   //it reloads entire options tree, changes made on object Options*
     
   private:
     std::string generalFile;

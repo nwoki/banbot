@@ -41,103 +41,104 @@ using namespace std;
 
 int main( int argc, char *argv[] ){ //pass argument to specify bot configfile
 
+    cout<<"BanBot version 1.1b, an open-source project by [2s2h]n3m3s1s and [2s2h]Zamy,\n   Copyright © 2010\n";
+    cout<<"look at GNU General Public License for legal purposes:  <http://www.gnu.org/licenses/>\n\n";
+    cout<<"Wait, pushing up this shit...\n";
+    
     //carico le impostazioni e le salvo su opzioni
     ConfigLoader * caricatore;
     if ( argc == 2 )
         caricatore = new ConfigLoader(argv[1]);
     else
         caricatore = new ConfigLoader( BOTCONFIG );
-    ConfigLoader * banList = new ConfigLoader( BANLIST );
-    ConfigLoader * adminList = new ConfigLoader( ADMINLIST );
-
-    std::vector<ConfigLoader::Option> opzioni = caricatore->getOptions();
-    std::vector<ConfigLoader::Banlist> banned = banList->getBanlist();
-    std::vector<ConfigLoader::Option> admins = adminList->getOptions();
-
-    for ( unsigned int i = 0; i < opzioni.size(); i++ )
-        cout << opzioni[i].name << " = " << opzioni[i].value << "\n";
-
-    cout << "\n";   //extra "a-capo"
-
-    delete caricatore;
-    delete banList;
-    delete adminList;
-
-    //inizializzo il logger
-    unsigned int i = 0;
-    int found = 0;
-    Logger *botLog = NULL;
-
-    while( i < opzioni.size() && found == 0 ){
-        if( opzioni[i].name.compare( "BOTLOG" ) == 0 ){
-            botLog = new Logger( opzioni[i].value );
-            found++;
-        }
-    }
-
-    Db *d = new Db( opzioni, banned, admins, botLog ) ;
-
-    found=0;
-    vector<string> ip;
-    vector<int> port;
-    vector<string> password;
-    vector<string> logpath;
-
-    for(i=0;i < opzioni.size(); i++ ){
-        if( opzioni[i].name.compare( "IP" ) == 0 ){
-            ip.push_back( opzioni[i].value );
-            found++;
-        }
-        else if( opzioni[i].name.compare( "PORT" ) == 0 ){
-            port.push_back( atoi(opzioni[i].value.c_str()) );
-            found++;
-        }
-        else if( opzioni[i].name.compare( "RCONPASS" ) == 0 ){
-            password.push_back( opzioni[i].value );
-            found++;
-        }
-        else if( opzioni[i].name.compare( "LOGPATH" ) == 0 ){
-            logpath.push_back( opzioni[i].value );
-            found++;
-       }
-       if (found==4)
-       {
-         found=0;
-       }
-    }
-
-    cout<<"[+] Importing values from config file:\n";
-    for (i=0;i<ip.size();i++)
+    
+    if ( caricatore->getOptions() == NULL )
     {
-      cout<<"  [+] Server number "<<i<<":\n";
-      cout<<"  [-] Ip of server: "<<ip[i]<<"\n";
-      cout<<"  [-] Port of server: "<<port[i]<<"\n";
-      cout<<"  [-] Rcon password: "<<password[i]<<"\n";
-      cout<<"  [-] File di log: "<<logpath[i]<<"\n";
+      cout<<"[EPIC FAIL] Main config file not found. Wtf?!?!?";
+    }
+    else
+    {
+      ConfigLoader * banList = new ConfigLoader( BANLIST );
+      ConfigLoader * adminList = new ConfigLoader( ADMINLIST );
+
+      std::vector<ConfigLoader::Banlist> banned = banList->getBanlist();
+      std::vector<ConfigLoader::AdminList> admins = adminList->getOptions();
+
+      cout << "\n";   //extra "a-capo"
+
+      delete banList;
+      delete adminList;
+
+      //***** operazione già effettuata internamente a ConfigLoader ****//
+      /*inizializzo il logger
+      Logger *errorLog = new Logger( caricatore->getOptions()->generalLog );
+      caricatore->getOptions()->errors=errorLog;*/
+
+      //inizializzo db
+      Db *d = new Db( caricatore->getOptions(), banned, admins) ;
+
+      /*found=0;
+      vector<string> ip;
+      vector<int> port;
+      vector<string> password;
+      vector<string> logpath;
+
+      for(i=0;i < opzioni.size(); i++ ){
+          if( opzioni[i].name.compare( "IP" ) == 0 ){
+              ip.push_back( opzioni[i].value );
+              found++;
+          }
+          else if( opzioni[i].name.compare( "PORT" ) == 0 ){
+              port.push_back( atoi(opzioni[i].value.c_str()) );
+              found++;
+          }
+          else if( opzioni[i].name.compare( "RCONPASS" ) == 0 ){
+              password.push_back( opzioni[i].value );
+              found++;
+          }
+          else if( opzioni[i].name.compare( "LOGPATH" ) == 0 ){
+              logpath.push_back( opzioni[i].value );
+              found++;
+        }
+        if (found==4)
+        {
+          found=0;
+        }
+      }
+
+      cout<<"[+] Importing values from config file:\n";
+      for (i=0;i<ip.size();i++)
+      {
+        cout<<"  [+] Server number "<<i<<":\n";
+        cout<<"  [-] Ip of server: "<<ip[i]<<"\n";
+        cout<<"  [-] Port of server: "<<port[i]<<"\n";
+        cout<<"  [-] Rcon password: "<<password[i]<<"\n";
+        cout<<"  [-] File di log: "<<logpath[i]<<"\n";
+        cout<<"\n";
+      }
       cout<<"\n";
+
+      botLog->open();
+      botLog->timestamp();
+      *botLog<<"\n[+] Importing values from config file:\n";
+      for (i=0;i<ip.size();i++)
+      {
+        *botLog<<"  [+] Server number "<<i<<":\n";
+        *botLog<<"  [-] Ip of server: "<<ip[i]<<"\n";
+        *botLog<<"  [-] Port of server: "<<port[i]<<"\n";
+        *botLog<<"  [-] Rcon password: "<<password[i]<<"\n";
+        *botLog<<"  [-] File di log: "<<logpath[i]<<"\n";
+        *botLog<<"\n";
+      }
+      *botLog<<"\n";*/
+
+      //Start connection
+      Connection *serverCommand = new Connection(opzioni);   //need vector with options
+
+      Backup *back=new Backup(opzioni,botLog);
+      //Start analyzer
+      Analyzer anal( serverCommand, d,botLog, back, opzioni );
+      anal.main_loop();
     }
-    cout<<"\n";
-
-    botLog->open();
-    botLog->timestamp();
-    *botLog<<"\n[+] Importing values from config file:\n";
-    for (i=0;i<ip.size();i++)
-    {
-      *botLog<<"  [+] Server number "<<i<<":\n";
-      *botLog<<"  [-] Ip of server: "<<ip[i]<<"\n";
-      *botLog<<"  [-] Port of server: "<<port[i]<<"\n";
-      *botLog<<"  [-] Rcon password: "<<password[i]<<"\n";
-      *botLog<<"  [-] File di log: "<<logpath[i]<<"\n";
-      *botLog<<"\n";
-    }
-    *botLog<<"\n";
-
-    //Start connection
-    Connection *serverCommand = new Connection(opzioni);   //need vector with options
-
-    Backup *back=new Backup(opzioni,botLog);
-    //Start analyzer
-    Analyzer anal( serverCommand, d,botLog, back, opzioni );
-    anal.main_loop();
 
 }

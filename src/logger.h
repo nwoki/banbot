@@ -38,17 +38,19 @@ class Logger
         Logger();
         ~Logger();
 
-        bool open();    //returns true if opened successfully
+        bool open();    //returns true if opened successfully. This function is not necessary, file is opened automatically on first write.
         void changePath(std::string path);
         void timestamp();   //writes a timestamp into file
         void close();	//close the file
 
-	void write(const char* valore); //writes data on the file (but it's better to use the <<).
-	void write(const int valore);
+        void write(const char* valore); //writes data on the file (but it's better to use the <<).
+        void write(const int valore);
 
     private:
         std::string path;    //location of logfile
         std::ofstream file;  //filestream
+        bool isOpen;
+        void checkFile();   //check if directory and file exist, oterwise try to create it.
 
 };
 

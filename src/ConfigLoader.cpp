@@ -40,11 +40,11 @@ ConfigLoader::~ConfigLoader()
     delete opzioni;
 }
 
-std::vector<ConfigLoader::Option> ConfigLoader::getOptions()
+std::vector<ConfigLoader::AdminList> ConfigLoader::getAdminlist()
 {
   std::ifstream * cfg=new std::ifstream();
   cfg->open( generalFile.c_str() );
-  std::vector<ConfigLoader::Option> vettore;
+  std::vector<ConfigLoader::AdminList> vettore;
   //leggo il file fino alla fine
   if (cfg->is_open())
   {
@@ -53,10 +53,10 @@ std::vector<ConfigLoader::Option> ConfigLoader::getOptions()
       //leggo una riga
       char line [600];
       cfg->getline(line,300);
-      //se non è un commento prendo le impostazioni
+      //se non è un commento prendo l'admin
       if (line[0]!='#' && !cfg->eof())
       {
-        ConfigLoader::Option opzione;
+        ConfigLoader::AdminList opzione;
 
         //la trasformo in stringa e estraggo le coppie chiave-valore
         std::string riga=line;
