@@ -42,6 +42,8 @@ Analyzer::Analyzer( Connection* conn, Db* db, ConfigLoader* configLoader )
     , database( db )
     , m_dati( configLoader->getOptions() )
     , log(new ifstream())
+    , contatore(0)
+    , fascia(0)
 {
   loadOptions();
   //inizializzo il resto
@@ -1326,6 +1328,7 @@ void Analyzer::main_loop()
   *(m_dati->errors)<<"[OK] BanBot avviato.\n\n";
   while (true)
   {
+    commandexecuted=false;
     for (m_dati->serverNumber=0;m_dati->serverNumber<m_dati->size();m_dati->serverNumber++)
     {
       //vedo è il caso di fare il backup
@@ -1398,6 +1401,7 @@ void Analyzer::main_loop()
           {
             //ha passato il regex, è una clientUserinfo
             clientUserInfo(line);
+            commandexecuted=true;
           }
           else
           {
@@ -1407,6 +1411,7 @@ void Analyzer::main_loop()
             {
               //è un clientconnect:
               clientConnect(line);
+              commandexecuted=true;
             }
             else
             {
@@ -1427,11 +1432,13 @@ void Analyzer::main_loop()
                   for (unsigned int i=0;i<(*m_dati)[m_dati->serverNumber].size();i++) delete (*m_dati)[m_dati->serverNumber][i];
                   //resetto il vector:
                   (*m_dati)[m_dati->serverNumber].clear();
+                  commandexecuted=true;
                 }
                 else
                 {
                   if (isA(line,COMMAND))
                   {
+                    commandexecuted=true;
                     //controllo se è un comando di ban
                     if (isA(line, BAN))
                     {
@@ -1572,8 +1579,30 @@ void Analyzer::main_loop()
       (m_dati->log)->close();
       (m_dati->errors)->close();
     }
-    //fine ciclo, lascio passare un po' di tempo a fine ciclo
-    sleep(TIME_SLEEPING);
+    //fine ciclo, lascio passare un po' di tempo
+    if ( commandexecuted ) 
+    {
+      fascia=0;
+      contatore=0;
+    }
+    else contatore++;
+    if ( (fascia == 0 && contatore > 7) || (fascia == 1 && contatore > 50) ) fascia++;
+    
+    switch (fascia)
+    {
+      case 0: 
+        sleep(TIME_SLEEPING_MIN);
+        break;
+      case 1:
+        sleep(TIME_SLEEPING_MIDDLE);
+        break;
+      case 2:
+        sleep(TIME_SLEEPING_MAX);
+        break;
+      default:
+        sleep(TIME_SLEEPING_MIN);
+        break;
+    }
   }
 }
 #endif
