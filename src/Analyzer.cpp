@@ -41,9 +41,8 @@ Analyzer::Analyzer( Connection* conn, Db* db, ConfigLoader* configLoader )
     , server( conn )
     , database( db )
     , m_dati( configLoader->getOptions() )
+    , log(new ifstream())
 {
-  logger=new Logger(m_dati->generalLog);
-  logger->open();
   loadOptions();
   //inizializzo il resto
   CLIENT_CONNECT=" *[0-9]+:[0-9]{2} +ClientConnect:";
@@ -76,9 +75,8 @@ Analyzer::Analyzer( Connection* conn, Db* db, ConfigLoader* configLoader )
   IAMGOD=" *[0-9]+:[0-9]{2} +say: +[0-9]+ +[^ \t\n\r\f\v]+: +!iamgod";
   
   std::cout<<"[OK] Analyzer inizializzato.\n";
-  *logger<<"[OK] Analyzer inizializzato.\n\n";
-  log=new ifstream();
-  logger->close();
+  *(m_dati->errors)<<"[OK] Analyzer inizializzato.\n\n";
+  m_dati->errors->close();
 }
 
 //distruttore
@@ -86,8 +84,9 @@ Analyzer::~Analyzer()
 {
   if( log->is_open() ) log->close();
   delete log;
-  logger->close();
-  delete logger;
+  m_dati->errors->close();
+  m_dati->log->close();
+  delete m_configLoader;
 }
 
 //caricatore delle opzioni
@@ -112,8 +111,8 @@ void Analyzer::loadOptions()
       }
   }
   std::cout<<"Nuove opzioni caricate.\n";
-  logger->timestamp();
-  *logger<<"\nNuove opzioni caricate.\n";
+  m_dati->errors->timestamp();
+  *(m_dati->errors)<<"\nNuove opzioni caricate.\n";
 }
 
 //testa l'array di caratteri passato col regex, torna true se la condizione imposta dal regex è soddisfatta.
@@ -155,7 +154,7 @@ bool Analyzer::isAdminSay( char* line, std::string &numero )
     }
 
     std::cout<<" requested by "<<nick<<", "<<guid<<"\n";
-    *logger<<" requested by "<<nick<<", "<<guid<<"\n";
+    *(m_dati->log)<<" requested by "<<nick<<", "<<guid<<"\n";
     if( !nonTrovato && database->checkAuthGuid(correggi(guid)))
         return true;
 
@@ -190,8 +189,8 @@ void Analyzer::clientUserInfo(char* line)
   if (pos!=end) guid=temp.substr(pos,end-pos);
 
   std::cout<<"[-]Estrapolati i dati: numero="<<numero<<" guid="<<guid<<" nick="<<nick<<" ip="<<ip<<"\n";
-  logger->timestamp();
-  *logger<<"\n[-]Estrapolati i dati: numero="<<numero<<" guid="<<guid<<" nick="<<nick<<" ip="<<ip<<"\n";
+  (m_dati->log)->timestamp();
+  *(m_dati->log)<<"\n[-]Estrapolati i dati: numero="<<numero<<" guid="<<guid<<" nick="<<nick<<" ip="<<ip<<"\n";
   
   //cerco il giocatore giusto all'interno della mia lista, e salvo il guid nelle info
   unsigned int i=0;
@@ -209,7 +208,7 @@ void Analyzer::clientUserInfo(char* line)
           //cambio illegale del GUID => cheats
           kicked=true;
           std::cout<<"  [!] kick automatico per cheats (GUID changed during the game).\n";
-          *logger<<"  [!] kick automatico per cheats (GUID changed during the game).\n";
+          *(m_dati->log)<<"  [!] kick automatico per cheats (GUID changed during the game).\n";
           std::string frase("BanBot: auto-banning player number ");
           frase.append(numero);
           frase.append(", ");
@@ -257,7 +256,7 @@ void Analyzer::clientUserInfo(char* line)
       //guid vuota, probabili cheats, sono in modalità strict, butto fuori (provo a bannare un'eventuale guid precedente).
       kicked=true;
       std::cout<<"  [!] kick automatico per GUID non valida (vuota).\n";
-      *logger<<"  [!] kick automatico per GUID non valida (vuota).\n";
+      *(m_dati->log)<<"  [!] kick automatico per GUID non valida (vuota).\n";
       std::string frase("BanBot: auto-banning player number ");
       frase.append(numero);
       frase.append(", ");
@@ -303,7 +302,7 @@ void Analyzer::clientUserInfo(char* line)
 
       //butto fuori la persona dal server
       std::cout<<"  [!] kicking "<<nick<<" for ban ("<<risultato[0]<<").\n";
-      *logger<<"  [!] kicking "<<nick<<" for ban ("<<risultato[0]<<").\n";
+      *(m_dati->log)<<"  [!] kicking "<<nick<<" for ban ("<<risultato[0]<<").\n";
       buttaFuori(risultato,numero,nick);
 
       //aggiorno i dati sul database
@@ -324,7 +323,7 @@ void Analyzer::clientUserInfo(char* line)
         std::vector<std::string> risultato=database->extractData(query);
 
         std::cout<<"  [!] kicking "<<nick<<" for ban ("<<risultato[0]<<").\n";
-        *logger<<"  [!] kicking "<<nick<<" for ban ("<<risultato[0]<<").\n";
+        *(m_dati->log)<<"  [!] kicking "<<nick<<" for ban ("<<risultato[0]<<").\n";
         buttaFuori(risultato, numero,nick);
 
         if (risultato.size()>1)
@@ -344,7 +343,7 @@ void Analyzer::clientUserInfo(char* line)
           std::vector<std::string> risultato=database->extractData(query);
 
           std::cout<<"  [!] kicking "<<nick<<" for ban ("<<risultato[0]<<").\n";
-          *logger<<"  [!] kicking "<<nick<<" for ban ("<<risultato[0]<<").\n";
+          *(m_dati->log)<<"  [!] kicking "<<nick<<" for ban ("<<risultato[0]<<").\n";
           buttaFuori(risultato, numero,nick);
 
           if (risultato.size()>1)
@@ -363,7 +362,7 @@ void Analyzer::clientUserInfo(char* line)
           {
               //il guid è illegale, ban diretto
               std::cout<<"  [!] kick automatico per GUID illegale\n";
-              *logger<<"  [!] kick automatico per GUID illegale\n";
+              *(m_dati->log)<<"  [!] kick automatico per GUID illegale\n";
               std::string frase("BanBot: kicking player number ");
               frase.append(numero);
               frase.append(", ");
@@ -381,7 +380,7 @@ void Analyzer::clientUserInfo(char* line)
           else
           {
               std::cout<<"  [OK] (s)he's ok.\n";
-              *logger<<"  [OK] (s)he's ok.\n";
+              *(m_dati->log)<<"  [OK] (s)he's ok.\n";
           }
         }
   }
@@ -398,8 +397,8 @@ void Analyzer::clientConnect(char* line)
   std::string numero=temp.substr(pos,end-pos);
 
   std::cout<<"[-] Nuovo client connesso: "<<numero<<"\n";
-  logger->timestamp();
-  *logger<<"\n[-] Nuovo client connesso: "<<numero<<"\n";
+  (m_dati->log)->timestamp();
+  *(m_dati->log)<<"\n[-] Nuovo client connesso: "<<numero<<"\n";
   //per pignoleria controllo che non sia già presente
   unsigned int i=0;
   bool nonTrovato=true;
@@ -436,8 +435,8 @@ void Analyzer::clientDisconnect(char* line)
   std::string numero=temp.substr(pos,end-pos);
 
   std::cout<<"[-] Client disconnesso: "<<numero<<"\n";
-  logger->timestamp();
-  *logger<<"\n[-] Client disconnesso: "<<numero<<"\n";
+  (m_dati->log)->timestamp();
+  *(m_dati->log)<<"\n[-] Client disconnesso: "<<numero<<"\n";
   //cerco il player e lo elimino
   unsigned int i=0;
   bool nonTrovato=true;
@@ -463,14 +462,14 @@ void Analyzer::clientDisconnect(char* line)
 void Analyzer::ban(char* line)
 {
   std::cout<<"[!] Ban";
-  logger->timestamp();
-  *logger<<"\n[!] Ban";
+  (m_dati->log)->timestamp();
+  *(m_dati->log)<<"\n[!] Ban";
   //controllo se ho trovato il giocatore e i suoi permessi, se la persona non è autorizzata non faccio nulla.
   std::string numeroAdmin;
   if (isAdminSay(line,numeroAdmin))
   {
     std::cout<<"  [OK] Is an admin. Applying ban.\n";
-    *logger<<"  [OK] Is an admin. Applying ban.\n";
+    *(m_dati->log)<<"  [OK] Is an admin. Applying ban.\n";
     //ok ha i permessi, eseguo.
     int i=0;
     //prendo il numero del giocatore da bannare
@@ -504,7 +503,7 @@ void Analyzer::ban(char* line)
       if (!database->checkAuthGuid((*m_dati)[m_dati->serverNumber][i]->GUID))
       {
         std::cout<<"  [+]banning "<<(*m_dati)[m_dati->serverNumber][i]->nick<<" with guid "<<(*m_dati)[m_dati->serverNumber][i]->GUID<<"\n";
-        *logger<<"  [+]banning "<<(*m_dati)[m_dati->serverNumber][i]->nick<<" with guid "<<(*m_dati)[m_dati->serverNumber][i]->GUID<<"\n";
+        *(m_dati->log)<<"  [+]banning "<<(*m_dati)[m_dati->serverNumber][i]->nick<<" with guid "<<(*m_dati)[m_dati->serverNumber][i]->GUID<<"\n";
         std::string frase("BanBot: banning player number ");
         frase.append((*m_dati)[m_dati->serverNumber][i]->number);
         frase.append(", ");
@@ -524,29 +523,31 @@ void Analyzer::ban(char* line)
         if (database->ban(correggi((*m_dati)[m_dati->serverNumber][i]->nick),(*m_dati)[m_dati->serverNumber][i]->ip,data,ora,correggi((*m_dati)[m_dati->serverNumber][i]->GUID),correggi(motivo),correggi((*m_dati)[m_dati->serverNumber][j]->GUID)))
         {
           std::cout<<"  [OK] player banned\n";
-          *logger<<"  [OK] player banned\n";
+          *(m_dati->log)<<"  [OK] player banned\n";
         }
         else
         {
           std::cout<<"  [FAIL] error on db calls\n";
-          *logger<<"  [FAIL] error on db calls\n";
+          *(m_dati->log)<<"  [FAIL] error on db calls\n";
+          (m_dati->errors)->timestamp();
+          *(m_dati->errors)<<"\n  [FAIL] On " << (*m_dati)[m_dati->serverNumber].getName()  << " : error on db calls\n";
         }
         sleep(SOCKET_PAUSE);
         server->kick((*m_dati)[m_dati->serverNumber][i]->number);
         std::cout<<"  [OK] player banned\n";
-        *logger<<"  [OK] player banned\n";
+        *(m_dati->log)<<"  [OK] player banned\n";
       }
       else
       {
         std::cout<<"  [!]fail: player is an admin\n";
-        *logger<<"  [!]fail: player is an admin\n";
+        *(m_dati->log)<<"  [!]fail: player is an admin\n";
         server->tell("Banning error: (s)he's an admin.",numeroAdmin);
       }
     }
     else
     {
       std::cout<<"  [!]fail: player not in-game (or wrong nick) or already banned\n";
-      *logger<<"  [!]fail: player not in-game (or wrong nick) or already banned\n";
+      *(m_dati->log)<<"  [!]fail: player not in-game (or wrong nick) or already banned\n";
       tell("Banning error: numero del giocatore sbagliato o nick non univoco.",numeroAdmin);
     }
   }
@@ -555,8 +556,8 @@ void Analyzer::ban(char* line)
 void Analyzer::unban(char* line)
 {
   std::cout<<"[!] Unban";
-  logger->timestamp();
-  *logger<<"\n[!] Unban";
+  (m_dati->log)->timestamp();
+  *(m_dati->log)<<"\n[!] Unban";
   //controllo se ho il giocatore e i suoi permessi, se la persona non è autorizzata non faccio nulla.
   std::string numeroAdmin;
   if (isAdminSay(line,numeroAdmin))
@@ -584,14 +585,14 @@ void Analyzer::unban(char* line)
 void Analyzer::find(char* line)
 {
   std::cout<<"[!] Find";
-  logger->timestamp();
-  *logger<<"\n[!] Find";
+  (m_dati->log)->timestamp();
+  *(m_dati->log)<<"\n[!] Find";
   //controllo se ho il giocatore e i suoi permessi, se la persona non è autorizzata non faccio nulla.
   std::string numero;
   if (isAdminSay(line,numero))
   {
     std::cout<<"  [OK] Is an admin. Doing find.\n";
-    *logger<<"  [OK] Is an admin. Doing find.\n";
+    *(m_dati->log)<<"  [OK] Is an admin. Doing find.\n";
 
     //estraggo il nick da cercare.
     std::string temp(line);
@@ -600,7 +601,7 @@ void Analyzer::find(char* line)
 
     //ho il nick da cercare
     std::cout<<"  [-]Searching for "<<nick<<".\n";
-    *logger<<"  [-]Searching for "<<nick<<".\n";
+    *(m_dati->log)<<"  [-]Searching for "<<nick<<".\n";
     //eseguo la ricerca sul DB e invio i risultati al server di gioco.
     std::string query("SELECT id,nick,motive,author FROM banned WHERE nick = '");
     query.append(correggi(nick));
@@ -691,14 +692,14 @@ void Analyzer::find(char* line)
 void Analyzer::findOp(char* line)
 {
   std::cout<<"[!] FindOp";
-  logger->timestamp();
-  *logger<<"\n[!] FindOp";
+  (m_dati->log)->timestamp();
+  *(m_dati->log)<<"\n[!] FindOp";
   //controllo se ho il giocatore e i suoi permessi, se la persona non è autorizzata non faccio nulla.
   std::string numero;
   if (isAdminSay(line,numero))
   {
     std::cout<<"  [OK] Is an admin. Doing findop.\n";
-    *logger<<"  [OK] Is an admin. Doing findop.\n";
+    *(m_dati->log)<<"  [OK] Is an admin. Doing findop.\n";
 
     //estraggo il nick da cercare.
     std::string temp(line);
@@ -707,7 +708,7 @@ void Analyzer::findOp(char* line)
 
     //ho il nick da cercare
     std::cout<<"  [-]Searching for "<<nick<<".\n";
-    *logger<<"  [-]Searching for "<<nick<<".\n";
+    *(m_dati->log)<<"  [-]Searching for "<<nick<<".\n";
     //eseguo la ricerca sul DB e invio i risultati al server di gioco.
     std::string query("SELECT id,nick FROM oplist WHERE nick = '");
     query.append(correggi(nick));
@@ -775,8 +776,8 @@ void Analyzer::findOp(char* line)
 void Analyzer::op(char* line)
 {
   std::cout<<"[!] Op";
-  logger->timestamp();
-  *logger<<"\n[!] Op";
+  (m_dati->log)->timestamp();
+  *(m_dati->log)<<"\n[!] Op";
   //controllo se ho il giocatore e i suoi permessi, se la persona non è autorizzata non faccio nulla.
   std::string numeroAdmin;
   if (isAdminSay(line,numeroAdmin))
@@ -816,8 +817,8 @@ void Analyzer::op(char* line)
 void Analyzer::deop(char* line)
 {
   std::cout<<"[!] Deop";
-  logger->timestamp();
-  *logger<<"\n[!] Deop";
+  (m_dati->log)->timestamp();
+  *(m_dati->log)<<"\n[!] Deop";
   //controllo se ho il giocatore e i suoi permessi, se la persona non è autorizzata non faccio nulla.
   std::string numeroAdmin;
   if (isAdminSay(line,numeroAdmin))
@@ -841,8 +842,8 @@ void Analyzer::deop(char* line)
 void Analyzer::kick(char* line)
 {
   std::cout<<"[!] Kick";
-  logger->timestamp();
-  *logger<<"\n[!] Kick";
+  (m_dati->log)->timestamp();
+  *(m_dati->log)<<"\n[!] Kick";
   //controllo se ho il giocatore e i suoi permessi, se la persona non è autorizzata non faccio nulla.
   std::string numeroAdmin;
   if (isAdminSay(line,numeroAdmin))
@@ -885,8 +886,8 @@ void Analyzer::kick(char* line)
 void Analyzer::mute(char* line)
 {
   std::cout<<"[!] Mute";
-  logger->timestamp();
-  *logger<<"\n[!] Mute";
+  (m_dati->log)->timestamp();
+  *(m_dati->log)<<"\n[!] Mute";
   //controllo se ho il giocatore e i suoi permessi, se la persona non è autorizzata non faccio nulla.
   std::string numeroAdmin;
   if (isAdminSay(line,numeroAdmin))
@@ -929,8 +930,8 @@ void Analyzer::mute(char* line)
 void Analyzer::help(char* line)
 {
   std::cout<<"[!] Help";
-  logger->timestamp();
-  *logger<<"\n[!] Help";
+  (m_dati->log)->timestamp();
+  *(m_dati->log)<<"\n[!] Help";
   std::string numero;
   if (isAdminSay(line,numero))
   {
@@ -941,8 +942,8 @@ void Analyzer::help(char* line)
 void Analyzer::setStrict(char* line)
 {
   std::cout<<"[!] Strict";
-  logger->timestamp();
-  *logger<<"\n[!] Strict";
+  (m_dati->log)->timestamp();
+  *(m_dati->log)<<"\n[!] Strict";
   //controllo se ho il giocatore e i suoi permessi, se la persona non è autorizzata non faccio nulla.
   std::string numeroAdmin;
   if (isAdminSay(line,numeroAdmin))
@@ -964,8 +965,8 @@ void Analyzer::setStrict(char* line)
 void Analyzer::veto(char* line)
 {
   std::cout<<"[!] Veto";
-  logger->timestamp();
-  *logger<<"\n[!] Veto";
+  (m_dati->log)->timestamp();
+  *(m_dati->log)<<"\n[!] Veto";
   //controllo se ho il giocatore e i suoi permessi, se la persona non è autorizzata non faccio nulla.
   std::string numeroAdmin;
   if (isAdminSay(line,numeroAdmin))
@@ -977,8 +978,8 @@ void Analyzer::veto(char* line)
 void Analyzer::slap(char* line)
 {
   std::cout<<"[!] Slap";
-  logger->timestamp();
-  *logger<<"\n[!] Slap";
+  (m_dati->log)->timestamp();
+  *(m_dati->log)<<"\n[!] Slap";
   //controllo se ho il giocatore e i suoi permessi, se la persona non è autorizzata non faccio nulla.
   std::string numeroAdmin;
   if (isAdminSay(line,numeroAdmin))
@@ -1038,8 +1039,8 @@ void Analyzer::slap(char* line)
 void Analyzer::status(char* line)
 {
   std::cout<<"[!] Status";
-  logger->timestamp();
-  *logger<<"\n[!] Status";
+  (m_dati->log)->timestamp();
+  *(m_dati->log)<<"\n[!] Status";
   //controllo se ho il giocatore e i suoi permessi, se la persona non è autorizzata non faccio nulla.
   std::string numeroAdmin;
   if (isAdminSay(line,numeroAdmin))
@@ -1072,8 +1073,8 @@ void Analyzer::status(char* line)
 void Analyzer::force(char* line)
 {
   std::cout<<"[!] Force";
-  logger->timestamp();
-  *logger<<"\n[!] Force";
+  (m_dati->log)->timestamp();
+  *(m_dati->log)<<"\n[!] Force";
   //controllo se ho il giocatore e i suoi permessi, se la persona non è autorizzata non faccio nulla.
   std::string numeroAdmin;
   if (isAdminSay(line,numeroAdmin))
@@ -1121,8 +1122,8 @@ void Analyzer::force(char* line)
 void Analyzer::iamgod(char* line)
 {
   std::cout<<"[!] iamgod";
-  logger->timestamp();
-  *logger<<"\n[!] iamgod";
+  (m_dati->log)->timestamp();
+  *(m_dati->log)<<"\n[!] iamgod";
   //controllo se il database è vuoto. Se lo è, aggiungo la persona tra gli op.
   if (database->isOpTableEmpty())   //se il database è vuoto
   {
@@ -1176,7 +1177,7 @@ void Analyzer::buttaFuori(const std::vector<std::string> &reason, const std::str
 {
   //è stato bannato, lo butto fuori
       std::cout<<"  [+] kick per ban.\n";
-      *logger<<"  [+] kick per ban.\n";
+      *(m_dati->log)<<"  [+] kick per ban.\n";
       std::string frase("BanBot: kicking player number ");
       frase.append(numero);
       frase.append(", ");
@@ -1321,16 +1322,13 @@ int Analyzer::translatePlayer(std::string player)
 //main loop
 void Analyzer::main_loop()
 {
-  logger->open();
   std::cout<<"[OK] BanBot avviato.\n\n";
-  *logger<<"[OK] BanBot avviato.\n\n";
-  logger->close();
+  *(m_dati->errors)<<"[OK] BanBot avviato.\n\n";
   while (true)
   {
     for (m_dati->serverNumber=0;m_dati->serverNumber<m_dati->size();m_dati->serverNumber++)
     {
       //vedo è il caso di fare il backup
-      logger->open();
       if(backup->doJobs()) 
       {
         //eseguito il backup. Reload dei server
@@ -1359,32 +1357,28 @@ void Analyzer::main_loop()
         sleep(2);
       }
       //provo ad aprire il file e a riprendere dalla riga dove ero arrivato
+      (m_dati->log)->changePath( (*m_dati)[m_dati->serverNumber].getBotLog() );
       std::cout<<"Provo ad aprire "<<(*m_dati)[m_dati->serverNumber].getServerLog()<<"\n";
-      logger->timestamp();
-      *logger<<"\nProvo ad aprire "<<(*m_dati)[m_dati->serverNumber].getServerLog()<<"\n";
       log=new ifstream();
       log->open((*m_dati)[m_dati->serverNumber].getServerLog().c_str());
       log->seekg((*m_dati)[m_dati->serverNumber].getRow());
       if (log->is_open())
       {
-        std::cout<<"  [OK] Aperto!\n";
-        *logger<<"  [OK] Aperto!\n";
+        std::cout<<"  [OK] Aperto!\n";;
         #ifdef DEBUG_MODE
-          std::cout<< "  Al punto: "<< row[m_dati->serverNumber]<<"\n";
-          *logger<< "  Al punto: "<< row[m_dati->serverNumber]<<"\n";
+          std::cout<< "  Al punto: "<< (*m_dati)[m_dati->serverNumber].getRow()<<"\n";
+          *(m_dati->log)<<"  [OK] Aperto!\n"
+          *(m_dati->log)<< "  Al punto: "<< (*m_dati)[m_dati->serverNumber].getRow()<<"\n";
         #endif
       }
       else
       {
         std::cout<<"  [FAIL] Non sono riuscito ad aprirlo!\n";
-        *logger<<"  [FAIL] Non sono riuscito ad aprirlo!\n";
+        *(m_dati->log)<<"  [FAIL] Non sono riuscito ad aprire "<<(*m_dati)[m_dati->serverNumber].getServerLog()<<"\n";
       }
-      logger->close();
       //se il file è aperto posso lavorare, e provo ad aprire pure il db
       if (log->is_open() && !log->bad() && database->openDatabase())
       {
-        logger->changePath((*m_dati)[m_dati->serverNumber].getBotLog());
-        logger->open();
         //il file è aperto, esamino le nuove righe (se ce ne sono)
         while (!log->eof() && !log->bad() && (*m_dati)[m_dati->serverNumber].getRow()>=0)
         {
@@ -1564,23 +1558,21 @@ void Analyzer::main_loop()
       else
       {
         (*m_dati)[m_dati->serverNumber].setRow(0);//se non riesco ad aprire il file, ricomincio dalla prima riga
-        logger->open();
         std::cout<<"Non riesco ad aprire il file di log o il database\n";
-        logger->timestamp();
-        *logger<<"\nNon riesco ad aprire il file di log o il database\n";
-        logger->close();
+        (m_dati->log)->timestamp();
+        *(m_dati->log)<<"\nNon riesco ad aprire il file di log o il database\n";
+        (m_dati->errors)->timestamp();
+        *(m_dati->errors)<<"\nNon riesco ad aprire il file di log o il database del server "<< (*m_dati)[m_dati->serverNumber].getName()  <<"\n";
       }
       if ((*m_dati)[m_dati->serverNumber].getRow()<0) (*m_dati)[m_dati->serverNumber].setRow(0);
-      //chiudo il file e lascio passare un po' di tempo
+      //chiudo il file di log del server
       log->close();
       delete log;
-      logger->close();
       database->closeDatabase();
+      (m_dati->log)->close();
+      (m_dati->errors)->close();
     }
-    logger->changePath(m_dati->generalLog);
-    logger->open();
-    *logger<<"Finito. \n";
-    logger->close();
+    //fine ciclo, lascio passare un po' di tempo a fine ciclo
     sleep(TIME_SLEEPING);
   }
 }
