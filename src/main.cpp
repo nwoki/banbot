@@ -31,7 +31,6 @@
 #include "ConfigLoader.h"
 #include "sqlite3/sqlite3.h"
 #include "logger.h"
-#include "Backup.h"
 
 #define BOTCONFIG "cfg/BanBot.cfg"
 #define BANLIST "cfg/Banlist"
@@ -62,7 +61,7 @@ int main( int argc, char *argv[] ){ //pass argument to specify bot configfile
       ConfigLoader * adminList = new ConfigLoader( ADMINLIST );
 
       std::vector<ConfigLoader::Banlist> banned = banList->getBanlist();
-      std::vector<ConfigLoader::AdminList> admins = adminList->getOptions();
+      std::vector<ConfigLoader::AdminList> admins = adminList->getAdminlist();
 
       cout << "\n";   //extra "a-capo"
 
@@ -133,11 +132,10 @@ int main( int argc, char *argv[] ){ //pass argument to specify bot configfile
       *botLog<<"\n";*/
 
       //Start connection
-      Connection *serverCommand = new Connection(opzioni);   //need vector with options
+      Connection *serverCommand = new Connection(caricatore->getOptions());   //need vector with options
 
-      Backup *back=new Backup(opzioni,botLog);
       //Start analyzer
-      Analyzer anal( serverCommand, d,botLog, back, opzioni );
+      Analyzer anal( serverCommand, d, caricatore );
       anal.main_loop();
     }
 

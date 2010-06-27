@@ -35,10 +35,10 @@
 
 #include <iostream>
 
-Backup::Backup(std::vector<ConfigLoader::Option> opzioni, Logger *logger):done(false),logger(logger)
+Backup::Backup(ConfigLoader::Options* opzioni)
+  : done(false)
 {
-  std::cout<<"Inizializzazione backup....\n";
-  for (unsigned int i=0;i<opzioni.size();i++)
+  /*for (unsigned int i=0;i<opzioni.size();i++)
   {
     if (opzioni[i].name.compare("LOGPATH")==0 || opzioni[i].name.compare("BOTLOG")==0 || opzioni[i].name.compare("BOTLOGPATH")==0)
     {
@@ -48,14 +48,91 @@ Backup::Backup(std::vector<ConfigLoader::Option> opzioni, Logger *logger):done(f
     {
       directory=opzioni[i].value;
     }
-  }
-  /*std::cout<<"Eseguo il backup di avvio....\n";
-  avvio();
-  std::cout<<"Finito il backup di avvio....\n";*/
+  }*/
 }
 
 Backup::~Backup()
 {
+}
+
+void Backup::creaCartelle()
+{
+  //controllo le cartelle dei server
+  for (unsigned int i=0; i<m_options->size(); i++ )
+  {
+    if ( (*m_options)[i].isChanged() )
+    {
+      std::cout<<"\nInizializzo il sistema di backup di "<< (*m_options)[i].getName() <<" ...\n";
+      std::string dir ( (*m_options)[i].getBackupDir() );
+      unsigned int pos=0;
+      bool ok=true;
+      
+      //check per la cartella
+      while (pos<dir.size()-1 && ok)
+      {
+        pos=dir.find('/',pos+1);
+        std::string cartella=dir.substr(0,pos);
+
+        struct stat st;
+        if( stat( cartella.c_str(), &st ) == 0 )
+        {
+            std::cout<<"  [*]dir '"<<cartella<<"/' found\n";
+        }
+        else
+        {
+          std::cout<<"   [!]couldn't find dir '"<<cartella<<"/'! Creating dir '"<<cartella<<"/'..\n";
+
+          if( mkdir( cartella.c_str(), 0777 ) == 0 )
+          {
+              std::cout<<"  [OK]created '"<<cartella<<"/' directory..\n";
+          }
+          else
+          {
+              std::cout<<"[EPIC FAIL] couldn't create directory '"<<cartella<<"/'.Please check permissions!\n";
+              *(m_options->errors)<<"[EPIC FAIL] couldn't create directory '"<<cartella<<"/' for " << (*m_options)[i].getName() << ". Please check permissions!\n";
+              ok=false;
+          }
+        }
+      }
+    }
+  }
+  
+  //controllo la cartella di backup generale
+  if ( m_options->changed )
+  {
+    std::cout<<"\nInizializzo il sistema di backup generale ...\n";
+    std::string dir ( m_options->generalBackup );
+    unsigned int pos=0;
+    bool ok=true;
+    
+    //check per la cartella
+    while (pos<dir.size()-1 && ok)
+    {
+      pos=dir.find('/',pos+1);
+      std::string cartella=dir.substr(0,pos);
+
+      struct stat st;
+      if( stat( cartella.c_str(), &st ) == 0 )
+      {
+          std::cout<<"  [*]dir '"<<cartella<<"/' found\n";
+      }
+      else
+      {
+        std::cout<<"   [!]couldn't find dir '"<<cartella<<"/'! Creating dir '"<<cartella<<"/'..\n";
+
+        if( mkdir( cartella.c_str(), 0777 ) == 0 )
+        {
+            std::cout<<"  [OK]created '"<<cartella<<"/' directory..\n";
+        }
+        else
+        {
+            std::cout<<"[EPIC FAIL] couldn't create directory '"<<cartella<<"/'.Please check permissions!\n";
+            *(m_options->errors)<<"[EPIC FAIL] couldn't create directory '"<<cartella<<"/' for general backup. Please check permissions!\n";
+            ok=false;
+        }
+      }
+    }
+  }
 }
 
 void Backup::checkFolder(std::string path)
@@ -64,7 +141,10 @@ void Backup::checkFolder(std::string path)
   struct stat st;
   if (stat(path.c_str(),&st))
   {
-    mkdir(path.c_str(),0777);
+    if ( mkdir(path.c_str(),0777) !=0 )
+    {
+      *(m_options->errors)<<"[EPIC FAIL] couldn't create directory '"<<path<<"/'. Please check permissions!\n";
+    }
   }
 }
 
@@ -89,16 +169,15 @@ bool Backup::isTimeToWork()
       done=true;
       return true;
     }
-    return false;
   }
   else
   {
      done=false;
-     return false;
   }
+  return false;
 }
 
-void Backup::spostaFiles()
+void Backup::spostaFiles( unsigned int server )
 {
   //creo la cartella con la data.
   //prendo la data nel formato yyyy-mm-dd
@@ -109,28 +188,41 @@ void Backup::spostaFiles()
   tmp = localtime(&t);
   strftime(outstr, sizeof(outstr), "%F", tmp);
   //ho la data salvata in outstr, creo la cartella.
-  std::string cartella=directory;
+  std::string cartella=(*m_options)[server].getBackupDir();
   if(cartella.substr(cartella.size()-1).compare("/")!=0) cartella.append("/");
   cartella.append(outstr);
   checkFolder(cartella);
   //sposto i files.
-  for (unsigned int i=0; i<files.size(); i++)
-  {
+  
+  //BotLog
     //mi preparo la stringa con il file di destinazione
-    int pos=files[i].find_last_of("/");
+    int pos=(*m_options)[server].getBotLog().find_last_of("/");
     if (pos==-1) pos=0;
     else pos++;
     std::string nomeFile=cartella;
     nomeFile.append("/");
-    nomeFile.append(files[i].substr(pos));
+    nomeFile.append((*m_options)[server].getBotLog().substr(pos));
     //sposto il file
-    std::cout<<" sposto "<<files[i]<<" in "<<nomeFile<<".\n";
-    *logger<<" sposto "<<files[i]<<" in "<<nomeFile<<".\n";
-    std::rename(files[i].c_str(),nomeFile.c_str());
-  }
+    std::cout<<" sposto "<<(*m_options)[server].getBotLog()<<" in "<<nomeFile<<".\n";
+    *(m_options->errors)<<" sposto "<<(*m_options)[server].getBotLog()<<" in "<<nomeFile<<".\n";
+    std::rename((*m_options)[server].getBotLog().c_str(),nomeFile.c_str());
+    
+  //ServerLog
+    //mi preparo la stringa con il file di destinazione
+    pos=(*m_options)[server].getServerLog().find_last_of("/");
+    if (pos==-1) pos=0;
+    else pos++;
+    nomeFile.clear();
+    nomeFile=cartella;
+    nomeFile.append("/");
+    nomeFile.append((*m_options)[server].getServerLog().substr(pos));
+    //sposto il file
+    std::cout<<" sposto "<<(*m_options)[server].getServerLog()<<" in "<<nomeFile<<".\n";
+    *(m_options->errors)<<" sposto "<<(*m_options)[server].getServerLog()<<" in "<<nomeFile<<".\n";
+    std::rename((*m_options)[server].getServerLog().c_str(),nomeFile.c_str());
 }
 
-void Backup::avvio()
+void Backup::spostaFilesGenerali()
 {
   //creo la cartella con la data.
   //prendo la data nel formato yyyy-mm-dd
@@ -141,29 +233,25 @@ void Backup::avvio()
   tmp = localtime(&t);
   strftime(outstr, sizeof(outstr), "%F", tmp);
   //ho la data salvata in outstr, creo la cartella.
-  std::string cartella=directory;
+  std::string cartella=m_options->generalBackup;
   if(cartella.substr(cartella.size()-1).compare("/")!=0) cartella.append("/");
   cartella.append(outstr);
   checkFolder(cartella);
-  strftime(outstr, sizeof(outstr), "%H-%M", tmp);
-  cartella.append("/");
-  cartella.append(outstr);
-  checkFolder(cartella);
   //sposto i files.
-  for (unsigned int i=0; i<files.size(); i++)
-  {
+  
+  //GeneralLog
     //mi preparo la stringa con il file di destinazione
-    int pos=files[i].find_last_of("/");
+    int pos=m_options->generalLog.find_last_of("/");
     if (pos==-1) pos=0;
     else pos++;
     std::string nomeFile=cartella;
     nomeFile.append("/");
-    nomeFile.append(files[i].substr(pos));
+    nomeFile.append(m_options->generalLog.substr(pos));
     //sposto il file
-    std::cout<<" sposto "<<files[i]<<" in "<<nomeFile<<".\n";
-    *logger<<" sposto "<<files[i]<<" in "<<nomeFile<<".\n";
-    std::rename(files[i].c_str(),nomeFile.c_str());
-  }
+    std::cout<<" sposto "<<m_options->generalLog<<" in "<<nomeFile<<".\n";
+    *(m_options->errors)<<" sposto "<<m_options->generalLog<<" in "<<nomeFile<<".\n";
+    (m_options->errors)->close();
+    std::rename(m_options->generalLog.c_str(),nomeFile.c_str());
 }
 
 bool Backup::doJobs()
@@ -171,15 +259,18 @@ bool Backup::doJobs()
   if (isTimeToWork())
   {
     std::cout<<"Inizio il backup...";
-    logger->timestamp();
-    *logger<<"\nInizio il backup...";
-    logger->close();
-    checkFolder(directory);
-    spostaFiles();
+    (m_options->errors)->timestamp();
+    *(m_options->errors)<<"\nInizio il backup...";
+    
+    //faccio il backup per tutti i server...
+    for (unsigned int i=0; i<m_options->size(); i++)
+    {
+      spostaFiles(i);
+    }
+    
     std::cout<<"Finito.\n";
-    logger->open();
-    logger->timestamp();
-    *logger<<"\nBackup eseguito.\n";
+    (m_options->errors)->timestamp();
+    *(m_options->errors)<<"\nBackup eseguito.\n\n";
     return true;
   }
   return false;

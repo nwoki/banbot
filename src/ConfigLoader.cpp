@@ -140,6 +140,11 @@ std::vector<ConfigLoader::Banlist> ConfigLoader::getBanlist()
     return vettore;
 }
 
+ConfigLoader::Options* ConfigLoader::getOptions()
+{
+  return opzioni;
+}
+
 bool ConfigLoader::testChanges()
 {
   if (opzioni)

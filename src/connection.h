@@ -41,17 +41,17 @@ using namespace std;
 class Connection
 {
     public:
-        Connection(vector<ConfigLoader::Option> opzioni);
+        Connection(ConfigLoader::Options* opzioni);
         ~Connection();
 
-        void kick( string number, int server);  //prende il numero del giocatore da buttare fuori e il numero del server.
-        void say( string frase, int server);    //prende la frase da scrivere pubblicamente ed il numero del server.
-        void tell( string frase,string player, int server); //invia il messaggio privato "frase" al giocatore del numero contenuto in "player", nel server "server".
-        void reload(int server=-1);            //fa un reload della mappa. Se non indicato il server, lo fa su tutti i server.
-        void mute( string number, int server); //muta/smuta il player numero @number sul server @server
-        void veto(int server);                  //comando di veto sul server @server
-        void slap( string number, int server ); //slappa il giocatore @number del server @server
-        void force( string number, string where, int server); //forza il player numero @number sul server @server nel team @where
+        void kick( string number );  //prende il numero del giocatore da buttare fuori e il numero del server.
+        void say( string frase );    //prende la frase da scrivere pubblicamente ed il numero del server.
+        void tell( string frase, string player ); //invia il messaggio privato "frase" al giocatore del numero contenuto in "player", nel server "server".
+        void reload(bool all=false);            //fa un reload della mappa. Se viene passato true, lo fa su tutte le mappe.
+        void mute( string number ); //muta/smuta il player numero @number sul server @server
+        void veto();                  //comando di veto sul server @server
+        void slap( string number ); //slappa il giocatore @number del server @server
+        void force( string number, string where ); //forza il player numero @number sul server @server nel team @where
 
     private:
         sockaddr_in serverAdd;// clientAdd;
@@ -59,13 +59,14 @@ class Connection
         struct hostent *hp;
         int recvSize; //message length in risposta
 
-        void prepareConnection(int);
-        vector<char> makeCmd( string);
+        void prepareConnection( int );
+        vector<char> makeCmd( string );
+        
+        ConfigLoader::Options* m_options;
 
-        vector<char *>ip;
+        /*vector<char *>ip;
         vector<int> port;
-        vector<string>rconPass;
-	//int conn;
+        vector<string>rconPass;*/
 };
 
 

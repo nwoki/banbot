@@ -26,16 +26,18 @@
 
 #include "connection.h"
 
-Connection::Connection(vector<ConfigLoader::Option> opzioni): recvSize( 0 )
+Connection::Connection(ConfigLoader::Options* opzioni)
+  : recvSize( 0 )
+  , m_options(opzioni)
 {
-  for ( unsigned int i = 0; i < opzioni.size(); i++ ){
+  /*for ( unsigned int i = 0; i < opzioni.size(); i++ ){
       if ( opzioni[i].name.compare( "IP" ) == 0 )
           ip.push_back( (char*)opzioni[i].value.c_str() );
       else if ( opzioni[i].name.compare( "PORT" ) == 0 )
         port.push_back( atoi( opzioni[i].value.c_str() ));
       else if ( opzioni[i].name.compare( "RCONPASS" ) == 0 )
           rconPass.push_back( opzioni[i].value);
-  }
+  }*/
 }
 
 Connection::~Connection()
@@ -59,26 +61,26 @@ vector< char > Connection::makeCmd( string cmd ) //cmd = "rcon " + pass + azione
   return specials;
 }
 
-void Connection::prepareConnection( int server )
+void Connection::prepareConnection(int server)
 {
     socketID = socket( AF_INET, SOCK_DGRAM, 0 );
 
     serverAdd.sin_family = AF_INET;
-    serverAdd.sin_port = htons( port[server] );
+    serverAdd.sin_port = htons( (*m_options)[server].getPort() );
     //recvSize = sizeof( serverAdd );
 
-    hp = gethostbyname( ip[server] );
+    hp = gethostbyname( (*m_options)[server].getIP().c_str() );
     memcpy( (char*)&serverAdd.sin_addr, (char*)hp->h_addr, hp->h_length );
 
     recvSize = sizeof( serverAdd );
 }
 
-void Connection::kick( string number, int server )
+void Connection::kick( string number )
 {
-  prepareConnection( server );
+  prepareConnection( m_options->serverNumber );
 
   string comando( "rcon ");
-  comando.append( rconPass[server] );
+  comando.append( (*m_options)[m_options->serverNumber].getRcon() );
   comando.append( " kick " );
   comando.append( number );
 
@@ -88,12 +90,12 @@ void Connection::kick( string number, int server )
   close( socketID );
 }
 
-void Connection::say( string frase, int server )
+void Connection::say( string frase )
 {
-  prepareConnection( server );
+  prepareConnection( m_options->serverNumber );
 
   string comando( "rcon " );
-  comando.append( rconPass[server] );
+  comando.append( (*m_options)[m_options->serverNumber].getRcon() );
   comando.append( " say \"^1" );
   comando.append( frase );
   comando.append( "\"" );
@@ -104,12 +106,12 @@ void Connection::say( string frase, int server )
   close( socketID );
 }
 
-void Connection::tell( string frase, string player, int server )
+void Connection::tell( string frase, string player )
 {
-  prepareConnection( server );
+  prepareConnection( m_options->serverNumber );
 
   string comando( "rcon " );
-  comando.append( rconPass[server] );
+  comando.append( (*m_options)[m_options->serverNumber].getRcon() );
   comando.append( " tell " );
   comando.append( player );
   comando.append( " \"^1" );
@@ -122,31 +124,31 @@ void Connection::tell( string frase, string player, int server )
   close(socketID);
 }
 
-void Connection::reload(int server)
+void Connection::reload(bool all)
 {
-  if (server>=0)
+  if (!all)
   {
     string comando("rcon ");
-    comando.append(rconPass[server]);
+    comando.append( (*m_options)[m_options->serverNumber].getRcon() );
     comando.append(" reload");
 
     vector<char> command=makeCmd(comando);
     int bufferSize = command.size();
-    prepareConnection(server);
+    prepareConnection( m_options->serverNumber );
     sendto( socketID, command.data(), bufferSize, 0, &(sockaddr &)serverAdd, recvSize );
     close(socketID);
   }
   else
   {
-    for (unsigned int i=0;i<ip.size();i++)
+    for (unsigned int i=0;i<m_options->size();i++)
     {
       string comando("rcon ");
-      comando.append(rconPass[i]);
+      comando.append( (*m_options)[i].getRcon() );
       comando.append(" reload");
 
       vector<char> command=makeCmd(comando);
       int bufferSize = command.size();
-      prepareConnection(i);
+      prepareConnection( i );
       sendto( socketID, command.data(), bufferSize, 0, &(sockaddr &)serverAdd, recvSize );
       close(socketID);
       sleep(1);
@@ -154,12 +156,12 @@ void Connection::reload(int server)
   }
 }
 
-void Connection::mute( string number, int server)
+void Connection::mute( string number)
 {
-  prepareConnection( server );
+  prepareConnection( m_options->serverNumber );
 
   string comando( "rcon " );
-  comando.append( rconPass[server] );
+  comando.append( (*m_options)[m_options->serverNumber].getRcon() );
   comando.append( " mute " );
   comando.append( number );
 
@@ -169,12 +171,12 @@ void Connection::mute( string number, int server)
   close(socketID);
 }
 
-void Connection::veto(int server)
+void Connection::veto()
 {
-  prepareConnection( server );
+  prepareConnection( m_options->serverNumber );
 
   string comando( "rcon " );
-  comando.append( rconPass[server] );
+  comando.append( (*m_options)[m_options->serverNumber].getRcon() );
   comando.append( " veto" );
 
   vector< char > command = makeCmd( comando );
@@ -183,12 +185,12 @@ void Connection::veto(int server)
   close(socketID);
 }
 
-void Connection::slap( string number, int server )
+void Connection::slap( string number )
 {
-  prepareConnection( server );
+  prepareConnection( m_options->serverNumber );
 
   string comando( "rcon ");
-  comando.append( rconPass[server] );
+  comando.append( (*m_options)[m_options->serverNumber].getRcon() );
   comando.append( " slap " );
   comando.append( number );
   
@@ -198,12 +200,12 @@ void Connection::slap( string number, int server )
   close(socketID);
 }
 
-void Connection::force( string number, string where, int server)
+void Connection::force( string number, string where)
 {
-  prepareConnection( server );
+  prepareConnection( m_options->serverNumber );
 
   string comando( "rcon " );
-  comando.append( rconPass[server] );
+  comando.append( (*m_options)[m_options->serverNumber].getRcon() );
   comando.append( " forceteam " );
   comando.append(number);
   comando.append(" ");

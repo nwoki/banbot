@@ -54,7 +54,7 @@ class Server
         std::string getDbFolder();
         struct stat getInfos();
         std::string getIP();
-        std::string getPort();
+        int getPort();
         std::string getRcon();
         std::streampos getRow();
         std::string getServerLog();
@@ -69,7 +69,7 @@ class Server
         void setDbFolder( std::string dbFolder );
         void setInfos( struct stat infos );
         void setIP( std::string ip );
-        void setPort( std::string port );
+        void setPort( int port );
         void setRcon( std::string rcon );
         void setRow( std::streampos row );
         void setServerLog( std::string serverLog );
@@ -91,7 +91,7 @@ class Server
         struct stat m_infos;    //contiene le info del file di configurazione, tra cui la data dell'ultima modifica
         std::string m_rconpass;
         std::string m_ip;
-        std::string m_port;
+        int m_port;
         std::string m_backup;
         std::string m_botLog;
         std::string m_serverLog;

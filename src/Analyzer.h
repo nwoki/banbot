@@ -141,12 +141,11 @@ protected:
     Logger* logger;
     Connection * server;
     Db * database;
-    unsigned int serverNumber;
-    ConfigLoader::Options m_dati;       //contiente tutte le opzioni e i dati dei server (giocatori compresi).
+    ConfigLoader::Options* m_dati;       //contiente tutte le opzioni e i dati dei server (giocatori compresi).
     
 
 public:
-    Analyzer( Connection*, Db*, Backup*, ConfigLoader* );
+    Analyzer( Connection*, Db*, ConfigLoader* );
     ~Analyzer();
     void main_loop();
 };

@@ -95,12 +95,12 @@ void Server::setIP( std::string ip )
 }
 
 
-std::string Server::getPort()
+int Server::getPort()
 {
     return m_port;
 }
 
-void Server::setPort( std::string port )
+void Server::setPort( int port )
 {
     m_port = port;
 }
@@ -201,7 +201,7 @@ void Server::push_back( Player* player )
 
 std::vector<Server::Player*>::iterator Server::begin()
 {
-  m_giocatori.begin();
+  return m_giocatori.begin();
 }
 
 void Server::erase( std::vector<Server::Player*>::iterator iteratore)

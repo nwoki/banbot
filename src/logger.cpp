@@ -124,7 +124,7 @@ bool Logger::open()
 
 void Logger::timestamp()
 {
-  if( isOpen )
+  if( isOpen || open() )
   {
     //stampo il timestamp e il messaggio
     time_t timestamp=time(NULL);

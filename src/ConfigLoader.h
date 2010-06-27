@@ -47,10 +47,11 @@ class ConfigLoader
         bool changed;
         struct stat infos;                 //contiene le info del file di configurazione, tra cui la data dell'ultima modifica
         std::string generalLog;
+        std::string generalBackup;
         std::vector<Server> servers;
         Logger* errors;                     //log dedicato a notifiche ed errori
         Logger* log;                        //log dedicato ai server (cambia di file)
-        int serverNumber;                   //numero del server su cui sto lavorando
+        unsigned int serverNumber;                   //numero del server su cui sto lavorando
         
         Server operator[] (int number){return servers[number];}
         unsigned int size(){return servers.size();}
