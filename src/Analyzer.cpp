@@ -65,7 +65,7 @@ Analyzer::Analyzer( Connection* conn, Db* db, ConfigLoader* configLoader )
   KICK_NUMBER=" *[0-9]+:[0-9]{2} +say: +[0-9]+ +[^ \t\n\r\f\v]+: +!kick [0-9]{1,2}";
   MUTE=" *[0-9]+:[0-9]{2} +say: +[0-9]+ +[^ \t\n\r\f\v]+: +!mute [^ \t\n\r\f\v]+";
   MUTE_NUMBER=" *[0-9]+:[0-9]{2} +say: +[0-9]+ +[^ \t\n\r\f\v]+: +!mute [0-9]{1,2}";
-  STRICT=" *[0-9]+:[0-9]{2} +say: +[0-9]+ +[^ \t\n\r\f\v]+: +!strict ON|on|OFF|off";
+  STRICT=" *[0-9]+:[0-9]{2} +say: +[0-9]+ +[^ \t\n\r\f\v]+: +!strict OFF|off|[0-3]{1}";
   VETO=" *[0-9]+:[0-9]{2} +say: +[0-9]+ +[^ \t\n\r\f\v]+: +!veto";
   SLAP=" *[0-9]+:[0-9]{2} +say: +[0-9]+ +[^ \t\n\r\f\v]+: +!slap [^ \t\n\r\f\v]+";
   SLAP_NUMBER=" *[0-9]+:[0-9]{2} +say: +[0-9]+ +[^ \t\n\r\f\v]+: +!slap [0-9]{1,2}";
@@ -205,7 +205,7 @@ void Analyzer::clientUserInfo(char* line)
       nonTrovato=false;
       if ((!(*m_dati)[m_dati->serverNumber][i]->GUID.empty() && (*m_dati)[m_dati->serverNumber][i]->GUID.compare(guid)!=0) || guid.empty())
       {
-        if (!guid.empty())
+        if (!guid.empty() && (*m_dati)[m_dati->serverNumber].getStrict() >= LEVEL1)
         {
           //cambio illegale del GUID => cheats
           kicked=true;
@@ -251,9 +251,9 @@ void Analyzer::clientUserInfo(char* line)
   }
   
   //se la guid è vuota, sono cazzi amari...
-  if (guid.empty())
+  if (guid.empty() && (*m_dati)[m_dati->serverNumber].getStrict() >= LEVEL1)
   {
-    if ( isStrict() )
+    if ( (*m_dati)[m_dati->serverNumber].getStrict() >= LEVEL2 )
     {
       //guid vuota, probabili cheats, sono in modalità strict, butto fuori (provo a bannare un'eventuale guid precedente).
       kicked=true;
@@ -360,7 +360,7 @@ void Analyzer::clientUserInfo(char* line)
         else
         {
           //ok, non è stato bannato (per il momento). Controllo se ha un GUID valido.
-          if (!isA(line, GUID))
+          if ( (*m_dati)[m_dati->serverNumber].getStrict() >= LEVEL1 && !isA(line, GUID) )
           {
               //il guid è illegale, ban diretto
               std::cout<<"  [!] kick automatico per GUID illegale\n";
@@ -951,15 +951,18 @@ void Analyzer::setStrict(char* line)
   if (isAdminSay(line,numeroAdmin))
   {
     std::string temp(line);
-    if (temp.find("!strict ON")<temp.size() || temp.find("!strict on")<temp.size())
+    int pos=temp.find("!strict");
+    pos=temp.find_first_not_of(" \t\n\r\f\v",pos+7);
+    int end=temp.find_first_of(" ",pos);
+    std::string variable=temp.substr(pos,end-pos);
+ 
+    if ( variable.compare("off")==0 || variable.compare("OFF")==0 )
     {
-      (*m_dati)[m_dati->serverNumber].setStrict();
-      tell("BanBot: strict mode ON",numeroAdmin);
+      (*m_dati)[m_dati->serverNumber].setStrict(0);
     }
     else
     {
-      (*m_dati)[m_dati->serverNumber].setStrict( false );
-      tell("BanBot: strict mode OFF",numeroAdmin);
+      (*m_dati)[m_dati->serverNumber].setStrict( atoi(variable.c_str()) );
     }
   }
 }
@@ -1048,9 +1051,22 @@ void Analyzer::status(char* line)
   if (isAdminSay(line,numeroAdmin))
   {
     server->say("BanBot status:  version 1.1b, coded by [2s2h]n3m3s1s & [2s2h]Zamy.");
-    std::string frase("Strict mode: ");
-    if (isStrict()) frase.append("ON");
-    else frase.append("OFF");
+    std::string frase("Strict level: ");
+    switch ((*m_dati)[m_dati->serverNumber].getStrict())
+    {
+      case 0:
+        frase.append("OFF");
+        break;
+      case 1:
+        frase.append("1");
+        break;
+      case 2:
+        frase.append("2");
+        break;
+      default:
+        frase.append("3");
+        break;
+    }
     sleep(1);
     server->say(frase);
     frase.clear();
@@ -1222,10 +1238,10 @@ bool Analyzer::nickIsBanned(const std::string &nick)
     int diff=(oraAttuale*60+minutoAttuale)-(oraBan*60+minutoBan);
     if (data.compare(risultato[i])==0 && diff>0 && diff<60) return true;
   }
-  //se sono in modalità strict, se il nick è bannato, butto fuori anche se è passata un'ora.
-  if (risultato.size())
+  //se sono in modalità strict di livello 2, se il nick è bannato, butto fuori anche se è passata un'ora.
+  if ( risultato.size() && (*m_dati)[m_dati->serverNumber].getStrict() >= LEVEL1)
   {
-    if (isStrict()) {return true;}
+    if ( (*m_dati)[m_dati->serverNumber].getStrict() >= LEVEL2 ) {return true;}
     else 
     {
       std::string frase("BanBot warning: the nick '");
@@ -1276,11 +1292,6 @@ std::string Analyzer::correggi(std::string stringa)
     }
   }
   return stringa;
-}
-
-bool Analyzer::isStrict()
-{
-  return (*m_dati)[m_dati->serverNumber].isStrict();
 }
 
 std::vector<unsigned int> Analyzer::admins()

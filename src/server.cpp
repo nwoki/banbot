@@ -161,14 +161,14 @@ void Server::setInfos( struct stat fileInfos )
 }
 
 
-bool Server::isStrict()
+int Server::getStrict()
 {
   return m_strict;
 }
 
-void Server::setStrict( bool active )
+void Server::setStrict( int level )
 {
-  m_strict=active;
+  m_strict=level;
 }
 
 

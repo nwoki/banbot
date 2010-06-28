@@ -58,7 +58,7 @@ class Server
         std::string getRcon();
         std::streampos getRow();
         std::string getServerLog();
-        bool isStrict();
+        int getStrict();
         bool isChanged();
 
         //setters
@@ -73,7 +73,7 @@ class Server
         void setRcon( std::string rcon );
         void setRow( std::streampos row );
         void setServerLog( std::string serverLog );
-        void setStrict( bool active = true );
+        void setStrict( int level = 1 );
         void setChanged( bool changed = true );
         
         //funzioni per l'accesso diretto all'array dei giocatori
@@ -97,7 +97,7 @@ class Server
         std::string m_serverLog;
         std::string m_dbFolder;
         std::streampos m_row;
-        bool m_strict;
+        int m_strict;           //livello di restrizioni.
 
         std::vector<Player*> m_giocatori;
 };
