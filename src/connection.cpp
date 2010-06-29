@@ -88,6 +88,7 @@ void Connection::kick( string number )
   int bufferSize = command.size();
   sendto( socketID, command.data(), bufferSize, 0, &(sockaddr &)serverAdd, recvSize );
   close( socketID );
+  sleep(SOCKET_PAUSE);
 }
 
 void Connection::say( string frase )
@@ -96,13 +97,30 @@ void Connection::say( string frase )
 
   string comando( "rcon " );
   comando.append( (*m_options)[m_options->serverNumber].getRcon() );
-  comando.append( " say \"^1" );
-  comando.append( frase );
-  comando.append( "\"" );
-
-  vector< char > command = makeCmd( comando );
-  int bufferSize = command.size();
-  sendto( socketID, command.data(), bufferSize, 0, &(sockaddr &)serverAdd, recvSize );
+  comando.append( " say \"" );
+  unsigned int i=0;
+  while ( i<frase.size() )
+  {
+    unsigned int pos=frase.find("\n",i);
+    string finale ( comando );
+    if ( (pos-i) > ROW )
+    {
+      finale.append( frase.substr(i,ROW) );
+      i+=ROW;
+    }
+    else
+    {
+      finale.append( frase.substr(i,pos-i) );
+      i=pos;
+    }
+    finale.append( "\"" );
+    
+    
+    vector< char > command = makeCmd( comando );
+    int bufferSize = command.size();
+    sendto( socketID, command.data(), bufferSize, 0, &(sockaddr &)serverAdd, recvSize );
+    sleep(SOCKET_PAUSE);
+  }
   close( socketID );
 }
 
@@ -169,6 +187,7 @@ void Connection::reload(bool all)
       sleep(1);
     }
   }
+  sleep(SOCKET_PAUSE);
 }
 
 void Connection::mute( string number)
@@ -184,6 +203,7 @@ void Connection::mute( string number)
   int bufferSize = command.size();
   sendto( socketID, command.data(), bufferSize, 0, &(sockaddr &)serverAdd, recvSize );
   close(socketID);
+  sleep(SOCKET_PAUSE);
 }
 
 void Connection::veto()
@@ -198,6 +218,7 @@ void Connection::veto()
   int bufferSize = command.size();
   sendto( socketID, command.data(), bufferSize, 0, &(sockaddr &)serverAdd, recvSize );
   close(socketID);
+  sleep(SOCKET_PAUSE);
 }
 
 void Connection::slap( string number )
@@ -213,6 +234,7 @@ void Connection::slap( string number )
   int bufferSize = command.size();
   sendto( socketID, command.data(), bufferSize, 0, &(sockaddr &)serverAdd, recvSize );
   close(socketID);
+  sleep(SOCKET_PAUSE);
 }
 
 void Connection::force( string number, string where)
@@ -230,4 +252,5 @@ void Connection::force( string number, string where)
   int bufferSize = command.size();
   sendto( socketID, command.data(), bufferSize, 0, &(sockaddr &)serverAdd, recvSize );
   close(socketID);
+  sleep(SOCKET_PAUSE);
 }

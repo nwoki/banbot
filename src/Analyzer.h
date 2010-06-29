@@ -146,7 +146,6 @@ protected:
     bool ipIsBanned(const std::string &ip);               //controlla se il nick è stato bannato.
     void buttaFuori(const std::vector< string >& reason, const std::string numero, const std::string nick);
     std::string correggi(std::string stringa);          //corregge la riga di testo per l'inserimento e l'utilizzo col database
-    void tell(std::string frase, std::string player);  //invia la frase al giocatore usando connection::tell(), ma spezzettando automaticamente la stringa in più frasi se necessario.
     std::vector<unsigned int> admins();                          //restituisce gli indici dell'array dei player dei giocatori attualmente nel server che sono admin.
     void tellToAdmins(std::string frase);               //invia un messaggio a tutti gli admin attualmente in game (messaggio privato).
     int translatePlayer(std::string player);            //@player rappresenta un nick o una parte del nick di un player in game, la funzione restituisce l'indice nell'array dei giocatori indicato da @player, se non trovato o non univoco restituisce -1.
