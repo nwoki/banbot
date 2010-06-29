@@ -36,6 +36,9 @@
 #include "ConfigLoader.h"
 #include <stdlib.h>
 
+#define SOCKET_PAUSE 1  //per permettere al socket di funzionare bene, inserisco una pausa tra say e kick
+#define ROW 100         //numero massimo di caratteri per riga
+
 using namespace std;
 
 class Connection

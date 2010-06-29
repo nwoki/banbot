@@ -114,13 +114,28 @@ void Connection::tell( string frase, string player )
   comando.append( (*m_options)[m_options->serverNumber].getRcon() );
   comando.append( " tell " );
   comando.append( player );
-  comando.append( " \"^1" );
-  comando.append( frase );
-  comando.append( "\"" );
-
-  vector< char > command = makeCmd( comando );
-  int bufferSize = command.size();
-  sendto( socketID, command.data(), bufferSize, 0, &(sockaddr &)serverAdd, recvSize );
+  comando.append( " \"" );
+  unsigned int i=0;
+  while ( i<frase.size() )
+  {
+    unsigned int pos=frase.find("\n",i);
+    string finale ( comando );
+    if ( (pos-i) > ROW )
+    {
+      finale.append( frase.substr(i,ROW) );
+      i+=ROW;
+    }
+    else
+    {
+      finale.append( frase.substr(i,pos-i) );
+      i=pos;
+    }
+    finale.append( "\"" );
+    vector< char > command = makeCmd( comando );
+    int bufferSize = command.size();
+    sendto( socketID, command.data(), bufferSize, 0, &(sockaddr &)serverAdd, recvSize );
+    sleep(SOCKET_PAUSE);
+  }
   close(socketID);
 }
 
