@@ -54,6 +54,7 @@ class Connection
         void mute( string number ); //muta/smuta il player numero @number sul server @server
         void veto();                  //comando di veto sul server @server
         void slap( string number ); //slappa il giocatore @number del server @server
+        void nuke( string number ); //nuke al giocatore @number del server @server
         void force( string number, string where ); //forza il player numero @number sul server @server nel team @where
 
     private:

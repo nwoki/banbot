@@ -70,6 +70,8 @@ Analyzer::Analyzer( Connection* conn, Db* db, ConfigLoader* configLoader )
   SLAP=" *[0-9]+:[0-9]{2} +say: +[0-9]+ +[^ \t\n\r\f\v]+: +!slap [^ \t\n\r\f\v]+";
   SLAP_NUMBER=" *[0-9]+:[0-9]{2} +say: +[0-9]+ +[^ \t\n\r\f\v]+: +!slap [0-9]{1,2}";
   SLAP_MORE=" *[0-9]+:[0-9]{2} +say: +[0-9]+ +[^ \t\n\r\f\v]+: +!slap [^ \t\n\r\f\v]+ [2-5]{1}";
+  NUKE=" *[0-9]+:[0-9]{2} +say: +[0-9]+ +[^ \t\n\r\f\v]+: +!nuke [^ \t\n\r\f\v]+";
+  NUKE_NUMBER=" *[0-9]+:[0-9]{2} +say: +[0-9]+ +[^ \t\n\r\f\v]+: +!nuke [0-9]{1,2}";
   COMMAND=" *[0-9]+:[0-9]{2} +say: +[0-9]+ +[^ \t\n\r\f\v]+: +![^ \t\n\r\f\v]+";
   STATUS=" *[0-9]+:[0-9]{2} +say: +[0-9]+ +[^ \t\n\r\f\v]+: +!status";
   FORCE=" *[0-9]+:[0-9]{2} +say: +[0-9]+ +[^ \t\n\r\f\v]+: +!force red|blue|spectator [^ \t\n\r\f\v]+";
@@ -1034,6 +1036,49 @@ void Analyzer::slap(char* line)
     }
   }
 }
+
+void Analyzer::nuke(char* line)
+{
+  std::cout<<"[!] Nuke";
+  (m_dati->log)->timestamp();
+  *(m_dati->log)<<"\n[!] Nuke";
+  //controllo se ho il giocatore e i suoi permessi, se la persona non è autorizzata non faccio nulla.
+  std::string numeroAdmin;
+  if (isAdminSay(line,numeroAdmin))
+  {
+    std::string temp(line);
+    int pos=temp.find("!nuke");
+    pos=temp.find_first_not_of(" \t\n\r\f\v",pos+5);
+    int end=temp.find_first_of(" ",pos);
+    std::string player=temp.substr(pos,end-pos);
+    
+    if (isA(line,NUKE_NUMBER))
+    {
+      std::string frase("^0BanBot: ^1nuking player number ");
+      frase.append(player);
+      frase.append(".");
+      server->say(frase);
+      server->nuke(player);
+    }
+    else
+    {
+      int number=translatePlayer(player);
+      if (number<0)
+      {
+        server->tell("^0BanBot: ^1nick non trovato o non univoco.",numeroAdmin);
+      }
+      else
+      {
+        std::string frase("^0BanBot: ^1nuking ");
+        frase.append((*m_dati)[m_dati->serverNumber][number]->nick);
+        frase.append(".");
+        server->say(frase);
+        server->slap((*m_dati)[m_dati->serverNumber][number]->number);
+      }
+    }
+  }
+}
+
 
 void Analyzer::status(char* line)
 {

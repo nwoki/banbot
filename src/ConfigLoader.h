@@ -80,5 +80,7 @@ class ConfigLoader
   private:
     std::string generalFile;
     Options* opzioni;
+    bool isA(const std::string &line, char* regex);
+    std::string extract(const std::string &line);
 };
 #endif

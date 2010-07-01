@@ -54,19 +54,9 @@ void Logger::checkFile()
     std::string cartella=path.substr(0,pos);
 
     struct stat st;
-    if( stat( cartella.c_str(), &st ) == 0 )
+    if( stat( cartella.c_str(), &st ) != 0 )
     {
-        std::cout<<"  [*]dir '"<<cartella<<"/' found\n";
-    }
-    else
-    {
-      std::cout<<"  [!]couldn't find dir '"<<cartella<<"/'! Creating dir '"<<cartella<<"/'..\n";
-
-      if( mkdir( cartella.c_str(), 0777 ) == 0 )
-      {
-          std::cout<<"  [OK]created '"<<cartella<<"/' directory..\n";
-      }
-      else
+      if( mkdir( cartella.c_str(), 0777 ) != 0 )
       {
           std::cout<<"[EPIC FAIL] couldn't create directory '"<<cartella<<"/'.Please check permissions!\n";
           ok=false;
@@ -77,16 +67,14 @@ void Logger::checkFile()
   //check per il file log
   if( ok )
   {
-    std::cout<<"[-] checking for logfile..\n";
     struct stat st;
-    if( stat( path.c_str(), &st ) == 0 ) std::cout<<"Found!\n";
-    else
+    if( stat( path.c_str(), &st ) != 0 )
     {
       std::cout<<"[!] Logfile doesn't exist... I'll create it.\n";
       //create logfile
       std::ofstream OUT(path.c_str());
       if ( OUT.is_open() ) OUT.close();
-      else std::cout<<"[EPIC FAIL] couldn't create the log file.Please check permissions!\n";
+      else std::cout<<"[EPIC FAIL] couldn't create the log file. Please check permissions!\n";
     }
   }
 }

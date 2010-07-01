@@ -237,6 +237,22 @@ void Connection::slap( string number )
   sleep(SOCKET_PAUSE);
 }
 
+void Connection::nuke( string number )
+{
+  prepareConnection( m_options->serverNumber );
+
+  string comando( "rcon ");
+  comando.append( (*m_options)[m_options->serverNumber].getRcon() );
+  comando.append( " nuke " );
+  comando.append( number );
+  
+  vector< char > command = makeCmd( comando );
+  int bufferSize = command.size();
+  sendto( socketID, command.data(), bufferSize, 0, &(sockaddr &)serverAdd, recvSize );
+  close(socketID);
+  sleep(SOCKET_PAUSE);
+}
+
 void Connection::force( string number, string where)
 {
   prepareConnection( m_options->serverNumber );

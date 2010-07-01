@@ -95,6 +95,8 @@ private:
     const char* HELP;
     const char* KICK;
     const char* KICK_NUMBER;
+    const char* NUKE;
+    const char* NUKE_NUMBER;
     const char* SLAP;
     const char* SLAP_NUMBER;
     const char* SLAP_MORE;
@@ -132,6 +134,7 @@ private:
     void setStrict(char* line);
     void veto(char* line);
     void slap(char* line);
+    void nuke(char* line);
     void status(char* line);
     void force(char* line);
     void iamgod(char* line);
