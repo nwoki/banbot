@@ -54,6 +54,10 @@ class ConfigLoader
         
         Server operator[] (int number){return *servers[number];}
         unsigned int size(){return servers.size();}
+        //distruttore
+        ~Options() { for(unsigned int i=0; i<servers.size(); i++) delete servers[i]; delete errors; delete log; };
+        //comoda funzione per cercare un server per nome.
+        Server* searchServer(std::string name) { Server* t = NULL; for( unsigned int i=0; i<servers.size(); i++) if ( name.compare(servers[i]->getName()) == 0 ) t = servers[i]; return t; };
     };
     
     class AdminList    //use for adminlist as well

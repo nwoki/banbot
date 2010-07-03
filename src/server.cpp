@@ -227,4 +227,42 @@ void Server::clear()
   m_giocatori.clear();
 }
 
+
+//************************************* altro ***********************
+
+void Server::test_for_changes(Server* old)
+{
+  if ( old != NULL && old != 0)
+  {
+    if ( ( !old->m_valid ) || ( m_serverLog.compare(old->m_serverLog) != 0 ) || ( m_dbFolder.compare(old->m_dbFolder) != 0 ) )
+    {
+      //cambiamenti importanti. Non tengo niente dei vecchi dati.
+      m_changed = true;
+    }
+    else
+    {
+      //nessun cambiamento importante: mi prendo i dati del server vecchio.
+      //copio i giocatori
+      for (unsigned int i=0; i<old->size(); i++ )
+      {
+        m_giocatori.push_back( (*old)[i]->clone() );
+      }
+      //e ripristino anche gli altri parametri dinamici
+      m_strict = old->m_strict;
+      m_row = old->m_row;
+    }
+  }
+  else 
+  {
+    m_changed = true;
+  }
+}
+
+bool Server::test_for_options()
+{
+  if ( !m_name.empty() && !m_rconpass.empty() && !m_ip.empty() && m_port!=0 && !m_backup.empty() && !m_botLog.empty() && !m_serverLog.empty() && !m_dbFolder.empty() )
+    return true;
+  return false;
+}
+
 #endif

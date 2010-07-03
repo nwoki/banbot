@@ -176,158 +176,189 @@ void ConfigLoader::reloadOptions()
       Options* newOptions=new Options;
       //Prendo tutto fino al primo server (o fine file)
       char line [3000];
-      cfg->getline(line,3000,"{");
+      cfg->getline(line,3000,'{');
       
       //prendo i parametri generali
       std::string all (line);
-      int pos=0;
-      int end=0;
+      unsigned int pos=0;
+      unsigned int end=0;
       while ( end != all.size() )
       {
         end = all.find('\n',pos);
         std::string temp ( all.substr( pos,end-pos ) );
-        if ( !isA( temp, " *#") && isA( temp, " **GENERAL_[^ \t\n\r\f\v]+ *= *[^ \t\n\r\f\v]+" ) )
+        if ( !isA( temp, (char*)" *#") && isA( temp, (char*)" **GENERAL_[^ \t\n\r\f\v]+ *= *[^ \t\n\r\f\v]+" ) )
         {
-          if ( isA( temp, " *GENERAL_BOTLOG *= *[^ \t\n\r\f\v]+" ) )
+          if ( isA( temp, (char*)" *GENERAL_BOTLOG *= *[^ \t\n\r\f\v]+" ) )
           {
             newOptions->generalLog = extract ( temp );
           }
-          if ( isA( temp, " *GENERAL_BACKUP_PATH *= *[^ \t\n\r\f\v]+" ) )
+          if ( isA( temp, (char*)" *GENERAL_BACKUP_PATH *= *[^ \t\n\r\f\v]+" ) )
           {
             newOptions->generalBackup = extract ( temp );
           }
         }
       }
-      
-      //vado a prendere tutto il resto
-      while (!cfg->eof())
+      //se sono stati impostati tutti i parametri generali, proseguo, altrimenti me ne strafrego perchè le impostazioni sono già sbagliate
+      if ( !newOptions->generalBackup.empty() && !newOptions->generalLog.empty() )
       {
-        cfg->getline(line,3000,"}");
-        
-        if (!cfg->eof())
+        //vado a prendere tutto il resto
+        while (!cfg->eof())
         {
-          //dentro a line ho tutte le opzioni di un singolo server, uso i regex per riconoscere le opzioni.
+          cfg->getline(line,3000,'}');
           
-          Server* newServer=new Server();
-          
-          all = line;
-          pos = 0;
-          end = 0;
-          bool secondary=false;
-          
-          while ( end != all.size() )
+          if (!cfg->eof())
           {
-            end = all.find('\n',pos);
-            std::string temp ( all.substr( pos,end-pos ) );
-            if ( !isA( temp, " *#") && isA( temp, " *[^ \t\n\r\f\v]+ *= *[^ \t\n\r\f\v]+" ) )
+            //dentro a line ho tutte le opzioni di un singolo server, uso i regex per riconoscere le opzioni.
+            
+            Server* newServer=new Server();
+            
+            all = line;
+            pos = 0;
+            end = 0;
+            bool secondary=false;
+            
+            while ( end != all.size() )
             {
-              //se non è un commento o una puttanata....
-              if ( isA( temp, " *SERVER_NAME *= *[^ \t\n\r\f\v]+" ) )
+              end = all.find('\n',pos);
+              std::string temp ( all.substr( pos,end-pos ) );
+              if ( !isA( temp,(char*) " *#") && isA( temp, (char*)" *[^ \t\n\r\f\v]+ *= *[^ \t\n\r\f\v]+" ) )
               {
-                newServer->setName( extract( temp ) ); 
-              }
-              else if ( isA( temp, " *IP *= *[0-9]{1,3}.[0-9]{1,3}.[0-9]{1,3}.[0-9]{1,3}" ) )
-              {
-                newServer->setIP( extract( temp ) ); 
-              }
-              else if ( isA( temp, " *PORT *= *[0-9]{1,5}" ) )
-              {
-                newServer->setPort( atoi( extract( temp ).c_str() ) ); 
-              }
-              else if ( isA( temp, " *RCON_PASSWORD *= *[^ \t\n\r\f\v]+" ) )
-              {
-                newServer->setRcon( extract( temp ) ); 
-              }
-              else if ( isA( temp, " *GAME_LOGFILE *= *[^ \t\n\r\f\v]+" ) )
-              {
-                std::string t=extract( temp );
-                if ( t.at(0) != '/' && secondary )
+                //se non è un commento o una puttanata....
+                if ( isA( temp, (char *)" *SERVER_NAME *= *[^ \t\n\r\f\v]+" ) )
                 {
-                  t.insert( 0, newServer->getConfigFile() );
+                  newServer->setName( extract( temp ) ); 
                 }
-                newServer->setServerLog( t ); 
-              }
-              else if ( isA( temp, " *BOT_LOGFILE *= *[^ \t\n\r\f\v]+" ) )
-              {
-                std::string t=extract( temp );
-                if ( t.at(0) != '/' && secondary )
+                else if ( isA( temp, (char*)" *IP *= *[0-9]{1,3}.[0-9]{1,3}.[0-9]{1,3}.[0-9]{1,3}" ) )
                 {
-                  t.insert( 0, newServer->getConfigFile() );
+                  newServer->setIP( extract( temp ) ); 
                 }
-                newServer->setBotLog( t ); 
-              }
-              else if ( isA( temp, " *BACKUP_DIR *= *[^ \t\n\r\f\v]+" ) )
-              {
-                std::string t=extract( temp );
-                if ( t.at(0) != '/' && secondary )
+                else if ( isA( temp, (char*)" *PORT *= *[0-9]{1,5}" ) )
                 {
-                  t.insert( 0, newServer->getConfigFile() );
+                  newServer->setPort( atoi( extract( temp ).c_str() ) ); 
                 }
-                newServer->setBackupDir( t ); 
-              }
-              else if ( isA( temp, " *DATABASE_DIR *= *[^ \t\n\r\f\v]+" ) )
-              {
-                std::string t=extract( temp );
-                if ( t.at(0) != '/' && secondary )
+                else if ( isA( temp, (char*)" *RCON_PASSWORD *= *[^ \t\n\r\f\v]+" ) )
                 {
-                  t.insert( 0, newServer->getConfigFile() );
+                  newServer->setRcon( extract( temp ) ); 
                 }
-                newServer->setDbFolder( t ); 
-              }
-              else if ( isA( temp, " *STRICT_LEVEL *= *[0-3]{1}" ) )
-              {
-                newServer->setBotLog( atoi( extract( temp ).c_str() ) ); 
-              }
-              else if ( temp.compare("EXTERNAL_OPTIONS = YES") == 0 )
-              {
-                secondary = true;
-              }
-              else if ( isA( temp, " *CONFIG_FILE *= *[0-3]{1}" ) && !secondary )
-              {
-                newServer->setConfigFile( extract(temp) );
-                if( stat( newServer->getConfigFile().c_str(), &(newServer->getInfos()) ) == 0 )
+                else if ( isA( temp, (char*)" *GAME_LOGFILE *= *[^ \t\n\r\f\v]+" ) )
                 {
-                  std::ifstream* secondary=new std::ifstream();
-                  secondary->open(  );
-                  char extra [2000];
-                  secondary->read(extra,2000);
-                  //appendo il "segnale" per indicare le opzioni sul file secondario
-                  all.append("EXTERNAL_OPTIONS = YES\n");
-                  //appendo le opzioni del file secondario
-                  all.append(extra);
-                  secondary->close();
-                  delete secondary;
+                  std::string t=extract( temp );
+                  if ( t.at(0) != '/' && secondary )
+                  {
+                    t.insert( 0, newServer->getConfigFile() );
+                  }
+                  newServer->setServerLog( t ); 
+                }
+                else if ( isA( temp, (char*)" *BOT_LOGFILE *= *[^ \t\n\r\f\v]+" ) )
+                {
+                  std::string t=extract( temp );
+                  if ( t.at(0) != '/' && secondary )
+                  {
+                    t.insert( 0, newServer->getConfigFile() );
+                  }
+                  newServer->setBotLog( t ); 
+                }
+                else if ( isA( temp, (char*)" *BACKUP_DIR *= *[^ \t\n\r\f\v]+" ) )
+                {
+                  std::string t=extract( temp );
+                  if ( t.at(0) != '/' && secondary )
+                  {
+                    t.insert( 0, newServer->getConfigFile() );
+                  }
+                  newServer->setBackupDir( t ); 
+                }
+                else if ( isA( temp, (char*)" *DATABASE_DIR *= *[^ \t\n\r\f\v]+" ) )
+                {
+                  std::string t=extract( temp );
+                  if ( t.at(0) != '/' && secondary )
+                  {
+                    t.insert( 0, newServer->getConfigFile() );
+                  }
+                  newServer->setDbFolder( t ); 
+                }
+                else if ( isA( temp, (char*)" *STRICT_LEVEL *= *[0-3]{1}" ) )
+                {
+                  newServer->setStrict( atoi( extract( temp ).c_str() ) ); 
+                }
+                else if ( temp.compare("EXTERNAL_OPTIONS = YES") == 0 )
+                {
+                  secondary = true;
+                }
+                else if ( isA( temp, (char*)" *CONFIG_FILE *= *[0-3]{1}" ) && !secondary )
+                {
+                  newServer->setConfigFile( extract(temp) );
+                  struct stat info;
+                  if( stat( newServer->getConfigFile().c_str(), &info ) == 0 )
+                  {
+                    newServer->setInfos( info );
+                    std::ifstream* secondary=new std::ifstream();
+                    secondary->open( newServer->getConfigFile().c_str() );
+                    char extra [2000];
+                    secondary->read(extra,2000);
+                    //appendo il "segnale" per indicare le opzioni sul file secondario
+                    all.append("EXTERNAL_OPTIONS = YES\n");
+                    //appendo le opzioni del file secondario
+                    all.append(extra);
+                    secondary->close();
+                    delete secondary;
+                  }
+                  else
+                  {
+                    std::cout << "[FAIL]: i can't open \"" << newServer->getConfigFile() << "\".\n";
+                    if ( opzioni->errors )
+                    {
+                      opzioni->errors->timestamp();
+                      *(opzioni->errors) << "[FAIL]: i can't open \"" << newServer->getConfigFile() << "\".\n";
+                      opzioni->errors->close();
+                    }
+                  }
                 }
                 else
                 {
-                  std::cout << "[FAIL]: i can't open \"" << newServer->getConfigFile() << "\".\n";
+                  std::cout << "Warning: \"" << temp << "\" isn't a valid option.\n";
                   if ( opzioni->errors )
                   {
                     opzioni->errors->timestamp();
-                    *(opzioni->errors) << "[FAIL]: i can't open \"" << newServer->getConfigFile() << "\".\n";
+                    *(opzioni->errors) << "\nWarning: \"" << temp << "\" isn't a valid option.\n";
                     opzioni->errors->close();
                   }
                 }
               }
+              //aggiungo il server se è ok, altrimenti lo scarto.
+              if ( newServer->test_for_options() )
+                newOptions->servers.push_back(newServer);
               else
-              {
-                std::cout << "Warning: \"" << temp << "\" isn't a valid option.\n";
-                if ( opzioni->errors )
-                {
-                  opzioni->errors->timestamp();
-                  *(opzioni->errors) << "\nWarning: \"" << temp << "\" isn't a valid option.\n";
-                  opzioni->errors->close();
-                }
-              }
+                delete newServer;
             }
-            //aggiungo il server
-            newOptions->servers.push_back(newServer);
           }
         }
+        
+        //ok, finito di caricare le impostazioni.
+        //confronto con i server precedenti
+        for (unsigned int i=0; i<newOptions->size(); i++)
+        {
+          (*newOptions)[i].test_for_changes( opzioni->searchServer( (*newOptions)[i].getName() ) ); 
+        }
+        newOptions->infos = opzioni->infos;
+        //ok, sistemato il trasferimento di parametri da vecchi a nuovi ^^ elimino le vecchie impostazioni.
+        delete opzioni;
+        //ricreo i 2 stream di log e mi salvo le impostazioni.
+        newOptions->errors = new Logger( newOptions->generalLog );
+        newOptions->log = new Logger();
       }
-      //ok, finito di caricare le impostazioni.
-      //confronto con le precedenti
+      else
+      {
+        //errore nelle impostazioni generali
+        std::cout << "[FAIL]: errors detected in general options. Ignoring new options\n";
+        if ( opzioni->errors )
+        {
+          opzioni->errors->timestamp();
+          *(opzioni->errors) << "\n[FAIL]: errors detected in general options. Ignoring new options\n";
+          opzioni->errors->close();
+        }
+      }
     }
+    cfg->close();
     delete cfg;
   }
 }

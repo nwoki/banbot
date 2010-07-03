@@ -44,6 +44,9 @@ class Server
                 std::string number;
                 std::string nick;
                 std::string ip;
+                Player() : GUID(""), number(""), nick(""), ip("") {};
+                Player( std::string g, std::string nu, std::string ni, std::string i ) : GUID(g), number(nu), nick(ni), ip(i) {};
+                Player* clone() { return new Player( GUID, number, nick, ip ); };
         };
         
         //getters
@@ -85,6 +88,11 @@ class Server
         std::vector<Server::Player*>::iterator begin();
         void erase( std::vector<Server::Player*>::iterator iteratore );
         void clear();
+        
+        //confronto con le vecchie opzioni, ed in caso di modifiche critiche lo resetta, altrimenti ripristina i dati dinamici.
+        void test_for_changes(Server* old);
+        //controlla se sono state date impostate tutte le opzioni, true=ok.
+        bool test_for_options();
         
   private:
         bool m_changed;

@@ -1358,36 +1358,38 @@ void Analyzer::main_loop()
   while (true)
   {
     commandexecuted=false;
+    //vedo è il caso di fare il backup
+    if(backup->doJobs()) 
+    {
+      //eseguito il backup. Reload dei server
+      server->reload();
+      sleep(4);
+      //e azzero anche la linea dove ero arrivato, se ha fatto il backup del file
+      for (unsigned int i=0;i<m_dati->size();i++)
+      {
+        log=new ifstream();
+        log->open((*m_dati)[i].getBotLog().c_str());
+        if (log->is_open())
+        {
+          //se il file è aperto, controllo la dimensione
+          log->seekg (0, ios:: end); 
+          if (log->tellg ()<(*m_dati)[i].getRow()) (*m_dati)[i].setRow(0);
+        }
+        //altrimenti se non c'è il file, sono già sicuro che il backup è stato fatto.
+        else (*m_dati)[i].setRow(0);
+        log->close();
+        delete log;
+        for (unsigned int j=0;j<(*m_dati)[i].size();j++) delete (*m_dati)[i][j];
+        //resetto il vector:
+        (*m_dati)[i].clear();
+        m_dati->serverNumber=0;
+      }
+      sleep(2);
+    }
+    
+    //inzio il ciclo per gestire i server
     for (m_dati->serverNumber=0;m_dati->serverNumber<m_dati->size();m_dati->serverNumber++)
     {
-      //vedo è il caso di fare il backup
-      if(backup->doJobs()) 
-      {
-        //eseguito il backup. Reload dei server
-        server->reload();
-        sleep(4);
-        //e azzero anche la linea dove ero arrivato, se ha fatto il backup del file
-        for (unsigned int i=0;i<m_dati->size();i++)
-        {
-          log=new ifstream();
-          log->open((*m_dati)[i].getBotLog().c_str());
-          if (log->is_open())
-          {
-            //se il file è aperto, controllo la dimensione
-            log->seekg (0, ios:: end); 
-            if (log->tellg ()<(*m_dati)[i].getRow()) (*m_dati)[i].setRow(0);
-          }
-          //altrimenti se non c'è il file, sono già sicuro che il backup è stato fatto.
-          else (*m_dati)[i].setRow(0);
-          log->close();
-          delete log;
-          for (unsigned int j=0;j<(*m_dati)[i].size();j++) delete (*m_dati)[i][j];
-          //resetto il vector:
-          (*m_dati)[i].clear();
-          m_dati->serverNumber=0;
-        }
-        sleep(2);
-      }
       //provo ad aprire il file e a riprendere dalla riga dove ero arrivato
       (m_dati->log)->changePath( (*m_dati)[m_dati->serverNumber].getBotLog() );
       std::cout<<"Provo ad aprire "<<(*m_dati)[m_dati->serverNumber].getServerLog()<<"\n";

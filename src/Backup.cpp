@@ -98,38 +98,35 @@ void Backup::creaCartelle()
   }
   
   //controllo la cartella di backup generale
-  if ( m_options->changed )
+  std::cout<<"\nInizializzo il sistema di backup generale ...\n";
+  std::string dir ( m_options->generalBackup );
+  unsigned int pos=0;
+  bool ok=true;
+  
+  //check per la cartella
+  while (pos<dir.size()-1 && ok)
   {
-    std::cout<<"\nInizializzo il sistema di backup generale ...\n";
-    std::string dir ( m_options->generalBackup );
-    unsigned int pos=0;
-    bool ok=true;
-    
-    //check per la cartella
-    while (pos<dir.size()-1 && ok)
-    {
-      pos=dir.find('/',pos+1);
-      std::string cartella=dir.substr(0,pos);
+    pos=dir.find('/',pos+1);
+    std::string cartella=dir.substr(0,pos);
 
-      struct stat st;
-      if( stat( cartella.c_str(), &st ) == 0 )
+    struct stat st;
+    if( stat( cartella.c_str(), &st ) == 0 )
+    {
+        std::cout<<"  [*]dir '"<<cartella<<"/' found\n";
+    }
+    else
+    {
+      std::cout<<"   [!]couldn't find dir '"<<cartella<<"/'! Creating dir '"<<cartella<<"/'..\n";
+
+      if( mkdir( cartella.c_str(), 0777 ) == 0 )
       {
-          std::cout<<"  [*]dir '"<<cartella<<"/' found\n";
+          std::cout<<"  [OK]created '"<<cartella<<"/' directory..\n";
       }
       else
       {
-        std::cout<<"   [!]couldn't find dir '"<<cartella<<"/'! Creating dir '"<<cartella<<"/'..\n";
-
-        if( mkdir( cartella.c_str(), 0777 ) == 0 )
-        {
-            std::cout<<"  [OK]created '"<<cartella<<"/' directory..\n";
-        }
-        else
-        {
-            std::cout<<"[EPIC FAIL] couldn't create directory '"<<cartella<<"/'.Please check permissions!\n";
-            *(m_options->errors)<<"[EPIC FAIL] couldn't create directory '"<<cartella<<"/' for general backup. Please check permissions!\n";
-            ok=false;
-        }
+          std::cout<<"[EPIC FAIL] couldn't create directory '"<<cartella<<"/'.Please check permissions!\n";
+          *(m_options->errors)<<"[EPIC FAIL] couldn't create directory '"<<cartella<<"/' for general backup. Please check permissions!\n";
+          ok=false;
       }
     }
   }
