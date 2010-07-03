@@ -44,29 +44,28 @@ class ConfigLoader
     class Options
     {
       public:
-        bool changed;
         struct stat infos;                 //contiene le info del file di configurazione, tra cui la data dell'ultima modifica
         std::string generalLog;
         std::string generalBackup;
-        std::vector<Server> servers;
+        std::vector<Server*> servers;
         Logger* errors;                     //log dedicato a notifiche ed errori
         Logger* log;                        //log dedicato ai server (cambia di file)
         unsigned int serverNumber;                   //numero del server su cui sto lavorando
         
-        Server operator[] (int number){return servers[number];}
+        Server operator[] (int number){return *servers[number];}
         unsigned int size(){return servers.size();}
     };
     
     class AdminList    //use for adminlist as well
     {
-    public:
+      public:
         std::string name;
         std::string value;
     };
 
     class Banlist
     {
-    public:
+      public:
         std::string nick, ip, date, time, motive, author;
         std::vector< std::string > guids;
     };

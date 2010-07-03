@@ -27,6 +27,7 @@
 #define _ConfigLoader_cpp_
 
 #include <regex.h>
+#include <stdlib.h>
 #include "ConfigLoader.h"
 
 //costruttore: apro il file
@@ -172,11 +173,35 @@ void ConfigLoader::reloadOptions()
     //leggo il file fino alla fine
     if (cfg->is_open())
     {
+      Options* newOptions=new Options;
+      //Prendo tutto fino al primo server (o fine file)
+      char line [3000];
+      cfg->getline(line,3000,"{");
+      
+      //prendo i parametri generali
+      std::string all (line);
+      int pos=0;
+      int end=0;
+      while ( end != all.size() )
+      {
+        end = all.find('\n',pos);
+        std::string temp ( all.substr( pos,end-pos ) );
+        if ( !isA( temp, " *#") && isA( temp, " **GENERAL_[^ \t\n\r\f\v]+ *= *[^ \t\n\r\f\v]+" ) )
+        {
+          if ( isA( temp, " *GENERAL_BOTLOG *= *[^ \t\n\r\f\v]+" ) )
+          {
+            newOptions->generalLog = extract ( temp );
+          }
+          if ( isA( temp, " *GENERAL_BACKUP_PATH *= *[^ \t\n\r\f\v]+" ) )
+          {
+            newOptions->generalBackup = extract ( temp );
+          }
+        }
+      }
+      
+      //vado a prendere tutto il resto
       while (!cfg->eof())
       {
-        //leggo una riga
-        char line [3000];
-        cfg->getline(line,3000,"{");
         cfg->getline(line,3000,"}");
         
         if (!cfg->eof())
@@ -185,13 +210,14 @@ void ConfigLoader::reloadOptions()
           
           Server* newServer=new Server();
           
-          std::string all (line);
-          int pos=0;
-          int end=0;
+          all = line;
+          pos = 0;
+          end = 0;
+          bool secondary=false;
           
           while ( end != all.size() )
           {
-            end=all.find('\n',pos);
+            end = all.find('\n',pos);
             std::string temp ( all.substr( pos,end-pos ) );
             if ( !isA( temp, " *#") && isA( temp, " *[^ \t\n\r\f\v]+ *= *[^ \t\n\r\f\v]+" ) )
             {
@@ -208,23 +234,99 @@ void ConfigLoader::reloadOptions()
               {
                 newServer->setPort( atoi( extract( temp ).c_str() ) ); 
               }
+              else if ( isA( temp, " *RCON_PASSWORD *= *[^ \t\n\r\f\v]+" ) )
+              {
+                newServer->setRcon( extract( temp ) ); 
+              }
+              else if ( isA( temp, " *GAME_LOGFILE *= *[^ \t\n\r\f\v]+" ) )
+              {
+                std::string t=extract( temp );
+                if ( t.at(0) != '/' && secondary )
+                {
+                  t.insert( 0, newServer->getConfigFile() );
+                }
+                newServer->setServerLog( t ); 
+              }
+              else if ( isA( temp, " *BOT_LOGFILE *= *[^ \t\n\r\f\v]+" ) )
+              {
+                std::string t=extract( temp );
+                if ( t.at(0) != '/' && secondary )
+                {
+                  t.insert( 0, newServer->getConfigFile() );
+                }
+                newServer->setBotLog( t ); 
+              }
+              else if ( isA( temp, " *BACKUP_DIR *= *[^ \t\n\r\f\v]+" ) )
+              {
+                std::string t=extract( temp );
+                if ( t.at(0) != '/' && secondary )
+                {
+                  t.insert( 0, newServer->getConfigFile() );
+                }
+                newServer->setBackupDir( t ); 
+              }
+              else if ( isA( temp, " *DATABASE_DIR *= *[^ \t\n\r\f\v]+" ) )
+              {
+                std::string t=extract( temp );
+                if ( t.at(0) != '/' && secondary )
+                {
+                  t.insert( 0, newServer->getConfigFile() );
+                }
+                newServer->setDbFolder( t ); 
+              }
+              else if ( isA( temp, " *STRICT_LEVEL *= *[0-3]{1}" ) )
+              {
+                newServer->setBotLog( atoi( extract( temp ).c_str() ) ); 
+              }
+              else if ( temp.compare("EXTERNAL_OPTIONS = YES") == 0 )
+              {
+                secondary = true;
+              }
+              else if ( isA( temp, " *CONFIG_FILE *= *[0-3]{1}" ) && !secondary )
+              {
+                newServer->setConfigFile( extract(temp) );
+                if( stat( newServer->getConfigFile().c_str(), &(newServer->getInfos()) ) == 0 )
+                {
+                  std::ifstream* secondary=new std::ifstream();
+                  secondary->open(  );
+                  char extra [2000];
+                  secondary->read(extra,2000);
+                  //appendo il "segnale" per indicare le opzioni sul file secondario
+                  all.append("EXTERNAL_OPTIONS = YES\n");
+                  //appendo le opzioni del file secondario
+                  all.append(extra);
+                  secondary->close();
+                  delete secondary;
+                }
+                else
+                {
+                  std::cout << "[FAIL]: i can't open \"" << newServer->getConfigFile() << "\".\n";
+                  if ( opzioni->errors )
+                  {
+                    opzioni->errors->timestamp();
+                    *(opzioni->errors) << "[FAIL]: i can't open \"" << newServer->getConfigFile() << "\".\n";
+                    opzioni->errors->close();
+                  }
+                }
+              }
+              else
+              {
+                std::cout << "Warning: \"" << temp << "\" isn't a valid option.\n";
+                if ( opzioni->errors )
+                {
+                  opzioni->errors->timestamp();
+                  *(opzioni->errors) << "\nWarning: \"" << temp << "\" isn't a valid option.\n";
+                  opzioni->errors->close();
+                }
+              }
             }
-            if (line[0]!='#' && !cfg->eof())
-            {
-              ConfigLoader::AdminList opzione;
-
-              //la trasformo in stringa e estraggo le coppie chiave-valore
-              std::string riga=line;
-              int end=riga.find("=");
-              opzione.name=riga.substr(0,end);
-              opzione.value=riga.substr(end+1,riga.size());
-
-              //aggiungo al vettore
-              vettore.push_back(opzione);
-            }
+            //aggiungo il server
+            newOptions->servers.push_back(newServer);
           }
         }
       }
+      //ok, finito di caricare le impostazioni.
+      //confronto con le precedenti
     }
     delete cfg;
   }

@@ -1615,7 +1615,7 @@ void Analyzer::main_loop()
       contatore=0;
     }
     else contatore++;
-    if ( (fascia == 0 && contatore > 7) || (fascia == 1 && contatore > 50) ) fascia++;
+    if ( (fascia == 0 && contatore > 15) || (fascia == 1 && contatore > 60) ) fascia++;
     
     switch (fascia)
     {

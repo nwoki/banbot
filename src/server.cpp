@@ -30,7 +30,10 @@
 
 Server::Server()
 {
-    //just empty so class compiles
+  m_port=0;
+  m_changed=true;
+  m_valid=true;
+  m_strict=0;
 }
 
 Server::~Server()
@@ -182,6 +185,16 @@ void Server::setChanged( bool changed )
   m_changed=changed;
 }
 
+
+bool Server::isValid()
+{
+  return m_valid;
+}
+
+void Server::setValid( bool valid )
+{
+  m_valid=valid;
+}
 
 //**************************************** funzioni per l'accesso diretto all'array di giocatori ************************
 unsigned int Server::size()

@@ -61,7 +61,7 @@
 //tempi di attesa tra un giro e l'altro nell'analisi dei log (più è basso, più alto sarà il consumo (e spreco) di risorse,
 //d'altro canto più alto è, maggiore sarà il tempo di risposta del bot).
 #define TIME_SLEEPING_MIN 2         //tempo di pausa minimo (durante reazione ad eventi/comandi), aka fascia 0
-#define TIME_SLEEPING_MIDDLE 6      //tempo di pausa medio (dopo circa 16 secondi di inattivita'), aka fascia 1
+#define TIME_SLEEPING_MIDDLE 5      //tempo di pausa medio (dopo circa 30 secondi di inattivita'), aka fascia 1
 #define TIME_SLEEPING_MAX 15        //tempo di pausa in relax totale (dopo circa 5 minuti di inattivita' in fascia media), aka fascia 2
 
 #define SOCKET_PAUSE 1  //per permettere al socket di funzionare bene, inserisco una pausa tra say e kick

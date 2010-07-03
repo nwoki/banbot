@@ -60,6 +60,7 @@ class Server
         std::string getServerLog();
         int getStrict();
         bool isChanged();
+        bool isValid();
 
         //setters
         void setName( std::string name );
@@ -75,6 +76,7 @@ class Server
         void setServerLog( std::string serverLog );
         void setStrict( int level = 1 );
         void setChanged( bool changed = true );
+        void setValid( bool valid = true );
         
         //funzioni per l'accesso diretto all'array dei giocatori
         unsigned int size();
@@ -86,6 +88,7 @@ class Server
         
   private:
         bool m_changed;
+        bool m_valid;
         std::string m_name;
         std::string m_configFile;   //file di cfg del bot (quella relativa al singolo server, con rcon e file)
         struct stat m_infos;    //contiene le info del file di configurazione, tra cui la data dell'ultima modifica
