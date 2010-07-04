@@ -78,7 +78,7 @@ class ConfigLoader
     std::vector< ConfigLoader::AdminList > getAdminlist();
     std::vector< ConfigLoader::Banlist > getBanlist();
     bool testChanges();
-    void reloadOptions();   //it reloads entire options tree, changes made on object Options*
+    void loadOptions();   //it reloads entire options tree, changes made on object Options*
     
   private:
     std::string generalFile;

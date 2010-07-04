@@ -35,7 +35,7 @@ ConfigLoader::ConfigLoader( const std::string &filePath)
 {
   generalFile=filePath;
   opzioni=new Options();
-  reloadOptions();
+  loadOptions();
 }
 //distruttore:chiudo il file
 ConfigLoader::~ConfigLoader()
@@ -153,18 +153,31 @@ bool ConfigLoader::testChanges()
 {
   if (opzioni)
   {
-    struct stat temp;
-    if (!stat(generalFile.c_str(),&temp))  //se riesco a prendere i dati del file
+    struct stat st;
+    if( stat( generalFile.c_str(), &st ) == 0 )
     {
-      if (difftime(opzioni->infos.st_mtime,temp.st_mtime)>0)
+      if(difftime(st.st_mtime, (opzioni->infos).st_mtime) > 0)
       {
-        //file generale cambiato
+        //il file generale è cambiato
+        return true;
+      }
+    }
+    for (unsigned int i=0; i<opzioni->size(); i++)
+    {
+      if( !(*opzioni)[i].getConfigFile().empty() && stat( (*opzioni)[i].getConfigFile().c_str(), &st ) == 0 )
+      {
+        if(difftime(st.st_mtime, (*opzioni)[i].getInfos().st_mtime) > 0)
+        {
+          //il file del server è cambiato
+          return true;
+        }
       }
     }
   }
+  return false;
 }
 
-void ConfigLoader::reloadOptions()
+void ConfigLoader::loadOptions()
 {
   if( stat( generalFile.c_str(), &(opzioni->infos) ) == 0 )
   {
