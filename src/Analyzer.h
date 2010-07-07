@@ -116,6 +116,7 @@ private:
     int contatore;                  //conta i giri di esecuzione "a vuoto", server per cambiare fascia di tempi di attesa
     int fascia;                     //fascia corrente
     bool commandexecuted;           //indica se ho fatto un giro a vuoto o no
+    int giri;                       //conta i cicli fatti, usato per controllare ogni tot di giri se le configurazioni sono cambiate.:;;
     //funzione per il caricamento delle opzioni (le controlla ed in caso corregge la riga del file di log)
     void loadOptions();
     //funzioni associate ai regex (comandi dal server/eventi)

@@ -44,6 +44,7 @@ Analyzer::Analyzer( Connection* conn, Db* db, ConfigLoader* configLoader )
     , server( conn )
     , database( db )
     , m_dati( configLoader->getOptions() )
+    , giri(0)
 {
   loadOptions();
   //inizializzo il resto
@@ -1387,6 +1388,14 @@ void Analyzer::main_loop()
       sleep(2);
     }
     
+    //ogni tot di giri controllo se sono cambiate le impostazioni
+    if ( giri > 10 )
+    {
+      giri = 0;
+      //test sulle impostazioni
+      
+    }
+    
     //inzio il ciclo per gestire i server
     for (m_dati->serverNumber=0;m_dati->serverNumber<m_dati->size();m_dati->serverNumber++)
     {
@@ -1610,6 +1619,7 @@ void Analyzer::main_loop()
       (m_dati->log)->close();
       (m_dati->errors)->close();
     }
+    giri++;
     //fine ciclo, lascio passare un po' di tempo
     if ( commandexecuted ) 
     {
