@@ -37,53 +37,50 @@
 
 class ConfigLoader
 {
-  public:
-    ConfigLoader( const std::string &filePath );
-    ~ConfigLoader();
-    
-    class Options
-    {
-      public:
-        struct stat infos;                 //contiene le info del file di configurazione, tra cui la data dell'ultima modifica
-        std::string generalLog;
-        std::string generalBackup;
-        std::vector<Server*> servers;
-        Logger* errors;                     //log dedicato a notifiche ed errori
-        Logger* log;                        //log dedicato ai server (cambia di file)
-        unsigned int serverNumber;                   //numero del server su cui sto lavorando
+    public:
+        ConfigLoader( const std::string &filePath );
+        ~ConfigLoader();
         
-        Server operator[] (int number){return *servers[number];}
-        unsigned int size(){return servers.size();}
-        //distruttore
-        ~Options() { for(unsigned int i=0; i<servers.size(); i++) delete servers[i]; delete errors; delete log; };
-        //comoda funzione per cercare un server per nome.
-        Server* searchServer(std::string name) { Server* t = NULL; for( unsigned int i=0; i<servers.size(); i++) if ( name.compare(servers[i]->getName()) == 0 ) t = servers[i]; return t; };
-    };
-    
-    class AdminList    //use for adminlist as well
-    {
-      public:
-        std::string name;
-        std::string value;
-    };
-
-    class Banlist
-    {
-      public:
-        std::string nick, ip, date, time, motive, author;
-        std::vector< std::string > guids;
-    };
-
-    Options* getOptions();
-    std::vector< ConfigLoader::AdminList > getAdminlist();
-    std::vector< ConfigLoader::Banlist > getBanlist();
-    bool testChanges();
-    void loadOptions();   //it reloads entire options tree, changes made on object Options*
-    
-  private:
-    std::string generalFile;
-    Options* opzioni;
-    bool isA(const std::string &line, char* regex);
-    std::string extract(const std::string &line);
+        class Options
+        {
+            public:
+                struct stat infos;                 //contiene le info del file di configurazione, tra cui la data dell'ultima modifica
+                std::string generalLog;
+                std::string generalBackup;
+                std::vector<Server*> servers;
+                Logger* errors;                     //log dedicato a notifiche ed errori
+                Logger* log;                        //log dedicato ai server (cambia di file)
+                unsigned int serverNumber;                   //numero del server su cui sto lavorando
+                
+                Server operator[] ( int number ) { return *servers[number]; }
+                unsigned int size() { return servers.size(); }
+                //distruttore
+                ~Options() 
+                {
+                    for( unsigned int i = 0; i < servers.size(); i++ )
+                        delete servers[i];
+                    delete errors;
+                    delete log;
+                };
+                //comoda funzione per cercare un server per nome.
+                Server* searchServer(std::string name) 
+                {
+                    Server* t = NULL;
+                    for( unsigned int i = 0; i < servers.size(); i++ )
+                        if ( name.compare( servers[i]->getName() ) == 0 )
+                            t = servers[i];
+                        return t;
+                };
+        };
+        
+        Options* getOptions();
+        bool testChanges();
+        void loadOptions();   //it reloads entire options tree, changes made on object Options*
+        
+    private:
+        std::string generalFile;
+        Options* opzioni;
+        bool isA(const std::string &line, char* regex);
+        std::string extract(const std::string &line);
 };
 #endif
