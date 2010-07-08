@@ -43,7 +43,7 @@ Server::~Server()
 }
 
 
-std::string Server::getName()
+std::string Server::name() const
 {
   return m_name;
 }
@@ -54,7 +54,7 @@ void Server::setName( std::string name )
 }
 
 
-std::streampos Server::getRow()
+std::streampos Server::row() const
 {
     return m_row;
 }
@@ -65,7 +65,7 @@ void Server::setRow( std::streampos pos )
 }
 
 
-std::string Server::getConfigFile()
+std::string Server::configFile() const
 {
     return m_configFile;
 }
@@ -76,7 +76,7 @@ void Server::setConfigFile( std::string configFile )
 }
 
 
-std::string Server::getRcon()
+std::string Server::rcon() const
 {
     return m_rconpass;
 }
@@ -87,7 +87,7 @@ void Server::setRcon( std::string rconPassword )
 }
 
 
-std::string Server::getIP()
+std::string Server::ip() const
 {
     return m_ip;
 }
@@ -98,7 +98,7 @@ void Server::setIP( std::string ip )
 }
 
 
-int Server::getPort()
+int Server::port() const
 {
     return m_port;
 }
@@ -109,7 +109,7 @@ void Server::setPort( int port )
 }
 
 
-std::string Server::getBackupDir()
+std::string Server::backupDir() const
 {
     return m_backup;
 }
@@ -120,7 +120,7 @@ void Server::setBackupDir( std::string backupDir )
 }
 
 
-std::string Server::getBotLog()
+std::string Server::botLog() const
 {
     return m_botLog;
 }
@@ -131,7 +131,7 @@ void Server::setBotLog( std::string botLog )
 }
 
 
-std::string Server::getServerLog()
+std::string Server::serverLog() const
 {
     return m_serverLog;
 }
@@ -142,7 +142,7 @@ void Server::setServerLog( std::string serverLog )
 }
 
 
-std::string Server::getDbFolder()
+std::string Server::dbFolder() const
 {
     return m_dbFolder;
 }
@@ -153,7 +153,7 @@ void Server::setDbFolder( std::string dbFolder )
 }
 
 
-struct stat Server::getInfos()
+struct stat Server::infos() const
 {
     return m_infos;
 }
@@ -164,7 +164,7 @@ void Server::setInfos( struct stat fileInfos )
 }
 
 
-int Server::getStrict()
+int Server::strict() const
 {
   return m_strict;
 }
@@ -175,7 +175,7 @@ void Server::setStrict( int level )
 }
 
 
-bool Server::isChanged()
+bool Server::isChanged() const
 {
   return m_changed;
 }
@@ -186,7 +186,7 @@ void Server::setChanged( bool changed )
 }
 
 
-bool Server::isValid()
+bool Server::isValid() const
 {
   return m_valid;
 }
@@ -252,7 +252,7 @@ void Server::test_for_changes(Server* old)
       m_row = old->m_row;
     }
   }
-  else 
+  else
   {
     m_changed = true;
   }

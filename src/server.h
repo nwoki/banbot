@@ -48,22 +48,22 @@ class Server
                 Player( std::string g, std::string nu, std::string ni, std::string i ) : GUID(g), number(nu), nick(ni), ip(i) {};
                 Player* clone() { return new Player( GUID, number, nick, ip ); };
         };
-        
+
         //getters
-        std::string getName();
-        std::string getBackupDir();
-        std::string getBotLog();
-        std::string getConfigFile();
-        std::string getDbFolder();
-        struct stat getInfos();
-        std::string getIP();
-        int getPort();
-        std::string getRcon();
-        std::streampos getRow();
-        std::string getServerLog();
-        int getStrict();
-        bool isChanged();
-        bool isValid();
+        std::string name() const;
+        std::string backupDir() const;
+        std::string botLog() const;
+        std::string configFile() const;
+        std::string dbFolder() const;
+        struct stat infos() const;
+        std::string ip() const;
+        int port() const;
+        std::string rcon() const;
+        std::streampos row() const;
+        std::string serverLog() const;
+        int strict() const;
+        bool isChanged() const;
+        bool isValid() const;
 
         //setters
         void setName( std::string name );
@@ -80,20 +80,20 @@ class Server
         void setStrict( int level = 1 );
         void setChanged( bool changed = true );
         void setValid( bool valid = true );
-        
+
         //funzioni per l'accesso diretto all'array dei giocatori
         unsigned int size();
         Player* operator[] ( int pos );    //overloading dell'operatore [int]
-        void push_back( Player* player ); 
+        void push_back( Player* player );
         std::vector<Server::Player*>::iterator begin();
         void erase( std::vector<Server::Player*>::iterator iteratore );
         void clear();
-        
+
         //confronto con le vecchie opzioni, ed in caso di modifiche critiche lo resetta, altrimenti ripristina i dati dinamici.
         void test_for_changes(Server* old);
         //controlla se sono state date impostate tutte le opzioni, true=ok.
         bool test_for_options();
-        
+
   private:
         bool m_changed;
         bool m_valid;
