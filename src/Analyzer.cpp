@@ -76,7 +76,7 @@ Analyzer::Analyzer( Connection* conn, Db* db, ConfigLoader* configLoader )
     COMMAND=" *[0-9]+:[0-9]{2} +say: +[0-9]+ +[^ \t\n\r\f\v]+: +![^ \t\n\r\f\v]+";
     STATUS=" *[0-9]+:[0-9]{2} +say: +[0-9]+ +[^ \t\n\r\f\v]+: +!status";
     FORCE=" *[0-9]+:[0-9]{2} +say: +[0-9]+ +[^ \t\n\r\f\v]+: +!force red|blue|spectator [^ \t\n\r\f\v]+";
-    FORCE_NUMBER=" *[0-9]+:[0-9]{2} +say: +[0-9]+ +[^ \t\n\r\f\v]+: +!force red|blue|spectator [0-9]{1,2}";
+    FORCE_NUMBER=" *[0-9]+:[0-9]{2} +say: +[0-9]+ +[^ \t\n\r\f\v]+: +!force red|blue|spect [0-9]{1,2}";
     IAMGOD=" *[0-9]+:[0-9]{2} +say: +[0-9]+ +[^ \t\n\r\f\v]+: +!iamgod";
 
     std::cout<<"[OK] Analyzer inizializzato.\n";
@@ -1138,6 +1138,8 @@ void Analyzer::force(char* line)
         std::string action=temp.substr(pos,end-pos);
         pos=temp.find_first_not_of(" \t\n\r\f\v",end+1);
         std::string player=temp.substr(pos);
+        if ( action.compare("spect") == 0 ) 
+            action = "spectator";
         
         std::string frase;
         if (isA(line,FORCE_NUMBER))
@@ -1395,194 +1397,202 @@ void Analyzer::main_loop()
         {
             giri = 0;
             //test sulle impostazioni
-            
+            if ( m_configLoader->testChanges() )
+            {
+                m_configLoader->loadOptions();
+/********************************************************************** faccio verificare i database a db  ***********************************************************/
+                loadOptions();
+            }
         }
         
         //inzio il ciclo per gestire i server
         for (m_dati->serverNumber=0;m_dati->serverNumber<m_dati->size();m_dati->serverNumber++)
         {
-            //provo ad aprire il file e a riprendere dalla riga dove ero arrivato
-            (m_dati->log)->changePath( (*m_dati)[m_dati->serverNumber].getBotLog() );
-            std::cout<<"Provo ad aprire "<<(*m_dati)[m_dati->serverNumber].getServerLog()<<"\n";
-            log=new ifstream();
-            log->open((*m_dati)[m_dati->serverNumber].getServerLog().c_str());
-            log->seekg((*m_dati)[m_dati->serverNumber].getRow());
-            if (log->is_open())
+            if ( (*m_dati)[m_dati->serverNumber].isValid() )
             {
-                std::cout<<"  [OK] Aperto!\n";;
-                #ifdef DEBUG_MODE
-                std::cout<< "  Al punto: "<< (*m_dati)[m_dati->serverNumber].getRow()<<"\n";
-                *(m_dati->log)<<"  [OK] Aperto!\n"
-                *(m_dati->log)<< "  Al punto: "<< (*m_dati)[m_dati->serverNumber].getRow()<<"\n";
-                #endif
-            }
-            else
-            {
-                std::cout<<"  [FAIL] Non sono riuscito ad aprirlo!\n";
-                *(m_dati->log)<<"  [FAIL] Non sono riuscito ad aprire "<<(*m_dati)[m_dati->serverNumber].getServerLog()<<"\n";
-            }
-            //se il file è aperto posso lavorare, e provo ad aprire pure il db
-            if (log->is_open() && !log->bad() && database->openDatabase())
-            {
-                //il file è aperto, esamino le nuove righe (se ce ne sono)
-                while (!log->eof() && !log->bad() && (*m_dati)[m_dati->serverNumber].getRow()>=0)
+                //provo ad aprire il file e a riprendere dalla riga dove ero arrivato
+                (m_dati->log)->changePath( (*m_dati)[m_dati->serverNumber].getBotLog() );
+                std::cout<<"Provo ad aprire "<<(*m_dati)[m_dati->serverNumber].getServerLog()<<"\n";
+                log=new ifstream();
+                log->open((*m_dati)[m_dati->serverNumber].getServerLog().c_str());
+                log->seekg((*m_dati)[m_dati->serverNumber].getRow());
+                if (log->is_open())
                 {
-                    //leggo una riga
-                    char line [1500];
-                    log->getline(line,1500,'\n');
-                    //se non è la fine del file, mi salvo la riga dove sono arrivato
-                    if (!log->eof() && !log->bad()) (*m_dati)[m_dati->serverNumber].setRow(log->tellg());
-                    
+                    std::cout<<"  [OK] Aperto!\n";;
                     #ifdef DEBUG_MODE
-                    std::cout<< "  Al punto: "<< (*m_dati)[m_dati->serverNumber].getRow()<<" contenuto: "<<line<<"\n";
-                    *logger<< "  Al punto: "<< (*m_dati)[m_dati->serverNumber].getRow()<<" contenuto: "<<line<<"\n";
+                    std::cout<< "  Al punto: "<< (*m_dati)[m_dati->serverNumber].getRow()<<"\n";
+                    *(m_dati->log)<<"  [OK] Aperto!\n"
+                    *(m_dati->log)<< "  Al punto: "<< (*m_dati)[m_dati->serverNumber].getRow()<<"\n";
                     #endif
-                    
-                    //comincio coi test
-                    if (isA(line, CLIENT_USER_INFO))
+                }
+                else
+                {
+                    std::cout<<"  [FAIL] Non sono riuscito ad aprirlo!\n";
+                    *(m_dati->log)<<"  [FAIL] Non sono riuscito ad aprire "<<(*m_dati)[m_dati->serverNumber].getServerLog()<<"\n";
+                }
+                //se il file è aperto posso lavorare, e provo ad aprire pure il db
+                if (log->is_open() && !log->bad() && database->openDatabase())
+                {
+                    //il file è aperto, esamino le nuove righe (se ce ne sono)
+                    while (!log->eof() && !log->bad() && (*m_dati)[m_dati->serverNumber].getRow()>=0)
                     {
-                        //ha passato il regex, è una clientUserinfo
-                        clientUserInfo(line);
-                        commandexecuted=true;
-                    }
-                    else
-                    {
-                        //non ha passato il test, non è un clientUserinfo: provo con gli altri regex
-                        //controllo se è la connessione di un utente
-                        if (isA(line, CLIENT_CONNECT))
+                        //leggo una riga
+                        char line [1500];
+                        log->getline(line,1500,'\n');
+                        //se non è la fine del file, mi salvo la riga dove sono arrivato
+                        if (!log->eof() && !log->bad()) (*m_dati)[m_dati->serverNumber].setRow(log->tellg());
+                        
+                        #ifdef DEBUG_MODE
+                        std::cout<< "  Al punto: "<< (*m_dati)[m_dati->serverNumber].getRow()<<" contenuto: "<<line<<"\n";
+                        *logger<< "  Al punto: "<< (*m_dati)[m_dati->serverNumber].getRow()<<" contenuto: "<<line<<"\n";
+                        #endif
+                        
+                        //comincio coi test
+                        if (isA(line, CLIENT_USER_INFO))
                         {
-                            //è un clientconnect:
-                            clientConnect(line);
+                            //ha passato il regex, è una clientUserinfo
+                            clientUserInfo(line);
                             commandexecuted=true;
                         }
                         else
                         {
-                            //non è un clientConnect, provo con gli altri regex_t
-                            //controllo se è una disconnessione
-                            if (isA(line, CLIENT_DISCONNECT))
+                            //non ha passato il test, non è un clientUserinfo: provo con gli altri regex
+                            //controllo se è la connessione di un utente
+                            if (isA(line, CLIENT_CONNECT))
                             {
-                                //è un clientDisconnect
-                                clientDisconnect(line);
+                                //è un clientconnect:
+                                clientConnect(line);
+                                commandexecuted=true;
                             }
                             else
                             {
-                                //non è neanche un clientDisconnect
-                                if (isA(line, INITGAME))
+                                //non è un clientConnect, provo con gli altri regex_t
+                                //controllo se è una disconnessione
+                                if (isA(line, CLIENT_DISCONNECT))
                                 {
-                                    //ok, è l'inizio di una nuova partita, resetto i player:
-                                    //elimino gli oggetti Player:
-                                    for (unsigned int i=0;i<(*m_dati)[m_dati->serverNumber].size();i++) delete (*m_dati)[m_dati->serverNumber][i];
-                                    //resetto il vector:
-                                    (*m_dati)[m_dati->serverNumber].clear();
-                                    commandexecuted=true;
+                                    //è un clientDisconnect
+                                    clientDisconnect(line);
                                 }
                                 else
                                 {
-                                    if (isA(line,COMMAND))
+                                    //non è neanche un clientDisconnect
+                                    if (isA(line, INITGAME))
                                     {
+                                        //ok, è l'inizio di una nuova partita, resetto i player:
+                                        //elimino gli oggetti Player:
+                                        for (unsigned int i=0;i<(*m_dati)[m_dati->serverNumber].size();i++) delete (*m_dati)[m_dati->serverNumber][i];
+                                        //resetto il vector:
+                                        (*m_dati)[m_dati->serverNumber].clear();
                                         commandexecuted=true;
-                                        //controllo se è un comando di ban
-                                        if (isA(line, BAN))
+                                    }
+                                    else
+                                    {
+                                        if (isA(line,COMMAND))
                                         {
-                                            //è una richiesta di ban:
-                                            ban(line);
-                                        }
-                                        else
-                                        {
-                                            //controllo se è la richiesta di un find
-                                            if (isA(line,FIND))
+                                            commandexecuted=true;
+                                            //controllo se è un comando di ban
+                                            if (isA(line, BAN))
                                             {
-                                                //è un find.
-                                                find(line);
+                                                //è una richiesta di ban:
+                                                ban(line);
                                             }
                                             else
                                             {
-                                                //controllo se è una richiesta di unban
-                                                if (isA(line,UNBAN))
+                                                //controllo se è la richiesta di un find
+                                                if (isA(line,FIND))
                                                 {
-                                                    //è un comando di unban
-                                                    unban(line);
+                                                    //è un find.
+                                                    find(line);
                                                 }
                                                 else
                                                 {
-                                                    if (isA(line,OP))
+                                                    //controllo se è una richiesta di unban
+                                                    if (isA(line,UNBAN))
                                                     {
-                                                        //è un comando di op
-                                                        op(line);
+                                                        //è un comando di unban
+                                                        unban(line);
                                                     }
                                                     else
                                                     {
-                                                        if (isA(line,DEOP))
+                                                        if (isA(line,OP))
                                                         {
-                                                            //è un comando di deop
-                                                            deop(line);
+                                                            //è un comando di op
+                                                            op(line);
                                                         }
                                                         else
                                                         {
-                                                            if (isA(line,HELP))
+                                                            if (isA(line,DEOP))
                                                             {
-                                                                //è un help
-                                                                help(line);
+                                                                //è un comando di deop
+                                                                deop(line);
                                                             }
                                                             else
                                                             {
-                                                                if (isA(line,FINDOP))
+                                                                if (isA(line,HELP))
                                                                 {
-                                                                    //è un findop
-                                                                    findOp(line);
+                                                                    //è un help
+                                                                    help(line);
                                                                 }
                                                                 else
                                                                 {
-                                                                    if (isA(line,KICK))
+                                                                    if (isA(line,FINDOP))
                                                                     {
-                                                                        //è un kick
-                                                                        kick(line);
+                                                                        //è un findop
+                                                                        findOp(line);
                                                                     }
                                                                     else
                                                                     {
-                                                                        if (isA(line,MUTE))
+                                                                        if (isA(line,KICK))
                                                                         {
-                                                                            //è un mute
-                                                                            mute(line);
+                                                                            //è un kick
+                                                                            kick(line);
                                                                         }
                                                                         else
                                                                         {
-                                                                            if (isA(line,STRICT))
+                                                                            if (isA(line,MUTE))
                                                                             {
-                                                                                //è uno strict
-                                                                                setStrict(line);
+                                                                                //è un mute
+                                                                                mute(line);
                                                                             }
                                                                             else
                                                                             {
-                                                                                if (isA(line,VETO))
+                                                                                if (isA(line,STRICT))
                                                                                 {
-                                                                                    //è un veto
-                                                                                    veto(line);
+                                                                                    //è uno strict
+                                                                                    setStrict(line);
                                                                                 }
                                                                                 else
                                                                                 {
-                                                                                    if (isA(line,SLAP))
+                                                                                    if (isA(line,VETO))
                                                                                     {
-                                                                                        //è uno slap
-                                                                                        slap(line);
+                                                                                        //è un veto
+                                                                                        veto(line);
                                                                                     }
                                                                                     else
                                                                                     {
-                                                                                        if (isA(line,STATUS))
+                                                                                        if (isA(line,SLAP))
                                                                                         {
-                                                                                            //è uno status
-                                                                                            status(line);
+                                                                                            //è uno slap
+                                                                                            slap(line);
                                                                                         }
                                                                                         else
                                                                                         {
-                                                                                            if (isA(line,IAMGOD))
+                                                                                            if (isA(line,STATUS))
                                                                                             {
-                                                                                                //è un iamgod
-                                                                                                iamgod(line);
+                                                                                                //è uno status
+                                                                                                status(line);
                                                                                             }
                                                                                             else
                                                                                             {
-                                                                                                expansion(line);
+                                                                                                if (isA(line,IAMGOD))
+                                                                                                {
+                                                                                                    //è un iamgod
+                                                                                                    iamgod(line);
+                                                                                                }
+                                                                                                else
+                                                                                                {
+                                                                                                    expansion(line);
+                                                                                                }
                                                                                             }
                                                                                         }
                                                                                     }
@@ -1603,23 +1613,23 @@ void Analyzer::main_loop()
                         }
                     }
                 }
+                else
+                {
+                    (*m_dati)[m_dati->serverNumber].setRow(0);//se non riesco ad aprire il file, ricomincio dalla prima riga
+                    std::cout<<"Non riesco ad aprire il file di log o il database\n";
+                    (m_dati->log)->timestamp();
+                    *(m_dati->log)<<"\nNon riesco ad aprire il file di log o il database\n";
+                    (m_dati->errors)->timestamp();
+                    *(m_dati->errors)<<"\nNon riesco ad aprire il file di log o il database del server "<< (*m_dati)[m_dati->serverNumber].getName()  <<"\n";
+                }
+                if ((*m_dati)[m_dati->serverNumber].getRow()<0) (*m_dati)[m_dati->serverNumber].setRow(0);
+                //chiudo il file di log del server
+                log->close();
+                delete log;
+                database->closeDatabase();
+                (m_dati->log)->close();
+                (m_dati->errors)->close();
             }
-            else
-            {
-                (*m_dati)[m_dati->serverNumber].setRow(0);//se non riesco ad aprire il file, ricomincio dalla prima riga
-                std::cout<<"Non riesco ad aprire il file di log o il database\n";
-                (m_dati->log)->timestamp();
-                *(m_dati->log)<<"\nNon riesco ad aprire il file di log o il database\n";
-                (m_dati->errors)->timestamp();
-                *(m_dati->errors)<<"\nNon riesco ad aprire il file di log o il database del server "<< (*m_dati)[m_dati->serverNumber].getName()  <<"\n";
-            }
-            if ((*m_dati)[m_dati->serverNumber].getRow()<0) (*m_dati)[m_dati->serverNumber].setRow(0);
-            //chiudo il file di log del server
-            log->close();
-            delete log;
-            database->closeDatabase();
-            (m_dati->log)->close();
-            (m_dati->errors)->close();
         }
         giri++;
         //fine ciclo, lascio passare un po' di tempo

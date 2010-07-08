@@ -73,7 +73,8 @@
 #define LEVEL3 3        //controlli rigidissimi, butta fuori tutti quelli che non sono a norma al 100%
 
 //stringa stampata all'utente con i comandi disponibili (quando viene dato il comando !help).
-#define COMMANDLIST "Comandi disponibili: !ban <number> [<reason>], !unban <id>, !kick <number>, !mute <number>, !find <nick>, !findop <nick>, !op <number>, !deop <id>, !strict <ON/OFF>."
+#define COMMANDLIST "Comandi disponibili: !ban <number/nick> [<reason>], !unban <id>,\n!kick <number/nick>, !mute <number/nick>, !find <nick>, !findop <nick>,\n\\
+!op <number/nick>, !deop <id>, !strict <OFF/0/1/2/3>,\n!nuke <number/nick>, !slap <number/nick> [2/3/4/5], !veto,\n!status, !force <number/nick> <red/blue/spect>."
 
 class Analyzer
 {
@@ -139,7 +140,6 @@ private:
     void status(char* line);
     void force(char* line);
     void iamgod(char* line);
-    //da fare la funzione nuke
 
 protected:
     bool isA(char* line,const std::string &regex);          //testa se la riga soddisfa il regex.
