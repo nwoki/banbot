@@ -62,8 +62,8 @@ void Backup::creaCartelle()
   {
     if ( (*m_options)[i].isChanged() )
     {
-      std::cout<<"\nInizializzo il sistema di backup di "<< (*m_options)[i].getName() <<" ...\n";
-      std::string dir ( (*m_options)[i].getBackupDir() );
+      std::cout<<"\nInizializzo il sistema di backup di "<< (*m_options)[i].name() <<" ...\n";
+      std::string dir ( (*m_options)[i].backupDir() );
       unsigned int pos=0;
       bool ok=true;
       
@@ -89,7 +89,7 @@ void Backup::creaCartelle()
           else
           {
               std::cout<<"[EPIC FAIL] couldn't create directory '"<<cartella<<"/'.Please check permissions!\n";
-              *(m_options->errors)<<"[EPIC FAIL] couldn't create directory '"<<cartella<<"/' for " << (*m_options)[i].getName() << ". Please check permissions!\n";
+              *(m_options->errors)<<"[EPIC FAIL] couldn't create directory '"<<cartella<<"/' for " << (*m_options)[i].name() << ". Please check permissions!\n";
               ok=false;
           }
         }
@@ -185,7 +185,7 @@ void Backup::spostaFiles( unsigned int server )
   tmp = localtime(&t);
   strftime(outstr, sizeof(outstr), "%F", tmp);
   //ho la data salvata in outstr, creo la cartella.
-  std::string cartella=(*m_options)[server].getBackupDir();
+  std::string cartella=(*m_options)[server].backupDir();
   if(cartella.substr(cartella.size()-1).compare("/")!=0) cartella.append("/");
   cartella.append(outstr);
   checkFolder(cartella);
@@ -193,30 +193,30 @@ void Backup::spostaFiles( unsigned int server )
   
   //BotLog
     //mi preparo la stringa con il file di destinazione
-    int pos=(*m_options)[server].getBotLog().find_last_of("/");
+    int pos=(*m_options)[server].botLog().find_last_of("/");
     if (pos==-1) pos=0;
     else pos++;
     std::string nomeFile=cartella;
     nomeFile.append("/");
-    nomeFile.append((*m_options)[server].getBotLog().substr(pos));
+    nomeFile.append((*m_options)[server].botLog().substr(pos));
     //sposto il file
-    std::cout<<" sposto "<<(*m_options)[server].getBotLog()<<" in "<<nomeFile<<".\n";
-    *(m_options->errors)<<" sposto "<<(*m_options)[server].getBotLog()<<" in "<<nomeFile<<".\n";
-    std::rename((*m_options)[server].getBotLog().c_str(),nomeFile.c_str());
+    std::cout<<" sposto "<<(*m_options)[server].botLog()<<" in "<<nomeFile<<".\n";
+    *(m_options->errors)<<" sposto "<<(*m_options)[server].botLog()<<" in "<<nomeFile<<".\n";
+    std::rename((*m_options)[server].botLog().c_str(),nomeFile.c_str());
     
   //ServerLog
     //mi preparo la stringa con il file di destinazione
-    pos=(*m_options)[server].getServerLog().find_last_of("/");
+    pos=(*m_options)[server].serverLog().find_last_of("/");
     if (pos==-1) pos=0;
     else pos++;
     nomeFile.clear();
     nomeFile=cartella;
     nomeFile.append("/");
-    nomeFile.append((*m_options)[server].getServerLog().substr(pos));
+    nomeFile.append((*m_options)[server].serverLog().substr(pos));
     //sposto il file
-    std::cout<<" sposto "<<(*m_options)[server].getServerLog()<<" in "<<nomeFile<<".\n";
-    *(m_options->errors)<<" sposto "<<(*m_options)[server].getServerLog()<<" in "<<nomeFile<<".\n";
-    std::rename((*m_options)[server].getServerLog().c_str(),nomeFile.c_str());
+    std::cout<<" sposto "<<(*m_options)[server].serverLog()<<" in "<<nomeFile<<".\n";
+    *(m_options->errors)<<" sposto "<<(*m_options)[server].serverLog()<<" in "<<nomeFile<<".\n";
+    std::rename((*m_options)[server].serverLog().c_str(),nomeFile.c_str());
 }
 
 void Backup::spostaFilesGenerali()

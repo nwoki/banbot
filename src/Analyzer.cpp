@@ -107,13 +107,13 @@ void Analyzer::loadOptions()
         if( (*m_dati)[i].isChanged() )
         {
             ifstream * temp=new ifstream();
-            temp->open((*m_dati)[i].getServerLog().c_str());
+            temp->open((*m_dati)[i].serverLog().c_str());
             if ( temp->is_open() )
             {
                 temp->seekg ( 0, ios:: end );
                 (*m_dati)[i].setRow( temp->tellg() );
                 #ifdef DEBUG_MODE
-                    std::cout << "Valore di partenza del file: "<<(*m_dati)[i].getRow()<<"\n";
+                    std::cout << "Valore di partenza del file: "<<(*m_dati)[i].row()<<"\n";
                 #endif
             }
             else (*m_dati)[i].setRow( 0 );
@@ -215,7 +215,7 @@ void Analyzer::clientUserInfo(char* line)
             nonTrovato=false;
             if ((!(*m_dati)[m_dati->serverNumber][i]->GUID.empty() && (*m_dati)[m_dati->serverNumber][i]->GUID.compare(guid)!=0) || guid.empty())
             {
-                if (!guid.empty() && (*m_dati)[m_dati->serverNumber].getStrict() >= LEVEL1)
+                if (!guid.empty() && (*m_dati)[m_dati->serverNumber].strict() >= LEVEL1)
                 {
                     //cambio illegale del GUID => cheats
                     kicked=true;
@@ -260,9 +260,9 @@ void Analyzer::clientUserInfo(char* line)
     }
     
     //se la guid è vuota, sono cazzi amari...
-    if (guid.empty() && (*m_dati)[m_dati->serverNumber].getStrict() >= LEVEL1)
+    if (guid.empty() && (*m_dati)[m_dati->serverNumber].strict() >= LEVEL1)
     {
-        if ( (*m_dati)[m_dati->serverNumber].getStrict() >= LEVEL2 )
+        if ( (*m_dati)[m_dati->serverNumber].strict() >= LEVEL2 )
         {
             //guid vuota, probabili cheats, sono in modalità strict, butto fuori (provo a bannare un'eventuale guid precedente).
             kicked=true;
@@ -368,7 +368,7 @@ void Analyzer::clientUserInfo(char* line)
         else
         {
             //ok, non è stato bannato (per il momento). Controllo se ha un GUID valido.
-            if ( (*m_dati)[m_dati->serverNumber].getStrict() >= LEVEL1 && !guid.empty() && !isA(line, GUID) )
+            if ( (*m_dati)[m_dati->serverNumber].strict() >= LEVEL1 && !guid.empty() && !isA(line, GUID) )
             {
                 //il guid è illegale, ban diretto
                 std::cout<<"  [!] kick automatico per GUID illegale\n";
@@ -389,9 +389,9 @@ void Analyzer::clientUserInfo(char* line)
             else
             {
                 //fin qua, tutto a posto. Controlli avanzati:
-                if ( (*m_dati)[m_dati->serverNumber].getStrict() >= LEVEL3 && !isA( line,COMPLETE_CLIENT_USER_INFO ) )
+                if ( (*m_dati)[m_dati->serverNumber].strict() >= LEVEL3 && !isA( line,COMPLETE_CLIENT_USER_INFO ) )
                 {
-                    if ( (*m_dati)[m_dati->serverNumber].getStrict() >= LEVEL4 )
+                    if ( (*m_dati)[m_dati->serverNumber].strict() >= LEVEL4 )
                     {
                         //butto fuori
                         std::cout<<"  [!] kick automatico per client non pulito (controlli avanzati non superati).\n";
@@ -569,7 +569,7 @@ void Analyzer::ban(char* line)
                     std::cout<<"  [FAIL] error on db calls\n";
                     *(m_dati->log)<<"  [FAIL] error on db calls\n";
                     (m_dati->errors)->timestamp();
-                    *(m_dati->errors)<<"\n  [FAIL] On " << (*m_dati)[m_dati->serverNumber].getName()  << " : error on db calls\n";
+                    *(m_dati->errors)<<"\n  [FAIL] On " << (*m_dati)[m_dati->serverNumber].name()  << " : error on db calls\n";
                 }
                 server->kick((*m_dati)[m_dati->serverNumber][i]->number);
                 std::cout<<"  [OK] player banned\n";
@@ -1128,7 +1128,7 @@ void Analyzer::status(char* line)
     if (isAdminSay(line,numeroAdmin))
     {
         std::string frase("^0BanBot ^1status:  version 1.1b, coded by [2s2h]n3m3s1s & [2s2h]Zamy.\n^1Strict level: ");
-        switch ((*m_dati)[m_dati->serverNumber].getStrict())
+        switch ((*m_dati)[m_dati->serverNumber].Strict())
         {
             case 0:
                 frase.append("OFF");
@@ -1301,9 +1301,9 @@ bool Analyzer::nickIsBanned(const std::string &nick)
         if (data.compare(risultato[i])==0 && diff>0 && diff<60) return true;
     }
     //se sono in modalità strict di livello 2, se il nick è bannato, butto fuori anche se è passata un'ora.
-    if ( risultato.size() && (*m_dati)[m_dati->serverNumber].getStrict() >= LEVEL1)
+    if ( risultato.size() && (*m_dati)[m_dati->serverNumber].strict() >= LEVEL1)
     {
-        if ( (*m_dati)[m_dati->serverNumber].getStrict() >= LEVEL2 ) {return true;}
+        if ( (*m_dati)[m_dati->serverNumber].strict() >= LEVEL2 ) {return true;}
         else 
         {
             std::string frase("^0BanBot ^1warning: the nick '");
@@ -1411,12 +1411,12 @@ void Analyzer::main_loop()
             for (unsigned int i=0;i<m_dati->size();i++)
             {
                 log=new ifstream();
-                log->open((*m_dati)[i].getBotLog().c_str());
+                log->open((*m_dati)[i].botLog().c_str());
                 if (log->is_open())
                 {
                     //se il file è aperto, controllo la dimensione
                     log->seekg (0, ios:: end); 
-                    if (log->tellg ()<(*m_dati)[i].getRow()) (*m_dati)[i].setRow(0);
+                    if (log->tellg ()<(*m_dati)[i].row()) (*m_dati)[i].setRow(0);
                 }
                 //altrimenti se non c'è il file, sono già sicuro che il backup è stato fatto.
                 else (*m_dati)[i].setRow(0);
@@ -1448,30 +1448,30 @@ void Analyzer::main_loop()
             if ( (*m_dati)[m_dati->serverNumber].isValid() )
             {
                 //provo ad aprire il file e a riprendere dalla riga dove ero arrivato
-                (m_dati->log)->changePath( (*m_dati)[m_dati->serverNumber].getBotLog() );
-                std::cout<<"Provo ad aprire "<<(*m_dati)[m_dati->serverNumber].getServerLog()<<"\n";
+                (m_dati->log)->changePath( (*m_dati)[m_dati->serverNumber].botLog() );
+                std::cout<<"Provo ad aprire "<<(*m_dati)[m_dati->serverNumber].serverLog()<<"\n";
                 log=new ifstream();
-                log->open((*m_dati)[m_dati->serverNumber].getServerLog().c_str());
-                log->seekg((*m_dati)[m_dati->serverNumber].getRow());
+                log->open((*m_dati)[m_dati->serverNumber].serverLog().c_str());
+                log->seekg((*m_dati)[m_dati->serverNumber].row());
                 if (log->is_open())
                 {
                     std::cout<<"  [OK] Aperto!\n";;
                     #ifdef DEBUG_MODE
-                    std::cout<< "  Al punto: "<< (*m_dati)[m_dati->serverNumber].getRow()<<"\n";
+                    std::cout<< "  Al punto: "<< (*m_dati)[m_dati->serverNumber].row()<<"\n";
                     *(m_dati->log)<<"  [OK] Aperto!\n"
-                    *(m_dati->log)<< "  Al punto: "<< (*m_dati)[m_dati->serverNumber].getRow()<<"\n";
+                    *(m_dati->log)<< "  Al punto: "<< (*m_dati)[m_dati->serverNumber].row()<<"\n";
                     #endif
                 }
                 else
                 {
                     std::cout<<"  [FAIL] Non sono riuscito ad aprirlo!\n";
-                    *(m_dati->log)<<"  [FAIL] Non sono riuscito ad aprire "<<(*m_dati)[m_dati->serverNumber].getServerLog()<<"\n";
+                    *(m_dati->log)<<"  [FAIL] Non sono riuscito ad aprire "<<(*m_dati)[m_dati->serverNumber].serverLog()<<"\n";
                 }
                 //se il file è aperto posso lavorare, e provo ad aprire pure il db
                 if (log->is_open() && !log->bad() && database->openDatabase())
                 {
                     //il file è aperto, esamino le nuove righe (se ce ne sono)
-                    while (!log->eof() && !log->bad() && (*m_dati)[m_dati->serverNumber].getRow()>=0)
+                    while (!log->eof() && !log->bad() && (*m_dati)[m_dati->serverNumber].row()>=0)
                     {
                         //leggo una riga
                         char line [1500];
@@ -1480,8 +1480,8 @@ void Analyzer::main_loop()
                         if (!log->eof() && !log->bad()) (*m_dati)[m_dati->serverNumber].setRow(log->tellg());
                         
                         #ifdef DEBUG_MODE
-                        std::cout<< "  Al punto: "<< (*m_dati)[m_dati->serverNumber].getRow()<<" contenuto: "<<line<<"\n";
-                        *logger<< "  Al punto: "<< (*m_dati)[m_dati->serverNumber].getRow()<<" contenuto: "<<line<<"\n";
+                        std::cout<< "  Al punto: "<< (*m_dati)[m_dati->serverNumber].row()<<" contenuto: "<<line<<"\n";
+                        *logger<< "  Al punto: "<< (*m_dati)[m_dati->serverNumber].row()<<" contenuto: "<<line<<"\n";
                         #endif
                         
                         //comincio coi test
@@ -1657,9 +1657,9 @@ void Analyzer::main_loop()
                     (m_dati->log)->timestamp();
                     *(m_dati->log)<<"\nNon riesco ad aprire il file di log o il database\n";
                     (m_dati->errors)->timestamp();
-                    *(m_dati->errors)<<"\nNon riesco ad aprire il file di log o il database del server "<< (*m_dati)[m_dati->serverNumber].getName()  <<"\n";
+                    *(m_dati->errors)<<"\nNon riesco ad aprire il file di log o il database del server "<< (*m_dati)[m_dati->serverNumber].name()  <<"\n";
                 }
-                if ((*m_dati)[m_dati->serverNumber].getRow()<0) (*m_dati)[m_dati->serverNumber].setRow(0);
+                if ((*m_dati)[m_dati->serverNumber].row()<0) (*m_dati)[m_dati->serverNumber].setRow(0);
                 //chiudo il file di log del server
                 log->close();
                 delete log;

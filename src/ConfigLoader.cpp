@@ -65,9 +65,9 @@ bool ConfigLoader::testChanges()
         }
         for (unsigned int i=0; i<opzioni->size(); i++)
         {
-            if( !(*opzioni)[i].getConfigFile().empty() && stat( (*opzioni)[i].getConfigFile().c_str(), &st ) == 0 )
+            if( !(*opzioni)[i].configFile().empty() && stat( (*opzioni)[i].configFile().c_str(), &st ) == 0 )
             {
-                if(difftime(st.st_mtime, (*opzioni)[i].getInfos().st_mtime) > 0)
+                if(difftime(st.st_mtime, (*opzioni)[i].infos().st_mtime) > 0)
                 {
                     //il file del server è cambiato
                     return true;
@@ -152,7 +152,7 @@ void ConfigLoader::loadOptions()
                                 {
                                     std::string t = extract( temp );
                                     if ( t.at(0) != '/' && secondary )
-                                        t.insert( 0, newServer->getConfigFile() );
+                                        t.insert( 0, newServer->configFile().substr(0,newServer->configFile().find_last_of("/")) );
 
                                     newServer->setServerLog( t );
                                 }
@@ -161,7 +161,7 @@ void ConfigLoader::loadOptions()
                                 {
                                     std::string t = extract( temp );
                                     if ( t.at(0) != '/' && secondary )
-                                        t.insert( 0, newServer->getConfigFile() );
+                                        t.insert( 0, newServer->configFile().substr(0,newServer->configFile().find_last_of("/")) );
 
                                     newServer->setBotLog( t );
                                 }
@@ -170,7 +170,7 @@ void ConfigLoader::loadOptions()
                                 {
                                     std::string t=extract( temp );
                                     if ( t.at(0) != '/' && secondary )
-                                        t.insert( 0, newServer->getConfigFile() );
+                                        t.insert( 0, newServer->configFile().substr(0,newServer->configFile().find_last_of("/")) );
 
                                     newServer->setBackupDir( t );
                                 }
@@ -179,7 +179,7 @@ void ConfigLoader::loadOptions()
                                 {
                                     std::string t=extract( temp );
                                     if ( t.at(0) != '/' && secondary )
-                                        t.insert( 0, newServer->getConfigFile() );
+                                        t.insert( 0, newServer->configFile().substr(0,newServer->configFile().find_last_of("/")) );
 
                                     newServer->setDbFolder( t );
                                 }
@@ -194,11 +194,11 @@ void ConfigLoader::loadOptions()
                                 {
                                     newServer->setConfigFile( extract(temp) );
                                     struct stat info;
-                                    if( stat( newServer->getConfigFile().c_str(), &info ) == 0 )
+                                    if( stat( newServer->configFile().c_str(), &info ) == 0 )
                                     {
                                         newServer->setInfos( info );
                                         std::ifstream* secondary=new std::ifstream();
-                                        secondary->open( newServer->getConfigFile().c_str() );
+                                        secondary->open( newServer->configFile().c_str() );
                                         char extra [2000];
                                         secondary->read( extra, 2000 );
                                         //appendo il "segnale" per indicare le opzioni sul file secondario
@@ -210,11 +210,11 @@ void ConfigLoader::loadOptions()
                                     }
                                     else
                                     {
-                                        std::cout << "[FAIL]: i can't open \"" << newServer->getConfigFile() << "\".\n";
+                                        std::cout << "[FAIL]: i can't open \"" << newServer->configFile() << "\".\n";
                                         if ( opzioni->errors )
                                         {
                                             opzioni->errors->timestamp();
-                                            *(opzioni->errors) << "[FAIL]: i can't open \"" << newServer->getConfigFile() << "\".\n";
+                                            *(opzioni->errors) << "[FAIL]: i can't open \"" << newServer->configFile() << "\".\n";
                                             opzioni->errors->close();
                                         }
                                     }
@@ -242,7 +242,7 @@ void ConfigLoader::loadOptions()
                 //ok, finito di caricare le impostazioni.
                 //confronto con i server precedenti
                 for ( unsigned int i = 0; i < newOptions->size(); i++ )
-                    (*newOptions)[i].test_for_changes( opzioni->searchServer( (*newOptions)[i].getName() ) );
+                    (*newOptions)[i].test_for_changes( opzioni->searchServer( (*newOptions)[i].name() ) );
 
                 newOptions->infos = opzioni->infos;
 

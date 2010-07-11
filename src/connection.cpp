@@ -65,10 +65,10 @@ void Connection::prepareConnection(int server)
     socketID = socket( AF_INET, SOCK_DGRAM, 0 );
 
     serverAdd.sin_family = AF_INET;
-    serverAdd.sin_port = htons( (*m_options)[server].getPort() );
+    serverAdd.sin_port = htons( (*m_options)[server].port() );
     //recvSize = sizeof( serverAdd );
 
-    hp = gethostbyname( (*m_options)[server].getIP().c_str() );
+    hp = gethostbyname( (*m_options)[server].ip().c_str() );
     memcpy( (char*)&serverAdd.sin_addr, (char*)hp->h_addr, hp->h_length );
 
     recvSize = sizeof( serverAdd );
@@ -79,7 +79,7 @@ void Connection::kick( string number )
   prepareConnection( m_options->serverNumber );
 
   string comando( "rcon ");
-  comando.append( (*m_options)[m_options->serverNumber].getRcon() );
+  comando.append( (*m_options)[m_options->serverNumber].rcon() );
   comando.append( " kick " );
   comando.append( number );
 
@@ -95,7 +95,7 @@ void Connection::say( string frase )
   prepareConnection( m_options->serverNumber );
 
   string comando( "rcon " );
-  comando.append( (*m_options)[m_options->serverNumber].getRcon() );
+  comando.append( (*m_options)[m_options->serverNumber].rcon() );
   comando.append( " say \"" );
   unsigned int i=0;
   while ( i<frase.size() )
@@ -128,7 +128,7 @@ void Connection::tell( string frase, string player )
   prepareConnection( m_options->serverNumber );
 
   string comando( "rcon " );
-  comando.append( (*m_options)[m_options->serverNumber].getRcon() );
+  comando.append( (*m_options)[m_options->serverNumber].rcon() );
   comando.append( " tell " );
   comando.append( player );
   comando.append( " \"" );
@@ -161,7 +161,7 @@ void Connection::reload(bool all)
   if (!all)
   {
     string comando("rcon ");
-    comando.append( (*m_options)[m_options->serverNumber].getRcon() );
+    comando.append( (*m_options)[m_options->serverNumber].rcon() );
     comando.append(" reload");
 
     vector<char> command=makeCmd(comando);
@@ -176,7 +176,7 @@ void Connection::reload(bool all)
     for (unsigned int i=0;i<m_options->size();i++)
     {
       string comando("rcon ");
-      comando.append( (*m_options)[i].getRcon() );
+      comando.append( (*m_options)[i].rcon() );
       comando.append(" reload");
 
       vector<char> command=makeCmd(comando);
@@ -194,7 +194,7 @@ void Connection::mute( string number)
   prepareConnection( m_options->serverNumber );
 
   string comando( "rcon " );
-  comando.append( (*m_options)[m_options->serverNumber].getRcon() );
+  comando.append( (*m_options)[m_options->serverNumber].rcon() );
   comando.append( " mute " );
   comando.append( number );
 
@@ -210,7 +210,7 @@ void Connection::veto()
   prepareConnection( m_options->serverNumber );
 
   string comando( "rcon " );
-  comando.append( (*m_options)[m_options->serverNumber].getRcon() );
+  comando.append( (*m_options)[m_options->serverNumber].rcon() );
   comando.append( " veto" );
 
   vector< char > command = makeCmd( comando );
@@ -225,7 +225,7 @@ void Connection::slap( string number )
   prepareConnection( m_options->serverNumber );
 
   string comando( "rcon ");
-  comando.append( (*m_options)[m_options->serverNumber].getRcon() );
+  comando.append( (*m_options)[m_options->serverNumber].rcon() );
   comando.append( " slap " );
   comando.append( number );
   
@@ -241,7 +241,7 @@ void Connection::nuke( string number )
   prepareConnection( m_options->serverNumber );
 
   string comando( "rcon ");
-  comando.append( (*m_options)[m_options->serverNumber].getRcon() );
+  comando.append( (*m_options)[m_options->serverNumber].rcon() );
   comando.append( " nuke " );
   comando.append( number );
   
@@ -257,7 +257,7 @@ void Connection::force( string number, string where)
   prepareConnection( m_options->serverNumber );
 
   string comando( "rcon " );
-  comando.append( (*m_options)[m_options->serverNumber].getRcon() );
+  comando.append( (*m_options)[m_options->serverNumber].rcon() );
   comando.append( " forceteam " );
   comando.append(number);
   comando.append(" ");
