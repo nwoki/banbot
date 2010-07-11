@@ -53,7 +53,6 @@ vector< char > Connection::makeCmd( string cmd ) //cmd = "rcon " + pass + azione
   {
     specials.push_back( '\xff' );
   }
-  //specials.push_back('\x02');
   for ( unsigned int i = 0; i < command.size(); i++ )
   {
     specials.push_back( command[i] );
@@ -88,7 +87,7 @@ void Connection::kick( string number )
   int bufferSize = command.size();
   sendto( socketID, command.data(), bufferSize, 0, &(sockaddr &)serverAdd, recvSize );
   close( socketID );
-  sleep(SOCKET_PAUSE);
+  usleep(SOCKET_PAUSE);
 }
 
 void Connection::say( string frase )
@@ -119,9 +118,9 @@ void Connection::say( string frase )
     vector< char > command = makeCmd( comando );
     int bufferSize = command.size();
     sendto( socketID, command.data(), bufferSize, 0, &(sockaddr &)serverAdd, recvSize );
-    sleep(SOCKET_PAUSE);
   }
   close( socketID );
+  usleep(SOCKET_PAUSE);
 }
 
 void Connection::tell( string frase, string player )
@@ -152,9 +151,9 @@ void Connection::tell( string frase, string player )
     vector< char > command = makeCmd( comando );
     int bufferSize = command.size();
     sendto( socketID, command.data(), bufferSize, 0, &(sockaddr &)serverAdd, recvSize );
-    sleep(SOCKET_PAUSE);
   }
   close(socketID);
+  usleep(SOCKET_PAUSE);
 }
 
 void Connection::reload(bool all)
@@ -170,6 +169,7 @@ void Connection::reload(bool all)
     prepareConnection( m_options->serverNumber );
     sendto( socketID, command.data(), bufferSize, 0, &(sockaddr &)serverAdd, recvSize );
     close(socketID);
+    usleep(SOCKET_PAUSE);
   }
   else
   {
@@ -184,10 +184,9 @@ void Connection::reload(bool all)
       prepareConnection( i );
       sendto( socketID, command.data(), bufferSize, 0, &(sockaddr &)serverAdd, recvSize );
       close(socketID);
-      sleep(1);
+      usleep(SOCKET_PAUSE);
     }
   }
-  sleep(SOCKET_PAUSE);
 }
 
 void Connection::mute( string number)
@@ -203,7 +202,7 @@ void Connection::mute( string number)
   int bufferSize = command.size();
   sendto( socketID, command.data(), bufferSize, 0, &(sockaddr &)serverAdd, recvSize );
   close(socketID);
-  sleep(SOCKET_PAUSE);
+  usleep(SOCKET_PAUSE);
 }
 
 void Connection::veto()
@@ -218,7 +217,7 @@ void Connection::veto()
   int bufferSize = command.size();
   sendto( socketID, command.data(), bufferSize, 0, &(sockaddr &)serverAdd, recvSize );
   close(socketID);
-  sleep(SOCKET_PAUSE);
+  usleep(SOCKET_PAUSE);
 }
 
 void Connection::slap( string number )
@@ -234,7 +233,7 @@ void Connection::slap( string number )
   int bufferSize = command.size();
   sendto( socketID, command.data(), bufferSize, 0, &(sockaddr &)serverAdd, recvSize );
   close(socketID);
-  sleep(SOCKET_PAUSE);
+  usleep(SOCKET_PAUSE);
 }
 
 void Connection::nuke( string number )
@@ -250,7 +249,7 @@ void Connection::nuke( string number )
   int bufferSize = command.size();
   sendto( socketID, command.data(), bufferSize, 0, &(sockaddr &)serverAdd, recvSize );
   close(socketID);
-  sleep(SOCKET_PAUSE);
+  usleep(SOCKET_PAUSE);
 }
 
 void Connection::force( string number, string where)
@@ -268,5 +267,5 @@ void Connection::force( string number, string where)
   int bufferSize = command.size();
   sendto( socketID, command.data(), bufferSize, 0, &(sockaddr &)serverAdd, recvSize );
   close(socketID);
-  sleep(SOCKET_PAUSE);
+  usleep(SOCKET_PAUSE);
 }

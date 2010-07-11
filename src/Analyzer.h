@@ -67,10 +67,11 @@
 #define SOCKET_PAUSE 1  //per permettere al socket di funzionare bene, inserisco una pausa tra say e kick
 
 //livelli di strict:
-#define LEVEL0 0        //nessun controllo anti-cheat
+#define LEVEL0 0        //nessun controllo anti-cheat, nick ed ip bannati per un'ora, nessun avviso.
 #define LEVEL1 1        //controlli di base (guid non valida e cambiamento guid in game), con solo avvisi per casi dubbi e nick bannati da oltre un'ora.
-#define LEVEL2 2        //controlli avanzati, non avvisa gli admin ma banna direttamente nei casi dubbi
-#define LEVEL3 3        //controlli rigidissimi, butta fuori tutti quelli che non sono a norma al 100%
+#define LEVEL2 2        //non avvisa gli admin ma banna direttamente nei casi dubbi.
+#define LEVEL3 3        //sperimentale: abilita i controlli avanzati, avvisa gli admin nei nuovi casi rilevati (non quelli risultanti dai livelli precedenti).
+#define LEVEL4 4        //sperimentale: controlli avanzati, butta fuori direttamente tutti quelli che non sono puliti al 100% (butta solo fuori, non banna).
 
 //stringa stampata all'utente con i comandi disponibili (quando viene dato il comando !help).
 #define COMMANDLIST "Comandi disponibili: !ban <number/nick> [<reason>], !unban <id>,\n!kick <number/nick>, !mute <number/nick>, !find <nick>, !findop <nick>,\n\\
@@ -82,6 +83,7 @@ private:
     //regex
     const char* CLIENT_CONNECT;
     const char* CLIENT_USER_INFO;
+    const char* COMPLETE_CLIENT_USER_INFO;
     const char* CLIENT_DISCONNECT;
     const char* BAN;
     const char* BAN_NUMBER;

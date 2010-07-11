@@ -50,6 +50,10 @@ Analyzer::Analyzer( Connection* conn, Db* db, ConfigLoader* configLoader )
     //inizializzo il resto
     CLIENT_CONNECT=" *[0-9]+:[0-9]{2} +ClientConnect:";
     CLIENT_USER_INFO=" *[0-9]+:[0-9]{2} +ClientUserinfo:";
+    COMPLETE_CLIENT_USER_INFO=" *[0-9]+:[0-9]{2} +ClientUserinfo: +[0-9]+ +\\ip\\[0-9]{1,3}.[0-9]{1,3}.[0-9]{1,3}.[0-9]{1,3}:[0-9]{1,6}\\name\\[^ \t\n\r\f\v]+\\racered\
+    \\[0-9]{1}\\raceblue\\[0-9]{1}\\rate\\[0-9]+\\ut_timenudge\\[0-9]+\\cg_rgb\\[0-9]{1,3} [0-9]{1,3} [0-9]{1,3}\\cg_predictitems\\[01]{1}\\cg_physics\\[01]{1}\\snaps\\[0-9]{1,2}\\model\\[^ \t\n\r\f\v]+\
+    \\headmodel\\[^ \t\n\r\f\v]+\\team_model\\[^ \t\n\r\f\v]+\\team_headmodel\\[^ \t\n\r\f\v]+\\color1\\[0-9]{1,2}\\color2\\[0-9]{1,2}\\handicap\\100\\sex\\[^ \t\n\r\f\v]+\\cl_anonymous\\[01]{1}\
+    \\gear\\[^ \t\n\r\f\v]+\\teamtask\\[0-9]+\\cl_guid\\[A-F0-9]{32}\\weapmodes\\[0-2]{20}";
     CLIENT_DISCONNECT=" *[0-9]+:[0-9]{2} +ClientDisconnect:";
     BAN=" *[0-9]+:[0-9]{2} +say: +[0-9]+ +[^ \t\n\r\f\v]+: +!ban [^ \t\n\r\f\v]+";
     BAN_NUMBER=" *[0-9]+:[0-9]{2} +say: +[0-9]+ +[^ \t\n\r\f\v]+: +!ban [0-9]{1,2}";
@@ -66,7 +70,7 @@ Analyzer::Analyzer( Connection* conn, Db* db, ConfigLoader* configLoader )
     KICK_NUMBER=" *[0-9]+:[0-9]{2} +say: +[0-9]+ +[^ \t\n\r\f\v]+: +!kick [0-9]{1,2}";
     MUTE=" *[0-9]+:[0-9]{2} +say: +[0-9]+ +[^ \t\n\r\f\v]+: +!mute [^ \t\n\r\f\v]+";
     MUTE_NUMBER=" *[0-9]+:[0-9]{2} +say: +[0-9]+ +[^ \t\n\r\f\v]+: +!mute [0-9]{1,2}";
-    STRICT=" *[0-9]+:[0-9]{2} +say: +[0-9]+ +[^ \t\n\r\f\v]+: +!strict OFF|off|[0-3]{1}";
+    STRICT=" *[0-9]+:[0-9]{2} +say: +[0-9]+ +[^ \t\n\r\f\v]+: +!strict OFF|off|[0-4]{1}";
     VETO=" *[0-9]+:[0-9]{2} +say: +[0-9]+ +[^ \t\n\r\f\v]+: +!veto";
     SLAP=" *[0-9]+:[0-9]{2} +say: +[0-9]+ +[^ \t\n\r\f\v]+: +!slap [^ \t\n\r\f\v]+";
     SLAP_NUMBER=" *[0-9]+:[0-9]{2} +say: +[0-9]+ +[^ \t\n\r\f\v]+: +!slap [0-9]{1,2}";
@@ -115,7 +119,8 @@ void Analyzer::loadOptions()
             else (*m_dati)[i].setRow( 0 );
             delete temp;
             (*m_dati)[i].setChanged(false);
-      }
+        }
+      /********************************************************************** faccio verificare i database a db  ***********************************************************/
   }
   std::cout<<"Nuove opzioni caricate.\n";
   m_dati->errors->timestamp();
@@ -383,8 +388,38 @@ void Analyzer::clientUserInfo(char* line)
             }
             else
             {
-                std::cout<<"  [OK] (s)he's ok.\n";
-                *(m_dati->log)<<"  [OK] (s)he's ok.\n";
+                //fin qua, tutto a posto. Controlli avanzati:
+                if ( (*m_dati)[m_dati->serverNumber].getStrict() >= LEVEL3 && !isA( line,COMPLETE_CLIENT_USER_INFO ) )
+                {
+                    if ( (*m_dati)[m_dati->serverNumber].getStrict() >= LEVEL4 )
+                    {
+                        //butto fuori
+                        std::cout<<"  [!] kick automatico per client non pulito (controlli avanzati non superati).\n";
+                        *(m_dati->log)<<"  [!] kick automatico per client non pulito (controlli avanzati non superati).\n";
+                        std::string frase("^0BanBot: ^1auto-kicking player number ");
+                        frase.append(numero);
+                        frase.append(", ");
+                        frase.append(nick);
+                        frase.append(" for unclean client.");
+                        server->say(frase);
+                        server->kick(numero);
+                    }
+                    else
+                    {
+                        //avviso solo gli admin
+                        std::string frase("^0BanBot ^1warning: player number ");
+                        frase.append(numero);
+                        frase.append(", ");
+                        frase.append(nick);
+                        frase.append(" has an unclean client.");
+                        tellToAdmins(frase);
+                    }
+                }
+                else
+                {
+                    std::cout<<"  [OK] (s)he's ok.\n";
+                    *(m_dati->log)<<"  [OK] (s)he's ok.\n";
+                }
             }
         }
     }
@@ -1104,8 +1139,11 @@ void Analyzer::status(char* line)
             case 2:
                 frase.append("2");
                 break;
-            default:
+            case 3:
                 frase.append("3");
+                break;
+            default:
+                frase.append("4");
                 break;
         }
         frase.append("\n^1Number of admins: ");
@@ -1400,7 +1438,6 @@ void Analyzer::main_loop()
             if ( m_configLoader->testChanges() )
             {
                 m_configLoader->loadOptions();
-/********************************************************************** faccio verificare i database a db  ***********************************************************/
                 loadOptions();
             }
         }
@@ -1639,7 +1676,11 @@ void Analyzer::main_loop()
             contatore=0;
         }
         else contatore++;
-        if ( (fascia == 0 && contatore > 15) || (fascia == 1 && contatore > 60) ) fascia++;
+        if ( (fascia == 0 && contatore > 15) || (fascia == 1 && contatore > 60) )
+        {
+            fascia++;
+            contatore++;
+        }
         
         switch (fascia)
         {
