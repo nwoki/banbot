@@ -24,25 +24,24 @@
 */
 
 
-#include <sstream>  //per conversione int a str
+//#include <sstream>  //per conversione int a str
+//#include <fstream>
+//#include <sys/stat.h>
+#include <stdlib.h>
 #include "ConfigLoader.h"
 #include "db.h"
 #include "logger.h"
+#include "handyFunctions.cpp"
 
 /********************************
 *       PUBLIC  METHODS         *
 ********************************/
 
-Db::Db( ConfigLoader::Options* conf, vector< ConfigLoader::Banlist > banned, vector< ConfigLoader::AdminList > admins )
-    : m_options(conf)
-    //testing
+Db::Db( ConfigLoader::Options* conf )
+    : m_options( conf )
     , m_zErrMsg( 0 )
     , m_result( 0 )
 {
-    //effettuo il logging del check up del database:
-    //check della directory database
-    struct stat st;
-
     cout << "[*]Starting up...\n";
     cout << "[-]checking for database directory..\n";
     *(m_options->log) << "\n**************************************************************************************\n";
@@ -50,29 +49,61 @@ Db::Db( ConfigLoader::Options* conf, vector< ConfigLoader::Banlist > banned, vec
     *(m_options->log) << "\n[*]Starting up...\n";
     *(m_options->log) << "[-]checking for database directory..\n";
 
-    if( stat( DATABASE_DIR, &st ) == 0 ) {
-        cout << "  [*]dir '" << DATABASE_DIR << "/' found\n";
-        *(m_options->log) << "  [*]dir '" << DATABASE_DIR << "/' found\n";
-    }
-    else {
-        cout << "\e[0;33m  [!]couldn't find dir '" << DATABASE_DIR << "/'! Creating dir '" << DATABASE_DIR << "/'..\e[0m \n";
-        *(m_options->log) << "  [!]couldn't find dir '" << DATABASE_DIR << "/'! Creating dir '" << DATABASE_DIR << "/'..\n";
+    //  check only if i have valid info loaded
+    if( m_options->servers.size() > 0 ) {
+        for( unsigned int i = 0; i < m_options->servers.size(); i++ ) {
+            //get path to db folder
+            string dbPath = m_options->servers.at( i )->dbFolder();
 
-        if( mkdir( DATABASE_DIR, 0777 ) != 0 ) {
-            cout << "\e[1;31m[EPIC FAIL] couldn't create directory '" << DATABASE_DIR << "/'.Please check permissions!\e[0m \n";
-            *(m_options->log) << "[EPIC FAIL] couldn't create directory '" << DATABASE_DIR << "/'.Please check permissions!\n";
-            *(m_options->errors) << "[EPIC FAIL] On " << (*m_options)[m_options->serverNumber].getName()  << " : couldn't create directory '" << DATABASE_DIR << "/'.Please check permissions!\n";
-            cout << "\e[1;31m[FAIL] need database for bot to work correctly. Please resolve this problem and launch application again\e[0m \n";
-            *(m_options->log) << "[FAIL] can't create database! Haven't got permission to do so.. i will ignore this server.\n";
-            *(m_options->errors) << "[FAIL] On " << (*m_options)[m_options->serverNumber].getName()  << " : can't create database! Haven't got permission to do so.. i will ignore this server.\n";
-            //#warning TODO terminate program here if i cant create database and/or database file!!!
+            //check if paths exist otherwise create them
+            if( checkDirAndCreate( dbPath ) ) {
+                dbPath.append( DB_NAME );   //complete path + file name
+                ifstream IN( dbPath.c_str() );
+
+                if( !IN ) {
+                    cout << "\e[0;33m  [!] database doesn't exist!\e[0m \n";
+                    //create database
+                    cout << "\e[0;33m    [!] creating database '" << DB_NAME << "/' in '" << dbPath << "/'\e[0m \n";
+                    *(m_options->log) << "  [!] database doesn't exist!\n" << "    [*] creating database '" << DB_NAME << "/' in '" << dbPath << "/'\n";
+                    openDatabase();
+                    createDb();
+                }
+                else {
+                    IN.close();
+                    openDatabase();
+                }
+
+            }
         }
-        else {
-            cout << "\e[0;32m  [OK]created '" << DATABASE_DIR << "/' directory..\e[0m \n";
-            *(m_options->log) << "  [OK]created '" << DATABASE_DIR << "/' directory..\n";
-        }
+        //once created the path, create database file
+
+
     }
 
+// OLD
+//     if( stat( DATABASE_DIR, &st ) == 0 ) {
+//         cout << "  [*]dir '" << DATABASE_DIR << "/' found\n";
+//         *(m_options->log) << "  [*]dir '" << DATABASE_DIR << "/' found\n";
+//     }
+//     else {
+//         cout << "\e[0;33m  [!]couldn't find dir '" << DATABASE_DIR << "/'! Creating dir '" << DATABASE_DIR << "/'..\e[0m \n";
+//         *(m_options->log) << "  [!]couldn't find dir '" << DATABASE_DIR << "/'! Creating dir '" << DATABASE_DIR << "/'..\n";
+//
+//         if( mkdir( DATABASE_DIR, 0777 ) != 0 ) {
+//             cout << "\e[1;31m[EPIC FAIL] couldn't create directory '" << DATABASE_DIR << "/'.Please check permissions!\e[0m \n";
+//             *(m_options->log) << "[EPIC FAIL] couldn't create directory '" << DATABASE_DIR << "/'.Please check permissions!\n";
+//             *(m_options->errors) << "[EPIC FAIL] On " << (*m_options)[m_options->serverNumber].getName()  << " : couldn't create directory '" << DATABASE_DIR << "/'.Please check permissions!\n";
+//             cout << "\e[1;31m[FAIL] need database for bot to work correctly. Please resolve this problem and launch application again\e[0m \n";
+//             *(m_options->log) << "[FAIL] can't create database! Haven't got permission to do so.. i will ignore this server.\n";
+//             *(m_options->errors) << "[FAIL] On " << (*m_options)[m_options->serverNumber].getName()  << " : can't create database! Haven't got permission to do so.. i will ignore this server.\n";
+//             //#warning TODO terminate program here if i cant create database and/or database file!!!
+//         }
+//         else {
+//             cout << "\e[0;32m  [OK]created '" << DATABASE_DIR << "/' directory..\e[0m \n";
+//             *(m_options->log) << "  [OK]created '" << DATABASE_DIR << "/' directory..\n";
+//         }
+//     }
+/*
     //check per il database
     ifstream IN( DATABASE );
 
@@ -93,7 +124,7 @@ Db::Db( ConfigLoader::Options* conf, vector< ConfigLoader::Banlist > banned, vec
     loadAdminlist( admins );
     loadBanlist( banned );
     dumpAdminsToFile();
-    dumpBannedToFile();
+    dumpBannedToFile();*/
 }
 
 
@@ -110,7 +141,7 @@ bool Db::openDatabase()
     if( !connect() ) {  //not opened
         cout << "\e[1;31mDb::open() FAILED to open database!\e[0m \n";
         *(m_options->log) << "Db::open() FAILED to open database!\n";
-        *(m_options->errors) << "On " << (*m_options)[m_options->serverNumber].getName()  << " : Db::open() FAILED to open database!\n";
+        *(m_options->errors) << "On " << (*m_options)[m_options->serverNumber].name()  << " : Db::open() FAILED to open database!\n";
         return false;
     }
     else
@@ -125,7 +156,7 @@ void Db::closeDatabase()
     if( m_resultCode != SQLITE_OK ) {
         cout << "\e[1;31[FAIL] Can't close database! Something's wrong\e[0m \n";
         *(m_options->log) << "[FAIL] Can't close database! Something's wrong\n";
-        *(m_options->errors) << "[FAIL] On " << (*m_options)[m_options->serverNumber].getName()  << " : Can't close database! Something's wrong\n";
+        *(m_options->errors) << "[FAIL] On " << (*m_options)[m_options->serverNumber].name()  << " : Can't close database! Something's wrong\n";
     }
 
     #ifdef DB_DEBUG
@@ -240,7 +271,7 @@ void Db::dumpAdminsToFile()
     if ( !output->open() ) {
         cout << "\e[0;31m[ERR] can't write Adminlist backup file!\e[0m \n";
         *(m_options->log) << "[ERR] can't write Adminlist backup file!\n";
-        *(m_options->errors) << "[ERR] On " << (*m_options)[m_options->serverNumber].getName()  << " : can't write Adminlist backup file!\n";
+        *(m_options->errors) << "[ERR] On " << (*m_options)[m_options->serverNumber].name()  << " : can't write Adminlist backup file!\n";
         return;
     }
 
@@ -316,7 +347,7 @@ void Db::dumpBannedToFile()
     if ( !output->open() ) {
         cout << "\e[1;31mDb::dumpBannedToFile [ERR] can't write Banlist backup file!\e[0m \n";
         *(m_options->log) << "Db::dumpBannedToFile [ERR] can't write Banlist backup file!\n";
-        *(m_options->errors) << "[ERR] On " << (*m_options)[m_options->serverNumber].getName()  << " : can't write Banlist backup file!\n";
+        *(m_options->errors) << "[ERR] On " << (*m_options)[m_options->serverNumber].name()  << " : can't write Banlist backup file!\n";
         return;
     }
 
@@ -392,27 +423,44 @@ void Db::dumpBannedToFile()
 }
 
 
-void Db::dumpDatabase() //to finish and understand, there is more than one way
-//http://www.sqlite.org/backup.html for other methods
+void Db::dumpDatabases()
 {
     //close all db connections
-    closeDatabase();
+    closeDatabase();    // i work only on one database at a time so this should be sufficient
 
-    string cmd( "cp " );    //command creation
-    cmd.append( DATABASE );
-    cmd.append( " " );
-    cmd.append( DATABASE );
-    cmd.append( ".backup" );
+    //  dump all db's
+    //command creation
+    for( unsigned int i = 0; i < m_options->size()/*how many servers i've got*/; i++ ) {
+        //create copy command
+        string cmd( "cp " );
 
-    if( system( cmd.c_str() ) != 0 ) {    //0 is success
-        cout << "\e[1;31mDb::dumpDatabase database dump failed!\e[0m \n";
-        *(m_options->log) << "Db::dumpDatabase database dump failed!\n";
-        *(m_options->errors) << "On " << (*m_options)[m_options->serverNumber].getName()  << " : Db::dumpDatabase database dump failed!\n";
-        return;
+        //get current database directory
+        cmd.append( (*m_options)[i].dbFolder() );
+        cmd.append( DB_NAME );
+
+        //add space
+        cmd.append( " " );
+
+        //get backup directory
+        cmd.append( (*m_options)[i].backupDir() );
+
+        if( cmd[ cmd.length() ] != '/' )
+            cmd.append( "/" );
+
+        cmd.append( DB_NAME );
+        cmd.append( ".backup." );
+        cmd.append( timeStamp() );  //add day,month and year to backup file name
+
+        if( system( cmd.c_str() ) ) {  // 0 is success, if I enter here, cmd FAILED
+            cout << "\e[1;31mDb::dumpDatabase database dump failed!\e[0m \n";
+            *(m_options->log) << "Db::dumpDatabase database dump failed!\n";
+            *(m_options->errors) << "On " << (*m_options)[m_options->serverNumber].name()  << " : Db::dumpDatabase database dump failed!\n";
+            return;
+        }
+
+        //just log this call, no need for output
+        *(m_options->log) << "Db::dumpDatabase SUCCESS, dumped the database\n";
     }
-
-    //just log this call, no need for output
-    *(m_options->log) << "Db::dumpDatabase SUCCESS, dumped the database\n";
 }
 
 
@@ -547,7 +595,7 @@ bool Db::modifyBanned( const string &nick, const string &ip, const string &date,
     if( !execQuery( query ) ) {
         cout << "\e[0;31m[FAIL] Db::modifyBanned : " << query << "\e[0m \n";
         *(m_options->log) << "[FAIL] Db::modifyBanned : " << query << "\n";
-        *(m_options->errors) << "[FAIL] On " << (*m_options)[m_options->serverNumber].getName()  << " : Db::modifyBanned : " << query << "\n";
+        *(m_options->errors) << "[FAIL] On " << (*m_options)[m_options->serverNumber].name()  << " : Db::modifyBanned : " << query << "\n";
         return false;
     }
     else return true;
@@ -563,7 +611,7 @@ bool Db::deleteBanned( const string &id )
     if( !execQuery( query ) ){
         cout << "\e[0;31m[FAIL] Db::deleteBanned : " << query << "\e[0m \n";
         *(m_options->log) << "[FAIL] Db::deleteBanned : " << query << "\n";
-        *(m_options->errors) << "[FAIL] On " << (*m_options)[m_options->serverNumber].getName()  << " : Db::deleteBanned : " << query << "\n";
+        *(m_options->errors) << "[FAIL] On " << (*m_options)[m_options->serverNumber].name()  << " : Db::deleteBanned : " << query << "\n";
         return false;
     }
 
@@ -579,7 +627,7 @@ bool Db::deleteBanned( const string &id )
     if( !execQuery( deleteGuidsQuery ) ) {
         cout << "\e[0;31m[FAIL] Db::deleteBanned can't delete guid with banId = " << id << "\e[0m \n ";
         *(m_options->log) << "[FAIL] Db::deleteBanned can't delete guid with banId = " << id << "\n";
-        *(m_options->errors) << "[FAIL] On " << (*m_options)[m_options->serverNumber].getName()  << " : Db::deleteBanned can't delete guid with banId = " << id << "\n";
+        *(m_options->errors) << "[FAIL] On " << (*m_options)[m_options->serverNumber].name()  << " : Db::deleteBanned can't delete guid with banId = " << id << "\n";
         return false;
     }
 
@@ -637,7 +685,7 @@ bool Db::modifyGuid( const string& guid, const string &banId, const string &id )
     if( !execQuery( query ) ) {
         cout << "\e[0;31m[FAIL] Db::modifyGuid : " << query << "\e[0m \n";
         *(m_options->log) << "[FAIL] Db::modifyGuid : " << query << "\n";
-        *(m_options->errors) << "[FAIL] On " << (*m_options)[m_options->serverNumber].getName()  << " : Db::modifyGuid : " << query << "\n";
+        *(m_options->errors) << "[FAIL] On " << (*m_options)[m_options->serverNumber].name()  << " : Db::modifyGuid : " << query << "\n";
         return false;
     }
     else return true;
@@ -653,7 +701,7 @@ bool Db::deleteGuid( const string &id )
     if( !execQuery( query ) ){
         cout << "\e[0;31m[FAIL] Db::deleteGuid : " << query << "\e[0m \n";
         *(m_options->log) << "[FAIL] Db::deleteGuid : " << query << "\n";
-        *(m_options->errors) << "[FAIL] On " << (*m_options)[m_options->serverNumber].getName()  << " : Db::deleteGuid : " << query << "\n";
+        *(m_options->errors) << "[FAIL] On " << (*m_options)[m_options->serverNumber].name()  << " : Db::deleteGuid : " << query << "\n";
         return false;
     }
     else return true;
@@ -706,7 +754,7 @@ bool Db::modifyOp( const string& nick, const string& guid, const string& id )
     if( !execQuery( modifyQuery ) ) {
         cout << "\e[0;31m[FAIL] Db::modifyOp : " << modifyQuery << "\e[0m \n";
         *(m_options->log) << "[FAIL] Db::modifyOp : " << modifyQuery << "\n";
-        *(m_options->errors) << "[FAIL] On " << (*m_options)[m_options->serverNumber].getName()  << " : Db::modifyOp : " << modifyQuery << "\n";
+        *(m_options->errors) << "[FAIL] On " << (*m_options)[m_options->serverNumber].name()  << " : Db::modifyOp : " << modifyQuery << "\n";
         return false;
     }
     else return true;
@@ -739,10 +787,14 @@ vector< string > Db::extractData( const string &query )    //returns vector with
 ********************************/
 bool Db::connect()  //called by Db::open ( public function )
 {
-    if( sqlite3_open( DATABASE, &m_database ) ) {
+    //get path to current db
+    string database( (*m_options)[m_options->serverNumber].dbFolder() );
+    database.append( DB_NAME );
+
+    if( sqlite3_open( database.c_str(), &m_database ) ) {
         cout<<"\e[0;31m[EPIC FAIL] " << sqlite3_errmsg( m_database ) << "\e[0m \n";
         *(m_options->log) <<"[FAIL] " << sqlite3_errmsg( m_database );
-        *(m_options->errors) <<"[FAIL] On " << (*m_options)[m_options->serverNumber].getName()  << " : " << sqlite3_errmsg( m_database );
+        *(m_options->errors) <<"[FAIL] On " << (*m_options)[m_options->serverNumber].name()  << "@ " << database << " : " << sqlite3_errmsg( m_database );
         sqlite3_close( m_database );
         return false;
     }
@@ -788,7 +840,7 @@ void Db::createDb()   //initial creation of database
     else {
         cout << "\e[0;31m    [FAIL]error creating 'banned' table\e[0m \n";
         *(m_options->log) << "    [FAIL]error creating 'banned' table\n";
-        *(m_options->errors) << "[FAIL] On " << (*m_options)[m_options->serverNumber].getName()  << " : error creating 'banned' table\n";
+        *(m_options->errors) << "[FAIL] On " << (*m_options)[m_options->serverNumber].name()  << " : error creating 'banned' table\n";
     }
 
     if( resultQuery( createGuidTable ) == 0 ) {
@@ -798,7 +850,7 @@ void Db::createDb()   //initial creation of database
     else {
         cout << "\e[0;31m    [FAIL]error creating 'guid' table\e[0m \n";
         *(m_options->log) << "    [FAIL]error creating 'guid' table\n";
-        *(m_options->errors) << "[FAIL] On " << (*m_options)[m_options->serverNumber].getName()  << " : error creating 'guid' table\n";
+        *(m_options->errors) << "[FAIL] On " << (*m_options)[m_options->serverNumber].name()  << " : error creating 'guid' table\n";
     }
 
     if( resultQuery( createOplistTable ) == 0 ) {
@@ -808,7 +860,7 @@ void Db::createDb()   //initial creation of database
     else {
         cout << "\e[0;31m    [FAIL]error creating 'oplist' table\e[0m \n";
         *(m_options->log) << "    [FAIL]error creating 'oplist' table\n";
-        *(m_options->errors) << "[FAIL] On " << (*m_options)[m_options->serverNumber].getName()  << " : error creating 'oplist' table\n";
+        *(m_options->errors) << "[FAIL] On " << (*m_options)[m_options->serverNumber].name()  << " : error creating 'oplist' table\n";
     }
 }
 
@@ -860,7 +912,7 @@ bool Db::execQuery( const string &query )   //executes and returns status
     else {
         cout << "\e[1;31m[EPIC FAIL] Db::execQuery '" << m_zErrMsg << "'\e[0m \n";// sqlite3_errmsg( db );
         *(m_options->log) << "[EPIC FAIL] Db::execQuery '" << m_zErrMsg << "'\n";
-        *(m_options->errors) << "[EPIC FAIL] On " << (*m_options)[m_options->serverNumber].getName()  << " : Db::execQuery '" << m_zErrMsg << "'\n";
+        *(m_options->errors) << "[EPIC FAIL] On " << (*m_options)[m_options->serverNumber].name()  << " : Db::execQuery '" << m_zErrMsg << "'\n";
         success = false;
     }
     sqlite3_free_table( m_result );
@@ -890,110 +942,101 @@ string Db::getAdminNick( const string& guid )
 }
 
 
-string Db::intToString( int number )    //non serve se usiamo solo string, ma non si sa mai
-{
-    stringstream out;//barbatrucco ;)
-
-    out << number;
-    return out.str();
-}
-
-
-void Db::loadAdminlist( vector< ConfigLoader::AdminList > admins )
-{
-    cout << "\e[0;33m[!] Loading admins to database.. \e[0m \n";
-
-    if( admins.empty() ) {
-        cout<<"\e[0;33m[!]Adminlist EMPTY\e[0m \n";
-        *(m_options->log)<<"[!]Adminlist EMPTY\n";
-        return;
-    }
-
-    int addedCounter = 0;
-
-    //adding admins to db
-    cout<<"\n[-]Adding admins to database..\n\n";
-
-#ifdef DB_DEBUG
-    cout << "ADMIN SIZE-> " << admins.size() << "\n";
-#endif
-
-    for( unsigned int i = 0; i < admins.size(); i++ ) {
-
-//        addop already checks for guid on database. Don't need to do check here!
-//        if( !checkAuthGuid( admins[i].value ) ) {    //non esiste sul database
-//            //add to database
-        if ( addOp( admins[i].name, admins[i].value ) ) {
-            cout << "\e[0;32m      [+]added admin: " << admins[i].name << "\e[0m \n";
-            *(m_options->log)<<"      [+]added admin: " << admins[i].value << "\n";
-            addedCounter++;
-        }
-    }
-    cout << "\e[0;33m Added " << addedCounter << "/" << admins.size() << " new admin/s from file to the database\e[0m \n\n";
-    *(m_options->log) << "Added " << addedCounter << " new admin/s from file to the database\n";
-}
-
-
-void Db::loadBanlist( vector<ConfigLoader::Banlist> banned )
-{
-    #ifdef DB_DEBUG
-    cout << "Db::loadBanlist\n";
-    #endif
-
-    cout << "\e[0;33m[!] Loading banlist to database.. \e[0m \n";
-
-    if( banned.empty() ) {
-        cout<<"\e[0;33m[!]Banlist EMPTY\e[0m \n";
-        *(m_options->log)<<"[!]Banlist EMPTY\n";
-        return;
-    }
-
-    int playerCounter = 0,/* onDbCounter = 0,*/ addedGuidsCounter = 0;
-
-    //adding banned users to db
-    cout<<"\n[-]Adding banned users to database..\n\n";
-
-    for( unsigned int i = 0; i < banned.size() - 1; i++ ) {  //TODO find out why it works with "-1" while for the guids i don't need the "-1"
-
-        if( !checkBanNick( banned[i].nick ) ) {   //if not on database
-
-        #ifdef DB_DEBUG
-            cout << "Db::loadAdminlist " << banned[i].nick << " not on database!\n";
-            cout << "Db::loadBanlist ban info -> " << banned[i].nick << " " << banned[i].ip << " " << banned[i].date << " " << banned[i].time << " " << banned[i].motive << " " << banned[i].author << endl;
-        #endif
-
-            string banId = insertNewBanned( banned[i].nick, banned[i].ip, banned[i].date, banned[i].time, banned[i].motive, banned[i].author );
-
-            if( banId.empty() ) {
-                cout << "\e[0;31m[FAIL] can't add banned player: " << banned[i].nick << " to banned database!\e[0m \n";
-                *(m_options->log) << "[FAIL] can't add banned player: " << banned[i].nick << " to banned database!\n";
-                *(m_options->errors) << "[FAIL] On " << (*m_options)[m_options->serverNumber].getName()  << " : can't add banned player: " << banned[i].nick << " to banned database!\n";
-                return;
-            }
-
-            playerCounter++; //one user added
-
-            for( unsigned int j = 0; j < banned[i].guids.size(); j++ ) {
-                string guidId = insertNewGuid( banned[i].guids[j], banId );
-
-                if( guidId.empty() ) {
-                    cout << "\e[0;31m[FAIL] can't add banned player's guid: " << banned[i].nick << " to database!\e[0m \n";
-                    *(m_options->log) << "[FAIL] can't add banned player's guid: " << banned[i].nick << " to database!\n";
-                    *(m_options->errors) << "[FAIL] On " << (*m_options)[m_options->serverNumber].getName()  << " : can't add banned player's guid: " << banned[i].nick << " to banned database!\n";
-                    return;
-                }
-                addedGuidsCounter++;
-            }
-        }
-    #ifdef DB_DEBUG
-        else
-            cout << banned[i].nick << " on database!\n";
-    #endif
-
-    }
-    cout << "\e[0;33m Added " << playerCounter << " clients and " << addedGuidsCounter << " new guids to the database\e[0m \n";
-    *(m_options->log) << "Added " << playerCounter << " clients and " << addedGuidsCounter << " new guids to the database \n";
-}
+// void Db::loadAdminlist( vector< ConfigLoader::AdminList > admins )
+// {
+//     cout << "\e[0;33m[!] Loading admins to database.. \e[0m \n";
+//
+//     if( admins.empty() ) {
+//         cout<<"\e[0;33m[!]Adminlist EMPTY\e[0m \n";
+//         *(m_options->log)<<"[!]Adminlist EMPTY\n";
+//         return;
+//     }
+//
+//     int addedCounter = 0;
+//
+//     //adding admins to db
+//     cout<<"\n[-]Adding admins to database..\n\n";
+//
+// #ifdef DB_DEBUG
+//     cout << "ADMIN SIZE-> " << admins.size() << "\n";
+// #endif
+//
+//     for( unsigned int i = 0; i < admins.size(); i++ ) {
+//
+// //        addop already checks for guid on database. Don't need to do check here!
+// //        if( !checkAuthGuid( admins[i].value ) ) {    //non esiste sul database
+// //            //add to database
+//         if ( addOp( admins[i].name, admins[i].value ) ) {
+//             cout << "\e[0;32m      [+]added admin: " << admins[i].name << "\e[0m \n";
+//             *(m_options->log)<<"      [+]added admin: " << admins[i].value << "\n";
+//             addedCounter++;
+//         }
+//     }
+//     cout << "\e[0;33m Added " << addedCounter << "/" << admins.size() << " new admin/s from file to the database\e[0m \n\n";
+//     *(m_options->log) << "Added " << addedCounter << " new admin/s from file to the database\n";
+// }
+//
+//
+// void Db::loadBanlist( vector<ConfigLoader::Banlist> banned )
+// {
+//     #ifdef DB_DEBUG
+//     cout << "Db::loadBanlist\n";
+//     #endif
+//
+//     cout << "\e[0;33m[!] Loading banlist to database.. \e[0m \n";
+//
+//     if( banned.empty() ) {
+//         cout<<"\e[0;33m[!]Banlist EMPTY\e[0m \n";
+//         *(m_options->log)<<"[!]Banlist EMPTY\n";
+//         return;
+//     }
+//
+//     int playerCounter = 0,/* onDbCounter = 0,*/ addedGuidsCounter = 0;
+//
+//     //adding banned users to db
+//     cout<<"\n[-]Adding banned users to database..\n\n";
+//
+//     for( unsigned int i = 0; i < banned.size() - 1; i++ ) {  //TODO find out why it works with "-1" while for the guids i don't need the "-1"
+//
+//         if( !checkBanNick( banned[i].nick ) ) {   //if not on database
+//
+//         #ifdef DB_DEBUG
+//             cout << "Db::loadAdminlist " << banned[i].nick << " not on database!\n";
+//             cout << "Db::loadBanlist ban info -> " << banned[i].nick << " " << banned[i].ip << " " << banned[i].date << " " << banned[i].time << " " << banned[i].motive << " " << banned[i].author << endl;
+//         #endif
+//
+//             string banId = insertNewBanned( banned[i].nick, banned[i].ip, banned[i].date, banned[i].time, banned[i].motive, banned[i].author );
+//
+//             if( banId.empty() ) {
+//                 cout << "\e[0;31m[FAIL] can't add banned player: " << banned[i].nick << " to banned database!\e[0m \n";
+//                 *(m_options->log) << "[FAIL] can't add banned player: " << banned[i].nick << " to banned database!\n";
+//                 *(m_options->errors) << "[FAIL] On " << (*m_options)[m_options->serverNumber].getName()  << " : can't add banned player: " << banned[i].nick << " to banned database!\n";
+//                 return;
+//             }
+//
+//             playerCounter++; //one user added
+//
+//             for( unsigned int j = 0; j < banned[i].guids.size(); j++ ) {
+//                 string guidId = insertNewGuid( banned[i].guids[j], banId );
+//
+//                 if( guidId.empty() ) {
+//                     cout << "\e[0;31m[FAIL] can't add banned player's guid: " << banned[i].nick << " to database!\e[0m \n";
+//                     *(m_options->log) << "[FAIL] can't add banned player's guid: " << banned[i].nick << " to database!\n";
+//                     *(m_options->errors) << "[FAIL] On " << (*m_options)[m_options->serverNumber].getName()  << " : can't add banned player's guid: " << banned[i].nick << " to banned database!\n";
+//                     return;
+//                 }
+//                 addedGuidsCounter++;
+//             }
+//         }
+//     #ifdef DB_DEBUG
+//         else
+//             cout << banned[i].nick << " on database!\n";
+//     #endif
+//
+//     }
+//     cout << "\e[0;33m Added " << playerCounter << " clients and " << addedGuidsCounter << " new guids to the database\e[0m \n";
+//     *(m_options->log) << "Added " << playerCounter << " clients and " << addedGuidsCounter << " new guids to the database \n";
+// }
 
 
 int Db::resultQuery( const string &query ) //ritorna quante corrispondenze ci sono all'interno del DB
@@ -1020,3 +1063,5 @@ int Db::resultQuery( const string &query ) //ritorna quante corrispondenze ci so
 
     return answer;
 }
+
+

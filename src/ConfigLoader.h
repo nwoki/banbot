@@ -40,7 +40,7 @@ class ConfigLoader
     public:
         ConfigLoader( const std::string &filePath );
         ~ConfigLoader();
-        
+
         class Options
         {
             public:
@@ -51,11 +51,11 @@ class ConfigLoader
                 Logger* errors;                     //log dedicato a notifiche ed errori
                 Logger* log;                        //log dedicato ai server (cambia di file)
                 unsigned int serverNumber;                   //numero del server su cui sto lavorando
-                
+
                 Server operator[] ( int number ) { return *servers[number]; }
                 unsigned int size() { return servers.size(); }
                 //distruttore
-                ~Options() 
+                ~Options()
                 {
                     for( unsigned int i = 0; i < servers.size(); i++ )
                         delete servers[i];
@@ -63,20 +63,20 @@ class ConfigLoader
                     delete log;
                 };
                 //comoda funzione per cercare un server per nome.
-                Server* searchServer(std::string name) 
+                Server* searchServer(std::string name)
                 {
                     Server* t = NULL;
                     for( unsigned int i = 0; i < servers.size(); i++ )
-                        if ( name.compare( servers[i]->getName() ) == 0 )
+                        if ( name.compare( servers[i]->name() ) == 0 )
                             t = servers[i];
                         return t;
                 };
         };
-        
+
         Options* getOptions();
         bool testChanges();
         void loadOptions();   //it reloads entire options tree, changes made on object Options*
-        
+
     private:
         std::string generalFile;
         Options* opzioni;

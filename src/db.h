@@ -28,20 +28,17 @@
 #define DB_H
 
 #include <iostream>
-#include <fstream>
-#include <sys/stat.h>
-#include <stdlib.h>
 #include <string>
 #include <vector>
 #include "ConfigLoader.h"
 #include "sqlite3/sqlite3.h"
 
+#define DB_NAME "Db.sqlite"
+
 class Logger;
 
-#define DATABASE "database/Db.sqlite"
-#define DATABASE_DIR "database"
-
 using namespace std;
+
 /*! \class Db db.h "src/db.h"
 *   \brief sqlite3 database interaction class
 *
@@ -52,17 +49,14 @@ using namespace std;
 class Db
 {
     public:
-        /*! \fn Db( ConfigLoader::Options* conf, vector< ConfigLoader::Banlist > banned, vector< ConfigLoader::AdminList > admins )
+        /*! \fn Db( ConfigLoader::Options* conf )
         *   Constructor for Db.
-        *   \param conf pointer to object with configuration info for servers and bot configuration
-        *   \param banned vector with banned users info
-        *   \param admins vector with admin(s) info
-        *   \param log pointer to Logger class
+        *   \param conf pointer to object with configuration info for servers and bot configuration( ALL INFO STORED HERE )
         *
         *   Checks for existing database and uses it updating it's records with new information ( if there is new info )\n
         *   If the database is not found, the class creates it populating it with the info passed
         */
-        Db( ConfigLoader::Options* conf, vector< ConfigLoader::Banlist > banned, vector< ConfigLoader::AdminList > admins );
+        Db( ConfigLoader::Options* conf );
         ~Db();  /*!< Destructor for class Db*/
 
         //database connection
@@ -79,7 +73,7 @@ class Db
         //dumps
         void dumpAdminsToFile();    /*!< dumps admins to file ( backup/Adminlist.backup )*/
         void dumpBannedToFile();    /*!< dumps banned users to file ( backup/Banlist.backup )*/
-        void dumpDatabase();    /*!< dumps database creating a copy*/
+        void dumpDatabases();    /*!< dumps database creating a copy*/
 
         //banned table
         /*! \fn bool ban( const string &nick, const string &ip, const string &date, const string &time, const string &guid, const string &motive, const string &adminGuid )
@@ -115,13 +109,14 @@ class Db
         void createDb();    //creates database
         bool execQuery( const string &query );    //executes query and returns status to tell if the operation went well or not
         string getAdminNick( const string &guid );  //return's admin's nick from his guid
-        string intToString( int number );
-        void loadAdminlist( vector<ConfigLoader::AdminList> admins );
-        void loadBanlist( vector<ConfigLoader::Banlist> banned );
+//         void loadAdminlist( vector<ConfigLoader::AdminList> admins );
+//         void loadBanlist( vector<ConfigLoader::Banlist> banned );
         int resultQuery( const string &query );    //if query fails -> -1 else return number of elements
 
+        vector< string >split( string str, char ch );    /*!< splits given string on every occurance of given char  */
+
         sqlite3 *m_database;
-        ConfigLoader::Options* m_options;
+        ConfigLoader::Options* m_options;   //where i get all my info from
 
         char *m_zErrMsg;
         char **m_result;
