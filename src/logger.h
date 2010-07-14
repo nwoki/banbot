@@ -55,6 +55,6 @@ class Logger
 };
 
 Logger& operator<<(Logger& l,const char* valore);
-Logger& operator<<(Logger& l,std::string valore);
+Logger& operator<<(Logger& l, const std::string valore);
 Logger& operator<<(Logger& l,const int valore);
 #endif //LOGGER_H

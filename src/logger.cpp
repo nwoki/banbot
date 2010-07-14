@@ -137,7 +137,7 @@ Logger& operator<<(Logger& l,const char* valore)
     l.write(valore);
     return l;
 }
-Logger& operator<<(Logger& l,std::string valore)
+Logger& operator<<(Logger& l,const std::string valore)
 {
     l.write(valore.c_str());
     return l;
