@@ -93,6 +93,9 @@ class Server
         void test_for_changes(Server* old);
         //controlla se sono state date impostate tutte le opzioni, true=ok.
         bool test_for_options();
+        
+        
+        std::string toString();
 
   private:
         bool m_changed;

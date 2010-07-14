@@ -41,10 +41,10 @@ Analyzer::Analyzer( Connection* conn, Db* db, ConfigLoader* configLoader )
     , log(new ifstream())
     , contatore(0)
     , fascia(0)
+    , giri(0)
     , server( conn )
     , database( db )
     , m_dati( configLoader->getOptions() )
-    , giri(0)
 {
     loadOptions();
     //inizializzo il resto
@@ -1128,7 +1128,7 @@ void Analyzer::status(char* line)
     if (isAdminSay(line,numeroAdmin))
     {
         std::string frase("^0BanBot ^1status:  version 1.1b, coded by [2s2h]n3m3s1s & [2s2h]Zamy.\n^1Strict level: ");
-        switch ((*m_dati)[m_dati->serverNumber].Strict())
+        switch ((*m_dati)[m_dati->serverNumber].strict())
         {
             case 0:
                 frase.append("OFF");

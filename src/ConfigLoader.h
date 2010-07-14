@@ -71,6 +71,22 @@ class ConfigLoader
                             t = servers[i];
                         return t;
                 };
+                
+                std::string toString ()
+                {
+                    std::string t;
+                    t.append( "General log : " );
+                    t.append( generalLog );
+                    t.append( "\nGeneral backup : " );
+                    t.append( generalBackup );
+                    t.append( "\n" );
+                    for (unsigned int i = 0; i < servers.size(); i++ )
+                    {
+                        t.append ( servers[i]->toString() );
+                        t.append( "\n" );
+                    }
+                    return t;
+                };
         };
 
         Options* getOptions();

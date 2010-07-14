@@ -23,7 +23,7 @@
     Software Foundation, Inc.
 */
 
-//#include "handyFunctions.h"
+#include "handyFunctions.h"
 #include <iostream>
 #include <sstream>
 #include <stdio.h>

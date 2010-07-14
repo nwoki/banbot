@@ -64,8 +64,6 @@
 #define TIME_SLEEPING_MIDDLE 5      //tempo di pausa medio (dopo circa 30 secondi di inattivita'), aka fascia 1
 #define TIME_SLEEPING_MAX 15        //tempo di pausa in relax totale (dopo circa 5 minuti di inattivita' in fascia media), aka fascia 2
 
-#define SOCKET_PAUSE 1  //per permettere al socket di funzionare bene, inserisco una pausa tra say e kick
-
 //livelli di strict:
 #define LEVEL0 0        //nessun controllo anti-cheat, nick ed ip bannati per un'ora, nessun avviso.
 #define LEVEL1 1        //controlli di base (guid non valida e cambiamento guid in game), con solo avvisi per casi dubbi e nick bannati da oltre un'ora.
@@ -74,7 +72,7 @@
 #define LEVEL4 4        //sperimentale: controlli avanzati, butta fuori direttamente tutti quelli che non sono puliti al 100% (butta solo fuori, non banna).
 
 //stringa stampata all'utente con i comandi disponibili (quando viene dato il comando !help).
-#define COMMANDLIST "Comandi disponibili: !ban <number/nick> [<reason>], !unban <id>,\n!kick <number/nick>, !mute <number/nick>, !find <nick>, !findop <nick>,\n\\
+#define COMMANDLIST "Comandi disponibili: !ban <number/nick> [<reason>], !unban <id>,\n!kick <number/nick>, !mute <number/nick>, !find <nick>, !findop <nick>,\n\
 !op <number/nick>, !deop <id>, !strict <OFF/0/1/2/3>,\n!nuke <number/nick>, !slap <number/nick> [2/3/4/5], !veto,\n!status, !force <number/nick> <red/blue/spect>."
 
 class Analyzer

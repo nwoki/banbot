@@ -27,6 +27,7 @@
 #define _server_cpp_
 
 #include "server.h"
+#include "handyFunctions.h"
 
 Server::Server()
 {
@@ -263,6 +264,30 @@ bool Server::test_for_options()
   if ( !m_name.empty() && !m_rconpass.empty() && !m_ip.empty() && m_port!=0 && !m_backup.empty() && !m_botLog.empty() && !m_serverLog.empty() && !m_dbFolder.empty() )
     return true;
   return false;
+}
+
+std::string Server::toString()
+{
+    std::string t;
+    t.append( "{\n  Name : " );
+    t.append( m_name );
+    t.append( "\n  ConfigFile : " );
+    t.append( m_configFile );
+    t.append( "\n  Rcon : " );
+    t.append( m_rconpass );
+    t.append( "\n  Ip : " );
+    t.append( m_ip );
+    t.append( "\n  Port : " );
+    t.append( intToString( m_port ) );
+    t.append( "\n  Backup dir : " );
+    t.append( m_backup );
+    t.append( "\n  Bot log : " );
+    t.append( m_botLog );
+    t.append( "\n  Server game log : ");
+    t.append( m_serverLog );
+    t.append( "\n  Database folder : ");
+    t.append( m_dbFolder );
+    return t;
 }
 
 #endif
