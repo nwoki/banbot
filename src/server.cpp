@@ -287,6 +287,7 @@ std::string Server::toString()
     t.append( m_serverLog );
     t.append( "\n  Database folder : ");
     t.append( m_dbFolder );
+    t.append( "\n}\n" );
     return t;
 }
 

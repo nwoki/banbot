@@ -1456,11 +1456,11 @@ void Analyzer::main_loop()
                 if (log->is_open())
                 {
                     std::cout<<"  [OK] Aperto!\n";;
-                    #ifdef DEBUG_MODE
+                    //#ifdef DEBUG_MODE
                     std::cout<< "  Al punto: "<< (*m_dati)[m_dati->serverNumber].row()<<"\n";
-                    *(m_dati->log)<<"  [OK] Aperto!\n"
-                    *(m_dati->log)<< "  Al punto: "<< (*m_dati)[m_dati->serverNumber].row()<<"\n";
-                    #endif
+                    *(m_dati->log)<<"  [OK] Aperto!\n";
+                    *(m_dati->log)<< "  Al punto: " << (*m_dati)[m_dati->serverNumber].row()<<"\n";
+                    //#endif
                 }
                 else
                 {
@@ -1481,7 +1481,7 @@ void Analyzer::main_loop()
                         
                         #ifdef DEBUG_MODE
                         std::cout<< "  Al punto: "<< (*m_dati)[m_dati->serverNumber].row()<<" contenuto: "<<line<<"\n";
-                        *logger<< "  Al punto: "<< (*m_dati)[m_dati->serverNumber].row()<<" contenuto: "<<line<<"\n";
+                        *(m_dati->log)<< "  Al punto: "<< (*m_dati)[m_dati->serverNumber].row()<<" contenuto: "<<line<<"\n";
                         #endif
                         
                         //comincio coi test

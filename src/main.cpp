@@ -55,10 +55,11 @@ int main( int argc, char *argv[] )
 
     if ( caricatore->getOptions() == NULL )
     {
-        cout<<"[EPIC FAIL] Main config file not found. Wtf?!?!?";
+        cout<<"[EPIC FAIL] Main config file not found. Wtf?!?!?\n";
     }
     else
     {
+        cout << caricatore->getOptions()->toString();
         cout << "\n";   //extra "a-capo"
         //inizializzo db
         Db *d = new Db( caricatore->getOptions()) ;

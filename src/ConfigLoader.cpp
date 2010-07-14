@@ -82,6 +82,9 @@ void ConfigLoader::loadOptions()
 {
     if( stat( generalFile.c_str(), &(opzioni->infos) ) == 0 )
     {
+        #ifdef DEBUG_MODE
+        std::cout << "Inizio il caricamento delle opzioni...\n";
+        #endif
         std::ifstream * cfg=new std::ifstream();
         cfg->open( generalFile.c_str() );
         //leggo il file fino alla fine
@@ -97,22 +100,40 @@ void ConfigLoader::loadOptions()
             unsigned int pos = 0;
             unsigned int end = 0;
 
-            while( end != all.size() )
+            while(  end < all.size() && pos >= end  )
             {
                 end = all.find( '\n', pos );
                 std::string temp ( all.substr( pos,end-pos ) );
+                pos = end+1;
 
+                #ifdef DEBUG_MODE
+                std::cout << temp << "\n";
+                #endif
                 if ( !isA( temp, (char*)" *#") && isA( temp, (char*)" **GENERAL_[^ \t\n\r\f\v]+ *= *[^ \t\n\r\f\v]+" ) )
                 {
                     if ( isA( temp, (char*)" *GENERAL_BOTLOG *= *[^ \t\n\r\f\v]+" ) )
+                    {
                         newOptions->generalLog = extract ( temp );
+                        #ifdef DEBUG_MODE
+                        std::cout << "General_Botlog catturato: " << newOptions->generalLog << "\n";
+                        #endif
+                    }
 
                     if ( isA( temp, (char*)" *GENERAL_BACKUP_PATH *= *[^ \t\n\r\f\v]+" ) )
+                    {
                         newOptions->generalBackup = extract ( temp );
+                        #ifdef DEBUG_MODE
+                        std::cout << "General_Backup_path catturato: " << newOptions->generalBackup << "\n";
+                        #endif
+                    }
                 }
             }
 
             //se sono stati impostati tutti i parametri generali, proseguo, altrimenti me ne strafrego perchè le impostazioni sono già sbagliate
+            #ifdef DEBUG_MODE
+            std::cout << "Caricate le opzioni generali, inizio con quelle dei server.\n";
+            #endif
+            
             if ( !newOptions->generalBackup.empty() && !newOptions->generalLog.empty() )
             {
                 //vado a prendere tutto il resto
@@ -131,10 +152,20 @@ void ConfigLoader::loadOptions()
                         end = 0;
                         bool secondary = false;
 
-                        while( end != all.size() )
+                        #ifdef DEBUG_MODE
+                        std::cout << "Inizio il server...\n";
+                        #endif
+                        
+                        while( end < all.size() && pos >= end )
                         {
                             end = all.find('\n',pos);
-                            std::string temp ( all.substr( pos,end-pos ) );
+                            std::string temp ( all.substr( pos,end-pos ) ); 
+                            
+                            #ifdef DEBUG_MODE
+                            std::cout << temp << "\n";
+                            #endif
+                            pos=end+1;
+                            
                             if ( !isA( temp,(char*) " *#") && isA( temp, (char*)" *[^ \t\n\r\f\v]+ *= *[^ \t\n\r\f\v]+" ) )
                             {
                                 //se non è un commento o una puttanata....
@@ -230,12 +261,16 @@ void ConfigLoader::loadOptions()
                                     }
                                 }
                             }
-                            //aggiungo il server se è ok, altrimenti lo scarto.
-                            if ( newServer->test_for_options() )
-                                newOptions->servers.push_back( newServer );
-                            else
-                                delete newServer;
                         }
+                        //aggiungo il server se è ok, altrimenti lo scarto.
+                        if ( newServer->test_for_options() )
+                            newOptions->servers.push_back( newServer );
+                        else
+                            delete newServer;
+                        
+                        #ifdef DEBUG_MODE
+                        std::cout << "Finito il server\n";
+                        #endif
                     }
                 }
 
@@ -252,6 +287,10 @@ void ConfigLoader::loadOptions()
                 //ricreo i 2 stream di log e mi salvo le impostazioni.
                 newOptions->errors = new Logger( newOptions->generalLog );
                 newOptions->log = new Logger();
+                opzioni = newOptions;
+                #ifdef DEBUG_MODE
+                std::cout << "Finito il caricamento delle opzioni.\n";
+                #endif
             }
             else
             {
@@ -273,7 +312,7 @@ void ConfigLoader::loadOptions()
 std::string ConfigLoader::extract(const std::string &line)
 {
     int pos = line.find( '=' );
-    pos = line.find_first_not_of( ' ', pos );
+    pos = line.find_first_not_of( ' ', pos+1 );
     return line.substr( pos );
 }
 
