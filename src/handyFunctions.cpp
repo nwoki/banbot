@@ -32,14 +32,40 @@
 #include <time.h>
 #include <vector>
 
-
-bool checkDirAndCreate( std::string path )
+bool fileExistance( const std::string &pathToFile )
 {
-    int end = path.find_last_of( '/' ); //linux slash for paths
+#ifdef DB_MODE
+    std::cout << "FILEEXISTANCE -> path: " << pathToFile << std::endl;
+#endif
+    if( pathToFile.empty() ) {
+        std::cout << "\e[0;31m ERROR: handyFunctions::checkExistance given empty path to check! \e[0m \n";
+        return false;
+    }
+
+    struct stat st;
+
+    if( stat( pathToFile.c_str(), &st ) != 0 )  //file doesn't exist
+        return false;
+    else    //exists
+        return true;
+}
+
+
+bool dirCreate( std::string path )
+{
+#ifdef DB_MODE
+    std::cout << "DIRCREATE " << path << std::endl;
+#endif
+
+    //check if the path is terminated, otherwise add slash
+    if( path[path.size()] != '/' )
+        path.append( "/" );
+
+    int end = path.find_last_of( '/' );
     int pos = 0;
     bool ok = true;
 
-    //check for folder
+    //check per la cartella
     while( pos < end && ok )
     {
         pos = path.find( '/', pos + 1 );
@@ -50,12 +76,43 @@ bool checkDirAndCreate( std::string path )
         {
             if( mkdir( cartella.c_str(), 0777 ) != 0 )
             {
-                std::cout << "[EPIC FAIL] couldn't create directory/folder '" << cartella << "/'.Please check permissions!\n";
+                std::cout<<"\e[1;31m[EPIC FAIL] couldn't create directory '"<<cartella<<"'.Please check permissions! \e[0m \n";
                 ok = false;
             }
         }
+    }
+    return ok;
+}
+
+bool fileCreate( const std::string &file )
+{
+
+#ifdef DB_MODE
+    std::cout << "fileCREATE " << file << std::endl;
+#endif
+
+    bool ok = true;
+    //check per il file
+    if( !file.empty() )
+    {
+        struct stat st;
+        if( stat( file.c_str(), &st ) != 0 )
+        {
+            std::cout << "\e[0;33m[!] " << file << " doesn't exist...Creating it...\e[0m \n";
+            //create logfile
+            std::ofstream OUT( file.c_str() );
+
+            if ( OUT.is_open() )
+                OUT.close();
+            else {
+                std::cout << "\ee[1;31m[EPIC FAIL] couldn't create " << file << ". Please check permissions!\e[0m \n";
+                return false;
+            }
+            return true;
+        }
         else {
-            std::cout << "DIRECTORY " << cartella << "EXISTS :D\n";
+            std::cout << "\e[0;33mfile " << file << " already exists.. \e[0m \n";
+            return false;
         }
     }
     return ok;
@@ -99,10 +156,3 @@ std::string timeStamp()
     strftime( buffer, sizeof( buffer ), "%d-%m-%Y", timeInfo );
     return std::string( buffer );
 }
-
-// int main()
-// {
-//     std::cout << timeStamp();
-// }
-
-

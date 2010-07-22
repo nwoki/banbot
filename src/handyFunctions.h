@@ -31,7 +31,9 @@
 
 //TODO doxygen description of what i'll be using these files for
 
-bool checkDirAndCreate( std::string path );  /*!< checks if path exists otherwise tries to create it */
+bool fileExistance( const std::string &pathToFile ); /*!< checks if given path exists */
+bool dirCreate( std::string path );  /*!< checks if path exists otherwise tries to create it*/
+bool fileCreate( const std::string &file ); /*!< checks for existance of given file otherwise tries to create it */
 std::string intToString( int number );  /*!< converts int to string */
 std::vector< std::string >split( std::string str, char ch );    /*!< splits given string every occurance of "ch" */
 std::string timeStamp();    /*!< returns timestamp of current localtime */  //TODO various ways, date, time long date ecc

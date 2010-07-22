@@ -104,16 +104,52 @@ class Db
 
         vector< string > extractData( const string &query );   /*!< extracts data from given "query"*/
 
+        //  structs for ANALYZER'S custom queries
+        struct idMotiveStruct
+        {
+            string id, motive, date, time;
+
+            idMotiveStruct( const string &id, const string &motive
+                          , const string &date, const string &time )
+                : id( id )
+                , motive( motive )
+                , date( date )
+                , time( time )
+            {}
+        };
+
+        struct idNickMotiveAuthorStruct
+        {
+            string id, nick, motive, author, date, time;
+
+            idNickMotiveAuthorStruct( const string &id, const string &nick
+                                    , const string &motive, const string &author
+                                    , const string &date, const string &time )
+                : id( id )
+                , nick( nick )
+                , motive( motive )
+                , author( author )
+                , date( date )
+                , time( time )
+            {}
+        };
+
+        //custom queries for analyzer
+        vector< idMotiveStruct > idMotiveViaGuid( const string &guid ); /*!< returns id, motive, date and time of a ban by looking up the guid*/
+        vector< idMotiveStruct > idMotiveViaIp( const string &ip ); /*!< returns id, motive, date and time of a ban by looking up the ip*/
+        vector< idMotiveStruct > idMotiveViaNick( const string &nick ); /*!< returns id, motive, date and time of a ban by looking up the nick*/
+
     private:
         bool connect(); //connects to the sqlite3 database
         void createDb();    //creates database
+        string errorCodeToString( int errorCode ) const;
         bool execQuery( const string &query );    //executes query and returns status to tell if the operation went well or not
         string getAdminNick( const string &guid );  //return's admin's nick from his guid
 //         void loadAdminlist( vector<ConfigLoader::AdminList> admins );
 //         void loadBanlist( vector<ConfigLoader::Banlist> banned );
         int resultQuery( const string &query );    //if query fails -> -1 else return number of elements
 
-        vector< string >split( string str, char ch );    /*!< splits given string on every occurance of given char  */
+        //vector< string >split( string str, char ch );    /*!< splits given string on every occurance of given char  */
 
         sqlite3 *m_database;
         ConfigLoader::Options* m_options;   //where i get all my info from

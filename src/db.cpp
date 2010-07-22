@@ -49,35 +49,56 @@ Db::Db( ConfigLoader::Options* conf )
     *(m_options->log) << "\n[*]Starting up...\n";
     *(m_options->log) << "[-]checking for database directory..\n";
 
+    #ifdef DB_DEBUG
+    //config output
+    cout << "SETTINGS ***** \n";
+    cout << m_options->toString();
+
+    #endif
+
     //  check only if i have valid info loaded
     if( m_options->servers.size() > 0 ) {
+        //create databases if needed
         for( unsigned int i = 0; i < m_options->servers.size(); i++ ) {
             //get path to db folder
             string dbPath = m_options->servers.at( i )->dbFolder();
 
-            //check if paths exist otherwise create them
-            if( checkDirAndCreate( dbPath ) ) {
-                dbPath.append( DB_NAME );   //complete path + file name
-                ifstream IN( dbPath.c_str() );
+            if( dbPath[dbPath.size()] != '/' )
+                dbPath.append( "/" );
 
-                if( !IN ) {
-                    cout << "\e[0;33m  [!] database doesn't exist!\e[0m \n";
-                    //create database
-                    cout << "\e[0;33m    [!] creating database '" << DB_NAME << "/' in '" << dbPath << "/'\e[0m \n";
-                    *(m_options->log) << "  [!] database doesn't exist!\n" << "    [*] creating database '" << DB_NAME << "/' in '" << dbPath << "/'\n";
+            string pathWithFile( dbPath ); //set full file path
+            pathWithFile.append( DB_NAME );
+
+            if( !fileExistance( dbPath ) ) {    //does directory exist?
+                if( !dirCreate( dbPath ) ) {
+                    cout << "\e[1;31mDb::Db couldn't create database folder: " << dbPath << "\e[0m \n";
+                    *(m_options->log) << "Db::Db couldn't create database folder: " << dbPath << "\n";
+                }
+                else {
+                    cout << "\e[0;32m  [OK]created " << dbPath << " directory..\e[0m \n";
+                    *(m_options->log) << "  [OK]created " << dbPath << " directory..\n";
+                }
+            }
+            else
+                cout << "\e[0;33m database folder: " << dbPath << " already exists \e[0m \n";
+
+            if( !fileExistance( pathWithFile ) ) {  //does file exist?
+                if( !fileCreate( pathWithFile ) ) {
+                    cout << "\e[1;31mDb::Db couldn't create database file: " << pathWithFile << "\e[0m \n";
+                    *(m_options->log) << "Db::Db couldn't create database file: " << pathWithFile << "\n";
+                }
+                else {
+                    cout << "\e[0;32m [OK]created database file: " << pathWithFile << "\e[0m \n";
+                    *(m_options->log) << "[OK]created database file: " << pathWithFile << "\n";
                     openDatabase();
                     createDb();
                 }
-                else {
-                    IN.close();
-                    openDatabase();
-                }
-
+            }
+            else {
+                cout << "\e[0;33m database file: " << pathWithFile << " already exists \e[0m \n";
+                openDatabase();
             }
         }
-        //once created the path, create database file
-
-
     }
 
 // OLD
@@ -464,6 +485,81 @@ void Db::dumpDatabases()
 }
 
 
+//CUSTOM QUERIES FOR ANALYZER
+vector< Db::idMotiveStruct > Db::idMotiveViaGuid( const string& guid )
+{
+    string query( "SELECT banned.id,banned.motive,banned.date,banned.time FROM banned join guids ON banned.id=guids.banId WHERE guids.guid='" );
+    query.append( guid );
+    query.append( "';" );
+
+    vector< idMotiveStruct >structs;
+
+    vector< string >answer = extractData( query );
+
+#ifdef DB_DEBUG
+    cout << "Db::idMotiveViaGuid\n";
+    for( unsigned int i = 0; i < answer.size(); i++ )
+        cout << "ANSWER" << i << " is -> " << answer.at( i ) << endl;
+#endif
+
+    if( answer.size() > 0 )
+        //insert in order, id, motive, date, time
+        structs.push_back( idMotiveStruct( answer[0], answer[1], answer[2], answer[3] ) );
+
+    return structs;
+}
+
+vector< Db::idMotiveStruct > Db::idMotiveViaIp( const string& ip )
+{
+    string query( "SELECT motive,id FROM banned WHERE ip='" );
+    query.append( ip );
+    query.append( "';" );
+
+    vector< idMotiveStruct >structs;
+
+    vector< string >answer = extractData( query );
+
+#ifdef DB_DEBUG
+    cout << "Db::idMotiveViaIp" << endl;
+
+    for( unsigned int i = 0; i < answer.size(); i++ )
+        cout << "ANSWER " << i << " is -> " << answer.at( i );
+#endif
+//  SHOULD I ASSUME THAT THERE ARE NO DOUBLES?  YES FOR NOW
+    if( answer.size() > 0 )
+        //insert in order, id, motive, date, time
+        structs.push_back( idMotiveStruct( answer[0], answer[1], answer[2], answer[3] ) );
+
+    return structs;
+}
+
+vector< Db::idMotiveStruct > Db::idMotiveViaNick( const string& nick )
+{
+    string query( "select id,motive,date,time from banned where nick='" );
+    query.append( nick );
+    query.append( "';" );
+
+    vector< idMotiveStruct >structs;
+
+    vector< string >answer = extractData( query );
+
+#ifdef DB_DEBUG
+    cout << "Db::idMotiveViaNick" << endl;
+
+    for( unsigned int i = 0; i < answer.size(); i++ )
+        cout << "ANSWER " << i << " is -> " << answer.at( i );
+#endif
+//  SHOULD I ASSUME THAT THERE ARE NO DOUBLES?  YES FOR NOW
+    if( answer.size() > 0 )
+        //insert in order, id, motive, date, time
+        structs.push_back( idMotiveStruct( answer[0], answer[1], answer[2], answer[3] ) );
+
+    return structs;
+}
+
+
+
+
 //BAN METHODS
 bool Db::ban( const string &nick, const string &ip, const string &date, const string &time, const string &guid, const string &motive, const string &adminGuid ) //adds banned guid to database
 {
@@ -773,8 +869,12 @@ bool Db::deleteOp( const string& id )
 
 vector< string > Db::extractData( const string &query )    //returns vector with results as string
 {
-    if( execQuery( query ) )
+    if( execQuery( query ) ) {
+    #ifdef DB_DEBUG
+        cout << "Db::extractData query -> " << query << endl;
+    #endif
         return m_data;
+    }
     else {
         vector< string > emptyVector;
         return emptyVector;
@@ -787,8 +887,13 @@ vector< string > Db::extractData( const string &query )    //returns vector with
 ********************************/
 bool Db::connect()  //called by Db::open ( public function )
 {
+    cout << "\e[0;33m connecting to database in " << (*m_options)[m_options->serverNumber].dbFolder() << "\e[0m \n";
     //get path to current db
     string database( (*m_options)[m_options->serverNumber].dbFolder() );
+
+    if( database[database.size()] != '/' )  //CAREFUL, NEED THIS!!!
+        database.append( "/" );
+
     database.append( DB_NAME );
 
     if( sqlite3_open( database.c_str(), &m_database ) ) {
@@ -800,7 +905,8 @@ bool Db::connect()  //called by Db::open ( public function )
     }
 
 #ifdef DB_DEBUG
-    cout<< "\e[1;35mOPENED DB\e[0m \n";
+    cout << "\e[1;35mOPENED DB\e[0m \n";
+    cout << "\e[1;35musing database in " << (*m_options)[m_options->serverNumber].dbFolder() << " \e[0m \n";
 #endif
 
     return true;
@@ -865,11 +971,66 @@ void Db::createDb()   //initial creation of database
 }
 
 
+string Db::errorCodeToString( int errorCode ) const
+{
+    string errorMsg;
+    cout << "ERROR CODE RECIEVED -> " << errorCode << endl;
+
+    if( errorCode == 1 )
+        errorMsg = "SQL error or missing database";
+    else if( errorCode == 2 )
+        errorMsg = "Internal logic error in SQLite";
+    else if( errorCode == 3 )
+        errorMsg = "Access permission denied";
+    else if( errorCode == 4 )
+        errorMsg = "Callback routine requested an abort";
+    else if( errorCode == 5 )
+        errorMsg = "The database file is locked";
+    else if( errorCode == 6 )
+        errorMsg = "A table in the database is locked";
+    else if( errorCode == 7 )
+        errorMsg = "A malloc() failed";
+    else if( errorCode == 8 )
+        errorMsg = "Attempt to write a readonly database";
+    else if( errorCode == 9 )
+        errorMsg = "Operation terminated by sqlite3_interrupt()";
+    else if( errorCode == 10 )
+        errorMsg = "Some kind of disk I/O error occurred";
+    else if( errorCode == 11 )
+        errorMsg = "The database disk image is malformed";
+    else if( errorCode == 12 )
+        errorMsg = "NOT USED. Table or record not found";
+    else if( errorCode == 13 )
+        errorMsg = "Insertion failed because database is full";
+
+    return errorMsg;
+
+//     #define SQLITE_CANTOPEN    14   /* Unable to open the database file */
+//     #define SQLITE_PROTOCOL    15   /* NOT USED. Database lock protocol error */
+//     #define SQLITE_EMPTY       16   /* Database is empty */
+//     #define SQLITE_SCHEMA      17   /* The database schema changed */
+//     #define SQLITE_TOOBIG      18   /* String or BLOB exceeds size limit */
+//     #define SQLITE_CONSTRAINT  19   /* Abort due to constraint violation */
+//     #define SQLITE_MISMATCH    20   /* Data type mismatch */
+//     #define SQLITE_MISUSE      21   /* Library used incorrectly */
+//     #define SQLITE_NOLFS       22   /* Uses OS features not supported on host */
+//     #define SQLITE_AUTH        23   /* Authorization denied */
+//     #define SQLITE_FORMAT      24   /* Auxiliary database format error */
+//     #define SQLITE_RANGE       25   /* 2nd parameter to sqlite3_bind out of range */
+//     #define SQLITE_NOTADB      26   /* File opened that is not a database file */
+//     #define SQLITE_ROW         100  /* sqlite3_step() has another row ready */
+//     #define SQLITE_DONE        101  /* sqlite3_step() has finished executing */*/*/
+
+}
+
+
+
 bool Db::execQuery( const string &query )   //executes and returns status
 {
 
 #ifdef DB_DEBUG
     cout << "Db::execQuery - " << query << "\n";
+    cout << "using database @: " << (*m_options)[m_options->serverNumber].dbFolder() << endl;
 #endif
 
     //clean old m_data...
@@ -910,16 +1071,19 @@ bool Db::execQuery( const string &query )   //executes and returns status
 
     }
     else {
-        cout << "\e[1;31m[EPIC FAIL] Db::execQuery '" << m_zErrMsg << "'\e[0m \n";// sqlite3_errmsg( db );
+        cout << "\e[1;31m[EPIC FAIL] Db::execQuery " << errorCodeToString( m_resultCode ) << "\e[0m \n";
+//         outputSqliteError( m_resultCode );
         *(m_options->log) << "[EPIC FAIL] Db::execQuery '" << m_zErrMsg << "'\n";
+        *(m_options->log) << "[ERROR MSG]" << errorCodeToString( m_resultCode ) << "\n";
         *(m_options->errors) << "[EPIC FAIL] On " << (*m_options)[m_options->serverNumber].name()  << " : Db::execQuery '" << m_zErrMsg << "'\n";
+        *(m_options->errors) << errorCodeToString( m_resultCode );
         success = false;
     }
     sqlite3_free_table( m_result );
     //or sqlite3_free_table( result );
 
 #ifdef DB_DEBUG
-    cout << "\e[1;37m Db::execQuery result code is > " << m_resultCode << "sending value " << success << "\e[0m \n";
+    cout << "\e[1;37m Db::execQuery result code is > " << m_resultCode << " sending value " << success << "\e[0m \n";
 #endif
     return success;
 }
@@ -1063,5 +1227,3 @@ int Db::resultQuery( const string &query ) //ritorna quante corrispondenze ci so
 
     return answer;
 }
-
-
