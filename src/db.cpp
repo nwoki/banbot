@@ -700,25 +700,19 @@ bool Db::modifyBanned( const string &nick, const string &ip, const string &date,
 
 bool Db::deleteBanned( const string &id )
 {
-    string query( "delete from banned where id ='" );
-    query.append( id );
-    query.append( "';" );
-
-    if( !execQuery( query ) ){
-        cout << "\e[0;31m[FAIL] Db::deleteBanned : " << query << "\e[0m \n";
-        *(m_options->log) << "[FAIL] Db::deleteBanned : " << query << "\n";
-        *(m_options->errors) << "[FAIL] On " << (*m_options)[m_options->serverNumber].name()  << " : Db::deleteBanned : " << query << "\n";
+    if( id.empty() ) {
+        cout << "\e[0;31m Db::deleteBanned empty id! \e[0m \n";
         return false;
     }
 
-    //deleted banned user, and now to delete his saved guids
+    //first clean guid records
     string deleteGuidsQuery( "delete from guids where banId='" );
     deleteGuidsQuery.append( id );
     deleteGuidsQuery.append( "';" );
 
-    #ifdef DB_DEBUG
-        cout << "Db::deleteBanned query -> " << deleteGuidsQuery << "\n";
-    #endif
+#ifdef DB_DEBUG
+    cout << "Db::deleteBanned guids query -> " << deleteGuidsQuery << "\n";
+#endif
 
     if( !execQuery( deleteGuidsQuery ) ) {
         cout << "\e[0;31m[FAIL] Db::deleteBanned can't delete guid with banId = " << id << "\e[0m \n ";
@@ -729,6 +723,24 @@ bool Db::deleteBanned( const string &id )
 
     cout << "\e[0;31m[!] deleted all guids with ban id = " << id << "\e[0m \n";
     *(m_options->log) << "[!] deleted all guids with ban id = " << id << "\n";
+
+
+    //and now clean banned table
+    string query( "delete from banned where id ='" );
+    query.append( id );
+    query.append( "';" );
+
+#ifdef DB_DEBUG
+    cout << "Db::deleteBanned bantable query -> " << query << "\n";
+#endif
+
+    if( !execQuery( query ) ) {
+        cout << "\e[0;31m[FAIL] Db::deleteBanned : " << query << "\e[0m \n";
+        *(m_options->log) << "[FAIL] Db::deleteBanned : " << query << "\n";
+        *(m_options->errors) << "[FAIL] On " << (*m_options)[m_options->serverNumber].name()  << " : Db::deleteBanned : " << query << "\n";
+        return false;
+    }
+
     return true;
 }
 
