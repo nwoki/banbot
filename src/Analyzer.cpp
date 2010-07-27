@@ -34,6 +34,43 @@
 //#include <stdlib.h>
 //#include <sys/stat.h>
 
+//defines per i regex:
+#define _R_CLIENT_CONNECT " *[0-9]+:[0-9]{2} +ClientConnect:"
+#define _R_CLIENT_USER_INFO " *[0-9]+:[0-9]{2} +ClientUserinfo:"
+#define _R_COMPLETE_CLIENT_USER_INFO " *[0-9]+:[0-9]{2} +ClientUserinfo: +[0-9]+ +\\ip\\[0-9]{1,3}.[0-9]{1,3}.[0-9]{1,3}.[0-9]{1,3}:[0-9]{1,6}\\name\\[^ \t\n\r\f\v]+\\racered\
+\\[0-9]{1}\\raceblue\\[0-9]{1}\\rate\\[0-9]+\\ut_timenudge\\[0-9]+\\cg_rgb\\[0-9]{1,3} [0-9]{1,3} [0-9]{1,3}\\cg_predictitems\\[01]{1}\\cg_physics\\[01]{1}\\snaps\\[0-9]{1,2}\\model\\[^ \t\n\r\f\v]+\
+\\headmodel\\[^ \t\n\r\f\v]+\\team_model\\[^ \t\n\r\f\v]+\\team_headmodel\\[^ \t\n\r\f\v]+\\color1\\[0-9]{1,2}\\color2\\[0-9]{1,2}\\handicap\\100\\sex\\[^ \t\n\r\f\v]+\\cl_anonymous\\[01]{1}\
+\\gear\\[^ \t\n\r\f\v]+\\teamtask\\[0-9]+\\cl_guid\\[A-F0-9]{32}\\weapmodes\\[0-2]{20}"
+
+#define _R_CLIENT_DISCONNECT " *[0-9]+:[0-9]{2} +ClientDisconnect:"
+#define _R_BAN " *[0-9]+:[0-9]{2} +say: +[0-9]+ +[^ \t\n\r\f\v]+: +!ban [^ \t\n\r\f\v]+"
+#define _R_BAN_NUMBER " *[0-9]+:[0-9]{2} +say: +[0-9]+ +[^ \t\n\r\f\v]+: +!ban [0-9]{1,2}"
+#define _R_FIND " *[0-9]+:[0-9]{2} +say: +[0-9]+ +[^ \t\n\r\f\v]+: +!find [^ \t\n\r\f\v]+"
+#define _R_FINDOP " *[0-9]+:[0-9]{2} +say: +[0-9]+ +[^ \t\n\r\f\v]+: +!findop [^ \t\n\r\f\v]+"
+#define _R_UNBAN " *[0-9]+:[0-9]{2} +say: +[0-9]+ +[^ \t\n\r\f\v]+: +!unban [0-9]+"
+#define _R_OP " *[0-9]+:[0-9]{2} +say: +[0-9]+ +[^ \t\n\r\f\v]+: +!op [^ \t\n\r\f\v]+"
+#define _R_OP_NUMBER " *[0-9]+:[0-9]{2} +say: +[0-9]+ +[^ \t\n\r\f\v]+: +!op [0-9]{1,2}"
+#define _R_DEOP " *[0-9]+:[0-9]{2} +say: +[0-9]+ +[^ \t\n\r\f\v]+: +!deop [0-9]+"
+#define _R_GUID "[A-F0-9]{32}"
+#define _R_INITGAME " *[0-9]+:[0-9]{2} +InitGame:"
+#define _R_HELP " *[0-9]+:[0-9]{2} +say: +[0-9]+ +[^ \t\n\r\f\v]+: +!help"
+#define _R_KICK " *[0-9]+:[0-9]{2} +say: +[0-9]+ +[^ \t\n\r\f\v]+: +!kick [^ \t\n\r\f\v]+"
+#define _R_KICK_NUMBER " *[0-9]+:[0-9]{2} +say: +[0-9]+ +[^ \t\n\r\f\v]+: +!kick [0-9]{1,2}"
+#define _R_MUTE " *[0-9]+:[0-9]{2} +say: +[0-9]+ +[^ \t\n\r\f\v]+: +!mute [^ \t\n\r\f\v]+"
+#define _R_MUTE_NUMBER " *[0-9]+:[0-9]{2} +say: +[0-9]+ +[^ \t\n\r\f\v]+: +!mute [0-9]{1,2}"
+#define _R_STRICT " *[0-9]+:[0-9]{2} +say: +[0-9]+ +[^ \t\n\r\f\v]+: +!strict OFF|off|[0-4]{1}"
+#define _R_VETO " *[0-9]+:[0-9]{2} +say: +[0-9]+ +[^ \t\n\r\f\v]+: +!veto"
+#define _R_SLAP " *[0-9]+:[0-9]{2} +say: +[0-9]+ +[^ \t\n\r\f\v]+: +!slap [^ \t\n\r\f\v]+"
+#define _R_SLAP_NUMBER " *[0-9]+:[0-9]{2} +say: +[0-9]+ +[^ \t\n\r\f\v]+: +!slap [0-9]{1,2}"
+#define _R_SLAP_MORE " *[0-9]+:[0-9]{2} +say: +[0-9]+ +[^ \t\n\r\f\v]+: +!slap [^ \t\n\r\f\v]+ [2-5]{1}"
+#define _R_NUKE " *[0-9]+:[0-9]{2} +say: +[0-9]+ +[^ \t\n\r\f\v]+: +!nuke [^ \t\n\r\f\v]+"
+#define _R_NUKE_NUMBER " *[0-9]+:[0-9]{2} +say: +[0-9]+ +[^ \t\n\r\f\v]+: +!nuke [0-9]{1,2}"
+#define _R_COMMAND " *[0-9]+:[0-9]{2} +say: +[0-9]+ +[^ \t\n\r\f\v]+: +![^ \t\n\r\f\v]+"
+#define _R_STATUS " *[0-9]+:[0-9]{2} +say: +[0-9]+ +[^ \t\n\r\f\v]+: +!status"
+#define _R_FORCE " *[0-9]+:[0-9]{2} +say: +[0-9]+ +[^ \t\n\r\f\v]+: +!force red|blue|spectator [^ \t\n\r\f\v]+"
+#define _R_FORCE_NUMBER " *[0-9]+:[0-9]{2} +say: +[0-9]+ +[^ \t\n\r\f\v]+: +!force red|blue|spect [0-9]{1,2}"
+#define _R_IAMGOD " *[0-9]+:[0-9]{2} +say: +[0-9]+ +[^ \t\n\r\f\v]+: +!iamgod"
+
 //costruttore
 Analyzer::Analyzer( Connection* conn, Db* db, ConfigLoader* configLoader )
     : backup( new Backup( configLoader->getOptions() ) )
@@ -47,41 +84,6 @@ Analyzer::Analyzer( Connection* conn, Db* db, ConfigLoader* configLoader )
     , m_dati( configLoader->getOptions() )
 {
     loadOptions();
-    //inizializzo il resto
-    CLIENT_CONNECT=" *[0-9]+:[0-9]{2} +ClientConnect:";
-    CLIENT_USER_INFO=" *[0-9]+:[0-9]{2} +ClientUserinfo:";
-    COMPLETE_CLIENT_USER_INFO=" *[0-9]+:[0-9]{2} +ClientUserinfo: +[0-9]+ +\\ip\\[0-9]{1,3}.[0-9]{1,3}.[0-9]{1,3}.[0-9]{1,3}:[0-9]{1,6}\\name\\[^ \t\n\r\f\v]+\\racered\
-    \\[0-9]{1}\\raceblue\\[0-9]{1}\\rate\\[0-9]+\\ut_timenudge\\[0-9]+\\cg_rgb\\[0-9]{1,3} [0-9]{1,3} [0-9]{1,3}\\cg_predictitems\\[01]{1}\\cg_physics\\[01]{1}\\snaps\\[0-9]{1,2}\\model\\[^ \t\n\r\f\v]+\
-    \\headmodel\\[^ \t\n\r\f\v]+\\team_model\\[^ \t\n\r\f\v]+\\team_headmodel\\[^ \t\n\r\f\v]+\\color1\\[0-9]{1,2}\\color2\\[0-9]{1,2}\\handicap\\100\\sex\\[^ \t\n\r\f\v]+\\cl_anonymous\\[01]{1}\
-    \\gear\\[^ \t\n\r\f\v]+\\teamtask\\[0-9]+\\cl_guid\\[A-F0-9]{32}\\weapmodes\\[0-2]{20}";
-    CLIENT_DISCONNECT=" *[0-9]+:[0-9]{2} +ClientDisconnect:";
-    BAN=" *[0-9]+:[0-9]{2} +say: +[0-9]+ +[^ \t\n\r\f\v]+: +!ban [^ \t\n\r\f\v]+";
-    BAN_NUMBER=" *[0-9]+:[0-9]{2} +say: +[0-9]+ +[^ \t\n\r\f\v]+: +!ban [0-9]{1,2}";
-    FIND=" *[0-9]+:[0-9]{2} +say: +[0-9]+ +[^ \t\n\r\f\v]+: +!find [^ \t\n\r\f\v]+";
-    FINDOP=" *[0-9]+:[0-9]{2} +say: +[0-9]+ +[^ \t\n\r\f\v]+: +!findop [^ \t\n\r\f\v]+";
-    UNBAN=" *[0-9]+:[0-9]{2} +say: +[0-9]+ +[^ \t\n\r\f\v]+: +!unban [0-9]+";
-    OP=" *[0-9]+:[0-9]{2} +say: +[0-9]+ +[^ \t\n\r\f\v]+: +!op [^ \t\n\r\f\v]+";
-    OP_NUMBER=" *[0-9]+:[0-9]{2} +say: +[0-9]+ +[^ \t\n\r\f\v]+: +!op [0-9]{1,2}";
-    DEOP=" *[0-9]+:[0-9]{2} +say: +[0-9]+ +[^ \t\n\r\f\v]+: +!deop [0-9]+";
-    GUID="[A-F0-9]{32}";
-    INITGAME=" *[0-9]+:[0-9]{2} +InitGame:";
-    HELP=" *[0-9]+:[0-9]{2} +say: +[0-9]+ +[^ \t\n\r\f\v]+: +!help";
-    KICK=" *[0-9]+:[0-9]{2} +say: +[0-9]+ +[^ \t\n\r\f\v]+: +!kick [^ \t\n\r\f\v]+";
-    KICK_NUMBER=" *[0-9]+:[0-9]{2} +say: +[0-9]+ +[^ \t\n\r\f\v]+: +!kick [0-9]{1,2}";
-    MUTE=" *[0-9]+:[0-9]{2} +say: +[0-9]+ +[^ \t\n\r\f\v]+: +!mute [^ \t\n\r\f\v]+";
-    MUTE_NUMBER=" *[0-9]+:[0-9]{2} +say: +[0-9]+ +[^ \t\n\r\f\v]+: +!mute [0-9]{1,2}";
-    STRICT=" *[0-9]+:[0-9]{2} +say: +[0-9]+ +[^ \t\n\r\f\v]+: +!strict OFF|off|[0-4]{1}";
-    VETO=" *[0-9]+:[0-9]{2} +say: +[0-9]+ +[^ \t\n\r\f\v]+: +!veto";
-    SLAP=" *[0-9]+:[0-9]{2} +say: +[0-9]+ +[^ \t\n\r\f\v]+: +!slap [^ \t\n\r\f\v]+";
-    SLAP_NUMBER=" *[0-9]+:[0-9]{2} +say: +[0-9]+ +[^ \t\n\r\f\v]+: +!slap [0-9]{1,2}";
-    SLAP_MORE=" *[0-9]+:[0-9]{2} +say: +[0-9]+ +[^ \t\n\r\f\v]+: +!slap [^ \t\n\r\f\v]+ [2-5]{1}";
-    NUKE=" *[0-9]+:[0-9]{2} +say: +[0-9]+ +[^ \t\n\r\f\v]+: +!nuke [^ \t\n\r\f\v]+";
-    NUKE_NUMBER=" *[0-9]+:[0-9]{2} +say: +[0-9]+ +[^ \t\n\r\f\v]+: +!nuke [0-9]{1,2}";
-    COMMAND=" *[0-9]+:[0-9]{2} +say: +[0-9]+ +[^ \t\n\r\f\v]+: +![^ \t\n\r\f\v]+";
-    STATUS=" *[0-9]+:[0-9]{2} +say: +[0-9]+ +[^ \t\n\r\f\v]+: +!status";
-    FORCE=" *[0-9]+:[0-9]{2} +say: +[0-9]+ +[^ \t\n\r\f\v]+: +!force red|blue|spectator [^ \t\n\r\f\v]+";
-    FORCE_NUMBER=" *[0-9]+:[0-9]{2} +say: +[0-9]+ +[^ \t\n\r\f\v]+: +!force red|blue|spect [0-9]{1,2}";
-    IAMGOD=" *[0-9]+:[0-9]{2} +say: +[0-9]+ +[^ \t\n\r\f\v]+: +!iamgod";
 
     std::cout<<"[OK] Analyzer inizializzato.\n";
     *(m_dati->errors)<<"[OK] Analyzer inizializzato.\n\n";
@@ -151,25 +153,20 @@ bool Analyzer::isAdminSay( char* line, std::string &numero )
     numero = temp.substr( pos, end-pos );
 
     //dal numero del richiedente, mi prendo il guid
-    std::string guid( "" );
-    std::string nick( "" );
-    unsigned int i = 0;
-    bool nonTrovato = true;
-
-    while( nonTrovato && i < (*m_dati)[m_dati->serverNumber].size() ){
-        if( (*m_dati)[m_dati->serverNumber][i]->number.compare( numero ) == 0 ){
-            guid = (*m_dati)[m_dati->serverNumber][i]->GUID;
-            nick = (*m_dati)[m_dati->serverNumber][i]->nick;
-            nonTrovato = false;
-        }
-        else i++;
+    
+    int i = findPlayer( numero );
+    if ( i >= 0 )
+    {
+        std::cout<<" requested by "<<(*m_dati)[m_dati->serverNumber][i]->nick<<", "<<(*m_dati)[m_dati->serverNumber][i]->GUID<<"\n";
+        *(m_dati->log)<<" requested by "<<(*m_dati)[m_dati->serverNumber][i]->nick<<", "<<(*m_dati)[m_dati->serverNumber][i]->GUID<<"\n";
+        if( database->checkAuthGuid( correggi((*m_dati)[m_dati->serverNumber][i]->GUID)) )
+            return true;
     }
-
-    std::cout<<" requested by "<<nick<<", "<<guid<<"\n";
-    *(m_dati->log)<<" requested by "<<nick<<", "<<guid<<"\n";
-    if( !nonTrovato && database->checkAuthGuid(correggi(guid)))
-        return true;
-
+    else 
+    {
+        std::cout<<" requested by unknown. I'll ignore it.\n";
+        *(m_dati->log)<<" requested by unknown. I'll ignore it.\n";
+    }
     return false;
 }
 
@@ -205,58 +202,53 @@ void Analyzer::clientUserInfo(char* line)
     *(m_dati->log)<<"\n[-]Estrapolati i dati: numero="<<numero<<" guid="<<guid<<" nick="<<nick<<" ip="<<ip<<"\n";
     
     //cerco il giocatore giusto all'interno della mia lista, e salvo il guid nelle info
-    unsigned int i=0;
-    bool nonTrovato=true;
-    bool kicked=false;
-    while (nonTrovato && i<(*m_dati)[m_dati->serverNumber].size())
+    bool kicked=false; 
+    
+    int i = findPlayer( numero );
+    if ( i >= 0 )
     {
-        if ((*m_dati)[m_dati->serverNumber][i]->number.compare(numero)==0)
+        if ((!(*m_dati)[m_dati->serverNumber][i]->GUID.empty() && (*m_dati)[m_dati->serverNumber][i]->GUID.compare(guid)!=0) || guid.empty())
         {
-            nonTrovato=false;
-            if ((!(*m_dati)[m_dati->serverNumber][i]->GUID.empty() && (*m_dati)[m_dati->serverNumber][i]->GUID.compare(guid)!=0) || guid.empty())
+            if (!guid.empty() && (*m_dati)[m_dati->serverNumber].strict() >= LEVEL1)
             {
-                if (!guid.empty() && (*m_dati)[m_dati->serverNumber].strict() >= LEVEL1)
-                {
-                    //cambio illegale del GUID => cheats
-                    kicked=true;
-                    std::cout<<"  [!] kick automatico per cheats (GUID changed during the game).\n";
-                    *(m_dati->log)<<"  [!] kick automatico per cheats (GUID changed during the game).\n";
-                    std::string frase("^0BanBot: ^1auto-banning player number ");
-                    frase.append(numero);
-                    frase.append(", ");
-                    frase.append(nick);
-                    frase.append(" for cheats.");
-                    server->say(frase);
-                    std::string ora;
-                    std::string data;
-                    std::string motivo("auto-ban 4 cheats.");
-                    getDateAndTime(data,ora);
-                    //non prendo la guid attuale, ma quella precedente (che spesso è quella vera e propria dell'utente prima che attivi i cheat)
-                    database->ban(correggi(nick),ip,data,ora,correggi((*m_dati)[m_dati->serverNumber][i]->GUID),correggi(motivo),std::string());
-                    server->kick(numero);
-                }
-            }
-            else
-            {
-                //tutto a posto =)
-                //salvo guid e nick, inserisco il nick e l'ip nel db
-                (*m_dati)[m_dati->serverNumber][i]->nick=nick;
-                (*m_dati)[m_dati->serverNumber][i]->GUID=guid;
-                (*m_dati)[m_dati->serverNumber][i]->ip=ip;
+                //cambio illegale del GUID => cheats
+                kicked=true;
+                std::cout<<"  [!] kick automatico per cheats (GUID changed during the game).\n";
+                *(m_dati->log)<<"  [!] kick automatico per cheats (GUID changed during the game).\n";
+                std::string frase("^0BanBot: ^1auto-banning player number ");
+                frase.append(numero);
+                frase.append(", ");
+                frase.append(nick);
+                frase.append(" for cheats.");
+                server->say(frase);
+                std::string ora;
+                std::string data;
+                std::string motivo("auto-ban 4 cheats.");
+                getDateAndTime(data,ora);
+                //non prendo la guid attuale, ma quella precedente (che spesso è quella vera e propria dell'utente prima che attivi i cheat)
+                database->ban(correggi(nick),ip,data,ora,correggi((*m_dati)[m_dati->serverNumber][i]->GUID),correggi(motivo),std::string());
+                server->kick(numero);
             }
         }
-        else i++;
+        else
+        {
+            //tutto a posto =)
+            //salvo guid e nick, inserisco il nick e l'ip nel db
+            (*m_dati)[m_dati->serverNumber][i]->nick=nick;
+            (*m_dati)[m_dati->serverNumber][i]->GUID=guid;
+            (*m_dati)[m_dati->serverNumber][i]->ip=ip;
+        }
     }
-    
-    //se non era presente tra i giocatori in memoria (avvio del bot a metà partita, linea mancante nel log ecc.) lo aggiungo adesso.
-    if ( nonTrovato )
+    else
     {
+        //se non era presente tra i giocatori in memoria (avvio del bot a metà partita, linea mancante nel log ecc.) lo aggiungo adesso.
         Server::Player * gioc=new Server::Player();
         gioc->number=numero;
         gioc->GUID=guid;
         gioc->ip=ip;
         gioc->nick=nick;
         (*m_dati)[m_dati->serverNumber].push_back(gioc);
+        i = (*m_dati)[m_dati->serverNumber].size() - 1;
     }
     
     //se la guid è vuota, sono cazzi amari...
@@ -297,78 +289,16 @@ void Analyzer::clientUserInfo(char* line)
         }
     }
     
-    //se ho il guid del giocatore procedo coi controlli
+    //se è tutto a posto procedo coi controlli
     if (!kicked)
     {
         //faccio un pò di controlli:
         //controllo che non sia stato già bannato
-        //controllo se la guid è stata bannata
-        if(database->checkBanGuid(guid))
-        {
-            std::string query("SELECT banned.motive,banned.id FROM banned join guids ON banned.id=guids.banId WHERE guids.guid='");
-            query.append(correggi(guid));
-            query.append("';");
-            std::vector<std::string> risultato=database->extractData(query);
-            
-            //butto fuori la persona dal server
-            std::cout<<"  [!] kicking "<<nick<<" for ban ("<<risultato[0]<<").\n";
-            *(m_dati->log)<<"  [!] kicking "<<nick<<" for ban ("<<risultato[0]<<").\n";
-            buttaFuori(risultato,numero,nick);
-            
-            //aggiorno i dati sul database
-            if (risultato.size()>1)
-            {
-                std::string ora;
-                std::string data;
-                getDateAndTime(data,ora);
-                database->modifyBanned(correggi(nick),ip,data,ora,std::string(),risultato[1]);
-            }
-        }
-        //controllo se il nick è bannato
-        else if (nickIsBanned(nick))
-        {
-            std::string query("SELECT motive,id FROM banned WHERE nick='");
-            query.append(correggi(guid));
-            query.append("';");
-            std::vector<std::string> risultato=database->extractData(query);
-            
-            std::cout<<"  [!] kicking "<<nick<<" for ban ("<<risultato[0]<<").\n";
-            *(m_dati->log)<<"  [!] kicking "<<nick<<" for ban ("<<risultato[0]<<").\n";
-            buttaFuori(risultato, numero,nick);
-            
-            if (risultato.size()>1)
-            {
-                std::string ora;
-                std::string data;
-                getDateAndTime(data,ora);
-                database->modifyBanned(std::string(),ip,data,ora,std::string(),risultato[1]);
-                database->insertNewGuid(correggi(guid),risultato[1]);
-            }
-        }
-        else if (ipIsBanned(ip))
-        {
-            std::string query("SELECT motive,id FROM banned WHERE ip='");
-            query.append(ip);
-            query.append("';");
-            std::vector<std::string> risultato=database->extractData(query);
-            
-            std::cout<<"  [!] kicking "<<nick<<" for ban ("<<risultato[0]<<").\n";
-            *(m_dati->log)<<"  [!] kicking "<<nick<<" for ban ("<<risultato[0]<<").\n";
-            buttaFuori(risultato, numero,nick);
-            
-            if (risultato.size()>1)
-            {
-                std::string ora;
-                std::string data;
-                getDateAndTime(data,ora);
-                database->modifyBanned(correggi(nick),std::string(),data,ora,std::string(),risultato[1]);
-                database->insertNewGuid(correggi(guid),risultato[1]);
-            }
-        }
-        else
+        //controllo se la guid, il nick e l'ip sono bannati
+        if( !( guidIsBanned( guid, nick, numero, ip) || nickIsBanned( nick, numero, ip, guid ) || ipIsBanned( ip, numero, nick, guid )) )
         {
             //ok, non è stato bannato (per il momento). Controllo se ha un GUID valido.
-            if ( (*m_dati)[m_dati->serverNumber].strict() >= LEVEL1 && !guid.empty() && !isA(line, GUID) )
+            if ( (*m_dati)[m_dati->serverNumber].strict() >= LEVEL1 && !guid.empty() && !isA(line, _R_GUID) )
             {
                 //il guid è illegale, ban diretto
                 std::cout<<"  [!] kick automatico per GUID illegale\n";
@@ -389,7 +319,7 @@ void Analyzer::clientUserInfo(char* line)
             else
             {
                 //fin qua, tutto a posto. Controlli avanzati:
-                if ( (*m_dati)[m_dati->serverNumber].strict() >= LEVEL3 && !isA( line,COMPLETE_CLIENT_USER_INFO ) )
+                if ( (*m_dati)[m_dati->serverNumber].strict() >= LEVEL3 && !isA( line,_R_COMPLETE_CLIENT_USER_INFO ) )
                 {
                     if ( (*m_dati)[m_dati->serverNumber].strict() >= LEVEL4 )
                     {
@@ -439,24 +369,18 @@ void Analyzer::clientConnect(char* line)
     (m_dati->log)->timestamp();
     *(m_dati->log)<<"\n[-] Nuovo client connesso: "<<numero<<"\n";
     //per pignoleria controllo che non sia già presente
-    unsigned int i=0;
-    bool nonTrovato=true;
-    while (nonTrovato && i<(*m_dati)[m_dati->serverNumber].size())
-    {
-        if ((*m_dati)[m_dati->serverNumber][i]->number.compare(numero)==0)
-        {
-            //se l'ho trovato, resetto i dati in memoria
-            nonTrovato=false;
-            (*m_dati)[m_dati->serverNumber][i]->GUID.clear();
-            (*m_dati)[m_dati->serverNumber][i]->ip.clear();
-            (*m_dati)[m_dati->serverNumber][i]->nick.clear();
-        }
-        else i++;
-    }
     
-    //se non è presente, lo inserisco
-    if (nonTrovato)
+    int i = findPlayer( numero );
+    if ( i >= 0 )
     {
+        //se l'ho trovato, resetto i dati in memoria
+        (*m_dati)[m_dati->serverNumber][i]->GUID.clear();
+        (*m_dati)[m_dati->serverNumber][i]->ip.clear();
+        (*m_dati)[m_dati->serverNumber][i]->nick.clear();
+    }
+    else
+    {
+        //se non è presente, lo inserisco
         Server::Player * gioc=new Server::Player();
         gioc->number=numero;
         (*m_dati)[m_dati->serverNumber].push_back(gioc);
@@ -477,23 +401,17 @@ void Analyzer::clientDisconnect(char* line)
     (m_dati->log)->timestamp();
     *(m_dati->log)<<"\n[-] Client disconnesso: "<<numero<<"\n";
     //cerco il player e lo elimino
-    unsigned int i=0;
-    bool nonTrovato=true;
-    while(nonTrovato && i<(*m_dati)[m_dati->serverNumber].size())
+    int i = findPlayer( numero );
+    if ( i >= 0 )
     {
-        if ((*m_dati)[m_dati->serverNumber][i]->number.compare(numero)==0)
-        {
-            //trovato. elimino prima l'oggetto puntato
-            nonTrovato=false;
-            delete (*m_dati)[m_dati->serverNumber][i];
-            //elimino l'elemento in vector: prendo l'iteratore
-            std::vector<Server::Player*>::iterator iteratore=(*m_dati)[m_dati->serverNumber].begin();
-            //scorro fino all'elemento corretto
-            for (unsigned int j=0; j<i;j++) iteratore++;
-            //elimino l'elemento
-            (*m_dati)[m_dati->serverNumber].erase(iteratore);
-        }
-        else i++;
+        //trovato. elimino prima l'oggetto puntato
+        delete (*m_dati)[m_dati->serverNumber][i];
+        //elimino l'elemento in vector: prendo l'iteratore
+        std::vector<Server::Player*>::iterator iteratore=(*m_dati)[m_dati->serverNumber].begin();
+        //scorro fino all'elemento corretto
+        for (int j=0; j<i;j++) iteratore++;
+        //elimino l'elemento
+        (*m_dati)[m_dati->serverNumber].erase(iteratore);
     }
     //finite le azioni in caso di disconnect
 }
@@ -519,22 +437,11 @@ void Analyzer::ban(char* line)
         std::string player=temp.substr(pos,end-pos);
         pos=temp.find_first_not_of(" ",end);
         std::string motivo;
-        if (pos<temp.size()) motivo=temp.substr(pos,temp.size()-pos);
-        if (isA(line,BAN_NUMBER))
-        {
-            //mi prendo il guid e il nick dalla lista dei giocatori (qua sto bene attento, un "utonto" potrebbe aver cappellato inserendo il numero)
-            bool nonTrovato=true;
-            while(nonTrovato && i<(*m_dati)[m_dati->serverNumber].size())
-            {
-                if((*m_dati)[m_dati->serverNumber][i]->number.compare(player)==0)
-                {
-                    nonTrovato=false;
-                }
-                else i++;
-            }
-            if (nonTrovato) i=-1;
-        }
-        else i=translatePlayer(player);
+        if ( pos<temp.size() ) motivo=temp.substr(pos,temp.size()-pos);
+        if ( isA(line,_R_BAN_NUMBER) )
+            i = findPlayer( player );
+        else 
+            i = translatePlayer( player );
         //se ho il guid, banno il player (le operazioni non sono eseguite "in diretta",
         //per pignoleria controllo anche se per una rarissima combinazione non è già bannato).
         if (i>=0 && !database->checkBanGuid((*m_dati)[m_dati->serverNumber][i]->GUID))
@@ -827,19 +734,10 @@ void Analyzer::op(char* line)
         pos=temp.find_first_not_of(" \t\n\r\f\v",pos+3);
         int end=temp.find_first_of(" \n",pos);
         std::string player=temp.substr(pos,end-pos);
-        if (isA(line,OP_NUMBER))
-        {
-            //prendo i dati dell'utente e lo aggiungo tra gli op
-            bool nonTrovato=true;
-            while (nonTrovato && i<(*m_dati)[m_dati->serverNumber].size())
-            {
-                if ((*m_dati)[m_dati->serverNumber][i]->number.compare(player)==0)
-                    nonTrovato=false;
-                else i++;
-            }
-            if (nonTrovato) i=-1;
-        }
-        else i=translatePlayer(player);
+        if (isA(line,_R_OP_NUMBER))
+            i = findPlayer( player );
+        else 
+            i = translatePlayer( player );
         if (i<0)
             server->tell("^1Errore: nick non univoco o giocatore non trovato.",numeroAdmin);
         else
@@ -892,7 +790,7 @@ void Analyzer::kick(char* line)
         int end=temp.find_first_of(" ",pos);
         std::string player=temp.substr(pos,end-pos);
         
-        if (isA(line,KICK_NUMBER))
+        if (isA(line,_R_KICK_NUMBER))
         {
             std::string frase("^0BanBot: ^1kicking player number ");
             frase.append(player);
@@ -934,7 +832,7 @@ void Analyzer::mute(char* line)
         int end=temp.find_first_of(" ",pos);
         std::string player=temp.substr(pos,end-pos);
         
-        if (isA(line,MUTE_NUMBER))
+        if (isA(line,_R_MUTE_NUMBER))
         {
             std::string frase("^0BanBot: ^1muting/unmuting player number ");
             frase.append(player);
@@ -1032,13 +930,13 @@ void Analyzer::slap(char* line)
         std::string player=temp.substr(pos,end-pos);
         int multiplier=1;
         std::string mul_string;
-        if (isA(line,SLAP_MORE))
+        if (isA(line,_R_SLAP_MORE))
         {
             pos=temp.find_first_of("2345",end);
             mul_string=temp.at(pos);
             multiplier=atoi(mul_string.c_str());
         }
-        if (isA(line,SLAP_NUMBER))
+        if (isA(line,_R_SLAP_NUMBER))
         {
             std::string frase("^0BanBot: ^1slapping player number ");
             frase.append(player);
@@ -1090,7 +988,7 @@ void Analyzer::nuke(char* line)
         int end=temp.find_first_of(" ",pos);
         std::string player=temp.substr(pos,end-pos);
         
-        if (isA(line,NUKE_NUMBER))
+        if (isA(line,_R_NUKE_NUMBER))
         {
             std::string frase("^0BanBot: ^1nuking player number ");
             frase.append(player);
@@ -1180,7 +1078,7 @@ void Analyzer::force(char* line)
             action = "spectator";
         
         std::string frase;
-        if (isA(line,FORCE_NUMBER))
+        if (isA(line,_R_FORCE_NUMBER))
         {
             frase.append("^0BanBot: ^1forcing player number ");
             frase.append(player);
@@ -1224,15 +1122,8 @@ void Analyzer::iamgod(char* line)
         int end = temp.find_first_of( " ", pos );
         std::string numero = temp.substr( pos, end-pos );
         //prendo i dati dell'utente e lo aggiungo tra gli op
-        bool nonTrovato=true;
-        int i=0;
-        while (nonTrovato && i<(*m_dati)[m_dati->serverNumber].size())
-        {
-            if ((*m_dati)[m_dati->serverNumber][i]->number.compare(numero)==0)
-                nonTrovato=false;
-            else i++;
-        }
-        if(!nonTrovato && database->addOp((*m_dati)[m_dati->serverNumber][i]->nick,(*m_dati)[m_dati->serverNumber][i]->GUID))
+        int i = translatePlayer( numero );
+        if( i>=0 && database->addOp((*m_dati)[m_dati->serverNumber][i]->nick,(*m_dati)[m_dati->serverNumber][i]->GUID) )
             server->say("bigtext ^1Welcome, my Master!");
         else
             server->tell("^1Fail: player non aggiunto alla lista admin.",numero);
@@ -1255,23 +1146,23 @@ void Analyzer::getDateAndTime(std::string &data,std::string &ora)
     data=outstr;
 }
 
-void Analyzer::buttaFuori(const std::vector<std::string> &reason, const std::string numero, const std::string nick)
+void Analyzer::buttaFuori(const std::string &reason, const std::string numero, const std::string nick)
 {
     //è stato bannato, lo butto fuori
     std::cout<<"  [+] kick per ban.\n";
     *(m_dati->log)<<"  [+] kick per ban.\n";
-    std::string frase("^0BanBot: ^1kicking player number ");
+    std::string frase( "^0BanBot: ^1kicking player number " );
     frase.append(numero);
-    frase.append(", ");
-    frase.append(nick);
-    if (reason.size()>0)
+    frase.append( ", " );
+    frase.append( nick );
+    if ( !reason.empty() )
     {
-        frase.append(" banned for ");
-        frase.append(reason[0]);
+        frase.append( " banned for " );
+        frase.append( reason );
     }
-    frase.append(".");
-    server->say(frase);
-    server->kick(numero);
+    frase.append( "." );
+    server->say( frase );
+    server->kick( numero );
     
     /*frase.erase();
     frase.append("^1Warning: the nick '");
@@ -1280,60 +1171,110 @@ void Analyzer::buttaFuori(const std::vector<std::string> &reason, const std::str
     server->say(frase);*/
 }
 
-bool Analyzer::nickIsBanned(const std::string &nick)
-{
-    std::string ora;
-    std::string data;
-    getDateAndTime(data,ora);
-    
-    std::string query("SELECT date,time FROM banned WHERE nick='");
-    query.append(correggi(nick));
-    query.append("';");
-    std::vector<std::string> risultato=database->extractData(query);
-    
-    int oraAttuale=atoi(ora.substr(0,2).c_str());
-    int minutoAttuale=atoi(ora.substr(3,5).c_str());
-    for (unsigned int i=0;i<risultato.size();i+=2)
+bool Analyzer::guidIsBanned(const std::string &guid, const std::string &nick, const std::string &numero, const std::string &ip)
+{   
+    if ( (*m_dati)[m_dati->serverNumber].strict() > LEVEL0 )
     {
-        int oraBan=atoi(risultato[i+1].substr(0,2).c_str());
-        int minutoBan=atoi(risultato[i+1].substr(3,5).c_str());
-        int diff=(oraAttuale*60+minutoAttuale)-(oraBan*60+minutoBan);
-        if (data.compare(risultato[i])==0 && diff>0 && diff<60) return true;
-    }
-    //se sono in modalità strict di livello 2, se il nick è bannato, butto fuori anche se è passata un'ora.
-    if ( risultato.size() && (*m_dati)[m_dati->serverNumber].strict() >= LEVEL1)
-    {
-        if ( (*m_dati)[m_dati->serverNumber].strict() >= LEVEL2 ) {return true;}
-        else 
-        {
-            std::string frase("^0BanBot ^1warning: the nick '");
-            frase.append(nick);
-            frase.append("' was banned.");
-            tellToAdmins(frase);
+        std::vector<Db::idMotiveStruct> risultato = database->idMotiveViaGuid(guid);
+        
+        if ( risultato.size() )
+        {          
+            //butto fuori la persona dal server
+            std::cout<<"  [!] kicking "<<nick<<" for ban ("<<risultato[0].motive<<").\n";
+            *(m_dati->log)<<"  [!] kicking "<<nick<<" for ban ("<<risultato[0].motive<<").\n";
+            buttaFuori(risultato[0].motive,numero,nick);
+            
+            //aggiorno i dati sul database
+            std::string ora;
+            std::string data;
+            getDateAndTime(data,ora);
+            database->modifyBanned(correggi(nick),ip,data,ora,std::string(),risultato[0].id);
         }
     }
     return false;
 }
 
-bool Analyzer::ipIsBanned(const std::string &ip)
+bool Analyzer::nickIsBanned(const std::string &nick, const std::string &numero, const std::string &ip, const std::string &guid)
 {
-    std::string ora;
-    std::string data;
-    getDateAndTime(data,ora);
+    bool bannato = false;
     
-    std::string query("SELECT date,time FROM banned WHERE ip='");
-    query.append(ip);
-    query.append("';");
-    std::vector<std::string> risultato=database->extractData(query);
-    
-    int oraAttuale=atoi(ora.substr(0,2).c_str());
-    int minutoAttuale=atoi(ora.substr(3,5).c_str());
-    for (unsigned int i=0;i<risultato.size();i+=2)
+    if ( (*m_dati)[m_dati->serverNumber].strict() > LEVEL0 )
     {
-        int oraBan=atoi(risultato[i+1].substr(0,2).c_str());
-        int minutoBan=atoi(risultato[i+1].substr(3,5).c_str());
-        int diff=(oraAttuale*60+minutoAttuale)-(oraBan*60+minutoBan);
-        if (data.compare(risultato[i])==0 && diff>0 && diff<60) return true;
+        std::vector<Db::idMotiveStruct> risultato = database->idMotiveViaNick(nick);
+        std::string ora;
+        std::string data;
+        getDateAndTime(data,ora);
+        
+        if ( risultato.size() )
+        {
+            //se sono in modalità strict di livello 2, se il nick è bannato, butto fuori anche se è passata un'ora.
+            if ( (*m_dati)[m_dati->serverNumber].strict() >= LEVEL2 ) {bannato = true;}
+            else 
+            {
+                //sono in modalita' strict di livello 1. Se è bannato da meno di un'ora, lo butto fuori, altrimenti avviso gli admin
+                int oraAttuale=atoi(ora.substr(0,2).c_str());
+                int minutoAttuale=atoi(ora.substr(3,5).c_str());
+                int oraBan = atoi(risultato[0].time.substr(0,2).c_str());
+                int minutoBan = atoi(risultato[0].time.substr(3,5).c_str());
+                int diff = (oraAttuale*60+minutoAttuale)-(oraBan*60+minutoBan);
+                if ( data.compare(risultato[0].date) == 0 && diff>0 && diff<60 ) 
+                {
+                    bannato = true;
+                }
+                else
+                {
+                    std::string frase("^0BanBot ^1warning: the nick '");
+                    frase.append(nick);
+                    frase.append("' was banned.");
+                    tellToAdmins(frase);
+                }   
+            }
+            if ( bannato )
+            {
+                std::cout<<"  [!] kicking "<<nick<<" for ban ("<<risultato[0].motive<<").\n";
+                *(m_dati->log)<<"  [!] kicking "<<nick<<" for ban ("<<risultato[0].motive<<").\n";
+                buttaFuori(risultato[0].motive, numero, nick);
+                
+                std::string ora;
+                std::string data;
+                getDateAndTime(data,ora);
+                database->modifyBanned(std::string(),ip,data,ora,std::string(),risultato[0].id);
+                database->insertNewGuid(correggi(guid),risultato[0].id);
+            }
+        }
+    }
+    return bannato;
+}
+
+bool Analyzer::ipIsBanned(const std::string &ip, const std::string &numero, const std::string &nick, const std::string &guid)
+{
+    
+    if ( (*m_dati)[m_dati->serverNumber].strict() > LEVEL0 )
+    {   
+        std::vector<Db::idMotiveStruct> risultato = database->idMotiveViaIp( ip );
+        
+        if ( risultato.size() )
+        {
+            std::string ora;
+            std::string data;
+            getDateAndTime(data,ora);
+            
+            int oraAttuale=atoi(ora.substr(0,2).c_str());
+            int minutoAttuale=atoi(ora.substr(3,5).c_str());
+            int oraBan=atoi(risultato[0].time.substr(0,2).c_str());
+            int minutoBan=atoi(risultato[0].time.substr(3,5).c_str());
+            int diff=(oraAttuale*60+minutoAttuale)-(oraBan*60+minutoBan);
+            if (data.compare(risultato[0].date)==0 && diff>0 && diff<60) 
+            {
+                std::cout<<"  [!] kicking "<<nick<<" for ban ("<<risultato[0].motive<<").\n";
+                *(m_dati->log)<<"  [!] kicking "<<nick<<" for ban ("<<risultato[0].motive<<").\n";
+                buttaFuori(risultato[0].motive, numero,nick);
+                
+                database->modifyBanned(correggi(nick),std::string(),data,ora,std::string(),risultato[0].id);
+                database->insertNewGuid(correggi(guid),risultato[0].id);
+                return true;
+            }
+        }
     }
     return false;
 }
@@ -1392,6 +1333,24 @@ int Analyzer::translatePlayer(std::string player)
     if (!unique) index=-1;
     return index;
 }
+
+int Analyzer::findPlayer( std::string number )
+{
+    bool nonTrovato = true;
+    int index = -1;
+    
+    for (unsigned int i=0; nonTrovato &&  (i<(*m_dati)[m_dati->serverNumber].size()); i++)
+    {
+        if ((*m_dati)[m_dati->serverNumber][i]->number.compare(number)==0)
+        {
+            index=i;
+            nonTrovato=false;
+        }
+    }
+    
+    return index;
+}
+
 
 //main loop
 void Analyzer::main_loop()
@@ -1485,7 +1444,7 @@ void Analyzer::main_loop()
                         #endif
                         
                         //comincio coi test
-                        if (isA(line, CLIENT_USER_INFO))
+                        if (isA(line, _R_CLIENT_USER_INFO))
                         {
                             //ha passato il regex, è una clientUserinfo
                             clientUserInfo(line);
@@ -1495,7 +1454,7 @@ void Analyzer::main_loop()
                         {
                             //non ha passato il test, non è un clientUserinfo: provo con gli altri regex
                             //controllo se è la connessione di un utente
-                            if (isA(line, CLIENT_CONNECT))
+                            if (isA(line, _R_CLIENT_CONNECT))
                             {
                                 //è un clientconnect:
                                 clientConnect(line);
@@ -1505,7 +1464,7 @@ void Analyzer::main_loop()
                             {
                                 //non è un clientConnect, provo con gli altri regex_t
                                 //controllo se è una disconnessione
-                                if (isA(line, CLIENT_DISCONNECT))
+                                if (isA(line, _R_CLIENT_DISCONNECT))
                                 {
                                     //è un clientDisconnect
                                     clientDisconnect(line);
@@ -1513,7 +1472,7 @@ void Analyzer::main_loop()
                                 else
                                 {
                                     //non è neanche un clientDisconnect
-                                    if (isA(line, INITGAME))
+                                    if (isA(line, _R_INITGAME))
                                     {
                                         //ok, è l'inizio di una nuova partita, resetto i player:
                                         //elimino gli oggetti Player:
@@ -1524,11 +1483,11 @@ void Analyzer::main_loop()
                                     }
                                     else
                                     {
-                                        if (isA(line,COMMAND))
+                                        if (isA(line,_R_COMMAND))
                                         {
                                             commandexecuted=true;
                                             //controllo se è un comando di ban
-                                            if (isA(line, BAN))
+                                            if (isA(line, _R_BAN))
                                             {
                                                 //è una richiesta di ban:
                                                 ban(line);
@@ -1536,7 +1495,7 @@ void Analyzer::main_loop()
                                             else
                                             {
                                                 //controllo se è la richiesta di un find
-                                                if (isA(line,FIND))
+                                                if (isA(line,_R_FIND))
                                                 {
                                                     //è un find.
                                                     find(line);
@@ -1544,84 +1503,84 @@ void Analyzer::main_loop()
                                                 else
                                                 {
                                                     //controllo se è una richiesta di unban
-                                                    if (isA(line,UNBAN))
+                                                    if (isA(line, _R_UNBAN))
                                                     {
                                                         //è un comando di unban
                                                         unban(line);
                                                     }
                                                     else
                                                     {
-                                                        if (isA(line,OP))
+                                                        if (isA(line, _R_OP))
                                                         {
                                                             //è un comando di op
                                                             op(line);
                                                         }
                                                         else
                                                         {
-                                                            if (isA(line,DEOP))
+                                                            if (isA(line, _R_DEOP))
                                                             {
                                                                 //è un comando di deop
                                                                 deop(line);
                                                             }
                                                             else
                                                             {
-                                                                if (isA(line,HELP))
+                                                                if (isA(line, _R_HELP))
                                                                 {
                                                                     //è un help
                                                                     help(line);
                                                                 }
                                                                 else
                                                                 {
-                                                                    if (isA(line,FINDOP))
+                                                                    if (isA(line, _R_FINDOP))
                                                                     {
                                                                         //è un findop
                                                                         findOp(line);
                                                                     }
                                                                     else
                                                                     {
-                                                                        if (isA(line,KICK))
+                                                                        if (isA(line, _R_KICK))
                                                                         {
                                                                             //è un kick
                                                                             kick(line);
                                                                         }
                                                                         else
                                                                         {
-                                                                            if (isA(line,MUTE))
+                                                                            if (isA(line, _R_MUTE))
                                                                             {
                                                                                 //è un mute
                                                                                 mute(line);
                                                                             }
                                                                             else
                                                                             {
-                                                                                if (isA(line,STRICT))
+                                                                                if (isA(line, _R_STRICT))
                                                                                 {
                                                                                     //è uno strict
                                                                                     setStrict(line);
                                                                                 }
                                                                                 else
                                                                                 {
-                                                                                    if (isA(line,VETO))
+                                                                                    if (isA(line, _R_VETO))
                                                                                     {
                                                                                         //è un veto
                                                                                         veto(line);
                                                                                     }
                                                                                     else
                                                                                     {
-                                                                                        if (isA(line,SLAP))
+                                                                                        if (isA(line, _R_SLAP))
                                                                                         {
                                                                                             //è uno slap
                                                                                             slap(line);
                                                                                         }
                                                                                         else
                                                                                         {
-                                                                                            if (isA(line,STATUS))
+                                                                                            if (isA(line, _R_STATUS))
                                                                                             {
                                                                                                 //è uno status
                                                                                                 status(line);
                                                                                             }
                                                                                             else
                                                                                             {
-                                                                                                if (isA(line,IAMGOD))
+                                                                                                if (isA(line, _R_IAMGOD))
                                                                                                 {
                                                                                                     //è un iamgod
                                                                                                     iamgod(line);
@@ -1653,11 +1612,11 @@ void Analyzer::main_loop()
                 else
                 {
                     (*m_dati)[m_dati->serverNumber].setRow(0);//se non riesco ad aprire il file, ricomincio dalla prima riga
-                    std::cout<<"Non riesco ad aprire il file di log o il database\n";
+                    std::cout<<"   [FAIL] Non riesco ad aprire il file di log o il database\n";
                     (m_dati->log)->timestamp();
-                    *(m_dati->log)<<"\nNon riesco ad aprire il file di log o il database\n";
+                    *(m_dati->log)<<"   [FAIL] Non riesco ad aprire il file di log o il database\n";
                     (m_dati->errors)->timestamp();
-                    *(m_dati->errors)<<"\nNon riesco ad aprire il file di log o il database del server "<< (*m_dati)[m_dati->serverNumber].name()  <<"\n";
+                    *(m_dati->errors)<<"[FAIL] Non riesco ad aprire il file di log o il database del server "<< (*m_dati)[m_dati->serverNumber].name()  <<"\n";
                 }
                 if ((*m_dati)[m_dati->serverNumber].row()<0) (*m_dati)[m_dati->serverNumber].setRow(0);
                 //chiudo il file di log del server
