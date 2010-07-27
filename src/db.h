@@ -135,9 +135,15 @@ class Db
         };
 
         //custom queries for analyzer
+        //id motive
         vector< idMotiveStruct > idMotiveViaGuid( const string &guid ); /*!< returns id, motive, date and time of a ban by looking up the guid*/
         vector< idMotiveStruct > idMotiveViaIp( const string &ip ); /*!< returns id, motive, date and time of a ban by looking up the ip*/
         vector< idMotiveStruct > idMotiveViaNick( const string &nick ); /*!< returns id, motive, date and time of a ban by looking up the nick*/
+
+        //"how many?" queries
+        string autoBanned();    /*!< returns how many users have been autobanned by the bot */
+        string banned();    /*!< returns how many have been banned normally by admins */
+        string ops();   /*!< returns how many ops are registered to the bot */
 
     private:
         bool connect(); //connects to the sqlite3 database

@@ -485,82 +485,9 @@ void Db::dumpDatabases()
 }
 
 
-//CUSTOM QUERIES FOR ANALYZER
-vector< Db::idMotiveStruct > Db::idMotiveViaGuid( const string& guid )
-{
-    string query( "SELECT banned.id,banned.motive,banned.date,banned.time FROM banned join guids ON banned.id=guids.banId WHERE guids.guid='" );
-    query.append( guid );
-    query.append( "';" );
-
-    vector< idMotiveStruct >structs;
-
-    vector< string >answer = extractData( query );
-
-#ifdef DB_DEBUG
-    cout << "Db::idMotiveViaGuid\n";
-    for( unsigned int i = 0; i < answer.size(); i++ )
-        cout << "ANSWER" << i << " is -> " << answer.at( i ) << endl;
-#endif
-
-    if( answer.size() > 0 )
-        //insert in order, id, motive, date, time
-        structs.push_back( idMotiveStruct( answer[0], answer[1], answer[2], answer[3] ) );
-
-    return structs;
-}
-
-vector< Db::idMotiveStruct > Db::idMotiveViaIp( const string& ip )
-{
-    string query( "SELECT motive,id FROM banned WHERE ip='" );
-    query.append( ip );
-    query.append( "';" );
-
-    vector< idMotiveStruct >structs;
-
-    vector< string >answer = extractData( query );
-
-#ifdef DB_DEBUG
-    cout << "Db::idMotiveViaIp" << endl;
-
-    for( unsigned int i = 0; i < answer.size(); i++ )
-        cout << "ANSWER " << i << " is -> " << answer.at( i );
-#endif
-//  SHOULD I ASSUME THAT THERE ARE NO DOUBLES?  YES FOR NOW
-    if( answer.size() > 0 )
-        //insert in order, id, motive, date, time
-        structs.push_back( idMotiveStruct( answer[0], answer[1], answer[2], answer[3] ) );
-
-    return structs;
-}
-
-vector< Db::idMotiveStruct > Db::idMotiveViaNick( const string& nick )
-{
-    string query( "select id,motive,date,time from banned where nick='" );
-    query.append( nick );
-    query.append( "';" );
-
-    vector< idMotiveStruct >structs;
-
-    vector< string >answer = extractData( query );
-
-#ifdef DB_DEBUG
-    cout << "Db::idMotiveViaNick" << endl;
-
-    for( unsigned int i = 0; i < answer.size(); i++ )
-        cout << "ANSWER " << i << " is -> " << answer.at( i );
-#endif
-//  SHOULD I ASSUME THAT THERE ARE NO DOUBLES?  YES FOR NOW
-    if( answer.size() > 0 )
-        //insert in order, id, motive, date, time
-        structs.push_back( idMotiveStruct( answer[0], answer[1], answer[2], answer[3] ) );
-
-    return structs;
-}
-
-
-
-
-//BAN METHODS
+/********************************
+*         BAN  METHODS          *
+********************************/
 bool Db::ban( const string &nick, const string &ip, const string &date, const string &time, const string &guid, const string &motive, const string &adminGuid ) //adds banned guid to database
 {
     if ( checkBanGuid( guid ) ) {
@@ -745,7 +672,9 @@ bool Db::deleteBanned( const string &id )
 }
 
 
-//GUID TABLE METHODS
+/********************************
+*      GUID TABLE METHODS       *
+********************************/
 string Db::insertNewGuid( const string& guid, const string &banId )
 {
     string newGuidQuery( "insert into guids( guid, banId ) values('" );
@@ -816,7 +745,9 @@ bool Db::deleteGuid( const string &id )
 }
 
 
-//OPLIST TABLE METHODS
+/********************************
+*     OPLIST TABLE METHODS      *
+********************************/
 bool Db::addOp( const string& nick, const string& guid )
 {
     if ( checkAuthGuid( guid ) ) {
@@ -892,6 +823,104 @@ vector< string > Db::extractData( const string &query )    //returns vector with
         return emptyVector;
     }
 }
+
+
+/********************************
+* CUSTOM QUERIES FOR ANALYZER   *
+********************************/
+
+//  id motive queries
+vector< Db::idMotiveStruct > Db::idMotiveViaGuid( const string& guid )
+{
+    string query( "SELECT banned.id,banned.motive,banned.date,banned.time FROM banned join guids ON banned.id=guids.banId WHERE guids.guid='" );
+    query.append( guid );
+    query.append( "';" );
+
+    vector< idMotiveStruct >structs;
+
+    vector< string >answer = extractData( query );
+
+    #ifdef DB_DEBUG
+    cout << "Db::idMotiveViaGuid\n";
+    for( unsigned int i = 0; i < answer.size(); i++ )
+        cout << "ANSWER" << i << " is -> " << answer.at( i ) << endl;
+    #endif
+
+    if( answer.size() > 0 )
+        //insert in order, id, motive, date, time
+        structs.push_back( idMotiveStruct( answer[0], answer[1], answer[2], answer[3] ) );
+
+    return structs;
+}
+
+vector< Db::idMotiveStruct > Db::idMotiveViaIp( const string& ip )
+{
+    string query( "SELECT motive,id FROM banned WHERE ip='" );
+    query.append( ip );
+    query.append( "';" );
+
+    vector< idMotiveStruct >structs;
+
+    vector< string >answer = extractData( query );
+
+    #ifdef DB_DEBUG
+    cout << "Db::idMotiveViaIp" << endl;
+
+    for( unsigned int i = 0; i < answer.size(); i++ )
+        cout << "ANSWER " << i << " is -> " << answer.at( i );
+    #endif
+    //  SHOULD I ASSUME THAT THERE ARE NO DOUBLES?  YES FOR NOW
+    if( answer.size() > 0 )
+        //insert in order, id, motive, date, time
+        structs.push_back( idMotiveStruct( answer[0], answer[1], answer[2], answer[3] ) );
+
+    return structs;
+}
+
+vector< Db::idMotiveStruct > Db::idMotiveViaNick( const string& nick )
+{
+
+    string query( "select id,motive,date,time from banned where nick='" );
+    query.append( nick );
+    query.append( "';" );
+
+    vector< idMotiveStruct >structs;
+
+    vector< string >answer = extractData( query );
+
+    #ifdef DB_DEBUG
+    cout << "Db::idMotiveViaNick" << endl;
+
+    for( unsigned int i = 0; i < answer.size(); i++ )
+        cout << "ANSWER " << i << " is -> " << answer.at( i );
+    #endif
+    //  SHOULD I ASSUME THAT THERE ARE NO DOUBLES?  YES FOR NOW
+    if( answer.size() > 0 )
+        //insert in order, id, motive, date, time
+        structs.push_back( idMotiveStruct( answer[0], answer[1], answer[2], answer[3] ) );
+
+    return structs;
+}
+
+//  "how many" queries
+string Db::autoBanned()
+{
+    string query( "select count(*) from banned where author='BanBot';" );
+    return intToString( resultQuery( query ) );
+}
+
+string Db::banned()
+{
+    string query( "select count(*) from banned;" );
+    return intToString( resultQuery( query ) );
+}
+
+string Db::ops()
+{
+    string query( "select count(*) from oplist;" );
+    return intToString( resultQuery( query ) );
+}
+
 
 
 /********************************
@@ -1014,30 +1043,44 @@ string Db::errorCodeToString( int errorCode ) const
         errorMsg = "NOT USED. Table or record not found";
     else if( errorCode == 13 )
         errorMsg = "Insertion failed because database is full";
+    else if( errorCode == 14 )
+        errorMsg = "Unable to open the database file";
+    else if( errorCode == 15 )
+        errorMsg = "NOT USED. Database lock protocol error";
+    else if( errorCode == 16 )
+        errorMsg = "Database is empty";
+    else if( errorCode == 17 )
+        errorMsg = "The database schema changed";
+    else if( errorCode == 18 )
+        errorMsg = "String or BLOB exceeds size limit";
+    else if( errorCode == 19 )
+        errorMsg = "Abort due to constraint violation";
+    else if( errorCode == 20 )
+        errorMsg = "Data type mismatch";
+    else if( errorCode == 21 )
+        errorMsg = "Library used incorrectly";
+    else if( errorCode == 22 )
+        errorMsg = "Uses OS features not supported on host";
+    else if( errorCode == 23 )
+        errorMsg = "Authorization denied";
+    else if( errorCode == 24 )
+        errorMsg = "Auxiliary database format error";
+    else if( errorCode == 25 )
+        errorMsg = "2nd parameter to sqlite3_bind out of range";
+    else if( errorCode == 26 )
+        errorMsg = "File opened that is not a database file";
+    else if( errorCode == 100 )
+        errorMsg = "sqlite3_step() has another row ready";
+    else if( errorCode == 101 )
+        errorMsg = "sqlite3_step() has finished executing";
+
 
     return errorMsg;
-
-//     #define SQLITE_CANTOPEN    14   /* Unable to open the database file */
-//     #define SQLITE_PROTOCOL    15   /* NOT USED. Database lock protocol error */
-//     #define SQLITE_EMPTY       16   /* Database is empty */
-//     #define SQLITE_SCHEMA      17   /* The database schema changed */
-//     #define SQLITE_TOOBIG      18   /* String or BLOB exceeds size limit */
-//     #define SQLITE_CONSTRAINT  19   /* Abort due to constraint violation */
-//     #define SQLITE_MISMATCH    20   /* Data type mismatch */
-//     #define SQLITE_MISUSE      21   /* Library used incorrectly */
-//     #define SQLITE_NOLFS       22   /* Uses OS features not supported on host */
-//     #define SQLITE_AUTH        23   /* Authorization denied */
-//     #define SQLITE_FORMAT      24   /* Auxiliary database format error */
-//     #define SQLITE_RANGE       25   /* 2nd parameter to sqlite3_bind out of range */
-//     #define SQLITE_NOTADB      26   /* File opened that is not a database file */
-//     #define SQLITE_ROW         100  /* sqlite3_step() has another row ready */
-//     #define SQLITE_DONE        101  /* sqlite3_step() has finished executing */*/*/
-
 }
 
 
 
-bool Db::execQuery( const string &query )   //executes and returns status
+bool Db::execQuery( const string &query )  //executes and returns status
 {
 
 #ifdef DB_DEBUG
