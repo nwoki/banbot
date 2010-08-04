@@ -63,7 +63,7 @@ Db::Db( ConfigLoader::Options* conf )
             //get path to db folder
             string dbPath = m_options->servers.at( i )->dbFolder();
 
-            if( dbPath[dbPath.size()] != '/' )
+            if( dbPath[dbPath.size()-1] != '/' )
                 dbPath.append( "/" );
 
             string pathWithFile( dbPath ); //set full file path
@@ -92,11 +92,13 @@ Db::Db( ConfigLoader::Options* conf )
                     *(m_options->log) << "[OK]created database file: " << pathWithFile << "\n";
                     openDatabase();
                     createDb();
+                    closeDatabase();
                 }
             }
             else {
                 cout << "\e[0;33m database file: " << pathWithFile << " already exists \e[0m \n";
                 openDatabase();
+                closeDatabase();
             }
         }
     }
@@ -932,7 +934,7 @@ bool Db::connect()  //called by Db::open ( public function )
     //get path to current db
     string database( (*m_options)[m_options->serverNumber].dbFolder() );
 
-    if( database[database.size()] != '/' )  //CAREFUL, NEED THIS!!!
+    if( database[database.size()-1] != '/' )  //CAREFUL, NEED THIS!!!
         database.append( "/" );
 
     database.append( DB_NAME );

@@ -78,38 +78,6 @@
 class Analyzer
 {
 private:
-    //regex
-    const char* CLIENT_CONNECT;
-    const char* CLIENT_USER_INFO;
-    const char* COMPLETE_CLIENT_USER_INFO;
-    const char* CLIENT_DISCONNECT;
-    const char* BAN;
-    const char* BAN_NUMBER;
-    const char* GUID;
-    const char* INITGAME;
-    const char* FIND;
-    const char* FINDOP;
-    const char* UNBAN;
-    const char* OP;
-    const char* OP_NUMBER;
-    const char* DEOP;
-    const char* HELP;
-    const char* KICK;
-    const char* KICK_NUMBER;
-    const char* NUKE;
-    const char* NUKE_NUMBER;
-    const char* SLAP;
-    const char* SLAP_NUMBER;
-    const char* SLAP_MORE;
-    const char* MUTE;
-    const char* MUTE_NUMBER;
-    const char* STRICT;
-    const char* COMMAND;
-    const char* VETO;
-    const char* STATUS;
-    const char* FORCE;
-    const char* FORCE_NUMBER;
-    const char* IAMGOD;
     //variabili private
     Backup* backup;
     ConfigLoader * m_configLoader;
@@ -146,13 +114,15 @@ protected:
     bool isAdminSay(char *line, std::string &numero);		//ritorna true se la richiesta è stata fatta da un admin, salva in numero il numero del giocatore che ha fatto la richiesta.
     virtual void expansion(char* line);                     //slot per facilitare eventuali espansioni fatte da terze parti (basta ereditare da Analyzer e scrivere i metodi nuovi facendo un overloading di questo metodo)
     void getDateAndTime(std::string &date,std::string &time); //salva nelle stringhe data e ora.
-    bool nickIsBanned(const std::string &nick);               //controlla se il nick è stato bannato.
-    bool ipIsBanned(const std::string &ip);               //controlla se il nick è stato bannato.
-    void buttaFuori(const std::vector< string >& reason, const std::string numero, const std::string nick);
+    bool guidIsBanned(const std::string& guid, const std::string& nick, const std::string& numero, const std::string& ip);               //controlla se la guid è stata bannata.
+    bool nickIsBanned(const std::string& nick, const std::string& numero, const std::string& ip, const std::string& guid);               //controlla se il nick è stato bannato.
+    bool ipIsBanned(const std::string& ip, const std::string& numero, const std::string& nick, const std::string& guid);               //controlla se l'ip è stato bannato.
+    void buttaFuori(const std::string& reason, const std::string numero, const std::string nick);
     std::string correggi(std::string stringa);          //corregge la riga di testo per l'inserimento e l'utilizzo col database
     std::vector<unsigned int> admins();                          //restituisce gli indici dell'array dei player dei giocatori attualmente nel server che sono admin.
     void tellToAdmins(std::string frase);               //invia un messaggio a tutti gli admin attualmente in game (messaggio privato).
     int translatePlayer(std::string player);            //@player rappresenta un nick o una parte del nick di un player in game, la funzione restituisce l'indice nell'array dei giocatori indicato da @player, se non trovato o non univoco restituisce -1.
+    int findPlayer(std::string number);                 //return the index of player with number @number if exists, or -1.
     Connection * server;
     Db * database;
     ConfigLoader::Options* m_dati;       //contiente tutte le opzioni e i dati dei server (giocatori compresi).
