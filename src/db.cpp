@@ -857,9 +857,9 @@ vector< Db::idMotiveStruct > Db::idMotiveViaGuid( const string& guid )
 
 vector< Db::idMotiveStruct > Db::idMotiveViaIp( const string& ip )
 {
-    string query( "SELECT motive,id FROM banned WHERE ip='" );
+    string query( "SELECT id,motive,date,time FROM banned WHERE ip='" );
     query.append( ip );
-    query.append( "';" );
+    query.append( "' order by date DESC, time DESC;" );
 
     vector< idMotiveStruct >structs;
 
