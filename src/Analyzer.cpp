@@ -57,6 +57,7 @@
 #define _R_KICK " *[0-9]+:[0-9]{2} +say: +[0-9]+ +[^ \t\n\r\f\v]+: +!kick [^ \t\n\r\f\v]+"
 #define _R_KICK_NUMBER " *[0-9]+:[0-9]{2} +say: +[0-9]+ +[^ \t\n\r\f\v]+: +!kick [0-9]{1,2}"
 #define _R_MUTE " *[0-9]+:[0-9]{2} +say: +[0-9]+ +[^ \t\n\r\f\v]+: +!mute [^ \t\n\r\f\v]+"
+#define _R_MUTE_ALL " *[0-9]+:[0-9]{2} +say: +[0-9]+ +[^ \t\n\r\f\v]+: +!mute all|ALL"
 #define _R_MUTE_NUMBER " *[0-9]+:[0-9]{2} +say: +[0-9]+ +[^ \t\n\r\f\v]+: +!mute [0-9]{1,2}"
 #define _R_STRICT " *[0-9]+:[0-9]{2} +say: +[0-9]+ +[^ \t\n\r\f\v]+: +!strict OFF|off|[0-4]{1}"
 #define _R_VETO " *[0-9]+:[0-9]{2} +say: +[0-9]+ +[^ \t\n\r\f\v]+: +!veto"
@@ -826,34 +827,41 @@ void Analyzer::mute(char* line)
     std::string numeroAdmin;
     if (isAdminSay(line,numeroAdmin))
     {
-        std::string temp(line);
-        int pos=temp.find("!mute");
-        pos=temp.find_first_not_of(" \t\n\r\f\v",pos+5);
-        int end=temp.find_first_of(" ",pos);
-        std::string player=temp.substr(pos,end-pos);
-        
-        if (isA(line,_R_MUTE_NUMBER))
+        if ( isA(line,_R_MUTE_ALL) )
         {
-            std::string frase("^0BanBot: ^1muting/unmuting player number ");
-            frase.append(player);
-            frase.append("...");
-            server->say(frase);
-            server->mute(player);
+            
         }
         else
         {
-            int i=translatePlayer(player);
-            if (i<0)
+            std::string temp(line);
+            int pos=temp.find("!mute");
+            pos=temp.find_first_not_of(" \t\n\r\f\v",pos+5);
+            int end=temp.find_first_of(" ",pos);
+            std::string player=temp.substr(pos,end-pos);
+            
+            if (isA(line,_R_MUTE_NUMBER))
             {
-                server->tell("^0BanBot: ^1nick non trovato o non univoco",numeroAdmin);
+                std::string frase("^0BanBot: ^1muting/unmuting player number ");
+                frase.append(player);
+                frase.append("...");
+                server->say(frase);
+                server->mute(player);
             }
             else
             {
-                std::string frase("^0BanBot: ^1muting/unmuting ");
-                frase.append((*m_dati)[m_dati->serverNumber][i]->nick);
-                frase.append("...");
-                server->say(frase);
-                server->mute((*m_dati)[m_dati->serverNumber][i]->number);
+                int i=translatePlayer(player);
+                if (i<0)
+                {
+                    server->tell("^0BanBot: ^1nick non trovato o non univoco",numeroAdmin);
+                }
+                else
+                {
+                    std::string frase("^0BanBot: ^1muting/unmuting ");
+                    frase.append((*m_dati)[m_dati->serverNumber][i]->nick);
+                    frase.append("...");
+                    server->say(frase);
+                    server->mute((*m_dati)[m_dati->serverNumber][i]->number);
+                }
             }
         }
     }
@@ -929,7 +937,7 @@ void Analyzer::slap(char* line)
         int end=temp.find_first_of(" ",pos);
         std::string player=temp.substr(pos,end-pos);
         int multiplier=1;
-        std::string mul_string;
+        std::string mul_string( "1" );
         if (isA(line,_R_SLAP_MORE))
         {
             pos=temp.find_first_of("2345",end);
@@ -1045,15 +1053,11 @@ void Analyzer::status(char* line)
                 break;
         }
         frase.append("\n^1Number of admins: ");
-        std::string query("SELECT count(*) FROM oplist;");
-        std::vector<std::string> risultato=database->extractData(query);
-        if (risultato.size()>0) frase.append(risultato[0]);
-        query.clear();
-        risultato.clear();
-        frase.append("\n^1Players currently banned: ");
-        query="SELECT count(*) FROM banned;";
-        risultato=database->extractData(query);
-        if (risultato.size()>0) frase.append(risultato[0]);
+        frase.append(database->ops());
+        frase.append("\n^1Players currently banned by an admin: ");
+        frase.append(database->banned());
+        frase.append("\n^1Players currently banned automatically: ");
+        frase.append(database->autoBanned());
         server->say(frase);
     }
 }
@@ -1412,23 +1416,21 @@ void Analyzer::main_loop()
                 log=new ifstream();
                 log->open((*m_dati)[m_dati->serverNumber].serverLog().c_str());
                 log->seekg((*m_dati)[m_dati->serverNumber].row());
-                if (log->is_open())
-                {
-                    std::cout<<"  [OK] Aperto!\n";;
-                    //#ifdef DEBUG_MODE
-                    std::cout<< "  Al punto: "<< (*m_dati)[m_dati->serverNumber].row()<<"\n";
-                    *(m_dati->log)<<"  [OK] Aperto!\n";
-                    *(m_dati->log)<< "  Al punto: " << (*m_dati)[m_dati->serverNumber].row()<<"\n";
-                    //#endif
-                }
-                else
+                if (!log->is_open())
                 {
                     std::cout<<"  [FAIL] Non sono riuscito ad aprirlo!\n";
                     *(m_dati->log)<<"  [FAIL] Non sono riuscito ad aprire "<<(*m_dati)[m_dati->serverNumber].serverLog()<<"\n";
+                    *(m_dati->errors)<<"[FAIL] On " << (*m_dati)[m_dati->serverNumber].name() << ": non sono riuscito ad aprire "<<(*m_dati)[m_dati->serverNumber].serverLog()<<"\n";
                 }
                 //se il file è aperto posso lavorare, e provo ad aprire pure il db
-                if (log->is_open() && !log->bad() && database->openDatabase())
+                else if (database->openDatabase())
                 {
+                    std::cout<<"  [OK] Aperto!\n";;
+                    //#ifdef DEBUG_MODE
+                    #ifdef DEBUG_MODE
+                    std::cout<< "  Al punto: "<< (*m_dati)[m_dati->serverNumber].row()<<"\n";
+                    *(m_dati->log)<<"  [OK] Aperto!\n";
+                    #endif
                     //il file è aperto, esamino le nuove righe (se ce ne sono)
                     while (!log->eof() && !log->bad() && (*m_dati)[m_dati->serverNumber].row()>=0)
                     {
@@ -1612,11 +1614,11 @@ void Analyzer::main_loop()
                 else
                 {
                     (*m_dati)[m_dati->serverNumber].setRow(0);//se non riesco ad aprire il file, ricomincio dalla prima riga
-                    std::cout<<"   [FAIL] Non riesco ad aprire il file di log o il database\n";
+                    std::cout<<"   [FAIL] Non riesco ad aprire il database\n";
                     (m_dati->log)->timestamp();
-                    *(m_dati->log)<<"   [FAIL] Non riesco ad aprire il file di log o il database\n";
+                    *(m_dati->log)<<"   [FAIL] Non riesco ad aprire il database\n";
                     (m_dati->errors)->timestamp();
-                    *(m_dati->errors)<<"[FAIL] Non riesco ad aprire il file di log o il database del server "<< (*m_dati)[m_dati->serverNumber].name()  <<"\n";
+                    *(m_dati->errors)<<"[FAIL] Non riesco ad aprire il database del server "<< (*m_dati)[m_dati->serverNumber].name()  <<"\n";
                 }
                 if ((*m_dati)[m_dati->serverNumber].row()<0) (*m_dati)[m_dati->serverNumber].setRow(0);
                 //chiudo il file di log del server

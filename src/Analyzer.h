@@ -72,8 +72,22 @@
 #define LEVEL4 4        //sperimentale: controlli avanzati, butta fuori direttamente tutti quelli che non sono puliti al 100% (butta solo fuori, non banna).
 
 //stringa stampata all'utente con i comandi disponibili (quando viene dato il comando !help).
-#define COMMANDLIST "Comandi disponibili: !ban <number/nick> [<reason>], !unban <id>,\n!kick <number/nick>, !mute <number/nick>, !find <nick>, !findop <nick>,\n\
-!op <number/nick>, !deop <id>, !strict <OFF/0/1/2/3>,\n!nuke <number/nick>, !slap <number/nick> [2/3/4/5], !veto,\n!status, !force <number/nick> <red/blue/spect>."
+#define COMMANDLIST "Comandi disponibili:\n\
+!ban <number/nick> [<reason>] : banna un player, con o senza motivo\n\
+!unban <id> : sbanna un player (id dato da !find)\n\
+!kick <number/nick> : butta fuori un player\n\
+!mute <number/nick/all> : muta o smuta un singolo player, o tutti\n\
+!find <nick> : cerca un player tra i bannati\n\
+!findop <nick> : cerca un player tra gli admin\n\
+!op <number/nick> : da' lo stato di admin ad un player\n\
+!deop <id> : toglie lo stato di admin ad un player (id da !findop)\n\
+!strict <OFF/0/1/2/3> : cambia il livello di sicurezza del server\n\
+!nuke <number/nick> : lancia un nuke ad un player\n\
+!slap <number/nick> [2/3/4/5] : slappa una (o più volte) un player\n\
+!veto : annulla la votazione in corso\n\
+!status : informazioni sullo stato del bot\n\
+!force <number/nick> <red/blue/spect> : cambia team ad un player\n\
+"
 
 class Analyzer
 {
