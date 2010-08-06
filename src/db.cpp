@@ -831,7 +831,7 @@ vector< string > Db::extractData( const string &query )    //returns vector with
 * CUSTOM QUERIES FOR ANALYZER   *
 ********************************/
 
-//  id motive queries
+/* id motive queries */
 vector< Db::idMotiveStruct > Db::idMotiveViaGuid( const string& guid )
 {
     string query( "SELECT banned.id,banned.motive,banned.date,banned.time FROM banned join guids ON banned.id=guids.banId WHERE guids.guid='" );
@@ -904,7 +904,7 @@ vector< Db::idMotiveStruct > Db::idMotiveViaNick( const string& nick )
     return structs;
 }
 
-//  "how many" queries
+/* "how many" queries */
 string Db::autoBanned()
 {
     string query( "select count(*) from banned where author='BanBot';" );
@@ -921,6 +921,55 @@ string Db::ops()
 {
     string query( "select count(*) from oplist;" );
     return intToString( resultQuery( query ) );
+}
+/* find queries */
+vector< Db::idNickMotiveAuthorStruct > Db::findPreciseIdMotiveAuthorViaNick( const string &nick )
+{
+    string query( "select id,nick,motive,author from banned where nick='" );
+    query.append( nick );
+    query.append( "' limit 7;" );
+
+    vector< idNickMotiveAuthorStruct > structs;
+
+    vector< string >answer = extractData( query );
+
+    #ifdef DB_DEBUG
+    cout << "Db::findPreciseIdMotiveAuthorViaNick" << endl;
+
+    for( unsigned int i = 0; i < answer.size(); i++ )
+        cout << "ANSWER " << i << " is -> " << answer.at( i );
+    #endif
+
+    /* SHOULD I ASSUME THAT THERE ARE NO DOUBLES?  YES FOR NOW */
+    if( answer.size() > 0 )
+        //insert in order, id, nick, motive, author
+        structs.push_back( idNickMotiveAuthorStruct( answer[0], answer[1], answer[2], answer[3] ) );
+
+    return structs;
+}
+
+vector< Db::idNickMotiveAuthorStruct > Db::findAproxIdMotiveAuthorViaNick( const string& nick )
+{
+    string query( "select id,nick,motive,author from banned where nick like '%" );
+    query.append( nick );
+    query.append( "%' limit 16;" );
+
+    vector< idNickMotiveAuthorStruct > structs;
+
+    vector< string >answer = extractData( query );
+
+    #ifdef DB_DEBUG
+    cout << "Db::findPreciseIdMotiveAuthorViaNick" << endl;
+
+    for( unsigned int i = 0; i < answer.size(); i++ )
+        cout << "ANSWER " << i << " is -> " << answer.at( i );
+    #endif
+
+
+    for( unsigned int i = 0; i < answer.size(); i++ )
+        structs.push_back( idNickMotiveAuthorStruct( answer[4*i + 0], answer[4*i + 1], answer[4*i + 2], answer[4*i + 3] ) );
+
+    return structs;
 }
 
 

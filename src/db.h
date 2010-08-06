@@ -120,17 +120,17 @@ class Db
 
         struct idNickMotiveAuthorStruct
         {
-            string id, nick, motive, author, date, time;
+            string id, nick, motive, author/*, date, time*/;
 
             idNickMotiveAuthorStruct( const string &id, const string &nick
-                                    , const string &motive, const string &author
-                                    , const string &date, const string &time )
+                                    , const string &motive, const string &author )
+//                                     , const string &date, const string &time )
                 : id( id )
                 , nick( nick )
                 , motive( motive )
                 , author( author )
-                , date( date )
-                , time( time )
+//                 , date( date )
+//                 , time( time )
             {}
         };
 
@@ -144,6 +144,10 @@ class Db
         string autoBanned();    /*!< returns how many users have been autobanned by the bot */
         string banned();    /*!< returns how many have been banned normally by admins */
         string ops();   /*!< returns how many ops are registered to the bot */
+
+        //"find" queries
+        vector< idNickMotiveAuthorStruct > findPreciseIdMotiveAuthorViaNick( const string &nick );  /*!< returns idNickMotiveAuthor struct after precise find query*/
+        vector< idNickMotiveAuthorStruct > findAproxIdMotiveAuthorViaNick( const string &nick );    /*!< returns idNickMotiveAuthor struct after aprox find query*/
 
     private:
         bool connect(); //connects to the sqlite3 database
