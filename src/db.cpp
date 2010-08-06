@@ -836,7 +836,7 @@ vector< Db::idMotiveStruct > Db::idMotiveViaGuid( const string& guid )
 {
     string query( "SELECT banned.id,banned.motive,banned.date,banned.time FROM banned join guids ON banned.id=guids.banId WHERE guids.guid='" );
     query.append( guid );
-    query.append( "';" );
+    query.append( "' order by banned.date DESC, banned.time DESC;" );
 
     vector< idMotiveStruct >structs;
 
@@ -884,7 +884,7 @@ vector< Db::idMotiveStruct > Db::idMotiveViaNick( const string& nick )
 
     string query( "select id,motive,date,time from banned where nick='" );
     query.append( nick );
-    query.append( "';" );
+    query.append( "' order by date DESC, time DESC;" );
 
     vector< idMotiveStruct >structs;
 
