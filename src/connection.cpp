@@ -118,6 +118,7 @@ void Connection::say( string frase )
     vector< char > command = makeCmd( comando );
     int bufferSize = command.size();
     sendto( socketID, command.data(), bufferSize, 0, &(sockaddr &)serverAdd, recvSize );
+    usleep(SOCKET_PAUSE);
   }
   close( socketID );
   usleep(SOCKET_PAUSE);
@@ -151,6 +152,7 @@ void Connection::tell( string frase, string player )
     vector< char > command = makeCmd( comando );
     int bufferSize = command.size();
     sendto( socketID, command.data(), bufferSize, 0, &(sockaddr &)serverAdd, recvSize );
+    usleep(SOCKET_PAUSE);
   }
   close(socketID);
   usleep(SOCKET_PAUSE);
@@ -203,6 +205,29 @@ void Connection::mute( string number)
   sendto( socketID, command.data(), bufferSize, 0, &(sockaddr &)serverAdd, recvSize );
   close(socketID);
   usleep(SOCKET_PAUSE);
+}
+
+void Connection::muteAll( string admin )
+{
+    prepareConnection( m_options->serverNumber );
+    
+    for ( int i=0; i<(*m_options)[m_options->serverNumber].size(); i++)
+    {
+        if ( (*m_options)[m_options->serverNumber][i]->number.compare( admin ) != 0 )
+        {
+            string comando( "rcon " );
+            comando.append( (*m_options)[m_options->serverNumber].rcon() );
+            comando.append( " mute " );
+            comando.append( (*m_options)[m_options->serverNumber][i]->number );
+            
+            vector< char > command = makeCmd( comando );
+            int bufferSize = command.size();
+            sendto( socketID, command.data(), bufferSize, 0, &(sockaddr &)serverAdd, recvSize );
+            usleep(SOCKET_PAUSE);
+        }
+    }
+    close(socketID);
+    usleep(SOCKET_PAUSE);
 }
 
 void Connection::veto()

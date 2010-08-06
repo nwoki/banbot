@@ -36,7 +36,7 @@
 #include "ConfigLoader.h"
 #include <stdlib.h>
 
-#define SOCKET_PAUSE 100000  //per permettere al socket di funzionare bene, inserisco una pausa, in microsecondi (1'000 = 1 ms, 1'000'000= 1 s)
+#define SOCKET_PAUSE 105000  //per permettere al socket di funzionare bene, inserisco una pausa, in microsecondi (1'000 = 1 ms, 1'000'000= 1 s)
 #define ROW 100         //numero massimo di caratteri per riga
 
 using namespace std;
@@ -52,6 +52,7 @@ class Connection
         void tell( string frase, string player ); //invia il messaggio privato "frase" al giocatore del numero contenuto in "player", nel server "server".
         void reload(bool all=false);            //fa un reload della mappa. Se viene passato true, lo fa su tutte le mappe.
         void mute( string number ); //muta/smuta il player numero @number sul server @server
+        void muteAll( string admin ); //muta/smuta tutti i player tranne @admin
         void veto();                  //comando di veto sul server @server
         void slap( string number ); //slappa il giocatore @number del server @server
         void nuke( string number ); //nuke al giocatore @number del server @server
