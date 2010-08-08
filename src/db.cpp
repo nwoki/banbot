@@ -177,7 +177,7 @@ void Db::closeDatabase()
     m_resultCode = sqlite3_close( m_database );
 
     if( m_resultCode != SQLITE_OK ) {
-        cout << "\e[1;31[FAIL] Can't close database! Something's wrong\e[0m \n";
+        cout << "\e[1;31m[FAIL] Can't close database! Something's wrong\e[0m \n";
         *(m_options->log) << "[FAIL] Can't close database! Something's wrong\n";
         *(m_options->errors) << "[FAIL] On " << (*m_options)[m_options->serverNumber].name()  << " : Can't close database! Something's wrong\n";
     }
@@ -812,21 +812,6 @@ bool Db::deleteOp( const string& id )
 }
 
 
-vector< string > Db::extractData( const string &query )    //returns vector with results as string
-{
-    if( execQuery( query ) ) {
-    #ifdef DB_DEBUG
-        cout << "Db::extractData query -> " << query << endl;
-    #endif
-        return m_data;
-    }
-    else {
-        vector< string > emptyVector;
-        return emptyVector;
-    }
-}
-
-
 /********************************
 * CUSTOM QUERIES FOR ANALYZER   *
 ********************************/
@@ -908,22 +893,61 @@ vector< Db::idMotiveStruct > Db::idMotiveViaNick( const string& nick )
 string Db::autoBanned()
 {
     string query( "select count(*) from banned where author='BanBot';" );
+
+    #ifdef DB_DEBUG
+    cout << "Db::autoBanned returning value " << resultQuery( query ) << endl;
+    #endif
+
     return intToString( resultQuery( query ) );
 }
 
 string Db::banned()
 {
     string query( "select count(*) from banned;" );
+
+    #ifdef DB_DEBUG
+    cout << "Db::banned returning value " << resultQuery( query ) << endl;
+    #endif
+
     return intToString( resultQuery( query ) );
 }
 
 string Db::ops()
 {
     string query( "select count(*) from oplist;" );
+
+    #ifdef DB_DEBUG
+    cout << "Db::ops returning value " << resultQuery( query ) << endl;
+    #endif
+
     return intToString( resultQuery( query ) );
 }
+
 /* find queries */
-vector< Db::idNickMotiveAuthorStruct > Db::findPreciseIdMotiveAuthorViaNick( const string &nick )
+vector< Db::idNickMotiveAuthorStruct > Db::findAproxIdMotiveAuthorViaNickBanned( const string& nick )
+{
+    string query( "select id,nick,motive,author from banned where nick like '%" );
+    query.append( nick );
+    query.append( "%' limit 16;" );
+
+    vector< idNickMotiveAuthorStruct > structs;
+
+    vector< string >answer = extractData( query );
+
+    #ifdef DB_DEBUG
+    cout << "Db::findAproxIdMotiveAuthorViaNick" << endl;
+
+    for( unsigned int i = 0; i < answer.size(); i++ )
+        cout << "ANSWER " << i << " is -> " << answer.at( i );
+    #endif
+
+    for( unsigned int i = 0; i < answer.size(); i++ )
+        structs.push_back( idNickMotiveAuthorStruct( answer[4*i + 0], answer[4*i + 1], answer[4*i + 2], answer[4*i + 3] ) );
+
+    return structs;
+}
+
+vector< Db::idNickMotiveAuthorStruct > Db::findPreciseIdMotiveAuthorViaNickBanned( const string &nick )
 {
     string query( "select id,nick,motive,author from banned where nick='" );
     query.append( nick );
@@ -948,29 +972,56 @@ vector< Db::idNickMotiveAuthorStruct > Db::findPreciseIdMotiveAuthorViaNick( con
     return structs;
 }
 
-vector< Db::idNickMotiveAuthorStruct > Db::findAproxIdMotiveAuthorViaNick( const string& nick )
+vector< Db::idNickStruct > Db::findAproxIdNickViaNickOp( const string& nick )
 {
-    string query( "select id,nick,motive,author from banned where nick like '%" );
+    string query( "select id,nick from oplist where nick like='%" );
     query.append( nick );
     query.append( "%' limit 16;" );
 
-    vector< idNickMotiveAuthorStruct > structs;
+    vector< idNickStruct > structs;
 
-    vector< string >answer = extractData( query );
+    vector< string > answer = extractData( query );
 
     #ifdef DB_DEBUG
-    cout << "Db::findPreciseIdMotiveAuthorViaNick" << endl;
+    cout << "Db::findAproxIdNickViaNickOp" << endl;
 
     for( unsigned int i = 0; i < answer.size(); i++ )
         cout << "ANSWER " << i << " is -> " << answer.at( i );
     #endif
 
-
     for( unsigned int i = 0; i < answer.size(); i++ )
-        structs.push_back( idNickMotiveAuthorStruct( answer[4*i + 0], answer[4*i + 1], answer[4*i + 2], answer[4*i + 3] ) );
+        structs.push_back( idNickStruct( answer[2*i + 0], answer[2*i + 1] ) );
 
     return structs;
 }
+
+vector< Db::idNickStruct > Db::findPreciseIdNickViaNickOp( const string& nick )
+{
+    string query( "select id,nick from oplist where nick='" );
+    query.append( nick );
+    query.append( "' limit 7;" );
+
+    vector< idNickStruct > structs;
+
+    vector< string > answer = extractData( query );
+
+    #ifdef DB_DEBUG
+    cout << "Db::findPreciseIdNickViaNickOp" << endl;
+
+    for( unsigned int i = 0; i < answer.size(); i++ )
+        cout << "ANSWER " << i << " is -> " << answer.at( i );
+    #endif
+
+    /* SHOULD I ASSUME THAT THERE ARE NO DOUBLES?  YES FOR NOW */
+    if( answer.size() > 0 )
+        //insert in order, id, nick, motive, author
+        structs.push_back( idNickStruct( answer[0], answer[1] ) );
+
+    return structs;
+}
+
+
+
 
 
 
@@ -1193,6 +1244,22 @@ bool Db::execQuery( const string &query )  //executes and returns status
 #endif
     return success;
 }
+
+
+vector< string > Db::extractData( const string &query )    //returns vector with results as string
+{
+    if( execQuery( query ) ) {
+        #ifdef DB_DEBUG
+        cout << "Db::extractData query -> " << query << endl;
+        #endif
+        return m_data;
+    }
+    else {
+        vector< string > emptyVector;
+        return emptyVector;
+    }
+}
+
 
 string Db::getAdminNick( const string& guid )
 {
