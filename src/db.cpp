@@ -101,6 +101,7 @@ Db::Db( ConfigLoader::Options* conf )
                 closeDatabase();
             }
         }
+        checkDatabases();   /* set various database validity flags */
     }
 
 // OLD
@@ -1022,12 +1023,27 @@ vector< Db::idNickStruct > Db::findPreciseIdNickViaNickOp( const string& nick )
 
 
 
-
-
-
 /********************************
 *       PRIVATE METHODS         *
 ********************************/
+void Db::checkDatabases()
+{
+    /* check all server objects to see if the dir of their database is valid */
+    for( unsigned int i = 0; i < m_options->size(); i++ ) {
+        string serverDb = (*m_options)[i].dbFolder();
+
+        #ifdef DB_DEBUG
+        cout << "Db::checkDatabases checking database path-> " << serverDb << endl;
+        #endif
+
+        if( fileExistance( serverDb ) )
+            (*m_options)[i].setValid( true );   /* valid ( existing database file ) */
+        else
+            (*m_options)[i].setValid( false );   /* invalid ( non existing database file ) */
+    }
+}
+
+
 bool Db::connect()  //called by Db::open ( public function )
 {
     cout << "\e[0;33m connecting to database in " << (*m_options)[m_options->serverNumber].dbFolder() << "\e[0m \n";
