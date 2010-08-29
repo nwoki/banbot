@@ -159,15 +159,13 @@ class Db
         vector< idNickStruct > findAproxIdNickViaNickOp( const string &nick );  /*!<  returns idNick struct after aprox find query ( OPLIST TABLE )*/
         vector< idNickStruct > findPreciseIdNickViaNickOp( const string &nick );    /*!< returns idNick struct after precise find query ( OPLIST TABLE )*/
 
-        /* temporary until zamy adjusts analyzer */
-        vector< string > extractData( const string &query );   /*< extracts data from given "query" */
-
     private:
         bool connect(); /* connects to the sqlite3 database */
         void createDb();    /* creates database */
         string errorCodeToString( int errorCode ) const;
         bool execQuery( const string &query );    /* executes query and returns status to tell if the operation went well or not */
         //vector< string > extractData( const string &query );   /*< extracts data from given "query" */
+        vector< string > extractData( const string &query );   /*< extracts data from given "query" */
         string getAdminNick( const string &guid );  /* return's admin's nick from his guid */
 //         void loadAdminlist( vector<ConfigLoader::AdminList> admins );
 //         void loadBanlist( vector<ConfigLoader::Banlist> banned );

@@ -39,7 +39,7 @@
 using namespace std;
 
 int main( int argc, char *argv[] )
-{ 
+{
     //pass argument to specify bot configfile
 
     cout<<"BanBot version 1.1b, an open-source project by [2s2h]n3m3s1s and [2s2h]Zamy,\n   Copyright © 2010\n";
@@ -63,11 +63,11 @@ int main( int argc, char *argv[] )
         cout << "\n";   //extra "a-capo"
         //inizializzo db
         Db *d = new Db( caricatore->getOptions()) ;
-        
-        
+
+
         //Start connection
         Connection *serverCommand = new Connection(caricatore->getOptions());   //need vector with options
-        
+
         //Start analyzer
         Analyzer anal( serverCommand, d, caricatore );
         anal.main_loop();
