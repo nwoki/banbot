@@ -315,3 +315,35 @@ void Connection::force( string number, string where)
   close(socketID);
   usleep(SOCKET_PAUSE);
 }
+
+void Connection::map( string name )
+{
+    prepareConnection( m_options->serverNumber );
+    
+    string comando( "rcon ");
+    comando.append( (*m_options)[m_options->serverNumber].rcon() );
+    comando.append( " map " );
+    comando.append( name );
+    
+    vector< char > command = makeCmd( comando );
+    int bufferSize = command.size();
+    sendto( socketID, command.data(), bufferSize, 0, &(sockaddr &)serverAdd, recvSize );
+    close(socketID);
+    usleep(SOCKET_PAUSE);
+}
+
+void Connection::nextmap( string name )
+{
+    prepareConnection( m_options->serverNumber );
+    
+    string comando( "rcon ");
+    comando.append( (*m_options)[m_options->serverNumber].rcon() );
+    comando.append( " nextmap " );
+    comando.append( name );
+    
+    vector< char > command = makeCmd( comando );
+    int bufferSize = command.size();
+    sendto( socketID, command.data(), bufferSize, 0, &(sockaddr &)serverAdd, recvSize );
+    close(socketID);
+    usleep(SOCKET_PAUSE);
+}

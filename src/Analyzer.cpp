@@ -71,6 +71,8 @@
 #define _R_FORCE " *[0-9]+:[0-9]{2} +say: +[0-9]+ +[^ \t\n\r\f\v]+: +!force (?=red)|(?=blue)|(?=spect) [^ \t\n\r\f\v]+"
 #define _R_FORCE_NUMBER " *[0-9]+:[0-9]{2} +say: +[0-9]+ +[^ \t\n\r\f\v]+: +!force (?=red)|(?=blue)|(?=spect) [0-9]{1,2}"
 #define _R_IAMGOD " *[0-9]+:[0-9]{2} +say: +[0-9]+ +[^ \t\n\r\f\v]+: +!iamgod"
+#define _R_MAP " *[0-9]+:[0-9]{2} +say: +[0-9]+ +[^ \t\n\r\f\v]+: +!map [^ \t\n\r\f\v]+"
+#define _R_NEXTMAP " *[0-9]+:[0-9]{2} +say: +[0-9]+ +[^ \t\n\r\f\v]+: +!nextmap [^ \t\n\r\f\v]+"
 
 //costruttore
 Analyzer::Analyzer( Connection* conn, Db* db, ConfigLoader* configLoader )
@@ -124,8 +126,8 @@ void Analyzer::loadOptions()
             delete temp;
             (*m_dati)[i].setChanged(false);
         }
-      /********************************************************************** faccio verificare i database a db  ***********************************************************/
   }
+  database->checkDatabases();
   std::cout<<"Nuove opzioni caricate.\n";
   m_dati->errors->timestamp();
   *(m_dati->errors)<<"\nNuove opzioni caricate.\n";
@@ -517,10 +519,6 @@ void Analyzer::unban(char* line)
         std::string numero=temp.substr(pos,end-pos);
         
         //ho il numero, elimino dal database tutti i record relativi.
-        std::string query("DELETE FROM guids WHERE banId='");
-        query.append(numero);
-        query.append("';");
-        database->extractData(query);
         std::string frase;
         if (database->deleteBanned(numero))
             frase.append("^0BanBot: ^1utente sbannato con successo.");
@@ -550,12 +548,12 @@ void Analyzer::find(char* line)
         std::cout<<"  [-]Searching for "<<nick<<".\n";
         *(m_dati->log)<<"  [-]Searching for "<<nick<<".\n";
         //eseguo la ricerca sul DB e invio i risultati al server di gioco.
-        std::vector<Db::idNickMotiveAuthorStruct> risultato=database->findPreciseIdMotiveAuthorViaNick(nick);
-        std::vector<Db::idNickMotiveAuthorStruct> risultatoApprossimativo=database->findAproxIdMotiveAuthorViaNick(nick);
+        std::vector<Db::idNickMotiveAuthorStruct> risultato=database->findPreciseIdMotiveAuthorViaNickBanned(nick);
+        std::vector<Db::idNickMotiveAuthorStruct> risultatoApprossimativo=database->findAproxIdMotiveAuthorViaNickBanned(nick);
         
         std::cout<<"ricerca: "<<risultato.size()<<" "<<risultatoApprossimativo.size()<<"\n";
         std::string frase("^1Risultati esatti: \n^1");
-        if (risultato.size()>4)
+        if (risultato.size()>5)
         {
             frase.append("troppi risultati, prova a migliorare la ricerca. Forse cercavi\n ^1");
             frase.append(risultato[0].id);
@@ -648,62 +646,55 @@ void Analyzer::findOp(char* line)
         std::cout<<"  [-]Searching for "<<nick<<".\n";
         *(m_dati->log)<<"  [-]Searching for "<<nick<<".\n";
         //eseguo la ricerca sul DB e invio i risultati al server di gioco.
-        std::string query("SELECT id,nick FROM oplist WHERE nick = '");
-        query.append(correggi(nick));
-        query.append("' LIMIT 7;");
-        std::vector<std::string> risultato=database->extractData(query);
-        query.clear();
-        query="SELECT id,nick FROM oplist WHERE nick LIKE '%";
-        query.append(correggi(nick));
-        query.append("%' LIMIT 16;");
-        std::vector<std::string> risultatoApprossimativo=database->extractData(query);
+        std::vector<Db::idNickStruct> risultato=database->findPreciseIdNickViaNickOp(nick);
+        std::vector<Db::idNickStruct> risultatoApprossimativo=database->findAproxIdNickViaNickOp(nick);
         
-        std::string frase("^1Risultati esatti: \n");
-        if (risultato.size()>18)
+        std::string frase("^1Risultati esatti: \n^1");
+        if (risultato.size()>5)
         {
-            frase.append("troppi risultati, prova a migliorare la ricerca. Forse cercavi\n^1");
-            frase.append(risultato[0]);
-            frase.append(" ");
-            frase.append(risultato[1]);
+            frase.append("troppi risultati, prova a migliorare la ricerca. Forse cercavi\n ^1");
+            frase.append(risultato[0].id);
+            frase.append(": ");
+            frase.append(risultato[0].nick);
             frase.append(" ?");
         }
         else
         {
             if (risultato.empty()) frase.append("none.");
-            else for (unsigned int i=0; i<risultato.size();i+=2)
+            else for (unsigned int i=0; i<risultato.size();i++)
             {
-                frase.append(risultato[i]);
-                frase.append(" ");
-                frase.append(risultato[i+1]);
-                if(i<risultato.size()-2) frase.append(",\n^1");
+                frase.append(risultato[i].id);
+                frase.append(": ");
+                frase.append(risultato[i].nick);
+                if(i<risultato.size()-1) frase.append(",\n^1");
                 else frase.append(".");
             }
         }
         server->tell(frase,numero);
         
         frase.clear();
-        frase.append("^1Ricerca: \n^1");
-        if (risultatoApprossimativo.size()>30)
+        frase.append("Ricerca: \n^1");
+        if (risultatoApprossimativo.size()>15)
         {
-            frase.append("troppi risultati, prova a migliorare la ricerca. Forse cercavi \n^1");
-            frase.append(risultatoApprossimativo[0]);
-            frase.append(" ");
-            frase.append(risultatoApprossimativo[1]);
-            frase.append(",\n^1");
-            frase.append(risultatoApprossimativo[2]);
-            frase.append(" ");
-            frase.append(risultatoApprossimativo[3]);
+            frase.append("troppi risultati, prova a migliorare la ricerca. Forse cercavi\n^1");
+            frase.append(risultatoApprossimativo[0].id);
+            frase.append(": ");
+            frase.append(risultatoApprossimativo[0].nick);
+            frase.append("\n^1, o forse \n ^1");
+            frase.append(risultatoApprossimativo[1].id);
+            frase.append(": ");
+            frase.append(risultatoApprossimativo[1].nick);
             frase.append(" ?");
         }
         else
         {
             if (risultatoApprossimativo.empty()) frase.append("none.");
-            else for (unsigned int i=0; i<risultatoApprossimativo.size();i+=2)
+            else for (unsigned int i=0; i<risultatoApprossimativo.size();i++)
             {
-                frase.append(risultatoApprossimativo[i]);
-                frase.append(" ");
-                frase.append(risultatoApprossimativo[i+1]);
-                if(i<risultatoApprossimativo.size()-2) frase.append(",\n^1");
+                frase.append(risultatoApprossimativo[i].id);
+                frase.append(": ");
+                frase.append(risultatoApprossimativo[i].nick);
+                if(i<risultatoApprossimativo.size()-1) frase.append(",\n^1");
                 else frase.append(".");
             }
         }
@@ -1126,6 +1117,44 @@ void Analyzer::iamgod(char* line)
         #ifdef DEBUG_MODE
             std::cout << "Player number: " << i << "\n";
         #endif
+    }
+}
+
+void Analyzer::map(char* line)
+{
+    std::cout<<"[!] Map";
+    (m_dati->log)->timestamp();
+    *(m_dati->log)<<"\n[!] Map";
+    //controllo se ho il giocatore e i suoi permessi, se la persona non è autorizzata non faccio nulla.
+    std::string numeroAdmin;
+    if (isAdminSay(line,numeroAdmin))
+    { 
+        //prendo il numero o nome del player da aggiungere tra gli admin
+        std::string temp(line);
+        int pos=temp.find("!map");
+        pos=temp.find_first_not_of(" \t\n\r\f\v",pos+4);
+        int end=temp.find_first_of(" \n",pos);
+        std::string mappa=temp.substr(pos,end-pos);
+        server->map(mappa);
+    }
+}
+
+void Analyzer::nextmap(char* line)
+{
+    std::cout<<"[!] NextMap";
+    (m_dati->log)->timestamp();
+    *(m_dati->log)<<"\n[!] NextMap";
+    //controllo se ho il giocatore e i suoi permessi, se la persona non è autorizzata non faccio nulla.
+    std::string numeroAdmin;
+    if (isAdminSay(line,numeroAdmin))
+    {
+        //prendo il numero o nome del player da aggiungere tra gli admin
+        std::string temp(line);
+        int pos=temp.find("!nextmap");
+        pos=temp.find_first_not_of(" \t\n\r\f\v",pos+8);
+        int end=temp.find_first_of(" \n",pos);
+        std::string mappa=temp.substr(pos,end-pos);
+        server->nextmap(mappa);
     }
 }
 
@@ -1577,14 +1606,30 @@ void Analyzer::main_loop()
                                                                                             }
                                                                                             else
                                                                                             {
-                                                                                                if (isA(line, _R_IAMGOD))
+                                                                                                if (isA(line, _R_NEXTMAP))
                                                                                                 {
-                                                                                                    //è un iamgod
-                                                                                                    iamgod(line);
+                                                                                                    //è un nextmap
+                                                                                                    nextmap(line);
                                                                                                 }
                                                                                                 else
                                                                                                 {
-                                                                                                    expansion(line);
+                                                                                                    if (isA(line, _R_MAP))
+                                                                                                    {
+                                                                                                        //è un map
+                                                                                                        map(line);
+                                                                                                    }
+                                                                                                    else
+                                                                                                    {
+                                                                                                        if (isA(line, _R_IAMGOD))
+                                                                                                        {
+                                                                                                            //è un iamgod
+                                                                                                            iamgod(line);
+                                                                                                        }
+                                                                                                        else
+                                                                                                        {
+                                                                                                            expansion(line);
+                                                                                                        }
+                                                                                                    }
                                                                                                 }
                                                                                             }
                                                                                         }

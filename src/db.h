@@ -58,6 +58,8 @@ class Db
         */
         Db( ConfigLoader::Options* conf );
         ~Db();  /*!< Destructor for class Db*/
+        
+        void checkDatabases();    /* checks if database files exist and flags them in m_options */
 
         //database connection
         bool openDatabase();    /*!< opens a connection with the sqlite3 database.\nReturns true if connection succeded else returns false for failiure*/
@@ -161,7 +163,6 @@ class Db
         vector< string > extractData( const string &query );   /*< extracts data from given "query" */
 
     private:
-        void checkDatabases();    /* checks if database files exist and flags them in m_options */
         bool connect(); /* connects to the sqlite3 database */
         void createDb();    /* creates database */
         string errorCodeToString( int errorCode ) const;

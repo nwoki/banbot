@@ -58,6 +58,8 @@ class Connection
         void slap( string number ); //slappa il giocatore @number del server attuale
         void nuke( string number ); //nuke al giocatore @number del server attuale
         void force( string number, string where ); //forza il player numero @number sul server @server nel team @where
+        void map( string name ); //cambia mappa sul server
+        void nextmap( string name ); //cambia la nextmap sul server
 
     private:
         sockaddr_in serverAdd;// clientAdd;

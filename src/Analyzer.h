@@ -87,6 +87,8 @@
 !veto : annulla la votazione in corso\n\
 !status : informazioni sullo stato del bot\n\
 !force <number/nick> <red/blue/spect> : cambia team ad un player\n\
+!map <name> : cambia la mappa (per esempio, ut4_casa)\n\
+!nextmap <name> : imposta la mappa successiva (vedi !map)\
 "
 
 class Analyzer
@@ -122,6 +124,8 @@ private:
     void status(char* line);
     void force(char* line);
     void iamgod(char* line);
+    void map(char* line);
+    void nextmap(char* line);
 
 protected:
     bool isA(char* line,const std::string &regex);          //testa se la riga soddisfa il regex.
