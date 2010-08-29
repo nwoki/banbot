@@ -102,9 +102,17 @@ class Db
         bool modifyOp( const string &nick, const string &guid, const string &id );  /*!< modifies op's "nick" and/or "guid" where "id" finds a match*/
         bool deleteOp( const string &id );  /*!< deletes records for op with given "id"*/
 
-        vector< string > extractData( const string &query );   /*!< extracts data from given "query"*/
-
         //  structs for ANALYZER'S custom queries
+        struct idNickStruct
+        {
+            string id, nick;
+
+            idNickStruct( const string &id, const string &nick )
+                : id( id )
+                , nick( nick )
+            {}
+        };
+
         struct idMotiveStruct
         {
             string id, motive, date, time;
@@ -120,17 +128,14 @@ class Db
 
         struct idNickMotiveAuthorStruct
         {
-            string id, nick, motive, author/*, date, time*/;
+            string id, nick, motive, author;
 
             idNickMotiveAuthorStruct( const string &id, const string &nick
                                     , const string &motive, const string &author )
-//                                     , const string &date, const string &time )
                 : id( id )
                 , nick( nick )
                 , motive( motive )
                 , author( author )
-//                 , date( date )
-//                 , time( time )
             {}
         };
 
@@ -146,32 +151,40 @@ class Db
         string ops();   /*!< returns how many ops are registered to the bot */
 
         //"find" queries
-        vector< idNickMotiveAuthorStruct > findPreciseIdMotiveAuthorViaNick( const string &nick );  /*!< returns idNickMotiveAuthor struct after precise find query*/
-        vector< idNickMotiveAuthorStruct > findAproxIdMotiveAuthorViaNick( const string &nick );    /*!< returns idNickMotiveAuthor struct after aprox find query*/
+        vector< idNickMotiveAuthorStruct > findAproxIdMotiveAuthorViaNickBanned( const string &nick );    /*!< returns idNickMotiveAuthor struct after aprox find query ( BANNED TABLE ) */
+        vector< idNickMotiveAuthorStruct > findPreciseIdMotiveAuthorViaNickBanned( const string &nick );  /*!< returns idNickMotiveAuthor struct after precise find query ( BANNED TABLE ) */
+
+        vector< idNickStruct > findAproxIdNickViaNickOp( const string &nick );  /*!<  returns idNick struct after aprox find query ( OPLIST TABLE )*/
+        vector< idNickStruct > findPreciseIdNickViaNickOp( const string &nick );    /*!< returns idNick struct after precise find query ( OPLIST TABLE )*/
+
+        /* temporary until zamy adjusts analyzer */
+        vector< string > extractData( const string &query );   /*< extracts data from given "query" */
 
     private:
-        bool connect(); //connects to the sqlite3 database
-        void createDb();    //creates database
+        void checkDatabases();    /* checks if database files exist and flags them in m_options */
+        bool connect(); /* connects to the sqlite3 database */
+        void createDb();    /* creates database */
         string errorCodeToString( int errorCode ) const;
-        bool execQuery( const string &query );    //executes query and returns status to tell if the operation went well or not
-        string getAdminNick( const string &guid );  //return's admin's nick from his guid
+        bool execQuery( const string &query );    /* executes query and returns status to tell if the operation went well or not */
+        //vector< string > extractData( const string &query );   /*< extracts data from given "query" */
+        string getAdminNick( const string &guid );  /* return's admin's nick from his guid */
 //         void loadAdminlist( vector<ConfigLoader::AdminList> admins );
 //         void loadBanlist( vector<ConfigLoader::Banlist> banned );
-        int resultQuery( const string &query );    //if query fails -> -1 else return number of elements
+        int resultQuery( const string &query );    /*if query fails -> -1 else return number of elements found */
 
         //vector< string >split( string str, char ch );    /*!< splits given string on every occurance of given char  */
 
         sqlite3 *m_database;
-        ConfigLoader::Options* m_options;   //where i get all my info from
+        ConfigLoader::Options* m_options;   /* where i get all my info from ( bot related ) */
 
         char *m_zErrMsg;
         char **m_result;
-        int m_resultCode;   //return code i get from query ( use to check query returns. SQLITE_OK ecc )
-        int m_nrow, m_ncol; //number of rows and columns
+        int m_resultCode;   /* return code i get from query ( use to check query returns. SQLITE_OK ecc ) */
+        int m_nrow, m_ncol; /* number of rows and columns */
 
         //data is stored here after query executions
-        vector< string > m_vcolHead; /*MUST clear otherwise i keep old values as well*/
-        vector< string > m_data; /*MUST clear otherwise i keep old values as well*/
+        vector< string > m_vcolHead; /* MUST clear otherwise i keep old values as well */
+        vector< string > m_data; /* MUST clear otherwise i keep old values as well */
 };
 
 #endif //DB_H
