@@ -253,7 +253,7 @@ bool Db::isOpTableEmpty()
     if( resultQuery( "select * from oplist;" ) > 0 )   //got results so not empty
         return false;
     else
-        return false;
+        return true;
 }
 
 

@@ -57,9 +57,9 @@
 #define _R_KICK " *[0-9]+:[0-9]{2} +say: +[0-9]+ +[^ \t\n\r\f\v]+: +!kick [^ \t\n\r\f\v]+"
 #define _R_KICK_NUMBER " *[0-9]+:[0-9]{2} +say: +[0-9]+ +[^ \t\n\r\f\v]+: +!kick [0-9]{1,2}"
 #define _R_MUTE " *[0-9]+:[0-9]{2} +say: +[0-9]+ +[^ \t\n\r\f\v]+: +!mute [^ \t\n\r\f\v]+"
-#define _R_MUTE_ALL " *[0-9]+:[0-9]{2} +say: +[0-9]+ +[^ \t\n\r\f\v]+: +!mute all|ALL"
+#define _R_MUTE_ALL " *[0-9]+:[0-9]{2} +say: +[0-9]+ +[^ \t\n\r\f\v]+: +!mute (?=all)|(?=ALL)"
 #define _R_MUTE_NUMBER " *[0-9]+:[0-9]{2} +say: +[0-9]+ +[^ \t\n\r\f\v]+: +!mute [0-9]{1,2}"
-#define _R_STRICT " *[0-9]+:[0-9]{2} +say: +[0-9]+ +[^ \t\n\r\f\v]+: +!strict OFF|off|[0-4]{1}"
+#define _R_STRICT " *[0-9]+:[0-9]{2} +say: +[0-9]+ +[^ \t\n\r\f\v]+: +!strict (?=OFF)|(?=off)|(?=[0-4]{1})"
 #define _R_VETO " *[0-9]+:[0-9]{2} +say: +[0-9]+ +[^ \t\n\r\f\v]+: +!veto"
 #define _R_SLAP " *[0-9]+:[0-9]{2} +say: +[0-9]+ +[^ \t\n\r\f\v]+: +!slap [^ \t\n\r\f\v]+"
 #define _R_SLAP_NUMBER " *[0-9]+:[0-9]{2} +say: +[0-9]+ +[^ \t\n\r\f\v]+: +!slap [0-9]{1,2}"
@@ -68,8 +68,8 @@
 #define _R_NUKE_NUMBER " *[0-9]+:[0-9]{2} +say: +[0-9]+ +[^ \t\n\r\f\v]+: +!nuke [0-9]{1,2}"
 #define _R_COMMAND " *[0-9]+:[0-9]{2} +say: +[0-9]+ +[^ \t\n\r\f\v]+: +![^ \t\n\r\f\v]+"
 #define _R_STATUS " *[0-9]+:[0-9]{2} +say: +[0-9]+ +[^ \t\n\r\f\v]+: +!status"
-#define _R_FORCE " *[0-9]+:[0-9]{2} +say: +[0-9]+ +[^ \t\n\r\f\v]+: +!force red|blue|spectator [^ \t\n\r\f\v]+"
-#define _R_FORCE_NUMBER " *[0-9]+:[0-9]{2} +say: +[0-9]+ +[^ \t\n\r\f\v]+: +!force red|blue|spect [0-9]{1,2}"
+#define _R_FORCE " *[0-9]+:[0-9]{2} +say: +[0-9]+ +[^ \t\n\r\f\v]+: +!force (?=red)|(?=blue)|(?=spect) [^ \t\n\r\f\v]+"
+#define _R_FORCE_NUMBER " *[0-9]+:[0-9]{2} +say: +[0-9]+ +[^ \t\n\r\f\v]+: +!force (?=red)|(?=blue)|(?=spect) [0-9]{1,2}"
 #define _R_IAMGOD " *[0-9]+:[0-9]{2} +say: +[0-9]+ +[^ \t\n\r\f\v]+: +!iamgod"
 
 //costruttore
@@ -88,6 +88,7 @@ Analyzer::Analyzer( Connection* conn, Db* db, ConfigLoader* configLoader )
 
     std::cout<<"[OK] Analyzer inizializzato.\n";
     *(m_dati->errors)<<"[OK] Analyzer inizializzato.\n\n";
+    sleep(1);
     m_dati->errors->close();
 }
 
@@ -116,7 +117,7 @@ void Analyzer::loadOptions()
                 temp->seekg ( 0, ios:: end );
                 (*m_dati)[i].setRow( temp->tellg() );
                 #ifdef DEBUG_MODE
-                    std::cout << "Valore di partenza del file: "<<(*m_dati)[i].row()<<"\n";
+                std::cout << "Valore di partenza del file "<<i<<": "<<(*m_dati)[i].row()<<" : "<<temp->tellg()<<" \n";
                 #endif
             }
             else (*m_dati)[i].setRow( 0 );
@@ -549,45 +550,36 @@ void Analyzer::find(char* line)
         std::cout<<"  [-]Searching for "<<nick<<".\n";
         *(m_dati->log)<<"  [-]Searching for "<<nick<<".\n";
         //eseguo la ricerca sul DB e invio i risultati al server di gioco.
-        std::string query("SELECT id,nick,motive,author FROM banned WHERE nick = '");
-        query.append(correggi(nick));
-        query.append("' LIMIT 7;");
-        std::cout<<query<<"\n";
-        std::vector<std::string> risultato=database->extractData(query);
-        query.clear();
-        query="SELECT id,nick,motive,author FROM banned WHERE nick LIKE '%";
-        query.append(correggi(nick));
-        query.append("%' LIMIT 16;");
-        std::cout<<query<<"\n";
-        std::vector<std::string> risultatoApprossimativo=database->extractData(query);
+        std::vector<Db::idNickMotiveAuthorStruct> risultato=database->findPreciseIdMotiveAuthorViaNick(nick);
+        std::vector<Db::idNickMotiveAuthorStruct> risultatoApprossimativo=database->findAproxIdMotiveAuthorViaNick(nick);
         
         std::cout<<"ricerca: "<<risultato.size()<<" "<<risultatoApprossimativo.size()<<"\n";
         std::string frase("^1Risultati esatti: \n^1");
-        if (risultato.size()>24)
+        if (risultato.size()>4)
         {
             frase.append("troppi risultati, prova a migliorare la ricerca. Forse cercavi\n ^1");
-            frase.append(risultato[0]);
+            frase.append(risultato[0].id);
             frase.append(": ");
-            frase.append(risultato[1]);
+            frase.append(risultato[0].nick);
             frase.append(" ");
-            frase.append(risultato[2]);
+            frase.append(risultato[0].motive);
             frase.append(" by ");
-            frase.append(risultato[3]);
+            frase.append(risultato[0].author);
             frase.append(" ?");
         }
         else
         {
             if (risultato.empty()) frase.append("none.");
-            else for (unsigned int i=0; i<risultato.size();i+=4)
+            else for (unsigned int i=0; i<risultato.size();i++)
             {
-                frase.append(risultato[i]);
+                frase.append(risultato[i].id);
                 frase.append(": ");
-                frase.append(risultato[i+1]);
+                frase.append(risultato[i].nick);
                 frase.append(" ");
-                frase.append(risultato[i+2]);
+                frase.append(risultato[i].motive);
                 frase.append(" by ");
-                frase.append(risultato[i+3]);
-                if(i<risultato.size()-4) frase.append(",\n^1");
+                frase.append(risultato[i].author);
+                if(i<risultato.size()-1) frase.append(",\n^1");
                 else frase.append(".");
             }
         }
@@ -595,39 +587,39 @@ void Analyzer::find(char* line)
         
         frase.clear();
         frase.append("Ricerca: \n^1");
-        if (risultatoApprossimativo.size()>60)
+        if (risultatoApprossimativo.size()>15)
         {
             frase.append("troppi risultati, prova a migliorare la ricerca. Forse cercavi\n^1");
-            frase.append(risultatoApprossimativo[0]);
+            frase.append(risultatoApprossimativo[0].id);
+            frase.append(": ");
+            frase.append(risultatoApprossimativo[0].nick);
             frase.append(" ");
-            frase.append(risultatoApprossimativo[1]);
-            frase.append(" ");
-            frase.append(risultatoApprossimativo[2]);
+            frase.append(risultatoApprossimativo[0].motive);
             frase.append(" by ");
-            frase.append(risultatoApprossimativo[3]);
-            frase.append(", o forse \n ^1");
-            frase.append(risultatoApprossimativo[4]);
+            frase.append(risultatoApprossimativo[0].author);
+            frase.append("\n^1, o forse \n ^1");
+            frase.append(risultatoApprossimativo[1].id);
+            frase.append(": ");
+            frase.append(risultatoApprossimativo[1].nick);
             frase.append(" ");
-            frase.append(risultatoApprossimativo[5]);
-            frase.append(" ");
-            frase.append(risultatoApprossimativo[6]);
+            frase.append(risultatoApprossimativo[1].motive);
             frase.append(" by ");
-            frase.append(risultatoApprossimativo[7]);
+            frase.append(risultatoApprossimativo[1].author);
             frase.append(" ?");
         }
         else
         {
             if (risultatoApprossimativo.empty()) frase.append("none.");
-            else for (unsigned int i=0; i<risultatoApprossimativo.size();i+=4)
+            else for (unsigned int i=0; i<risultatoApprossimativo.size();i++)
             {
-                frase.append(risultatoApprossimativo[i]);
+                frase.append(risultatoApprossimativo[i].id);
+                frase.append(": ");
+                frase.append(risultatoApprossimativo[i].nick);
                 frase.append(" ");
-                frase.append(risultatoApprossimativo[i+1]);
-                frase.append(" ");
-                frase.append(risultatoApprossimativo[i+2]);
+                frase.append(risultatoApprossimativo[i].motive);
                 frase.append(" by ");
-                frase.append(risultatoApprossimativo[i+3]);
-                if(i<risultatoApprossimativo.size()-4) frase.append(",\n^1");
+                frase.append(risultatoApprossimativo[i].author);
+                if(i<risultatoApprossimativo.size()-1) frase.append(",\n^1");
                 else frase.append(".");
             }
         }
@@ -1054,7 +1046,7 @@ void Analyzer::status(char* line)
         }
         frase.append("\n^1Number of admins: ");
         frase.append(database->ops());
-        frase.append("\n^1Players currently banned by an admin: ");
+        frase.append("\n^1Players currently banned: ");
         frase.append(database->banned());
         frase.append("\n^1Players currently banned automatically: ");
         frase.append(database->autoBanned());
@@ -1126,11 +1118,14 @@ void Analyzer::iamgod(char* line)
         int end = temp.find_first_of( " ", pos );
         std::string numero = temp.substr( pos, end-pos );
         //prendo i dati dell'utente e lo aggiungo tra gli op
-        int i = translatePlayer( numero );
-        if( i>=0 && database->addOp((*m_dati)[m_dati->serverNumber][i]->nick,(*m_dati)[m_dati->serverNumber][i]->GUID) )
-            server->say("bigtext ^1Welcome, my Master!");
+        int i = findPlayer( numero );
+        if( i>=0 && database->addOp( correggi((*m_dati)[m_dati->serverNumber][i]->nick), correggi((*m_dati)[m_dati->serverNumber][i]->GUID)) )
+            server->bigtext("^1Welcome, my Master!");
         else
             server->tell("^1Fail: player non aggiunto alla lista admin.",numero);
+        #ifdef DEBUG_MODE
+            std::cout << "Player number: " << i << "\n";
+        #endif
     }
 }
 

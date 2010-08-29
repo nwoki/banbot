@@ -53,7 +53,7 @@ class ConfigLoader
                 Logger* log;                        //log dedicato ai server (cambia di file)
                 unsigned int serverNumber;                   //numero del server su cui sto lavorando
 
-                Server operator[] ( int number ) { return *servers[number]; }
+                Server& operator[] ( int number ) { return *servers[number]; }
                 unsigned int size() { return servers.size(); }
                 //distruttore
                 ~Options()

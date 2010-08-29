@@ -100,28 +100,46 @@ void Connection::say( string frase )
   unsigned int i=0;
   while ( i<frase.size() )
   {
-    unsigned int pos=frase.find("\n",i);
-    string finale ( comando );
-    if ( (pos-i) > ROW )
-    {
-      finale.append( frase.substr(i,ROW) );
-      i+=ROW;
-    }
-    else
-    {
-      finale.append( frase.substr(i,pos-i) );
-      i=pos;
-    }
-    finale.append( "\"" );
+      unsigned int pos=frase.find("\n",i);
+      string finale ( comando );
+      if ( (pos-i) > ROW )
+      {
+          finale.append( frase.substr(i,ROW) );
+          i+=ROW+1;
+      }
+      else
+      {
+          finale.append( frase.substr(i,pos-i) );
+          i=pos+1;
+      }
+      finale.append( "\"" );
+      #ifdef DEBUG_MODE
+      std::cout << "Sending command: " << finale << "\n";
+      #endif
+      vector< char > command = makeCmd( finale );
+      int bufferSize = command.size();
+      sendto( socketID, command.data(), bufferSize, 0, &(sockaddr &)serverAdd, recvSize );
+      usleep(SOCKET_PAUSE);
+  }
+  close(socketID);
+  usleep(SOCKET_PAUSE);
+}
+
+void Connection::bigtext( string frase )
+{
+    prepareConnection( m_options->serverNumber );
     
+    string comando( "rcon " );
+    comando.append( (*m_options)[m_options->serverNumber].rcon() );
+    comando.append( " bigtext \"" );
+    comando.append( frase );
+    comando.append( "\"");
     
     vector< char > command = makeCmd( comando );
     int bufferSize = command.size();
     sendto( socketID, command.data(), bufferSize, 0, &(sockaddr &)serverAdd, recvSize );
+    close(socketID);
     usleep(SOCKET_PAUSE);
-  }
-  close( socketID );
-  usleep(SOCKET_PAUSE);
 }
 
 void Connection::tell( string frase, string player )
@@ -141,15 +159,18 @@ void Connection::tell( string frase, string player )
     if ( (pos-i) > ROW )
     {
       finale.append( frase.substr(i,ROW) );
-      i+=ROW;
+      i+=ROW+1;
     }
     else
     {
       finale.append( frase.substr(i,pos-i) );
-      i=pos;
+      i=pos+1;
     }
     finale.append( "\"" );
-    vector< char > command = makeCmd( comando );
+    #ifdef DEBUG_MODE
+        std::cout << "Sending command: " << finale << "\n";
+    #endif
+    vector< char > command = makeCmd( finale );
     int bufferSize = command.size();
     sendto( socketID, command.data(), bufferSize, 0, &(sockaddr &)serverAdd, recvSize );
     usleep(SOCKET_PAUSE);
@@ -211,7 +232,7 @@ void Connection::muteAll( string admin )
 {
     prepareConnection( m_options->serverNumber );
     
-    for ( int i=0; i<(*m_options)[m_options->serverNumber].size(); i++)
+    for ( int unsigned i=0; i<(*m_options)[m_options->serverNumber].size(); i++)
     {
         if ( (*m_options)[m_options->serverNumber][i]->number.compare( admin ) != 0 )
         {

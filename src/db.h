@@ -142,7 +142,7 @@ class Db
 
         //"how many?" queries
         string autoBanned();    /*!< returns how many users have been autobanned by the bot */
-        string banned();    /*!< returns how many have been banned normally by admins */
+        string banned();    /*!< returns how many have been banned */
         string ops();   /*!< returns how many ops are registered to the bot */
 
         //"find" queries
