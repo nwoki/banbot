@@ -58,7 +58,7 @@ class Db
         */
         Db( ConfigLoader::Options* conf );
         ~Db();  /*!< Destructor for class Db*/
-        
+
         void checkDatabases();    /* checks if database files exist and flags them in m_options */
 
         //database connection
@@ -73,8 +73,8 @@ class Db
         //bool checkDirAndFile( const string &guid ); //passa url file compreso
 
         //dumps
-        void dumpAdminsToFile();    /*!< dumps admins to file ( backup/Adminlist.backup )*/
-        void dumpBannedToFile();    /*!< dumps banned users to file ( backup/Banlist.backup )*/
+//        void dumpAdminsToFile();    /*!< dumps admins to file ( backup/Adminlist.backup )*/
+//        void dumpBannedToFile();    /*!< dumps banned users to file ( backup/Banlist.backup )*/
         void dumpDatabases();    /*!< dumps database creating a copy*/
 
         //banned table
@@ -164,8 +164,6 @@ class Db
         void createDb();    /* creates database */
         string errorCodeToString( int errorCode ) const;
         bool execQuery( const string &query );    /* executes query and returns status to tell if the operation went well or not */
-        //vector< string > extractData( const string &query );   /*< extracts data from given "query" */
-        vector< string > extractData( const string &query );   /*< extracts data from given "query" */
         string getAdminNick( const string &guid );  /* return's admin's nick from his guid */
 //         void loadAdminlist( vector<ConfigLoader::AdminList> admins );
 //         void loadBanlist( vector<ConfigLoader::Banlist> banned );

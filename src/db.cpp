@@ -258,193 +258,193 @@ bool Db::isOpTableEmpty()
 }
 
 
-void Db::dumpAdminsToFile()
-{
-    string query( "select *from oplist;" );
-
-    cout << "\n\n[-]Trying to dump admins..\n";
-    *(m_options->log) << "[-]Trying to dump admins..\n";
-
-    if( !resultQuery( query ) ) {   //FAILED
-        cout << "\e[0;33m[!]no admins to dump to file\e[0m \n";
-        *(m_options->log) << "[!]no admins to dump to file\n";
-        return;
-    }
-
-    //TODO trovare altro metodo invece di usare la struct "stat"
-    //Prepare file to write to...( check for old file. If exists, delete it )
-    //=====================
-    struct stat st;
-
-    if( stat( "backup/Adminlist.backup", &st ) == 0 ) {
-
-        cout << "[-]deleting old adminlist dump file..\n";
-
-        if ( !system( "rm backup/Adminlist.backup" ) )
-            cout << "\e[0;33m[!]deleted old adminlist file..creating new one..\e[0m \n";
-        else {
-            cout << "\e[0;31m [ERR]couldn't delete old dump file!\e[0m \n";
-            return;
-        }
-    }
-    //=====================
-
-    //use logger class to save info to file
-    Logger *output = new Logger( "backup/Adminlist.backup" );
-
-    if ( !output->open() ) {
-        cout << "\e[0;31m[ERR] can't write Adminlist backup file!\e[0m \n";
-        *(m_options->log) << "[ERR] can't write Adminlist backup file!\n";
-        *(m_options->errors) << "[ERR] On " << (*m_options)[m_options->serverNumber].name()  << " : can't write Adminlist backup file!\n";
-        return;
-    }
-
-    //backup file ready, preparation of info to dump to file
-    vector< string > adminIds = extractData( "select id from oplist;" );
-    vector< string >adminsNick, adminsGuid;
-
-    adminsNick = extractData( "select nick from oplist;" );
-    adminsGuid = extractData( "select guid from oplist;" );
-
-    *output << "#\n# THIS IS A BACKUP FILE OF ADMINLIST FOUND IN cfg/\n#\n";
-
-    //here i actually write to file
-    for( unsigned int i = 0; i < adminsNick.size(); i++ ) { //nick.size = guid.size
-        *output << "#admin" << i << "\n";
-        *output << adminsNick[i] << "=" << adminsGuid[i] << "\n";
-    }
-
-    *output << "####\n#end\n";
-
-    cout << "\e[0;32m[OK] successfully written Adminlist.backup file in 'backup/'\e[0m \n";
-    *(m_options->log) << "[OK] successfully written Adminlist.backup file in 'backup/'\n";
-
-    output->close();
-
-    delete output;
-}
-
-
-void Db::dumpBannedToFile()
-{
-    string query( "select * from banned;" );
-
-    cout << "\n\n[-]Trying to dump banned guid's..\n";
-    *(m_options->errors) << "[-]Trying to dump banned guid's..\n";
-
-    if( !resultQuery( query ) ) {
-        cout << "\e[0;33m[!]no banned guids to dump to file\e[0m \n";
-        *(m_options->log) << "[!]no banned guids to dump to file\n";
-        return;
-    }
-
-    //TODO trovare altro metodo invece di usare la struct "stat"
-    //Prepare file to write to...( check for old file. If exists, delete it )
-
-    struct stat st;
-
-    if( stat( "backup/Banlist.backup", &st ) == 0 ) {
-        cout << "[-]deleting old banlist dump file..\n";
-        if ( !system( "rm backup/Banlist.backup" ) )
-            cout << "\e[0;33m[!]deleted old backup file..creating new one..\e[0m \n";
-        else {
-            cout << "\e[0;31m [ERR]couldn't delete old dump file!\e[0m \n";
-            return;
-        }
-    }
-
-    //backup file ready, preparation of info to dump to file
-    vector< string > bannedIds = extractData( "select id from banned;" );
-    vector< string > dataToDump;    // banned player info
-    vector< string > guidsToDump;   //banned player's guids
-    string auxQuery;
-
-    if( bannedIds.empty() ) {   //no need to go ahead, no data to dump!
-        cout << "\e[0;31 Db::dumpBannedToFile no banned id's to dump\e[0m \n";
-        *(m_options->log) << "Db::dumpBannedToFile no banned id's to dump \n";
-        return;
-    }
-
-    //use logger class to save info to file
-    Logger *output = new Logger( "backup/Banlist.backup" );
-
-    if ( !output->open() ) {
-        cout << "\e[1;31mDb::dumpBannedToFile [ERR] can't write Banlist backup file!\e[0m \n";
-        *(m_options->log) << "Db::dumpBannedToFile [ERR] can't write Banlist backup file!\n";
-        *(m_options->errors) << "[ERR] On " << (*m_options)[m_options->serverNumber].name()  << " : can't write Banlist backup file!\n";
-        return;
-    }
-
-    *output << "#\n# THIS IS A BACKUP FILE OF BANLIST FOUND IN cfg/\n#\n";
-    //here i actually write to file
-    for( unsigned int i = 0; i < bannedIds.size(); i++ ) {
-
-        #ifdef DB_DEBUG   //stamps vector id's
-            cout<< "id " << i << " " << bannedIds[i] <<endl;
-        #endif
-
-        dataToDump.clear();
-
-        //get new banned player info
-        auxQuery.clear();
-        auxQuery.append( "select *from banned where id='" );
-        auxQuery.append( bannedIds[i] );
-        auxQuery.append( "';" );
-
-        dataToDump = extractData( auxQuery );
-
-        for( unsigned int j = 1; j < dataToDump.size(); j++ ) { // j = 1 because i start from the nick, don't need it's id
-            if( j == 1 )
-                *output << "nick=";
-            else if( j == 2 )
-                *output << "ip=";
-            else if( j == 3 )
-                *output << "date=";
-            else if( j == 4 )
-                *output << "time=";
-            else if( j == 5 )
-                *output << "motive=";
-            else if( j == 6 )
-                *output << "author=";
-
-            if( dataToDump[j].empty() ) *output << "<empty record>\n";
-            else *output << dataToDump[j] << "\n";
-
-        #ifdef DB_DEBUG
-            cout << "banned user data being dumped " << dataToDump[j] << endl;
-        #endif
-
-        }
-
-        *output << "====\n";
-
-        //new query to get banned players corrisponding guids
-        auxQuery.clear();
-        auxQuery.append( "select guid from guids where banId='" );
-        auxQuery.append( bannedIds[i] );
-        auxQuery.append( "';" );
-
-        guidsToDump.clear();
-        guidsToDump = extractData( auxQuery );
-
-        for( unsigned int k = 0; k < guidsToDump.size(); k++ ) {
-            *output << "GUID=" << guidsToDump[k] << "\n";
-
-        #ifdef DB_DEBUG
-            cout << "banned user guids being dumped " << guidsToDump[k] << endl;
-        #endif
-        }
-        *output << "####\n";
-    }
-    *output << "#end";
-
-    cout << "\e[0;32m[OK] successfully written Banlist.backup file in 'backup/'\e[0m \n";
-    *(m_options->log) << "[OK] successfully written Banlist.backup file in 'backup/'\n";
-
-    output->close();
-
-    delete output;  //non mi serve più
-}
+// void Db::dumpAdminsToFile()
+// {
+//     string query( "select *from oplist;" );
+//
+//     cout << "\n\n[-]Trying to dump admins..\n";
+//     *(m_options->log) << "[-]Trying to dump admins..\n";
+//
+//     if( !resultQuery( query ) ) {   //FAILED
+//         cout << "\e[0;33m[!]no admins to dump to file\e[0m \n";
+//         *(m_options->log) << "[!]no admins to dump to file\n";
+//         return;
+//     }
+//
+//     //TODO trovare altro metodo invece di usare la struct "stat"
+//     //Prepare file to write to...( check for old file. If exists, delete it )
+//     //=====================
+//     struct stat st;
+//
+//     if( stat( "backup/Adminlist.backup", &st ) == 0 ) {
+//
+//         cout << "[-]deleting old adminlist dump file..\n";
+//
+//         if ( !system( "rm backup/Adminlist.backup" ) )
+//             cout << "\e[0;33m[!]deleted old adminlist file..creating new one..\e[0m \n";
+//         else {
+//             cout << "\e[0;31m [ERR]couldn't delete old dump file!\e[0m \n";
+//             return;
+//         }
+//     }
+//     //=====================
+//
+//     //use logger class to save info to file
+//     Logger *output = new Logger( "backup/Adminlist.backup" );
+//
+//     if ( !output->open() ) {
+//         cout << "\e[0;31m[ERR] can't write Adminlist backup file!\e[0m \n";
+//         *(m_options->log) << "[ERR] can't write Adminlist backup file!\n";
+//         *(m_options->errors) << "[ERR] On " << (*m_options)[m_options->serverNumber].name()  << " : can't write Adminlist backup file!\n";
+//         return;
+//     }
+//
+//     //backup file ready, preparation of info to dump to file
+//     vector< string > adminIds = extractData( "select id from oplist;" );
+//     vector< string >adminsNick, adminsGuid;
+//
+//     adminsNick = extractData( "select nick from oplist;" );
+//     adminsGuid = extractData( "select guid from oplist;" );
+//
+//     *output << "#\n# THIS IS A BACKUP FILE OF ADMINLIST FOUND IN cfg/\n#\n";
+//
+//     //here i actually write to file
+//     for( unsigned int i = 0; i < adminsNick.size(); i++ ) { //nick.size = guid.size
+//         *output << "#admin" << i << "\n";
+//         *output << adminsNick[i] << "=" << adminsGuid[i] << "\n";
+//     }
+//
+//     *output << "####\n#end\n";
+//
+//     cout << "\e[0;32m[OK] successfully written Adminlist.backup file in 'backup/'\e[0m \n";
+//     *(m_options->log) << "[OK] successfully written Adminlist.backup file in 'backup/'\n";
+//
+//     output->close();
+//
+//     delete output;
+// }
+//
+//
+// void Db::dumpBannedToFile()
+// {
+//     string query( "select * from banned;" );
+//
+//     cout << "\n\n[-]Trying to dump banned guid's..\n";
+//     *(m_options->errors) << "[-]Trying to dump banned guid's..\n";
+//
+//     if( !resultQuery( query ) ) {
+//         cout << "\e[0;33m[!]no banned guids to dump to file\e[0m \n";
+//         *(m_options->log) << "[!]no banned guids to dump to file\n";
+//         return;
+//     }
+//
+//     //TODO trovare altro metodo invece di usare la struct "stat"
+//     //Prepare file to write to...( check for old file. If exists, delete it )
+//
+//     struct stat st;
+//
+//     if( stat( "backup/Banlist.backup", &st ) == 0 ) {
+//         cout << "[-]deleting old banlist dump file..\n";
+//         if ( !system( "rm backup/Banlist.backup" ) )
+//             cout << "\e[0;33m[!]deleted old backup file..creating new one..\e[0m \n";
+//         else {
+//             cout << "\e[0;31m [ERR]couldn't delete old dump file!\e[0m \n";
+//             return;
+//         }
+//     }
+//
+//     //backup file ready, preparation of info to dump to file
+//     vector< string > bannedIds = extractData( "select id from banned;" );
+//     vector< string > dataToDump;    // banned player info
+//     vector< string > guidsToDump;   //banned player's guids
+//     string auxQuery;
+//
+//     if( bannedIds.empty() ) {   //no need to go ahead, no data to dump!
+//         cout << "\e[0;31 Db::dumpBannedToFile no banned id's to dump\e[0m \n";
+//         *(m_options->log) << "Db::dumpBannedToFile no banned id's to dump \n";
+//         return;
+//     }
+//
+//     //use logger class to save info to file
+//     Logger *output = new Logger( "backup/Banlist.backup" );
+//
+//     if ( !output->open() ) {
+//         cout << "\e[1;31mDb::dumpBannedToFile [ERR] can't write Banlist backup file!\e[0m \n";
+//         *(m_options->log) << "Db::dumpBannedToFile [ERR] can't write Banlist backup file!\n";
+//         *(m_options->errors) << "[ERR] On " << (*m_options)[m_options->serverNumber].name()  << " : can't write Banlist backup file!\n";
+//         return;
+//     }
+//
+//     *output << "#\n# THIS IS A BACKUP FILE OF BANLIST FOUND IN cfg/\n#\n";
+//     //here i actually write to file
+//     for( unsigned int i = 0; i < bannedIds.size(); i++ ) {
+//
+//         #ifdef DB_DEBUG   //stamps vector id's
+//             cout<< "id " << i << " " << bannedIds[i] <<endl;
+//         #endif
+//
+//         dataToDump.clear();
+//
+//         //get new banned player info
+//         auxQuery.clear();
+//         auxQuery.append( "select *from banned where id='" );
+//         auxQuery.append( bannedIds[i] );
+//         auxQuery.append( "';" );
+//
+//         dataToDump = extractData( auxQuery );
+//
+//         for( unsigned int j = 1; j < dataToDump.size(); j++ ) { // j = 1 because i start from the nick, don't need it's id
+//             if( j == 1 )
+//                 *output << "nick=";
+//             else if( j == 2 )
+//                 *output << "ip=";
+//             else if( j == 3 )
+//                 *output << "date=";
+//             else if( j == 4 )
+//                 *output << "time=";
+//             else if( j == 5 )
+//                 *output << "motive=";
+//             else if( j == 6 )
+//                 *output << "author=";
+//
+//             if( dataToDump[j].empty() ) *output << "<empty record>\n";
+//             else *output << dataToDump[j] << "\n";
+//
+//         #ifdef DB_DEBUG
+//             cout << "banned user data being dumped " << dataToDump[j] << endl;
+//         #endif
+//
+//         }
+//
+//         *output << "====\n";
+//
+//         //new query to get banned players corrisponding guids
+//         auxQuery.clear();
+//         auxQuery.append( "select guid from guids where banId='" );
+//         auxQuery.append( bannedIds[i] );
+//         auxQuery.append( "';" );
+//
+//         guidsToDump.clear();
+//         guidsToDump = extractData( auxQuery );
+//
+//         for( unsigned int k = 0; k < guidsToDump.size(); k++ ) {
+//             *output << "GUID=" << guidsToDump[k] << "\n";
+//
+//         #ifdef DB_DEBUG
+//             cout << "banned user guids being dumped " << guidsToDump[k] << endl;
+//         #endif
+//         }
+//         *output << "####\n";
+//     }
+//     *output << "#end";
+//
+//     cout << "\e[0;32m[OK] successfully written Banlist.backup file in 'backup/'\e[0m \n";
+//     *(m_options->log) << "[OK] successfully written Banlist.backup file in 'backup/'\n";
+//
+//     output->close();
+//
+//     delete output;  //non mi serve più
+// }
 
 
 void Db::dumpDatabases()
@@ -539,8 +539,6 @@ string Db::insertNewBanned( const string& nick, const string& ip, const string& 
         return string();  //FAIL return empty string
 
     //else return last banId
-    vector< string > max;
-
     string selectLastInserted( "select id from banned where nick='" );
     selectLastInserted.append( nick );
     selectLastInserted.append( "' and ip='" );
@@ -551,17 +549,19 @@ string Db::insertNewBanned( const string& nick, const string& ip, const string& 
     cout << "Db::insertNewBanned : selectLastInserted query ->  " << selectLastInserted << endl;
 #endif
 
-    max = extractData( selectLastInserted );
+    /* get max */
+    execQuery( selectLastInserted );
 
 #ifdef DB_DEBUG
     cout << "SHOWING VDATA\n";
     for( unsigned int i = 0; i < m_data.size(); i++ )
-        cout << max[i] << "\n";
+        cout << m_data[i] << "\n";
 #endif
 
-    if( max.empty() )
+    if( m_data.empty() )
         return string();
-    else return max[ 0 ];
+    else
+        return m_data[0];
 }
 
 
@@ -688,13 +688,11 @@ string Db::insertNewGuid( const string& guid, const string &banId )
     newGuidQuery.append( "');" );
 
     if( !execQuery( newGuidQuery ) )
-        return string();  //FAIL return empty string
+        return string();  /* FAIL return empty string */
 
-    //else return last banId
-    vector< string > max;
-
-    max = extractData( "select max( id ) from guids" );
-    return max[0];
+    // else return last banId
+    execQuery( "select max( id ) from guids" );
+    return m_data[0];
 }
 
 
@@ -826,17 +824,17 @@ vector< Db::idMotiveStruct > Db::idMotiveViaGuid( const string& guid )
 
     vector< idMotiveStruct >structs;
 
-    vector< string >answer = extractData( query );
+    if( !execQuery( query ) )   /* on fail, return immediatly empty struct */
+        return structs;
 
     #ifdef DB_DEBUG
     cout << "Db::idMotiveViaGuid\n";
-    for( unsigned int i = 0; i < answer.size(); i++ )
-        cout << "ANSWER" << i << " is -> " << answer.at( i ) << endl;
+    for( unsigned int i = 0; i < m_data.size(); i++ )
+        cout << "ANSWER" << i << " is -> " << m_data.at( i ) << endl;
     #endif
 
-    if( answer.size() > 0 )
-        //insert in order, id, motive, date, time
-        structs.push_back( idMotiveStruct( answer[0], answer[1], answer[2], answer[3] ) );
+    if( m_data.size() > 0 )
+        structs.push_back( idMotiveStruct( m_data[0], m_data[1], m_data[2], m_data[3] ) );  /* insert in order, id, motive, date, time */
 
     return structs;
 }
@@ -849,18 +847,18 @@ vector< Db::idMotiveStruct > Db::idMotiveViaIp( const string& ip )
 
     vector< idMotiveStruct >structs;
 
-    vector< string >answer = extractData( query );
+    if( !execQuery( query ) )
+        return structs; /* on fail, return immediatly empty struct */
 
     #ifdef DB_DEBUG
     cout << "Db::idMotiveViaIp" << endl;
 
-    for( unsigned int i = 0; i < answer.size(); i++ )
-        cout << "ANSWER " << i << " is -> " << answer.at( i );
+    for( unsigned int i = 0; i < m_data.size(); i++ )
+        cout << "ANSWER " << i << " is -> " << m_data.at( i );
     #endif
     //  SHOULD I ASSUME THAT THERE ARE NO DOUBLES?  YES FOR NOW
-    if( answer.size() > 0 )
-        //insert in order, id, motive, date, time
-        structs.push_back( idMotiveStruct( answer[0], answer[1], answer[2], answer[3] ) );
+    if( m_data.size() > 0 )
+        structs.push_back( idMotiveStruct( m_data[0], m_data[1], m_data[2], m_data[3] ) );  /* insert in order, id, motive, date, time */
 
     return structs;
 }
@@ -874,18 +872,19 @@ vector< Db::idMotiveStruct > Db::idMotiveViaNick( const string& nick )
 
     vector< idMotiveStruct >structs;
 
-    vector< string >answer = extractData( query );
+    if( !execQuery( query ) )
+        return structs; /* on fail, return immediatly empty struct */
+
 
     #ifdef DB_DEBUG
     cout << "Db::idMotiveViaNick" << endl;
 
-    for( unsigned int i = 0; i < answer.size(); i++ )
-        cout << "ANSWER " << i << " is -> " << answer.at( i );
+    for( unsigned int i = 0; i < m_data.size(); i++ )
+        cout << "ANSWER " << i << " is -> " << m_data.at( i );
     #endif
     //  SHOULD I ASSUME THAT THERE ARE NO DOUBLES?  YES FOR NOW
-    if( answer.size() > 0 )
-        //insert in order, id, motive, date, time
-        structs.push_back( idMotiveStruct( answer[0], answer[1], answer[2], answer[3] ) );
+    if( m_data.size() > 0 )
+        structs.push_back( idMotiveStruct( m_data[0], m_data[1], m_data[2], m_data[3] ) );  /* insert in order, id, motive, date, time */
 
     return structs;
 }
@@ -893,7 +892,7 @@ vector< Db::idMotiveStruct > Db::idMotiveViaNick( const string& nick )
 /* "how many" queries */
 string Db::autoBanned()
 {
-    string query( "select count(*) from banned where author='BanBot';" );
+    string query( "select count(*) from banned where author='BanBot' group by id;" );
 
     #ifdef DB_DEBUG
     cout << "Db::autoBanned returning value " << resultQuery( query ) << endl;
@@ -904,7 +903,7 @@ string Db::autoBanned()
 
 string Db::banned()
 {
-    string query( "select count(*) from banned;" );
+    string query( "select count(*) from banned group by id;" );
 
     #ifdef DB_DEBUG
     cout << "Db::banned returning value " << resultQuery( query ) << endl;
@@ -915,7 +914,7 @@ string Db::banned()
 
 string Db::ops()
 {
-    string query( "select count(*) from oplist;" );
+    string query( "select count(*) from oplist group by id;" );
 
     #ifdef DB_DEBUG
     cout << "Db::ops returning value " << resultQuery( query ) << endl;
@@ -933,17 +932,21 @@ vector< Db::idNickMotiveAuthorStruct > Db::findAproxIdMotiveAuthorViaNickBanned(
 
     vector< idNickMotiveAuthorStruct > structs;
 
-    vector< string >answer = extractData( query );
+    if( !execQuery( query ) )
+        return structs;  /* on fail, return immediatly empty struct */
 
     #ifdef DB_DEBUG
-    cout << "Db::findAproxIdMotiveAuthorViaNick" << endl;
+    cout << "Db::findAproxIdMotiveAuthorViaNickBanned" << endl;
+    cout << "mdata SIZE IS -> " << m_data.size() << endl;
 
-    for( unsigned int i = 0; i < answer.size(); i++ )
-        cout << "ANSWER " << i << " is -> " << answer.at( i );
+    for( unsigned int i = 0; i < m_data.size(); i++ )
+        cout << "ANSWER " << i << " is -> " << m_data.at( i );
     #endif
 
-    for( unsigned int i = 0; i < answer.size(); i++ )
-        structs.push_back( idNickMotiveAuthorStruct( answer[4*i + 0], answer[4*i + 1], answer[4*i + 2], answer[4*i + 3] ) );
+    for( unsigned int i = 0; i < m_data.size()/4; i++ ) {
+        cout << "TEST for segfault\n";
+        structs.push_back( idNickMotiveAuthorStruct( m_data.at(4*i + 0), m_data.at(4*i + 1), m_data.at(4*i + 2), m_data.at(4*i + 3) ) );
+    }
 
     return structs;
 }
@@ -956,42 +959,45 @@ vector< Db::idNickMotiveAuthorStruct > Db::findPreciseIdMotiveAuthorViaNickBanne
 
     vector< idNickMotiveAuthorStruct > structs;
 
-    vector< string >answer = extractData( query );
+    if( !execQuery( query ) )
+        return structs; /* on fail, return immediatly empty struct */
 
     #ifdef DB_DEBUG
     cout << "Db::findPreciseIdMotiveAuthorViaNick" << endl;
 
-    for( unsigned int i = 0; i < answer.size(); i++ )
-        cout << "ANSWER " << i << " is -> " << answer.at( i );
+    for( unsigned int i = 0; i < m_data.size(); i++ )
+        cout << "ANSWER " << i << " is -> " << m_data.at( i );
     #endif
 
+    cout << "ANSWER SIZE IS -> " << m_data.size() << endl;
+
     /* SHOULD I ASSUME THAT THERE ARE NO DOUBLES?  YES FOR NOW */
-    if( answer.size() > 0 )
-        //insert in order, id, nick, motive, author
-        structs.push_back( idNickMotiveAuthorStruct( answer[0], answer[1], answer[2], answer[3] ) );
+    if( m_data.size() > 0 )
+        structs.push_back( idNickMotiveAuthorStruct( m_data[0], m_data[1], m_data[2], m_data[3] ) );    /* insert in order, id, nick, motive, author */
 
     return structs;
 }
 
 vector< Db::idNickStruct > Db::findAproxIdNickViaNickOp( const string& nick )
 {
-    string query( "select id,nick from oplist where nick like='%" );
+    string query( "select id,nick from oplist where nick like '%" );
     query.append( nick );
     query.append( "%' limit 16;" );
 
     vector< idNickStruct > structs;
 
-    vector< string > answer = extractData( query );
+    if( !execQuery( query ) )
+        return structs;     /* on fail, return immediatly empty struct */
 
     #ifdef DB_DEBUG
     cout << "Db::findAproxIdNickViaNickOp" << endl;
 
-    for( unsigned int i = 0; i < answer.size(); i++ )
-        cout << "ANSWER " << i << " is -> " << answer.at( i );
+    for( unsigned int i = 0; i < m_data.size(); i++ )
+        cout << "ANSWER " << i << " is -> " << m_data.at( i );
     #endif
 
-    for( unsigned int i = 0; i < answer.size(); i++ )
-        structs.push_back( idNickStruct( answer[2*i + 0], answer[2*i + 1] ) );
+    for( unsigned int i = 0; i < m_data.size()/2; i++ )
+        structs.push_back( idNickStruct( m_data[2*i + 0], m_data[2*i + 1] ) );
 
     return structs;
 }
@@ -1004,19 +1010,19 @@ vector< Db::idNickStruct > Db::findPreciseIdNickViaNickOp( const string& nick )
 
     vector< idNickStruct > structs;
 
-    vector< string > answer = extractData( query );
+    if( !execQuery( query ) )
+        return structs;     /* on fail, return immediatly empty struct */
 
     #ifdef DB_DEBUG
     cout << "Db::findPreciseIdNickViaNickOp" << endl;
 
-    for( unsigned int i = 0; i < answer.size(); i++ )
-        cout << "ANSWER " << i << " is -> " << answer.at( i );
+    for( unsigned int i = 0; i < m_data.size(); i++ )
+        cout << "ANSWER " << i << " is -> " << m_data.at( i );
     #endif
 
     /* SHOULD I ASSUME THAT THERE ARE NO DOUBLES?  YES FOR NOW */
-    if( answer.size() > 0 )
-        //insert in order, id, nick, motive, author
-        structs.push_back( idNickStruct( answer[0], answer[1] ) );
+    if( m_data.size() > 0 )
+        structs.push_back( idNickStruct( m_data[0], m_data[1] ) );  /* insert in order, id, nick, motive, author */
 
     return structs;
 }
@@ -1227,7 +1233,7 @@ bool Db::execQuery( const string &query )  //executes and returns status
     if( m_data.size() < 0 )
         m_data.clear();
 
-    if( m_resultCode == SQLITE_OK ) {
+    if( m_resultCode == SQLITE_OK ) {   // went well and got data
         for( int i = 0; i < m_ncol; ++i )
             m_vcolHead.push_back( m_result[i] );   /* First row heading */
             for( int i = 0; i < m_ncol * m_nrow; ++i )
@@ -1244,36 +1250,19 @@ bool Db::execQuery( const string &query )  //executes and returns status
 
     }
     else {
-        cout << "\e[1;31m[EPIC FAIL] Db::execQuery " << errorCodeToString( m_resultCode ) << "\e[0m \n";
-//         outputSqliteError( m_resultCode );
+        cout << "\e[1;31m[EPIC FAIL] Db::execQuery " << sqlite3_errmsg( m_database ) << "\e[0m \n";
         *(m_options->log) << "[EPIC FAIL] Db::execQuery '" << m_zErrMsg << "'\n";
-        *(m_options->log) << "[ERROR MSG]" << errorCodeToString( m_resultCode ) << "\n";
+        *(m_options->log) << "[ERROR MSG]" << sqlite3_errmsg( m_database ) << "\n";
         *(m_options->errors) << "[EPIC FAIL] On " << (*m_options)[m_options->serverNumber].name()  << " : Db::execQuery '" << m_zErrMsg << "'\n";
-        *(m_options->errors) << errorCodeToString( m_resultCode );
+        *(m_options->errors) << sqlite3_errmsg( m_database );
         success = false;
     }
     sqlite3_free_table( m_result );
-    //or sqlite3_free_table( result );
 
 #ifdef DB_DEBUG
     cout << "\e[1;37m Db::execQuery result code is > " << m_resultCode << " sending value " << success << "\e[0m \n";
 #endif
     return success;
-}
-
-
-vector< string > Db::extractData( const string &query )    //returns vector with results as string
-{
-    if( execQuery( query ) ) {
-        #ifdef DB_DEBUG
-        cout << "Db::extractData query -> " << query << endl;
-        #endif
-        return m_data;
-    }
-    else {
-        vector< string > emptyVector;
-        return emptyVector;
-    }
 }
 
 

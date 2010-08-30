@@ -1,0 +1,109 @@
+\hypertarget{class_analyzer}{
+\section{Analyzer Class Reference}
+\label{class_analyzer}\index{Analyzer@{Analyzer}}
+}
+\subsection*{Public Member Functions}
+\begin{DoxyCompactItemize}
+\item 
+\hypertarget{class_analyzer_a7fa6d8506ba0d9c3a848492c0c6cbebc}{
+{\bfseries Analyzer} (\hyperlink{class_connection}{Connection} $\ast$, \hyperlink{class_db}{Db} $\ast$, \hyperlink{class_config_loader}{ConfigLoader} $\ast$)}
+\label{class_analyzer_a7fa6d8506ba0d9c3a848492c0c6cbebc}
+
+\item 
+\hypertarget{class_analyzer_acbb4f7dff3771e5cc7ca87b0d6c49278}{
+void {\bfseries main\_\-loop} ()}
+\label{class_analyzer_acbb4f7dff3771e5cc7ca87b0d6c49278}
+
+\end{DoxyCompactItemize}
+\subsection*{Protected Member Functions}
+\begin{DoxyCompactItemize}
+\item 
+\hypertarget{class_analyzer_af540d4ed379d6d5ccb9fb5c09eb91cba}{
+bool {\bfseries isA} (char $\ast$line, const std::string \&regex)}
+\label{class_analyzer_af540d4ed379d6d5ccb9fb5c09eb91cba}
+
+\item 
+\hypertarget{class_analyzer_a2abbf918a260ba0438784e5c2334afc9}{
+bool {\bfseries isAdminSay} (char $\ast$line, std::string \&numero)}
+\label{class_analyzer_a2abbf918a260ba0438784e5c2334afc9}
+
+\item 
+\hypertarget{class_analyzer_ade91189324261f9c22d94566e2dc9dba}{
+virtual void {\bfseries expansion} (char $\ast$line)}
+\label{class_analyzer_ade91189324261f9c22d94566e2dc9dba}
+
+\item 
+\hypertarget{class_analyzer_a53fba3038f055d758a761bf6381d1fed}{
+void {\bfseries getDateAndTime} (std::string \&date, std::string \&time)}
+\label{class_analyzer_a53fba3038f055d758a761bf6381d1fed}
+
+\item 
+\hypertarget{class_analyzer_a93a54b992d65966bfcad35288d602c87}{
+bool {\bfseries guidIsBanned} (const std::string \&guid, const std::string \&nick, const std::string \&numero, const std::string \&ip)}
+\label{class_analyzer_a93a54b992d65966bfcad35288d602c87}
+
+\item 
+\hypertarget{class_analyzer_a97e40f95b27b0f78a5ba46c55337b718}{
+bool {\bfseries nickIsBanned} (const std::string \&nick, const std::string \&numero, const std::string \&ip, const std::string \&guid)}
+\label{class_analyzer_a97e40f95b27b0f78a5ba46c55337b718}
+
+\item 
+\hypertarget{class_analyzer_a99c40e4eeaf3bb952c3180a18f5f238f}{
+bool {\bfseries ipIsBanned} (const std::string \&ip, const std::string \&numero, const std::string \&nick, const std::string \&guid)}
+\label{class_analyzer_a99c40e4eeaf3bb952c3180a18f5f238f}
+
+\item 
+\hypertarget{class_analyzer_a7051ff43e8078a7bd7bc5c3bcf08ec90}{
+void {\bfseries buttaFuori} (const std::string \&reason, const std::string numero, const std::string nick)}
+\label{class_analyzer_a7051ff43e8078a7bd7bc5c3bcf08ec90}
+
+\item 
+\hypertarget{class_analyzer_a2b7a395ae144853d95f95c5001131dea}{
+std::string {\bfseries correggi} (std::string stringa)}
+\label{class_analyzer_a2b7a395ae144853d95f95c5001131dea}
+
+\item 
+\hypertarget{class_analyzer_a8d006abe3ec7375d5e1e33bd572e145b}{
+std::vector$<$ unsigned int $>$ {\bfseries admins} ()}
+\label{class_analyzer_a8d006abe3ec7375d5e1e33bd572e145b}
+
+\item 
+\hypertarget{class_analyzer_a17407085ffd02adb5a1f43d19034d3ba}{
+void {\bfseries tellToAdmins} (std::string frase)}
+\label{class_analyzer_a17407085ffd02adb5a1f43d19034d3ba}
+
+\item 
+\hypertarget{class_analyzer_a89cdd7ecf5fde88e02d8ec6e27018764}{
+int {\bfseries translatePlayer} (std::string player)}
+\label{class_analyzer_a89cdd7ecf5fde88e02d8ec6e27018764}
+
+\item 
+\hypertarget{class_analyzer_a640f693c875dbd4f2e67add66bf5cf1e}{
+int {\bfseries findPlayer} (std::string number)}
+\label{class_analyzer_a640f693c875dbd4f2e67add66bf5cf1e}
+
+\end{DoxyCompactItemize}
+\subsection*{Protected Attributes}
+\begin{DoxyCompactItemize}
+\item 
+\hypertarget{class_analyzer_ad3471cda947803628d9f491cb202df08}{
+\hyperlink{class_connection}{Connection} $\ast$ {\bfseries server}}
+\label{class_analyzer_ad3471cda947803628d9f491cb202df08}
+
+\item 
+\hypertarget{class_analyzer_aa97e8083e22d869a31098a17b22fc632}{
+\hyperlink{class_db}{Db} $\ast$ {\bfseries database}}
+\label{class_analyzer_aa97e8083e22d869a31098a17b22fc632}
+
+\item 
+\hypertarget{class_analyzer_a158bbcde6eca393f36ab459bbe152e15}{
+\hyperlink{class_config_loader_1_1_options}{ConfigLoader::Options} $\ast$ {\bfseries m\_\-dati}}
+\label{class_analyzer_a158bbcde6eca393f36ab459bbe152e15}
+
+\end{DoxyCompactItemize}
+
+
+The documentation for this class was generated from the following files:\begin{DoxyCompactItemize}
+\item 
+src/Analyzer.h\item 
+src/Analyzer.cpp\end{DoxyCompactItemize}
