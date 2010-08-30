@@ -338,7 +338,7 @@ void Connection::nextmap( string name )
     
     string comando( "rcon ");
     comando.append( (*m_options)[m_options->serverNumber].rcon() );
-    comando.append( " nextmap " );
+    comando.append( " g_nextmap " );
     comando.append( name );
     
     vector< char > command = makeCmd( comando );

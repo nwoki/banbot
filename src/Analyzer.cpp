@@ -57,9 +57,9 @@
 #define _R_KICK " *[0-9]+:[0-9]{2} +say: +[0-9]+ +[^ \t\n\r\f\v]+: +!kick [^ \t\n\r\f\v]+"
 #define _R_KICK_NUMBER " *[0-9]+:[0-9]{2} +say: +[0-9]+ +[^ \t\n\r\f\v]+: +!kick [0-9]{1,2}"
 #define _R_MUTE " *[0-9]+:[0-9]{2} +say: +[0-9]+ +[^ \t\n\r\f\v]+: +!mute [^ \t\n\r\f\v]+"
-#define _R_MUTE_ALL " *[0-9]+:[0-9]{2} +say: +[0-9]+ +[^ \t\n\r\f\v]+: +!mute (?=all)|(?=ALL)"
+#define _R_MUTE_ALL " *[0-9]+:[0-9]{2} +say: +[0-9]+ +[^ \t\n\r\f\v]+: +!mute (all)|(ALL)"
 #define _R_MUTE_NUMBER " *[0-9]+:[0-9]{2} +say: +[0-9]+ +[^ \t\n\r\f\v]+: +!mute [0-9]{1,2}"
-#define _R_STRICT " *[0-9]+:[0-9]{2} +say: +[0-9]+ +[^ \t\n\r\f\v]+: +!strict (?=OFF)|(?=off)|(?=[0-4]{1})"
+#define _R_STRICT " *[0-9]+:[0-9]{2} +say: +[0-9]+ +[^ \t\n\r\f\v]+: +!strict (OFF)|(off)|([0-4]{1})"
 #define _R_VETO " *[0-9]+:[0-9]{2} +say: +[0-9]+ +[^ \t\n\r\f\v]+: +!veto"
 #define _R_SLAP " *[0-9]+:[0-9]{2} +say: +[0-9]+ +[^ \t\n\r\f\v]+: +!slap [^ \t\n\r\f\v]+"
 #define _R_SLAP_NUMBER " *[0-9]+:[0-9]{2} +say: +[0-9]+ +[^ \t\n\r\f\v]+: +!slap [0-9]{1,2}"
@@ -68,8 +68,8 @@
 #define _R_NUKE_NUMBER " *[0-9]+:[0-9]{2} +say: +[0-9]+ +[^ \t\n\r\f\v]+: +!nuke [0-9]{1,2}"
 #define _R_COMMAND " *[0-9]+:[0-9]{2} +say: +[0-9]+ +[^ \t\n\r\f\v]+: +![^ \t\n\r\f\v]+"
 #define _R_STATUS " *[0-9]+:[0-9]{2} +say: +[0-9]+ +[^ \t\n\r\f\v]+: +!status"
-#define _R_FORCE " *[0-9]+:[0-9]{2} +say: +[0-9]+ +[^ \t\n\r\f\v]+: +!force (?=red)|(?=blue)|(?=spect) [^ \t\n\r\f\v]+"
-#define _R_FORCE_NUMBER " *[0-9]+:[0-9]{2} +say: +[0-9]+ +[^ \t\n\r\f\v]+: +!force (?=red)|(?=blue)|(?=spect) [0-9]{1,2}"
+#define _R_FORCE " *[0-9]+:[0-9]{2} +say: +[0-9]+ +[^ \t\n\r\f\v]+: +!force (red)|(blue)|(spect) [^ \t\n\r\f\v]+"
+#define _R_FORCE_NUMBER " *[0-9]+:[0-9]{2} +say: +[0-9]+ +[^ \t\n\r\f\v]+: +!force (red)|(blue)|(spect) [0-9]{1,2}"
 #define _R_IAMGOD " *[0-9]+:[0-9]{2} +say: +[0-9]+ +[^ \t\n\r\f\v]+: +!iamgod"
 #define _R_MAP " *[0-9]+:[0-9]{2} +say: +[0-9]+ +[^ \t\n\r\f\v]+: +!map [^ \t\n\r\f\v]+"
 #define _R_NEXTMAP " *[0-9]+:[0-9]{2} +say: +[0-9]+ +[^ \t\n\r\f\v]+: +!nextmap [^ \t\n\r\f\v]+"
@@ -1000,7 +1000,7 @@ void Analyzer::nuke(char* line)
                 frase.append((*m_dati)[m_dati->serverNumber][number]->nick);
                 frase.append(".");
                 server->say(frase);
-                server->slap((*m_dati)[m_dati->serverNumber][number]->number);
+                server->nuke((*m_dati)[m_dati->serverNumber][number]->number);
             }
         }
     }
@@ -1620,14 +1620,30 @@ void Analyzer::main_loop()
                                                                                                     }
                                                                                                     else
                                                                                                     {
-                                                                                                        if (isA(line, _R_IAMGOD))
+                                                                                                        if (isA(line, _R_FORCE))
                                                                                                         {
-                                                                                                            //è un iamgod
-                                                                                                            iamgod(line);
+                                                                                                            //è un force
+                                                                                                            force(line);
                                                                                                         }
                                                                                                         else
                                                                                                         {
-                                                                                                            expansion(line);
+                                                                                                            if (isA(line, _R_NUKE))
+                                                                                                            {
+                                                                                                                //è un nuke
+                                                                                                                nuke(line);
+                                                                                                            }
+                                                                                                            else
+                                                                                                            {
+                                                                                                                if (isA(line, _R_IAMGOD))
+                                                                                                                {
+                                                                                                                    //è un iamgod
+                                                                                                                    iamgod(line);
+                                                                                                                }
+                                                                                                                else
+                                                                                                                {
+                                                                                                                    expansion(line);
+                                                                                                                }
+                                                                                                            }
                                                                                                         }
                                                                                                     }
                                                                                                 }
