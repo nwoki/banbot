@@ -1,0 +1,111 @@
+/*! \mainpage BanBot v1.2
+*
+*
+*
+*   \section intro_sec General description and notes
+*
+*   Banbot is a bot made in C++ that aims to be simple efficient and to use very few
+*   resources of the hosting machine limiting ( even almost eliminating ) unwanted server "lags".
+*   It controls the URBAN TERROR 4.1 game and uses a an SQLite3 database to keep it's data
+*   ( the SQLite3 library is integrated in the bot so you don't have to install it seperatly on the hosting
+*   machine ).
+*   It periodically controls the server for banned players and gets rid of them denying any future access.
+*
+*   Created to go on Unix/linux machines ( <b>Windows servers not tested!</b> )
+*
+*   Inide the directory "compiled" you'll find an already compiled version of the bot tha "should" run on most
+*   linux servers ( for those who don't have to possibility to compile it directly on the server ).
+*   We advise to compile the source code on your server when possible.
+*
+*
+*
+*   \section Requirements
+*    Requirements for compilation:
+*    \li ~ Unix/linux os
+*    \li ~ g++ compiler
+*    \li ~ standard libraries
+*
+*   \section How_to_compile_Banbot
+*
+*   \li $cd <directory>
+*   \li $make
+*
+*   If compilation succeeds, you'll find the Banbot executable in the current folder
+*
+*
+*
+*   \section Banbot_configuration
+*
+*   All the bot config parameters are found in BanBot.cfg.
+*   This file MUST be modified in base to your needs specifiying all the parameters asked insiede
+*   the file.
+*
+*   It's also possibile to make BanBot use a config file ( in another folder/directory ) giving it the file's
+*   location when starting the bot. Example:
+*   ./BanBot                        #uses default config file ( same folder where the bot is situated )
+*   ./BanBot configs/bot.cfg        #uses file "bot.cfg" in the folder "configs/"
+*
+*   It's possible to insert comments in the config file by adding a "#" at the beggining of the line.
+*   It's not reccomended to leave blank spaces and/or lines inside the config file.
+*
+*   Every operation in structured in the following way:
+*
+*   OptionName=OptionValue  <b>(!!!WITHOUT SPACES BEFORE AND/OR AFTER THE "="!!!)</b>
+*
+*
+*   You'll have to set the following options:
+*
+*   \li- BOTLOG    : tell the bot where to save it's logfile
+*   \li- IP        : ip of the UrT server ( !! insert the SERVER ip and not "localhost" or "127.0.0.1"
+*   \li- PORT      : UrT server port
+*   \li- RCONPASS  : server's RCON password. Without this the bot can't submit admin actions
+*   \li- LOGPATH   : server's log file ( specifying path if the bot's executable is in a different directory )
+*   \li- GUID      : admin(s) guid(s)
+*
+*
+*   !ATTENTION! : all the options must be written only once ( that means you can't have two ip's ecc ) exception of
+*   "GUID". Every single GUID inserted indicates and admin ( or whoever should have rights on the bot ).
+*   You can find out about guid's by taking a look on the server's log file and take them from there.
+*   The bot will listen and execute commands only if given by people with the specified guids.
+*   This means that if you don't setup any guid, the bot won't listen to anyone!
+*
+*
+*
+*   \section Running_BanBot
+*
+*   We ( bot developers ) must precise one thing: the bot has a very insignificant consumtion of resources
+*   BUT starting it up with a server log that contains 300000000 lines, it's obvious that parsing the file the
+*   bot will consume a moderate amount of resources for those 30-40 seconds it takes to get to the end of the file.
+*
+*   So if you have to startup the bot ( and not only the first time! )change logfile ( if you're not interested in keeping
+*   a log backup you can simply delete the file, the log server will recreate a new one on the next map ).
+*
+*   After this you can simply startpu the bot with:
+*   \li $./BanBot
+*
+*   If you want to start it up to make it run in background on your server, we advise the creation of a script .sh
+*   and to start it up with the help of "screen".
+*
+*   (botlauncher.sh)
+*
+*   /dircectory/BanBot
+*
+*   and you can start it up with:
+*
+*   \li $screen -m -d sh botlauncher.sh
+*
+*
+*
+*
+*   \section BanBot_command_list
+*
+*   The implemented commands so far are:
+*   \li <b>!ban</b> <number>
+*   \details where <number> indicates the user number of the connected client.
+*   You can easily find this by typing "\clientlist" from the game's console
+*
+*
+*   \author n3m3s1s
+*   \author zamy
+*
+*/
