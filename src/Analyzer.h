@@ -72,23 +72,23 @@
 #define LEVEL4 4        //sperimentale: controlli avanzati, butta fuori direttamente tutti quelli che non sono puliti al 100% (butta solo fuori, non banna).
 
 //stringa stampata all'utente con i comandi disponibili (quando viene dato il comando !help).
-#define COMMANDLIST "Comandi disponibili:\n\
-!ban <number/nick> [<reason>] : banna un player, con o senza motivo\n\
-!unban <id> : sbanna un player (id dato da !find)\n\
-!kick <number/nick> : butta fuori un player\n\
-!mute <number/nick/all> : muta o smuta un singolo player, o tutti\n\
-!find <nick> : cerca un player tra i bannati\n\
-!findop <nick> : cerca un player tra gli admin\n\
-!op <number/nick> : da' lo stato di admin ad un player\n\
-!deop <id> : toglie lo stato di admin ad un player (id da !findop)\n\
-!strict <OFF/0/1/2/3> : cambia il livello di sicurezza del server\n\
-!nuke <number/nick> : lancia un nuke ad un player\n\
-!slap <number/nick> [2/3/4/5] : slappa una (o più volte) un player\n\
-!veto : annulla la votazione in corso\n\
-!status : informazioni sullo stato del bot\n\
-!force <number/nick> <red/blue/spect> : cambia team ad un player\n\
-!map <name> : cambia la mappa (per esempio, ut4_casa)\n\
-!nextmap <name> : imposta la mappa successiva (vedi !map)\
+#define COMMANDLIST "^1Comandi disponibili:\n\
+^2!ban <number/nick> [<reason>] ^1: banna un player, con o senza motivo\n\
+^2!unban <id> ^1: sbanna un player (id dato da !find)\n\
+^2!kick <number/nick> ^1: butta fuori un player\n\
+^2!mute <number/nick/all> ^1: muta o smuta un singolo player, o tutti\n\
+^2!find <nick> ^1: cerca un player tra i bannati\n\
+^2!findop <nick> ^1: cerca un player tra gli admin\n\
+^2!op <number/nick> ^1: da' lo stato di admin ad un player\n\
+^2!deop <id> ^1: toglie lo stato di admin ad un player (id da !findop)\n\
+^2!strict <OFF/0/1/2/3> ^1: cambia il livello di sicurezza del server\n\
+^2!nuke <number/nick> ^1: lancia un nuke ad un player\n\
+^2!slap <number/nick> [2/3/4/5] ^1: slappa una (o piu' volte) un player\n\
+^2!veto ^1: annulla la votazione in corso\n\
+^2!status ^1: informazioni sullo stato del bot\n\
+^2!force <red/blue/spect> <number/nick> ^1: cambia team ad un player\n\
+^2!map <name> ^1: cambia la mappa (per esempio, ut4_casa)\n\
+^2!nextmap <name> ^1: imposta la mappa successiva (vedi !map)\
 "
 
 class Analyzer
