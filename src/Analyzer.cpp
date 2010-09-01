@@ -1203,7 +1203,7 @@ bool Analyzer::guidIsBanned(const std::string &guid, const std::string &nick, co
 {   
     //if ( (*m_dati)[m_dati->serverNumber].strict() > LEVEL0 )
     //{
-        std::vector<Db::idMotiveStruct> risultato = database->idMotiveViaGuid(guid);
+        std::vector<Db::idMotiveStruct> risultato = database->idMotiveViaGuid(correggi(guid));
         
         if ( risultato.size() )
         {          
@@ -1229,7 +1229,7 @@ bool Analyzer::nickIsBanned(const std::string &nick, const std::string &numero, 
     
     if ( (*m_dati)[m_dati->serverNumber].strict() > LEVEL0 )
     {
-        std::vector<Db::idMotiveStruct> risultato = database->idMotiveViaNick(nick);
+        std::vector<Db::idMotiveStruct> risultato = database->idMotiveViaNick(correggi(nick));
         std::string ora;
         std::string data;
         getDateAndTime(data,ora);
