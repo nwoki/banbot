@@ -183,7 +183,7 @@ void ConfigLoader::loadOptions()
                                 {
                                     std::string t = extract( temp );
                                     if ( t.at(0) != '/' && secondary )
-                                        t.insert( 0, newServer->configFile().substr(0,newServer->configFile().find_last_of("/")) );
+                                        t.insert( 0, newServer->configFile().substr(0,newServer->configFile().find_last_of("/")+1) );
 
                                     newServer->setServerLog( t );
                                 }
@@ -192,7 +192,7 @@ void ConfigLoader::loadOptions()
                                 {
                                     std::string t = extract( temp );
                                     if ( t.at(0) != '/' && secondary )
-                                        t.insert( 0, newServer->configFile().substr(0,newServer->configFile().find_last_of("/")) );
+                                        t.insert( 0, newServer->configFile().substr(0,newServer->configFile().find_last_of("/")+1) );
 
                                     newServer->setBotLog( t );
                                 }
@@ -201,7 +201,7 @@ void ConfigLoader::loadOptions()
                                 {
                                     std::string t=extract( temp );
                                     if ( t.at(0) != '/' && secondary )
-                                        t.insert( 0, newServer->configFile().substr(0,newServer->configFile().find_last_of("/")) );
+                                        t.insert( 0, newServer->configFile().substr(0,newServer->configFile().find_last_of("/")+1) );
 
                                     newServer->setBackupDir( t );
                                 }
@@ -210,7 +210,7 @@ void ConfigLoader::loadOptions()
                                 {
                                     std::string t=extract( temp );
                                     if ( t.at(0) != '/' && secondary )
-                                        t.insert( 0, newServer->configFile().substr(0,newServer->configFile().find_last_of("/")) );
+                                        t.insert( 0, newServer->configFile().substr(0,newServer->configFile().find_last_of("/")+1) );
 
                                     newServer->setDbFolder( t );
                                 }
@@ -221,7 +221,7 @@ void ConfigLoader::loadOptions()
                                 else if ( temp.compare("EXTERNAL_OPTIONS = YES") == 0 )
                                     secondary = true;
 
-                                else if ( isA( temp, (char*)" *CONFIG_FILE *= *[0-3]{1}" ) && !secondary )
+                                else if ( isA( temp, (char*)" *CONFIG_FILE *= *[^ \t\n\r\f\v]+" ) && !secondary )
                                 {
                                     newServer->setConfigFile( extract(temp) );
                                     struct stat info;

@@ -43,7 +43,7 @@
 \\gear\\[^ \t\n\r\f\v]+\\teamtask\\[0-9]+\\cl_guid\\[A-F0-9]{32}\\weapmodes\\[0-2]{20}"
 
 #define _R_CLIENT_DISCONNECT "^ *[0-9]+:[0-9]{2} +ClientDisconnect:"
-#define _R_BAN "^ *[0-9]+:[0-9]{2} +say: +[0-9]+ +[^ \t\n\r\f\v]+: +!ban [^ \t\n\r\f\v]+$"
+#define _R_BAN "^ *[0-9]+:[0-9]{2} +say: +[0-9]+ +[^ \t\n\r\f\v]+: +!ban [^\t\n\r\f\v]+$"
 #define _R_BAN_NUMBER "^ *[0-9]+:[0-9]{2} +say: +[0-9]+ +[^ \t\n\r\f\v]+: +!ban [0-9]{1,2}$"
 #define _R_FIND "^ *[0-9]+:[0-9]{2} +say: +[0-9]+ +[^ \t\n\r\f\v]+: +!find [^ \t\n\r\f\v]+$"
 #define _R_FINDOP "^ *[0-9]+:[0-9]{2} +say: +[0-9]+ +[^ \t\n\r\f\v]+: +!findop [^ \t\n\r\f\v]+$"
