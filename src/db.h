@@ -59,8 +59,6 @@ class Db
         Db( ConfigLoader::Options* conf );
         ~Db();  /*!< Destructor for class Db*/
 
-        void checkDatabases();    /* checks if database files exist and flags them in m_options */
-
         //database connection
         bool openDatabase();    /*!< opens a connection with the sqlite3 database.\nReturns true if connection succeded else returns false for failiure*/
         void closeDatabase();   /*!< closes database connection*/
@@ -69,6 +67,7 @@ class Db
         bool checkAuthGuid( const string &guid );   /*!< checks for the existance of "guid" in the oplist table*/
         bool checkBanGuid( const string &guid );    /*!< checks if "guid" is present amongst the banned users*/
         bool checkBanNick( const string &nick );    /*!< checks if "nick" is present amongst the banned users*/
+        void checkDatabases();    /*! checks if database files exist and flags them in m_options */
         bool isOpTableEmpty();   /*!< checks if oplist table is empty ( returns true ) else returns false*/
         //bool checkDirAndFile( const string &guid ); //passa url file compreso
 
