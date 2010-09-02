@@ -60,6 +60,9 @@ Db::Db( ConfigLoader::Options* conf )
     if( m_options->servers.size() > 0 ) {
         //create databases if needed
         for( unsigned int i = 0; i < m_options->servers.size(); i++ ) {
+            // set server number I'm working onDbCounter
+            m_options->serverNumber = i;
+
             //get path to db folder
             string dbPath = m_options->servers.at( i )->dbFolder();
 
@@ -104,51 +107,8 @@ Db::Db( ConfigLoader::Options* conf )
         checkDatabases();   /* set various database validity flags */
     }
 
-// OLD
-//     if( stat( DATABASE_DIR, &st ) == 0 ) {
-//         cout << "  [*]dir '" << DATABASE_DIR << "/' found\n";
-//         *(m_options->log) << "  [*]dir '" << DATABASE_DIR << "/' found\n";
-//     }
-//     else {
-//         cout << "\e[0;33m  [!]couldn't find dir '" << DATABASE_DIR << "/'! Creating dir '" << DATABASE_DIR << "/'..\e[0m \n";
-//         *(m_options->log) << "  [!]couldn't find dir '" << DATABASE_DIR << "/'! Creating dir '" << DATABASE_DIR << "/'..\n";
-//
-//         if( mkdir( DATABASE_DIR, 0777 ) != 0 ) {
-//             cout << "\e[1;31m[EPIC FAIL] couldn't create directory '" << DATABASE_DIR << "/'.Please check permissions!\e[0m \n";
-//             *(m_options->log) << "[EPIC FAIL] couldn't create directory '" << DATABASE_DIR << "/'.Please check permissions!\n";
-//             *(m_options->errors) << "[EPIC FAIL] On " << (*m_options)[m_options->serverNumber].getName()  << " : couldn't create directory '" << DATABASE_DIR << "/'.Please check permissions!\n";
-//             cout << "\e[1;31m[FAIL] need database for bot to work correctly. Please resolve this problem and launch application again\e[0m \n";
-//             *(m_options->log) << "[FAIL] can't create database! Haven't got permission to do so.. i will ignore this server.\n";
-//             *(m_options->errors) << "[FAIL] On " << (*m_options)[m_options->serverNumber].getName()  << " : can't create database! Haven't got permission to do so.. i will ignore this server.\n";
-//             //#warning TODO terminate program here if i cant create database and/or database file!!!
-//         }
-//         else {
-//             cout << "\e[0;32m  [OK]created '" << DATABASE_DIR << "/' directory..\e[0m \n";
-//             *(m_options->log) << "  [OK]created '" << DATABASE_DIR << "/' directory..\n";
-//         }
-//     }
-/*
-    //check per il database
-    ifstream IN( DATABASE );
-
-    if( !IN ) {
-        cout << "\e[0;33m  [!] database doesn't exist!\e[0m \n";
-        //create database
-        cout << "\e[0;33m    [!] creating database '" << DATABASE << "/' in '" << DATABASE_DIR << "/'\e[0m \n";
-        *(m_options->log) << "  [!] database doesn't exist!\n" << "    [*] creating database '" << DATABASE << "/' in '" << DATABASE_DIR << "/'\n";
-        openDatabase();
-        createDb();
-    }
-    else {
-        IN.close();
-        openDatabase();
-    }
-
-    //azzero la tabella degli admins
-    loadAdminlist( admins );
-    loadBanlist( banned );
-    dumpAdminsToFile();
-    dumpBannedToFile();*/
+    // set server number back to start ( 0 )!!!
+    m_options->serverNumber = 0;
 }
 
 
@@ -1109,7 +1069,7 @@ void Db::createDb()   //initial creation of database
         *(m_options->log) << "    [*]created 'banned' table..\n";
     }
     else {
-        cout << "\e[0;31m    [FAIL]error creating 'banned' table\e[0m \n";
+        cout << "\e[0;31m    [FAIL]error creating 'banned' table on database @ : " << (*m_options)[m_options->serverNumber].name() << "\e[0m \n";
         *(m_options->log) << "    [FAIL]error creating 'banned' table\n";
         *(m_options->errors) << "[FAIL] On " << (*m_options)[m_options->serverNumber].name()  << " : error creating 'banned' table\n";
     }
@@ -1119,7 +1079,7 @@ void Db::createDb()   //initial creation of database
         *(m_options->log) << "    [*]created 'guid' table..\n";
     }
     else {
-        cout << "\e[0;31m    [FAIL]error creating 'guid' table\e[0m \n";
+        cout << "\e[0;31m    [FAIL]error creating 'guid' table on database @ : " << (*m_options)[m_options->serverNumber].name() << "\e[0m \n";
         *(m_options->log) << "    [FAIL]error creating 'guid' table\n";
         *(m_options->errors) << "[FAIL] On " << (*m_options)[m_options->serverNumber].name()  << " : error creating 'guid' table\n";
     }
@@ -1129,7 +1089,7 @@ void Db::createDb()   //initial creation of database
         *(m_options->log) << "    [*]created 'oplist' table..\n";
     }
     else {
-        cout << "\e[0;31m    [FAIL]error creating 'oplist' table\e[0m \n";
+        cout << "\e[0;31m    [FAIL]error creating 'oplist' table on database @ : " << (*m_options)[m_options->serverNumber].name() << "\e[0m \n";
         *(m_options->log) << "    [FAIL]error creating 'oplist' table\n";
         *(m_options->errors) << "[FAIL] On " << (*m_options)[m_options->serverNumber].name()  << " : error creating 'oplist' table\n";
     }
