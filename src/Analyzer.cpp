@@ -649,7 +649,7 @@ void Analyzer::findOp(char* line)
         std::vector<Db::idNickStruct> risultato=database->findPreciseIdNickViaNickOp(nick);
         std::vector<Db::idNickStruct> risultatoApprossimativo=database->findAproxIdNickViaNickOp(nick);
         
-        std::string frase("^1Risultati esatti: \n^1");
+        std::string frase("^2Risultati esatti: \n^1");
         if (risultato.size()>5)
         {
             frase.append("troppi risultati, prova a migliorare la ricerca. Forse cercavi\n ^1");
@@ -673,7 +673,7 @@ void Analyzer::findOp(char* line)
         server->tell(frase,numero);
         
         frase.clear();
-        frase.append("Ricerca: \n^1");
+        frase.append("^2Ricerca: \n^1");
         if (risultatoApprossimativo.size()>15)
         {
             frase.append("troppi risultati, prova a migliorare la ricerca. Forse cercavi\n^1");

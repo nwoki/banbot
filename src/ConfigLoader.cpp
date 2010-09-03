@@ -279,17 +279,17 @@ void ConfigLoader::loadOptions()
                 for ( unsigned int i = 0; i < newOptions->size(); i++ )
                     (*newOptions)[i].test_for_changes( opzioni->searchServer( (*newOptions)[i].name() ) );
 
-                newOptions->infos = opzioni->infos;
+                opzioni->destroyServers();
+                opzioni->servers=newOptions->servers;
+                delete opzioni->errors;
+                opzioni->errors = new Logger( newOptions->generalLog );
+                opzioni->generalLog = newOptions->generalLog;
+                opzioni->generalBackup = newOptions->generalLog;
+                
 
-                //ok, sistemato il trasferimento di parametri da vecchi a nuovi ^^ elimino le vecchie impostazioni.
-                delete opzioni;
-
-                //ricreo i 2 stream di log e mi salvo le impostazioni.
-                delete newOptions->errors;
-                delete newOptions->log;
-                newOptions->errors = new Logger( newOptions->generalLog );
-                newOptions->log = new Logger();
-                opzioni = newOptions;
+                //ok, sistemato il trasferimento di parametri da vecchi a nuovi ^^ elimino gli oggetti temporanei
+                delete newOptions;
+                
                 #ifdef DEBUG_MODE
                 std::cout << "Finito il caricamento delle opzioni.\n";
                 #endif

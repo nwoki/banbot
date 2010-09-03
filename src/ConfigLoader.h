@@ -65,11 +65,16 @@ class ConfigLoader
                 //distruttore
                 ~Options()
                 {
-                    for( unsigned int i = 0; i < servers.size(); i++ )
-                        delete servers[i];
                     delete errors;
                     delete log;
                 };
+                //distrugge gli oggetti contenuti in servers.
+                void destroyServers()
+                {
+                    for( unsigned int i = 0; i < servers.size(); i++ )
+                        delete servers[i];
+                    
+                }
                 //comoda funzione per cercare un server per nome.
                 Server* searchServer(std::string name)
                 {
