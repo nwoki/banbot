@@ -55,6 +55,13 @@ class ConfigLoader
 
                 Server& operator[] ( int number ) { return *servers[number]; }
                 unsigned int size() { return servers.size(); }
+                
+                //costruttore
+                Options()
+                {
+                    errors=new Logger();
+                    log=new Logger();
+                }
                 //distruttore
                 ~Options()
                 {

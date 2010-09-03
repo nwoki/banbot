@@ -285,6 +285,8 @@ void ConfigLoader::loadOptions()
                 delete opzioni;
 
                 //ricreo i 2 stream di log e mi salvo le impostazioni.
+                delete newOptions->errors;
+                delete newOptions->log;
                 newOptions->errors = new Logger( newOptions->generalLog );
                 newOptions->log = new Logger();
                 opzioni = newOptions;

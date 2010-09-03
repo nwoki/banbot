@@ -34,7 +34,7 @@
 
 Logger::Logger( std::string p ): path( p ),isOpen( false )
 {
-  checkFile();
+    checkFile();
 }
 
 Logger::Logger():path( "" ),isOpen( false )

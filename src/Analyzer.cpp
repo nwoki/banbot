@@ -1390,7 +1390,7 @@ void Analyzer::main_loop()
     {
         commandexecuted=false;
         //vedo è il caso di fare il backup
-        if(backup->doJobs()) 
+        /*if(backup->doJobs()) 
         {
             //eseguito il backup. Reload dei server
             server->reload();
@@ -1416,7 +1416,7 @@ void Analyzer::main_loop()
                 m_dati->serverNumber=0;
             }
             sleep(2);
-        }
+        }*/
         
         //ogni tot di giri controllo se sono cambiate le impostazioni
         if ( giri > 10 )
