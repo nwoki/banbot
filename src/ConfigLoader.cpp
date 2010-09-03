@@ -284,7 +284,7 @@ void ConfigLoader::loadOptions()
                 delete opzioni->errors;
                 opzioni->errors = new Logger( newOptions->generalLog );
                 opzioni->generalLog = newOptions->generalLog;
-                opzioni->generalBackup = newOptions->generalLog;
+                opzioni->generalBackup = newOptions->generalBackup;
                 
 
                 //ok, sistemato il trasferimento di parametri da vecchi a nuovi ^^ elimino gli oggetti temporanei

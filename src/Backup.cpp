@@ -36,7 +36,8 @@
 #include <iostream>
 
 Backup::Backup(ConfigLoader::Options* opzioni)
-  : done(false)
+  : m_options(opzioni)
+  , done(false)
 {
   /*for (unsigned int i=0;i<opzioni.size();i++)
   {
@@ -57,22 +58,55 @@ Backup::~Backup()
 
 void Backup::creaCartelle()
 {
-  //controllo le cartelle dei server
-  for (unsigned int i=0; i<m_options->size(); i++ )
-  {
-    if ( (*m_options)[i].isChanged() )
+    //controllo le cartelle dei server
+    for (unsigned int i=0; i<m_options->size(); i++ )
     {
-      std::cout<<"\nInizializzo il sistema di backup di "<< (*m_options)[i].name() <<" ...\n";
-      std::string dir ( (*m_options)[i].backupDir() );
-      unsigned int pos=0;
-      bool ok=true;
-      
-      //check per la cartella
-      while (pos<dir.size()-1 && ok)
-      {
+        std::cout<<"\nInizializzo il sistema di backup di "<< (*m_options)[i].name() <<" ...\n";
+        std::string dir ( (*m_options)[i].backupDir() );
+        unsigned int pos=0;
+        bool ok=true;
+        
+        //check per la cartella
+        while (pos<dir.size()-1 && ok)
+        {
+            pos=dir.find('/',pos+1);
+            std::string cartella=dir.substr(0,pos);
+            
+            struct stat st;
+            if( stat( cartella.c_str(), &st ) == 0 )
+            {
+                std::cout<<"  [*]dir '"<<cartella<<"/' found\n";
+            }
+            else
+            {
+                std::cout<<"   [!]couldn't find dir '"<<cartella<<"/'! Creating dir '"<<cartella<<"/'..\n";
+                
+                if( mkdir( cartella.c_str(), 0777 ) == 0 )
+                {
+                    std::cout<<"  [OK]created '"<<cartella<<"/' directory..\n";
+                }
+                else
+                {
+                    std::cout<<"[EPIC FAIL] couldn't create directory '"<<cartella<<"/'.Please check permissions!\n";
+                    *(m_options->errors)<<"[EPIC FAIL] couldn't create directory '"<<cartella<<"/' for " << (*m_options)[i].name() << ". Please check permissions!\n";
+                    ok=false;
+                }
+            }
+        }
+    }
+    
+    //controllo la cartella di backup generale
+    std::cout<<"\nInizializzo il sistema di backup generale ...\n";
+    std::string dir ( m_options->generalBackup );
+    unsigned int pos=0;
+    bool ok=true;
+    
+    //check per la cartella
+    while (pos<dir.size()-1 && ok)
+    {
         pos=dir.find('/',pos+1);
         std::string cartella=dir.substr(0,pos);
-
+        
         struct stat st;
         if( stat( cartella.c_str(), &st ) == 0 )
         {
@@ -80,56 +114,20 @@ void Backup::creaCartelle()
         }
         else
         {
-          std::cout<<"   [!]couldn't find dir '"<<cartella<<"/'! Creating dir '"<<cartella<<"/'..\n";
-
-          if( mkdir( cartella.c_str(), 0777 ) == 0 )
-          {
-              std::cout<<"  [OK]created '"<<cartella<<"/' directory..\n";
-          }
-          else
-          {
-              std::cout<<"[EPIC FAIL] couldn't create directory '"<<cartella<<"/'.Please check permissions!\n";
-              *(m_options->errors)<<"[EPIC FAIL] couldn't create directory '"<<cartella<<"/' for " << (*m_options)[i].name() << ". Please check permissions!\n";
-              ok=false;
-          }
+            std::cout<<"   [!]couldn't find dir '"<<cartella<<"/'! Creating dir '"<<cartella<<"/'..\n";
+            
+            if( mkdir( cartella.c_str(), 0777 ) == 0 )
+            {
+                std::cout<<"  [OK]created '"<<cartella<<"/' directory..\n";
+            }
+            else
+            {
+                std::cout<<"[EPIC FAIL] couldn't create directory '"<<cartella<<"/'.Please check permissions!\n";
+                *(m_options->errors)<<"[EPIC FAIL] couldn't create directory '"<<cartella<<"/' for general backup. Please check permissions!\n";
+                ok=false;
+            }
         }
-      }
     }
-  }
-  
-  //controllo la cartella di backup generale
-  std::cout<<"\nInizializzo il sistema di backup generale ...\n";
-  std::string dir ( m_options->generalBackup );
-  unsigned int pos=0;
-  bool ok=true;
-  
-  //check per la cartella
-  while (pos<dir.size()-1 && ok)
-  {
-    pos=dir.find('/',pos+1);
-    std::string cartella=dir.substr(0,pos);
-
-    struct stat st;
-    if( stat( cartella.c_str(), &st ) == 0 )
-    {
-        std::cout<<"  [*]dir '"<<cartella<<"/' found\n";
-    }
-    else
-    {
-      std::cout<<"   [!]couldn't find dir '"<<cartella<<"/'! Creating dir '"<<cartella<<"/'..\n";
-
-      if( mkdir( cartella.c_str(), 0777 ) == 0 )
-      {
-          std::cout<<"  [OK]created '"<<cartella<<"/' directory..\n";
-      }
-      else
-      {
-          std::cout<<"[EPIC FAIL] couldn't create directory '"<<cartella<<"/'.Please check permissions!\n";
-          *(m_options->errors)<<"[EPIC FAIL] couldn't create directory '"<<cartella<<"/' for general backup. Please check permissions!\n";
-          ok=false;
-      }
-    }
-  }
 }
 
 void Backup::checkFolder(std::string path)
@@ -258,6 +256,10 @@ bool Backup::doJobs()
     std::cout<<"Inizio il backup...";
     (m_options->errors)->timestamp();
     *(m_options->errors)<<"\nInizio il backup...";
+    
+    creaCartelle();
+    
+    spostaFilesGenerali();
     
     //faccio il backup per tutti i server...
     for (unsigned int i=0; i<m_options->size(); i++)
