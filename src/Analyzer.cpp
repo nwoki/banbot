@@ -76,7 +76,7 @@
 
 //costruttore
 Analyzer::Analyzer( Connection* conn, Db* db, ConfigLoader* configLoader )
-    : backup( new Backup( configLoader->getOptions() ) )
+    : backup( new Backup( configLoader->getOptions(), db ) )
     , m_configLoader( configLoader )
     , log(new ifstream())
     , contatore(0)

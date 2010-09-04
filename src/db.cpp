@@ -428,7 +428,7 @@ bool Db::isOpTableEmpty()
 void Db::dumpDatabases()
 {
     //close all db connections
-    closeDatabase();    // i work only on one database at a time so this should be sufficient
+    //closeDatabase();    // i work only on one database at a time so this should be sufficient
 
     //  dump all db's
     //command creation
@@ -438,6 +438,8 @@ void Db::dumpDatabases()
 
         //get current database directory
         cmd.append( (*m_options)[i].dbFolder() );
+        if( cmd[ cmd.length()-1 ] != '/' )
+            cmd.append( "/" );
         cmd.append( DB_NAME );
 
         //add space
@@ -446,12 +448,13 @@ void Db::dumpDatabases()
         //get backup directory
         cmd.append( (*m_options)[i].backupDir() );
 
-        if( cmd[ cmd.length() ] != '/' )
+        if( cmd[ cmd.length()-1 ] != '/' )
             cmd.append( "/" );
 
         cmd.append( DB_NAME );
-        cmd.append( ".backup." );
-        cmd.append( timeStamp() );  //add day,month and year to backup file name
+        cmd.append( ".backup-" );
+        cmd.append( (*m_options)[i].name() );
+        //cmd.append( timeStamp() );  //add day,month and year to backup file name
 
         if( system( cmd.c_str() ) ) {  // 0 is success, if I enter here, cmd FAILED
             cout << "\e[1;31mDb::dumpDatabase database dump failed!\e[0m \n";

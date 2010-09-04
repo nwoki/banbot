@@ -36,6 +36,7 @@
 #include <vector>
 #include "ConfigLoader.h"
 #include "logger.h"
+#include "db.h"
 
 //queste macro definiscono l'orario in cui effettuare l'archiviazione.
 //se il bot non e' utilizzato in simil-realtime, per comodita' si puo' definire
@@ -51,14 +52,17 @@
 class Backup
 {
   public:
-    Backup( ConfigLoader::Options* );  //usa il file di log interno a ConfigLoader::Options.
+    Backup( ConfigLoader::Options*, Db* );  //usa il file di log interno a ConfigLoader::Options.
     ~Backup();
     bool doJobs();                       //ritorna true se ha effettuato il backup
     void creaCartelle();                //crea le cartelle di backup dei server nuovi
   private:
     ConfigLoader::Options* m_options;
-    void spostaFiles( unsigned int server); //fa il backup di tutti i files del server @server.
-    void spostaFilesGenerali();             //fa il backup dei file generali del bot (general log).
+    Db* database;
+    std::string nameOfDir();                     //calcola il nome della cartella
+    void spostaFiles( unsigned int server, std::string dirOfTheDay ); //fa il backup di tutti i files del server @server.
+    void spostaFilesGenerali( std::string dirOfTheDay );             //fa il backup dei file generali del bot (general log).
+    void backupDatabases( std::string dirOfTheDay );                //backup dei database dei server.
     void checkFolder( std::string path );  //crea la cartella se non esiste.
     bool isTimeToWork();                //ritorna true se è il momento di fare il backup.
     bool done;

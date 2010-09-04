@@ -109,9 +109,9 @@ void ConfigLoader::loadOptions()
                 #ifdef DEBUG_MODE
                 std::cout << temp << "\n";
                 #endif
-                if ( !isA( temp, (char*)" *#") && isA( temp, (char*)" **GENERAL_[^ \t\n\r\f\v]+ *= *[^ \t\n\r\f\v]+" ) )
+                if ( !isA( temp, (char*)" *#") && isA( temp, (char*)"^[ \t]*GENERAL_[^ \t\n\r\f\v]+[ \t]*=[ \t]*[^ \t\n\r\f\v]+$" ) )
                 {
-                    if ( isA( temp, (char*)" *GENERAL_BOTLOG *= *[^ \t\n\r\f\v]+" ) )
+                    if ( isA( temp, (char*)"^[ \t]*GENERAL_BOTLOG[ \t]*=[ \t]*[^ \t\n\r\f\v]+$" ) )
                     {
                         newOptions->generalLog = extract ( temp );
                         #ifdef DEBUG_MODE
@@ -119,7 +119,7 @@ void ConfigLoader::loadOptions()
                         #endif
                     }
 
-                    if ( isA( temp, (char*)" *GENERAL_BACKUP_PATH *= *[^ \t\n\r\f\v]+" ) )
+                    if ( isA( temp, (char*)"^[ \t]*GENERAL_BACKUP_PATH[ \t]*=[ \t]*[^ \t\n\r\f\v]+$" ) )
                     {
                         newOptions->generalBackup = extract ( temp );
                         #ifdef DEBUG_MODE
@@ -166,20 +166,20 @@ void ConfigLoader::loadOptions()
                             #endif
                             pos=end+1;
                             
-                            if ( !isA( temp,(char*) " *#") && isA( temp, (char*)" *[^ \t\n\r\f\v]+ *= *[^ \t\n\r\f\v]+" ) )
+                            if ( !isA( temp,(char*) "[ \t]*#") && isA( temp, (char*)"^[ \t]*[^ \t\n\r\f\v]+[ \t]*=[ \t]*[^ \t\n\r\f\v]+$" ) )
                             {
                                 //se non è un commento o una puttanata....
-                                if ( isA( temp, (char *)" *SERVER_NAME *= *[^ \t\n\r\f\v]+" ) )
+                                if ( isA( temp, (char *)"^[ \t]*SERVER_NAME[ \t]*=[ \t]*[^ \t\n\r\f\v]+$" ) )
                                     newServer->setName( extract( temp ) );
-                                else if ( isA( temp, (char*)" *IP *= *[0-9]{1,3}.[0-9]{1,3}.[0-9]{1,3}.[0-9]{1,3}" ) )
+                                else if ( isA( temp, (char*)"^[ \t]*IP[ \t]*=[ \t]*[0-9]{1,3}.[0-9]{1,3}.[0-9]{1,3}.[0-9]{1,3}$" ) )
                                     newServer->setIP( extract( temp ) );
-                                else if ( isA( temp, (char*)" *PORT *= *[0-9]{1,5}" ) )
+                                else if ( isA( temp, (char*)"^[ \t]*PORT[ \t]*=[ \t]*[0-9]{1,5}$" ) )
                                     newServer->setPort( atoi( extract( temp ).c_str() ) );
 
-                                else if ( isA( temp, (char*)" *RCON_PASSWORD *= *[^ \t\n\r\f\v]+" ) )
+                                else if ( isA( temp, (char*)"^[ \t]*RCON_PASSWORD[ \t]*=[ \t]*[^ \t\n\r\f\v]+$" ) )
                                     newServer->setRcon( extract( temp ) );
 
-                                else if ( isA( temp, (char*)" *GAME_LOGFILE *= *[^ \t\n\r\f\v]+" ) )
+                                else if ( isA( temp, (char*)"^[ \t]*GAME_LOGFILE[ \t]*=[ \t]*[^ \t\n\r\f\v]+$" ) )
                                 {
                                     std::string t = extract( temp );
                                     if ( t.at(0) != '/' && secondary )
@@ -188,7 +188,7 @@ void ConfigLoader::loadOptions()
                                     newServer->setServerLog( t );
                                 }
 
-                                else if ( isA( temp, (char*)" *BOT_LOGFILE *= *[^ \t\n\r\f\v]+" ) )
+                                else if ( isA( temp, (char*)"^[ \t]*BOT_LOGFILE[ \t]*=[ \t]*[^ \t\n\r\f\v]+$" ) )
                                 {
                                     std::string t = extract( temp );
                                     if ( t.at(0) != '/' && secondary )
@@ -197,7 +197,7 @@ void ConfigLoader::loadOptions()
                                     newServer->setBotLog( t );
                                 }
 
-                                else if ( isA( temp, (char*)" *BACKUP_DIR *= *[^ \t\n\r\f\v]+" ) )
+                                else if ( isA( temp, (char*)"^[ \t]*BACKUP_DIR[ \t]*=[ \t]*[^ \t\n\r\f\v]+$" ) )
                                 {
                                     std::string t=extract( temp );
                                     if ( t.at(0) != '/' && secondary )
@@ -206,7 +206,7 @@ void ConfigLoader::loadOptions()
                                     newServer->setBackupDir( t );
                                 }
 
-                                else if ( isA( temp, (char*)" *DATABASE_DIR *= *[^ \t\n\r\f\v]+" ) )
+                                else if ( isA( temp, (char*)"^[ \t]*DATABASE_DIR[ \t]*=[ \t]*[^ \t\n\r\f\v]+$" ) )
                                 {
                                     std::string t=extract( temp );
                                     if ( t.at(0) != '/' && secondary )
@@ -215,13 +215,13 @@ void ConfigLoader::loadOptions()
                                     newServer->setDbFolder( t );
                                 }
 
-                                else if ( isA( temp, (char*)" *STRICT_LEVEL *= *[0-3]{1}" ) )
+                                else if ( isA( temp, (char*)"^[ \t]*STRICT_LEVEL[ \t]*=[ \t]*[0-3]{1}$" ) )
                                     newServer->setStrict( atoi( extract( temp ).c_str() ) );
 
                                 else if ( temp.compare("EXTERNAL_OPTIONS = YES") == 0 )
                                     secondary = true;
 
-                                else if ( isA( temp, (char*)" *CONFIG_FILE *= *[^ \t\n\r\f\v]+" ) && !secondary )
+                                else if ( isA( temp, (char*)"^[ \t]*CONFIG_FILE[ \t]*=[ \t]*[^ \t\n\r\f\v]+$" ) && !secondary )
                                 {
                                     newServer->setConfigFile( extract(temp) );
                                     struct stat info;
