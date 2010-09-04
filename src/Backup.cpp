@@ -245,6 +245,8 @@ void Backup::backupDatabases(std::string dirOfTheDay)
         if( db[ db.length()-1 ] != '/' )
             db.append( "/" );
         db.append( DB_NAME );
+        db.append( ".backup-" );
+        db.append( (*m_options)[i].name() );
         
         //get backup directory
         std::string dest( (*m_options)[i].backupDir() );
