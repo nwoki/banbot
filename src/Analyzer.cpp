@@ -73,6 +73,7 @@
 #define _R_IAMGOD "^ *[0-9]+:[0-9]{2} +say: +[0-9]+ +[^ \t\n\r\f\v]+: +!iamgod$"
 #define _R_MAP "^ *[0-9]+:[0-9]{2} +say: +[0-9]+ +[^ \t\n\r\f\v]+: +!map [^ \t\n\r\f\v]+$"
 #define _R_NEXTMAP "^ *[0-9]+:[0-9]{2} +say: +[0-9]+ +[^ \t\n\r\f\v]+: +!nextmap [^ \t\n\r\f\v]+$"
+#define _R_ADMINS "^ *[0-9]+:[0-9]{2} +say: +[0-9]+ +[^ \t\n\r\f\v]+: +!admins$"
 
 //costruttore
 Analyzer::Analyzer( Connection* conn, Db* db, ConfigLoader* configLoader )
@@ -1158,6 +1159,31 @@ void Analyzer::nextmap(char* line)
     }
 }
 
+void Analyzer::admins(char* line)
+{
+    std::cout<<"[!] Admins";
+    (m_dati->log)->timestamp();
+    *(m_dati->log)<<"\n[!] Admins";
+    //controllo se ho il giocatore e i suoi permessi, se la persona non è autorizzata non faccio nulla.
+    std::string numeroAdmin;
+    if (isAdminSay(line,numeroAdmin))
+    {
+        std::vector<unsigned int> t=admins();
+        std::string mex("^1Admins:\n");
+        for (unsigned int i=0;i<t.size();i++)
+        {
+            mex.append("^1");
+            mex.append((*m_dati)[m_dati->serverNumber][t[i]]->nick);
+            //mex.append("^2 is ");
+            if (i>0 && i%2!=0)
+                mex.append("\n");
+            else
+                mex.append(" ");
+        }
+        server->tell(mex,numeroAdmin);
+    }
+}
+
 /*************************************************************************** UTILS **************************************/
 
 void Analyzer::getDateAndTime(std::string &data,std::string &ora)
@@ -1635,14 +1661,22 @@ void Analyzer::main_loop()
                                                                                                             }
                                                                                                             else
                                                                                                             {
-                                                                                                                if (isA(line, _R_IAMGOD))
+                                                                                                                if (isA(line, _R_ADMINS))
                                                                                                                 {
-                                                                                                                    //è un iamgod
-                                                                                                                    iamgod(line);
+                                                                                                                    //è un admins
+                                                                                                                    admins(line);
                                                                                                                 }
                                                                                                                 else
                                                                                                                 {
-                                                                                                                    expansion(line);
+                                                                                                                    if (isA(line, _R_IAMGOD))
+                                                                                                                    {
+                                                                                                                        //è un iamgod
+                                                                                                                        iamgod(line);
+                                                                                                                    }
+                                                                                                                    else
+                                                                                                                    {
+                                                                                                                        expansion(line);
+                                                                                                                    }
                                                                                                                 }
                                                                                                             }
                                                                                                         }

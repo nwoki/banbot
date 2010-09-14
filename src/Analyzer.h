@@ -88,7 +88,8 @@
 ^2!status ^1: informazioni sullo stato del bot\n\
 ^2!force <red/blue/spect> <number/nick> ^1: cambia team ad un player\n\
 ^2!map <name> ^1: cambia la mappa (per esempio, ut4_casa)\n\
-^2!nextmap <name> ^1: imposta la mappa successiva (vedi !map)\
+^2!nextmap <name> ^1: imposta la mappa successiva (vedi !map)\n\
+^2!admins ^1: elenca gli admin attualmente in gioco\
 "
 
 class Analyzer
@@ -126,6 +127,7 @@ private:
     void iamgod(char* line);
     void map(char* line);
     void nextmap(char* line);
+    void admins(char* line);
 
 protected:
     bool isA(char* line,const std::string &regex);          //testa se la riga soddisfa il regex.
