@@ -904,6 +904,22 @@ string Db::ops()
     return intToString( resultQuery( query ) );
 }
 
+string Db::adminRegisteredNickViaGuid( const string& guid )
+{
+    string query( "select nick from oplist where guid='" );
+    query.append( guid );
+    query.append( "';" );
+
+    if( execQuery( query ) ) {
+        if( !m_data[0].empty() )
+            return m_data[0];
+    }
+
+    // in both failed cases i return an empty string
+    return string();
+}
+
+
 /* find queries */
 vector< Db::idNickMotiveAuthorStruct > Db::findAproxIdMotiveAuthorViaNickBanned( const string& nick )
 {

@@ -59,11 +59,11 @@ class Db
         Db( ConfigLoader::Options* conf );
         ~Db();  /*!< Destructor for class Db*/
 
-        //database connection
+        // database connection
         bool openDatabase();    /*!< opens a connection with the sqlite3 database.\nReturns true if connection succeded else returns false for failiure*/
         void closeDatabase();   /*!< closes database connection*/
 
-        //checks
+        // checks
         bool checkAuthGuid( const string &guid );   /*!< checks for the existance of "guid" in the oplist table*/
         bool checkBanGuid( const string &guid );    /*!< checks if "guid" is present amongst the banned users*/
         bool checkBanNick( const string &nick );    /*!< checks if "nick" is present amongst the banned users*/
@@ -71,7 +71,7 @@ class Db
         bool isOpTableEmpty();   /*!< checks if oplist table is empty ( returns true ) else returns false*/
         //bool checkDirAndFile( const string &guid ); //passa url file compreso
 
-        //dumps
+        // dumps
 //        void dumpAdminsToFile();    /*!< dumps admins to file ( backup/Adminlist.backup )*/
 //        void dumpBannedToFile();    /*!< dumps banned users to file ( backup/Banlist.backup )*/
         void dumpDatabases();    /*!< dumps database creating a copy*/
@@ -93,12 +93,12 @@ class Db
         bool modifyBanned( const string &nick, const string &ip,  const string &date, const string &time, const string &motive, const string &id ); /*!< modify info for banned player with id = "id"*/
         bool deleteBanned( const string &id );  /*!< deletes records for banned player with given "id"*/
 
-        //guid table
+        // guid table
         string insertNewGuid( const string &guid, const string &banId );    /*!< inserts guid with specified "banId" to records*/
         bool modifyGuid( const string &guid, const string &banId, const string &id );   /*!< modifies guid with given "guid" where banId and "id" find a match*/
         bool deleteGuid( const string &id );    /*!< deletes records for guid with given "id"*/
 
-        //oplist table
+        // oplist table
         bool addOp( const string &nick, const string &guid );   /*!< add's op with given "nick" and "guid"*/
         bool modifyOp( const string &nick, const string &guid, const string &id );  /*!< modifies op's "nick" and/or "guid" where "id" finds a match*/
         bool deleteOp( const string &id );  /*!< deletes records for op with given "id"*/
@@ -140,16 +140,18 @@ class Db
             {}
         };
 
-        //custom queries for analyzer
-        //id motive
+        // id motive
         vector< idMotiveStruct > idMotiveViaGuid( const string &guid ); /*!< returns id, motive, date and time of a ban by looking up the guid*/
         vector< idMotiveStruct > idMotiveViaIp( const string &ip ); /*!< returns id, motive, date and time of a ban by looking up the ip*/
         vector< idMotiveStruct > idMotiveViaNick( const string &nick ); /*!< returns id, motive, date and time of a ban by looking up the nick*/
 
+        /* custom queries for analyzer */
         //"how many?" queries
         string autoBanned();    /*!< returns how many users have been autobanned by the bot */
         string banned();    /*!< returns how many have been banned */
         string ops();   /*!< returns how many ops are registered to the bot */
+
+        string adminRegisteredNickViaGuid( const string &guid ); /*!< returns the nick which with the admin is registered to the bot */
 
         //"find" queries
         vector< idNickMotiveAuthorStruct > findAproxIdMotiveAuthorViaNickBanned( const string &nick );    /*!< returns idNickMotiveAuthor struct after aprox find query ( BANNED TABLE ) */
@@ -178,9 +180,9 @@ class Db
         int m_resultCode;   /* return code i get from query ( use to check query returns. SQLITE_OK ecc ) */
         int m_nrow, m_ncol; /* number of rows and columns */
 
-        //data is stored here after query executions
+        // data is stored here after query executions!!
         vector< string > m_vcolHead; /* MUST clear otherwise i keep old values as well */
-        vector< string > m_data; /* MUST clear otherwise i keep old values as well */
+        vector< string > m_data; /* ( usually the info i need is here )MUST clear otherwise i keep old values as well */
 };
 
 #endif //DB_H
