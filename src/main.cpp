@@ -70,6 +70,8 @@ int main( int argc, char *argv[] )
 
         //Start analyzer
         Analyzer anal( serverCommand, d, caricatore );
+        std::cout<<"Start in 5 seconds...";
+        sleep (5);
         anal.main_loop();
     }
 
