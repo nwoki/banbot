@@ -445,11 +445,11 @@ void Db::dumpDatabases()
         //add space
         cmd.append( " " );
 
-        //get backup directory
+        /*//get backup directory
         cmd.append( (*m_options)[i].backupDir() );
 
         if( cmd[ cmd.length()-1 ] != '/' )
-            cmd.append( "/" );
+            cmd.append( "/" );*/
 
         cmd.append( DB_NAME );
         cmd.append( ".backup-" );
