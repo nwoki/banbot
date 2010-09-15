@@ -81,7 +81,7 @@
 ^2!findop <nick> ^1: cerca un player tra gli admin\n\
 ^2!op <number/nick> ^1: da' lo stato di admin ad un player\n\
 ^2!deop <id> ^1: toglie lo stato di admin ad un player (id da !findop)\n\
-^2!strict <OFF/0/1/2/3> ^1: cambia il livello di sicurezza del server\n\
+^2!strict <OFF/0/1/2> ^1: cambia il livello di sicurezza del server\n\
 ^2!nuke <number/nick> ^1: lancia un nuke ad un player\n\
 ^2!slap <number/nick> [2/3/4/5] ^1: slappa una (o piu' volte) un player\n\
 ^2!veto ^1: annulla la votazione in corso\n\

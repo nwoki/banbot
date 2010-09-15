@@ -59,7 +59,7 @@
 #define _R_MUTE " *[0-9]+:[0-9]{2} +say: +[0-9]+ +[^ \t\n\r\f\v]+: +!mute [^ \t\n\r\f\v]+$"
 #define _R_MUTE_ALL "^ *[0-9]+:[0-9]{2} +say: +[0-9]+ +[^ \t\n\r\f\v]+: +!mute (all)|(ALL)$"
 #define _R_MUTE_NUMBER "^ *[0-9]+:[0-9]{2} +say: +[0-9]+ +[^ \t\n\r\f\v]+: +!mute [0-9]{1,2}$"
-#define _R_STRICT "^ *[0-9]+:[0-9]{2} +say: +[0-9]+ +[^ \t\n\r\f\v]+: +!strict (OFF|off|[0-4]{1})$"
+#define _R_STRICT "^ *[0-9]+:[0-9]{2} +say: +[0-9]+ +[^ \t\n\r\f\v]+: +!strict (OFF|off|[0-2]{1})$"
 #define _R_VETO "^ *[0-9]+:[0-9]{2} +say: +[0-9]+ +[^ \t\n\r\f\v]+: +!veto$"
 #define _R_SLAP "^ *[0-9]+:[0-9]{2} +say: +[0-9]+ +[^ \t\n\r\f\v]+: +!slap [^\t\n\r\f\v]+$"
 #define _R_SLAP_NUMBER "^ *[0-9]+:[0-9]{2} +say: +[0-9]+ +[^ \t\n\r\f\v]+: +!slap [0-9]{1,2}"
@@ -1172,9 +1172,10 @@ void Analyzer::admins(char* line)
         std::string mex("^1Admins:\n");
         for (unsigned int i=0;i<t.size();i++)
         {
-            mex.append("^1");
-            mex.append((*m_dati)[m_dati->serverNumber][t[i]]->nick);
-            //mex.append("^2 is ");
+            mex.append( "^1" );
+            mex.append( (*m_dati)[m_dati->serverNumber][t[i]]->nick );
+            mex.append( "^2 is " );
+            mex.append( database->adminRegisteredNickViaGuid( (*m_dati)[m_dati->serverNumber][t[i]]->GUID ) );
             if (i>0 && i%2!=0)
                 mex.append("\n");
             else
