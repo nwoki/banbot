@@ -88,9 +88,14 @@ Analyzer::Analyzer( Connection* conn, Db* db, ConfigLoader* configLoader )
     , m_dati( configLoader->getOptions() )
 {
     loadOptions();
-
-    std::cout<<"[OK] Analyzer inizializzato.\n";
-    *(m_dati->errors)<<"[OK] Analyzer inizializzato.\n\n";
+    
+    #ifdef ITA
+        std::cout<<"[OK] Analyzer inizializzato.\n";
+        *(m_dati->errors)<<"[OK] Analyzer inizializzato.\n\n";
+    #else
+        std::cout<<"[OK] Analyzer initialized.\n";
+        *(m_dati->errors)<<"[OK] Analyzer initialized.\n\n";
+    #endif
     sleep(1);
     m_dati->errors->close();
 }
@@ -120,7 +125,11 @@ void Analyzer::loadOptions()
                 temp->seekg ( 0, ios:: end );
                 (*m_dati)[i].setRow( temp->tellg() );
                 #ifdef DEBUG_MODE
-                std::cout << "Valore di partenza del file "<<i<<": "<<(*m_dati)[i].row()<<" : "<<temp->tellg()<<" \n";
+                    #ifdef ITA
+                        std::cout << "Valore di partenza del file "<<i<<": "<<(*m_dati)[i].row()<<" : "<<temp->tellg()<<" \n";
+                    #else
+                        std::cout << "Starting value for file "<<i<<": "<<(*m_dati)[i].row()<<" : "<<temp->tellg()<<" \n";
+                    #endif
                 #endif
             }
             else (*m_dati)[i].setRow( 0 );
@@ -129,9 +138,16 @@ void Analyzer::loadOptions()
         }
   }
   database->checkDatabases();
-  std::cout<<"Nuove opzioni caricate.\n";
-  m_dati->errors->timestamp();
-  *(m_dati->errors)<<"\nNuove opzioni caricate.\n";
+  
+  #ifdef ITA
+        std::cout<<"Nuove opzioni caricate.\n";
+        m_dati->errors->timestamp();
+        *(m_dati->errors)<<"\nNuove opzioni caricate.\n";
+  #else
+        std::cout<<"New options loaded.\n";
+        m_dati->errors->timestamp();
+        *(m_dati->errors)<<"\nNew options loaded.\n";
+  #endif
 }
 
 //testa l'array di caratteri passato col regex, torna true se la condizione imposta dal regex è soddisfatta.
@@ -162,15 +178,25 @@ bool Analyzer::isAdminSay( char* line, std::string &numero )
     int i = findPlayer( numero );
     if ( i >= 0 )
     {
-        std::cout<<" requested by "<<(*m_dati)[m_dati->serverNumber][i]->nick<<", "<<(*m_dati)[m_dati->serverNumber][i]->GUID<<"\n";
-        *(m_dati->log)<<" requested by "<<(*m_dati)[m_dati->serverNumber][i]->nick<<", "<<(*m_dati)[m_dati->serverNumber][i]->GUID<<"\n";
+        #ifdef ITA
+            std::cout<<" richiesto da "<<(*m_dati)[m_dati->serverNumber][i]->nick<<", "<<(*m_dati)[m_dati->serverNumber][i]->GUID<<"\n";
+            *(m_dati->log)<<" richiesto da "<<(*m_dati)[m_dati->serverNumber][i]->nick<<", "<<(*m_dati)[m_dati->serverNumber][i]->GUID<<"\n";
+        #else
+            std::cout<<" requested by "<<(*m_dati)[m_dati->serverNumber][i]->nick<<", "<<(*m_dati)[m_dati->serverNumber][i]->GUID<<"\n";
+            *(m_dati->log)<<" requested by "<<(*m_dati)[m_dati->serverNumber][i]->nick<<", "<<(*m_dati)[m_dati->serverNumber][i]->GUID<<"\n";
+        #endif
         if( database->checkAuthGuid( correggi((*m_dati)[m_dati->serverNumber][i]->GUID)) )
             return true;
     }
     else 
     {
-        std::cout<<" requested by unknown. I'll ignore it.\n";
-        *(m_dati->log)<<" requested by unknown. I'll ignore it.\n";
+        #ifdef ITA
+            std::cout<<" richiesto da uno sconosciuto. Lo ignoro.\n";
+            *(m_dati->log)<<" richiesto da uno sconosciuto. Lo ignoro.\n";
+        #else
+            std::cout<<" requested by unknown. I'll ignore it.\n";
+            *(m_dati->log)<<" requested by unknown. I'll ignore it.\n";
+        #endif
     }
     return false;
 }
@@ -202,9 +228,15 @@ void Analyzer::clientUserInfo(char* line)
     std::string guid;
     if (pos!=end) guid=temp.substr(pos,end-pos);
     
-    std::cout<<"[-]Estrapolati i dati: numero="<<numero<<" guid="<<guid<<" nick="<<nick<<" ip="<<ip<<"\n";
-    (m_dati->log)->timestamp();
-    *(m_dati->log)<<"\n[-]Estrapolati i dati: numero="<<numero<<" guid="<<guid<<" nick="<<nick<<" ip="<<ip<<"\n";
+    #ifdef ITA
+        std::cout<<"[-]Estrapolati i dati: numero="<<numero<<" guid="<<guid<<" nick="<<nick<<" ip="<<ip<<"\n";
+        (m_dati->log)->timestamp();
+        *(m_dati->log)<<"\n[-]Estrapolati i dati: numero="<<numero<<" guid="<<guid<<" nick="<<nick<<" ip="<<ip<<"\n";
+    #else
+        std::cout<<"[-]Extracted data: number="<<numero<<" guid="<<guid<<" nick="<<nick<<" ip="<<ip<<"\n";
+        (m_dati->log)->timestamp();
+        *(m_dati->log)<<"\n[-]Extracted data: number="<<numero<<" guid="<<guid<<" nick="<<nick<<" ip="<<ip<<"\n";
+    #endif
     
     //cerco il giocatore giusto all'interno della mia lista, e salvo il guid nelle info
     bool kicked=false; 
@@ -218,8 +250,14 @@ void Analyzer::clientUserInfo(char* line)
             {
                 //cambio illegale del GUID => cheats
                 kicked=true;
-                std::cout<<"  [!] kick automatico per cheats (GUID changed during the game).\n";
-                *(m_dati->log)<<"  [!] kick automatico per cheats (GUID changed during the game).\n";
+                
+                #ifdef ITA
+                    std::cout<<"  [!] ban automatico per cheats (GUID cambiata durante il gioco).\n";
+                    *(m_dati->log)<<"  [!] ban automatico per cheats (GUID cambiata durante il gioco).\n";
+                #else
+                    std::cout<<"  [!] automated ban for cheats (GUID changed during the game).\n";
+                    *(m_dati->log)<<"  [!] automated ban for cheats (GUID changed during the game).\n";
+                #endif
                 std::string frase("^0BanBot: ^1auto-banning player number ");
                 frase.append(numero);
                 frase.append(", ");
@@ -263,17 +301,32 @@ void Analyzer::clientUserInfo(char* line)
         {
             //guid vuota, probabili cheats, sono in modalità strict, butto fuori (provo a bannare un'eventuale guid precedente).
             kicked=true;
-            std::cout<<"  [!] kick automatico per GUID non valida (vuota).\n";
-            *(m_dati->log)<<"  [!] kick automatico per GUID non valida (vuota).\n";
-            std::string frase("^0BanBot: ^1auto-banning player number ");
+            #ifdef ITA
+                std::cout<<"  [!] ban automatico per GUID non valida (vuota).\n";
+                *(m_dati->log)<<"  [!] ban automatico per GUID non valida (vuota).\n";
+            #else
+                std::cout<<"  [!] automated ban for non-valid GUID (empty).\n";
+                *(m_dati->log)<<"  [!] automated ban for non-valid GUID (empty).\n";
+            #endif
+            
+            #ifdef ITA
+                std::string frase("^0BanBot: ^1auto-ban al player numero ");
+            #else
+                std::string frase("^0BanBot: ^1auto-ban player number ");
+            #endif
             frase.append(numero);
             frase.append(", ");
             frase.append(nick);
-            frase.append(" for corrupted QKey.");
+            #ifdef ITA
+                frase.append(" per QKey corrotta.");
+            #else
+                frase.append(" for corrupted QKey.");
+            #endif
+            
             server->say(frase);
             std::string ora;
             std::string data;
-            std::string motivo("auto-ban 4 empty guid.");
+            std::string motivo("auto-ban 4 corrupted QKey.");
             getDateAndTime(data,ora);
             //guardo se aveva una guid impostata precedentemente, in caso la banno.
             if (!(*m_dati)[m_dati->serverNumber][i]->GUID.empty())
@@ -285,11 +338,19 @@ void Analyzer::clientUserInfo(char* line)
         else 
         {
             //guid vuota, ma non sono in strict mode. Semplicemente avviso gli amministratori.
-            std::string frase("^0BanBot ^1warning: player number ");
+            #ifdef ITA
+                std::string frase("^0BanBot ^1attenzione: il player numero ");
+            #else
+                std::string frase("^0BanBot ^1warning: player number ");
+            #endif
             frase.append(numero);
             frase.append(", ");
             frase.append(nick);
-            frase.append(" has a corrupted QKey.");
+            #ifdef ITA
+                frase.append(" ha la QKey corrotta:\n^1probabilmente sta usando dei cheats.");
+            #else
+                frase.append(" has a corrupted QKey:\n^1probably he's using cheats.");
+            #endif
             tellToAdmins(frase);
         }
     }
@@ -306,8 +367,14 @@ void Analyzer::clientUserInfo(char* line)
             if ( (*m_dati)[m_dati->serverNumber].strict() >= LEVEL1 && !guid.empty() && !isA(line, _R_GUID) )
             {
                 //il guid è illegale, ban diretto
-                std::cout<<"  [!] kick automatico per GUID illegale\n";
-                *(m_dati->log)<<"  [!] kick automatico per GUID illegale\n";
+                #ifdef ITA
+                    std::cout<<"  [!] ban automatico per GUID illegale\n";
+                    *(m_dati->log)<<"  [!] ban automatico per GUID illegale\n";
+                #else
+                    std::cout<<"  [!] automated ban for illegal GUID.\n";
+                    *(m_dati->log)<<"  [!] automated ban for illegal GUID.\n";
+                #endif
+                
                 std::string frase("^0BanBot: ^1kicking player number ");
                 frase.append(numero);
                 frase.append(", ");
