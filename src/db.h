@@ -183,6 +183,8 @@ class Db
         // data is stored here after query executions!!
         vector< string > m_vcolHead; /* MUST clear otherwise i keep old values as well */
         vector< string > m_data; /* ( usually the info i need is here )MUST clear otherwise i keep old values as well */
+        
+        bool copyFile (std::string source, std::string destination); /* copy a file to another one */
 };
 
 #endif //DB_H

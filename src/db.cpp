@@ -434,29 +434,29 @@ void Db::dumpDatabases()
     //command creation
     for( unsigned int i = 0; i < m_options->size()/*how many servers i've got*/; i++ ) {
         //create copy command
-        string cmd( "cp " );
 
         //get current database directory
-        cmd.append( (*m_options)[i].dbFolder() );
-        if( cmd[ cmd.length()-1 ] != '/' )
-            cmd.append( "/" );
-        cmd.append( DB_NAME );
-
-        //add space
-        cmd.append( " " );
+        string source( (*m_options)[i].dbFolder() );
+        if( source[ source.length()-1 ] != '/' )
+            source.append( "/" );
+        source.append( DB_NAME );
 
         /*//get backup directory
         cmd.append( (*m_options)[i].backupDir() );
 
         if( cmd[ cmd.length()-1 ] != '/' )
             cmd.append( "/" );*/
-
-        cmd.append( DB_NAME );
-        cmd.append( ".backup-" );
-        cmd.append( (*m_options)[i].name() );
+        
+        string dest( (*m_options)[i].dbFolder() );
+        if( dest[ dest.length()-1 ] != '/' )
+            dest.append( "/" );
+        dest.append( DB_NAME );
+        dest.append( ".backup-" );
+        dest.append( (*m_options)[i].name() );
         //cmd.append( timeStamp() );  //add day,month and year to backup file name
 
-        if( system( cmd.c_str() ) ) {  // 0 is success, if I enter here, cmd FAILED
+        //if( system( cmd.c_str() ) ) {  // 0 is success, if I enter here, cmd FAILED
+        if ( !copyFile(source,dest) ){
             cout << "\e[1;31mDb::dumpDatabase database dump failed!\e[0m \n";
             *(m_options->log) << "Db::dumpDatabase database dump failed!\n";
             *(m_options->errors) << "On " << (*m_options)[m_options->serverNumber].name()  << " : Db::dumpDatabase database dump failed!\n";
@@ -468,6 +468,21 @@ void Db::dumpDatabases()
     }
 }
 
+bool Db::copyFile (std::string source, std::string destination)
+{
+    std::ifstream src; // the source file
+    std::ofstream dest; // the destination file
+    src.open (source.c_str(), std::ios::binary); // open in binary to prevent jargon at the end of the buffer
+    dest.open (destination.c_str(), std::ios::binary); // same again, binary
+    if (!src.is_open() || !dest.is_open())
+        return false; // could not be copied
+        
+    dest << src.rdbuf (); // copy the content
+    dest.close (); // close destination file
+    src.close (); // close source file
+    
+    return true; // file copied successfully
+}
 
 /********************************
 *         BAN  METHODS          *
