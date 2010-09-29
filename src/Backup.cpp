@@ -238,6 +238,8 @@ void Backup::spostaFilesGenerali(std::string dirOfTheDay)
 
 void Backup::backupDatabases(std::string dirOfTheDay)
 {
+    database->dumpDatabases();
+    
     for( unsigned int i = 0; i < m_options->size(); i++ ) {
 
         //get current database directory
@@ -276,13 +278,11 @@ bool Backup::doJobs()
   {
     std::cout<<"Starting backup...";
     (m_options->errors)->timestamp();
-    *(m_options->errors)<<"\nStarting il backup...";
+    *(m_options->errors)<<"\nStarting backup...";
     
+    //inizializzazione
     creaCartelle();
-    
     std::string dirOfTheDay( nameOfDir() );
-    
-    spostaFilesGenerali( dirOfTheDay );
     
     //faccio il backup per tutti i server...
     for (unsigned int i=0; i<m_options->size(); i++)
@@ -291,6 +291,8 @@ bool Backup::doJobs()
     }
     
     backupDatabases( dirOfTheDay );
+    
+    spostaFilesGenerali( dirOfTheDay );
     
     std::cout<<"Finished.\n";
     (m_options->errors)->timestamp();
