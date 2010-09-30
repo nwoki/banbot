@@ -221,8 +221,8 @@ void Db::checkDatabases()
 
         if( fileExistance( serverDb ) )
             (*m_options)[i].setValid( true );   /* valid ( existing database file ) */
-            else
-                (*m_options)[i].setValid( false );   /* invalid ( non existing database file ) */
+        else
+            (*m_options)[i].setValid( false );   /* invalid ( non existing database file ) */
     }
 }
 
@@ -446,55 +446,38 @@ void Db::dumpDatabases()
 
         if( cmd[ cmd.length()-1 ] != '/' )
             cmd.append( "/" );*/
-        
+
         string dest( (*m_options)[i].dbFolder() );
+
         if( dest[ dest.length()-1 ] != '/' )
             dest.append( "/" );
+
         dest.append( DB_NAME );
         dest.append( ".backup-" );
         dest.append( (*m_options)[i].name() );
         //cmd.append( timeStamp() );  //add day,month and year to backup file name
 
         //if( system( cmd.c_str() ) ) {  // 0 is success, if I enter here, cmd FAILED
-        if ( !copyFile(source,dest) ){
+        if( !copyFile( source, dest ) ) {
             cout << "\e[1;31mDb::dumpDatabase " << source << " to " << dest << " database dump failed!\e[0m \n";
             *(m_options->errors) << "On " << (*m_options)[m_options->serverNumber].name()  << " : Db::dumpDatabase " << source << " to " << dest << " database dump failed!\n";
             return;
         }
-        else
-        {
+        else {
             //just log this call, no need for output
             *(m_options->errors) << "Db::dumpDatabase SUCCESS, dumped the database\n";
+
             #ifdef DB_DEBUG
-            *(m_options->errors) << "Checking the file...";
-            if ( fileExistance( dest ) )
-            {
-                *(m_options->errors) << "It exists!\n";
-            }
-            else
-            {
-                *(m_options->errors) << "Fail! Not found!\n";
-            }
+                *(m_options->errors) << "Checking the file...";
+                if( fileExistance( dest ) )
+                    *(m_options->errors) << "It exists!\n";
+                else
+                    *(m_options->errors) << "Fail! Not found!\n";
             #endif
         }
     }
 }
 
-bool Db::copyFile (std::string source, std::string destination)
-{
-    std::ifstream src; // the source file
-    std::ofstream dest; // the destination file
-    src.open (source.c_str(), std::ios::binary); // open in binary to prevent jargon at the end of the buffer
-    dest.open (destination.c_str(), std::ios::binary); // same again, binary
-    if (!src.is_open() || !dest.is_open())
-        return false; // could not be copied
-        
-    dest << src.rdbuf (); // copy the content
-    dest.close (); // close destination file
-    src.close (); // close source file
-    
-    return true; // file copied successfully
-}
 
 /********************************
 *         BAN  METHODS          *
@@ -1081,6 +1064,24 @@ bool Db::connect()  //called by Db::open ( public function )
 #endif
 
     return true;
+}
+
+bool Db::copyFile( const string &source, const string &destination )
+{
+    ifstream src;   // the source file
+    ofstream dest;  // the destination file
+
+    src.open( source.c_str(), std::ios::binary );   // open in binary to prevent jargon at the end of the buffer
+    dest.open( destination.c_str(), std::ios::binary );  // same again, binary
+
+    if( !src.is_open() || !dest.is_open() )
+        return false;   // could not be copied
+
+    dest << src.rdbuf ();   // copy the content
+    dest.close ();  // close destination file
+    src.close ();   // close source file
+
+    return true; // file copied successfully
 }
 
 

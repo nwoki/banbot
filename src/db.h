@@ -67,7 +67,7 @@ class Db
         bool checkAuthGuid( const string &guid );   /*!< checks for the existance of "guid" in the oplist table*/
         bool checkBanGuid( const string &guid );    /*!< checks if "guid" is present amongst the banned users*/
         bool checkBanNick( const string &nick );    /*!< checks if "nick" is present amongst the banned users*/
-        void checkDatabases();    /*! checks if database files exist and flags them in m_options */
+        void checkDatabases();    /*! creates and checks if database files exist and flags them in m_options */
         bool isOpTableEmpty();   /*!< checks if oplist table is empty ( returns true ) else returns false*/
         //bool checkDirAndFile( const string &guid ); //passa url file compreso
 
@@ -162,6 +162,7 @@ class Db
 
     private:
         bool connect(); /* connects to the sqlite3 database */
+        bool copyFile( const string &source, const string &destination ); /* copy a file to another one */
         void createDb();    /* creates database */
         string errorCodeToString( int errorCode ) const;
         bool execQuery( const string &query );    /* executes query and returns status to tell if the operation went well or not */
@@ -169,8 +170,6 @@ class Db
 //         void loadAdminlist( vector<ConfigLoader::AdminList> admins );
 //         void loadBanlist( vector<ConfigLoader::Banlist> banned );
         int resultQuery( const string &query );    /*if query fails -> -1 else return number of elements found */
-
-        //vector< string >split( string str, char ch );    /*!< splits given string on every occurance of given char  */
 
         sqlite3 *m_database;
         ConfigLoader::Options* m_options;   /* where i get all my info from ( bot related ) */
@@ -183,8 +182,6 @@ class Db
         // data is stored here after query executions!!
         vector< string > m_vcolHead; /* MUST clear otherwise i keep old values as well */
         vector< string > m_data; /* ( usually the info i need is here )MUST clear otherwise i keep old values as well */
-        
-        bool copyFile (std::string source, std::string destination); /* copy a file to another one */
 };
 
 #endif //DB_H
