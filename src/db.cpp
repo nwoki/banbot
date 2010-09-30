@@ -457,14 +457,26 @@ void Db::dumpDatabases()
 
         //if( system( cmd.c_str() ) ) {  // 0 is success, if I enter here, cmd FAILED
         if ( !copyFile(source,dest) ){
-            cout << "\e[1;31mDb::dumpDatabase database dump failed!\e[0m \n";
-            *(m_options->log) << "Db::dumpDatabase database dump failed!\n";
-            *(m_options->errors) << "On " << (*m_options)[m_options->serverNumber].name()  << " : Db::dumpDatabase database dump failed!\n";
+            cout << "\e[1;31mDb::dumpDatabase " << source << " to " << dest << " database dump failed!\e[0m \n";
+            *(m_options->errors) << "On " << (*m_options)[m_options->serverNumber].name()  << " : Db::dumpDatabase " << source << " to " << dest << " database dump failed!\n";
             return;
         }
-
-        //just log this call, no need for output
-        *(m_options->log) << "Db::dumpDatabase SUCCESS, dumped the database\n";
+        else
+        {
+            //just log this call, no need for output
+            *(m_options->errors) << "Db::dumpDatabase SUCCESS, dumped the database\n";
+            #ifdef DB_DEBUG
+            *(m_options->errors) << "Checking the file...";
+            if ( fileExistance( dest ) )
+            {
+                *(m_options->errors) << "It exists!\n";
+            }
+            else
+            {
+                *(m_options->errors) << "Fail! Not found!\n";
+            }
+            #endif
+        }
     }
 }
 
