@@ -103,10 +103,10 @@
     ^2!op <number/nick> ^1: register the player as admin\n\
     ^2!deop <id> ^1: unregister the player as admin (id from !findop)\n\
     ^2!strict <OFF/0/1/2> ^1: change the security level of the server\n\
-    ^2!nuke <number/nick> ^1: throw a nuke to a player\n\
+    ^2!nuke <number/nick> ^1: nuke a player\n\
     ^2!slap <number/nick> [2/3/4/5] ^1: slaps once (or more times) a player\n\
     ^2!veto ^1: cancel the vote in progress\n\
-    ^2!status ^1: informations on the bot\n\
+    ^2!status ^1: information about the bot\n\
     ^2!force <red/blue/spect> <number/nick> ^1: change team team of a player\n\
     ^2!map <name> ^1: change map (for example, ut4_casa)\n\
     ^2!nextmap <name> ^1: set the next map (see !map)\n\
@@ -168,7 +168,7 @@ protected:
     Connection * server;
     Db * database;
     ConfigLoader::Options* m_dati;       //contiente tutte le opzioni e i dati dei server (giocatori compresi).
-    
+
 
 public:
     Analyzer( Connection*, Db*, ConfigLoader* );

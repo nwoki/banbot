@@ -88,7 +88,7 @@ Analyzer::Analyzer( Connection* conn, Db* db, ConfigLoader* configLoader )
     , m_dati( configLoader->getOptions() )
 {
     loadOptions();
-    
+
     #ifdef ITA
         std::cout<<"[OK] Analyzer inizializzato.\n";
         *(m_dati->errors)<<"[OK] Analyzer inizializzato.\n\n";
@@ -138,7 +138,7 @@ void Analyzer::loadOptions()
         }
   }
   database->checkDatabases();
-  
+
   #ifdef ITA
         std::cout<<"Nuove opzioni caricate.\n";
         m_dati->errors->timestamp();
@@ -174,7 +174,7 @@ bool Analyzer::isAdminSay( char* line, std::string &numero )
     numero = temp.substr( pos, end-pos );
 
     //dal numero del richiedente, mi prendo il guid
-    
+
     int i = findPlayer( numero );
     if ( i >= 0 )
     {
@@ -188,7 +188,7 @@ bool Analyzer::isAdminSay( char* line, std::string &numero )
         if( database->checkAuthGuid( correggi((*m_dati)[m_dati->serverNumber][i]->GUID)) )
             return true;
     }
-    else 
+    else
     {
         #ifdef ITA
             std::cout<<" richiesto da uno sconosciuto. Lo ignoro.\n";
@@ -227,7 +227,7 @@ void Analyzer::clientUserInfo(char* line)
     end=temp.find_first_of("\\ ",pos);
     std::string guid;
     if (pos!=end) guid=temp.substr(pos,end-pos);
-    
+
     #ifdef ITA
         std::cout<<"[-]Estrapolati i dati: numero="<<numero<<" guid="<<guid<<" nick="<<nick<<" ip="<<ip<<"\n";
         (m_dati->log)->timestamp();
@@ -237,10 +237,10 @@ void Analyzer::clientUserInfo(char* line)
         (m_dati->log)->timestamp();
         *(m_dati->log)<<"\n[-]Extracted data: number="<<numero<<" guid="<<guid<<" nick="<<nick<<" ip="<<ip<<"\n";
     #endif
-    
+
     //cerco il giocatore giusto all'interno della mia lista, e salvo il guid nelle info
-    bool kicked=false; 
-    
+    bool kicked=false;
+
     int i = findPlayer( numero );
     if ( i >= 0 )
     {
@@ -250,7 +250,7 @@ void Analyzer::clientUserInfo(char* line)
             {
                 //cambio illegale del GUID => cheats
                 kicked=true;
-                
+
                 #ifdef ITA
                     std::cout<<"  [!] ban automatico per cheats (GUID cambiata durante il gioco).\n";
                     *(m_dati->log)<<"  [!] ban automatico per cheats (GUID cambiata durante il gioco).\n";
@@ -293,7 +293,7 @@ void Analyzer::clientUserInfo(char* line)
         (*m_dati)[m_dati->serverNumber].push_back(gioc);
         i = (*m_dati)[m_dati->serverNumber].size() - 1;
     }
-    
+
     //se la guid è vuota, sono cazzi amari...
     if (guid.empty() && (*m_dati)[m_dati->serverNumber].strict() >= LEVEL1)
     {
@@ -308,7 +308,7 @@ void Analyzer::clientUserInfo(char* line)
                 std::cout<<"  [!] automated ban for non-valid GUID (empty).\n";
                 *(m_dati->log)<<"  [!] automated ban for non-valid GUID (empty).\n";
             #endif
-            
+
             #ifdef ITA
                 std::string frase("^0BanBot: ^1auto-ban al player numero ");
             #else
@@ -322,7 +322,7 @@ void Analyzer::clientUserInfo(char* line)
             #else
                 frase.append(" for corrupted QKey.");
             #endif
-            
+
             server->say(frase);
             std::string ora;
             std::string data;
@@ -335,7 +335,7 @@ void Analyzer::clientUserInfo(char* line)
             else database->insertNewBanned(correggi(nick),ip,data,ora,correggi(motivo),std::string());
             server->kick(numero);
         }
-        else 
+        else
         {
             //guid vuota, ma non sono in strict mode. Semplicemente avviso gli amministratori.
             #ifdef ITA
@@ -354,7 +354,7 @@ void Analyzer::clientUserInfo(char* line)
             tellToAdmins(frase);
         }
     }
-    
+
     //se è tutto a posto procedo coi controlli
     if (!kicked)
     {
@@ -376,7 +376,7 @@ void Analyzer::clientUserInfo(char* line)
                     *(m_dati->log)<<"  [!] automated ban for illegal GUID.\n";
                     std::string frase("^0BanBot: ^1kicking player number ");
                 #endif
-                
+
                 frase.append(numero);
                 frase.append(", ");
                 frase.append(nick);
@@ -406,17 +406,17 @@ void Analyzer::clientUserInfo(char* line)
                             *(m_dati->log)<<"  [!] kick automatico per client non pulito (controlli avanzati non superati).\n";
                             std::string frase("^0BanBot: ^1auto-kick al giocatore ");
                         #else
-                            std::cout<<"  [!] automated kick for non-clean client ( advanced controls not passed ).\n";
-                            *(m_dati->log)<<"  [!] automated kick for non-clean client ( advanced controls not passed ).\n";
+                            std::cout<<"  [!] automated kick for illegal client ( advanced checks not passed ).\n";
+                            *(m_dati->log)<<"  [!] automated kick for illegal client ( advanced checks not passed ).\n";
                             std::string frase("^0BanBot: ^1auto-kicking player number ");
-                        #endif  
+                        #endif
                         frase.append(numero);
                         frase.append(", ");
                         frase.append(nick);
                         #ifdef ITA
                             frase.append(" per client non pulito.");
                         #else
-                            frase.append(" for unclean client.");
+                            frase.append(" for illegal client.");
                         #endif
                         server->say(frase);
                         server->kick(numero);
@@ -435,7 +435,7 @@ void Analyzer::clientUserInfo(char* line)
                         #ifdef ITA
                             frase.append(" ha un client non pulito.");
                         #else
-                            frase.append(" has an unclean client.");
+                            frase.append(" has an illegal client.");
                         #endif
                         tellToAdmins(frase);
                     }
@@ -464,7 +464,7 @@ void Analyzer::clientConnect(char* line)
     pos=temp.find_first_not_of(" ",pos+14);
     int end=temp.find_first_of(" \n\0",pos);
     std::string numero=temp.substr(pos,end-pos);
-    
+
     #ifdef ITA
         std::cout<<"[-] Nuovo client connesso: "<<numero<<"\n";
         (m_dati->log)->timestamp();
@@ -475,7 +475,7 @@ void Analyzer::clientConnect(char* line)
         *(m_dati->log)<<"\n[-] New client connected: "<<numero<<"\n";
     #endif
     //per pignoleria controllo che non sia già presente
-    
+
     int i = findPlayer( numero );
     if ( i >= 0 )
     {
@@ -502,7 +502,7 @@ void Analyzer::clientDisconnect(char* line)
     pos=temp.find_first_not_of(" ",pos+17);
     int end=temp.find_first_of(" \n\0",pos);
     std::string numero=temp.substr(pos,end-pos);
-    
+
     #ifdef ITA
         std::cout<<"[-] Client disconnesso: "<<numero<<"\n";
         (m_dati->log)->timestamp();
@@ -557,7 +557,7 @@ void Analyzer::ban(char* line)
         if ( pos<temp.size() ) motivo=temp.substr(pos,temp.size()-pos);
         if ( isA(line,_R_BAN_NUMBER) )
             i = findPlayer( player );
-        else 
+        else
             i = translatePlayer( player );
         //se ho il guid, banno il player (le operazioni non sono eseguite "in diretta",
         //per pignoleria controllo anche se per una rarissima combinazione non è già bannato).
@@ -611,10 +611,10 @@ void Analyzer::ban(char* line)
                         (m_dati->errors)->timestamp();
                         *(m_dati->errors)<<"\n  [FAIL] In " << (*m_dati)[m_dati->serverNumber].name()  << " : errore nella chiamata al database\n";
                     #else
-                        std::cout<<"  [FAIL] error on db calls\n";
-                        *(m_dati->log)<<"  [FAIL] error on db calls\n";
+                        std::cout<<"  [FAIL] error on db call\n";
+                        *(m_dati->log)<<"  [FAIL] error on db call\n";
                         (m_dati->errors)->timestamp();
-                        *(m_dati->errors)<<"\n  [FAIL] On " << (*m_dati)[m_dati->serverNumber].name()  << " : error on db calls\n";
+                        *(m_dati->errors)<<"\n  [FAIL] On " << (*m_dati)[m_dati->serverNumber].name()  << " : error on db call\n";
                     #endif
                 }
                 server->kick((*m_dati)[m_dati->serverNumber][i]->number);
@@ -662,7 +662,7 @@ void Analyzer::unban(char* line)
         pos=temp.find_first_of("0123456789",pos+6);
         int end=temp.find_first_of(" ",pos);
         std::string numero=temp.substr(pos,end-pos);
-        
+
         //ho il numero, elimino dal database tutti i record relativi.
         std::string frase;
         #ifdef ITA
@@ -672,7 +672,7 @@ void Analyzer::unban(char* line)
         #else
             if (database->deleteBanned(numero))
                 frase.append("^0BanBot: ^1player successfully unbanned.");
-            else frase.append("^0BanBot: ^1error: user not unbanned.");
+            else frase.append("^0BanBot: ^1error: player not unbanned.");
         #endif
         server->tell(frase,numeroAdmin);
     }
@@ -694,12 +694,12 @@ void Analyzer::find(char* line)
             std::cout<<"  [OK] Is an admin. Doing find.\n";
             *(m_dati->log)<<"  [OK] Is an admin. Doing find.\n";
         #endif
-        
+
         //estraggo il nick da cercare.
         std::string temp(line);
         int pos=temp.find("!find");
         std::string nick=temp.substr(pos+6);
-        
+
         //ho il nick da cercare
         #ifdef ITA
             std::cout<<"  [-]Ricerca per "<<nick<<".\n";
@@ -711,7 +711,7 @@ void Analyzer::find(char* line)
         //eseguo la ricerca sul DB e invio i risultati al server di gioco.
         std::vector<Db::idNickMotiveAuthorStruct> risultato=database->findPreciseIdMotiveAuthorViaNickBanned(nick);
         std::vector<Db::idNickMotiveAuthorStruct> risultatoApprossimativo=database->findAproxIdMotiveAuthorViaNickBanned(nick);
-        
+
         #ifdef ITA
             std::cout<<"ricerca: "<<risultato.size()<<" "<<risultatoApprossimativo.size()<<"\n";
             std::string frase("^2Risultati esatti: \n^1");
@@ -724,7 +724,7 @@ void Analyzer::find(char* line)
             #ifdef ITA
                 frase.append("troppi risultati, prova a migliorare la ricerca. Forse cercavi\n^1");
             #else
-                frase.append("too many results, try to improve research. May you are looking for\n^1");
+                frase.append("too many results, try to improve research. Were you looking for\n^1");
             #endif
             frase.append(risultato[0].id);
             frase.append("^2:^1 ");
@@ -752,7 +752,7 @@ void Analyzer::find(char* line)
             }
         }
         server->tell(frase,numero);
-        
+
         frase.clear();
         #ifdef ITA
             std::string frase("^2Risultati ricerca: \n^1");
@@ -764,7 +764,7 @@ void Analyzer::find(char* line)
             #ifdef ITA
                 frase.append("troppi risultati, prova a migliorare la ricerca. Forse cercavi\n^1");
             #else
-                frase.append("too many results, try to improve research. May you are looking for\n^1");
+                frase.append("too many results, try to improve research. Were you looking for\n^1");
             #endif
             frase.append(risultatoApprossimativo[0].id);
             frase.append("^2:^1 ");
@@ -823,13 +823,13 @@ void Analyzer::findOp(char* line)
             std::cout<<"  [OK] Is an admin. Doing findop.\n";
             *(m_dati->log)<<"  [OK] Is an admin. Doing findop.\n";
         #endif
-        
-        
+
+
         //estraggo il nick da cercare.
         std::string temp(line);
         int pos=temp.find("!findop");
         std::string nick=temp.substr(pos+8);
-        
+
         //ho il nick da cercare
         #ifdef ITA
             std::cout<<"  [-]Ricerca per "<<nick<<".\n";
@@ -841,7 +841,7 @@ void Analyzer::findOp(char* line)
         //eseguo la ricerca sul DB e invio i risultati al server di gioco.
         std::vector<Db::idNickStruct> risultato=database->findPreciseIdNickViaNickOp(nick);
         std::vector<Db::idNickStruct> risultatoApprossimativo=database->findAproxIdNickViaNickOp(nick);
-        
+
         #ifdef ITA
             std::cout<<"ricerca: "<<risultato.size()<<" "<<risultatoApprossimativo.size()<<"\n";
             std::string frase("^2Risultati esatti: \n^1");
@@ -854,7 +854,7 @@ void Analyzer::findOp(char* line)
             #ifdef ITA
                 frase.append("troppi risultati, prova a migliorare la ricerca. Forse cercavi\n^1");
             #else
-                frase.append("too many results, try to improve research. May you are looking for\n^1");
+                frase.append("too many results, try to improve research. Were you looking for\n^1");
             #endif
             frase.append(risultato[0].id);
             frase.append("^2:^1 ");
@@ -874,7 +874,7 @@ void Analyzer::findOp(char* line)
             }
         }
         server->tell(frase,numero);
-        
+
         frase.clear();
         #ifdef ITA
             std::string frase("^2Risultati ricerca: \n^1");
@@ -883,7 +883,11 @@ void Analyzer::findOp(char* line)
         #endif
         if (risultatoApprossimativo.size()>15)
         {
-            frase.append("troppi risultati, prova a migliorare la ricerca. Forse cercavi\n^1");
+            #ifdef ITA
+                frase.append("troppi risultati, prova a migliorare la ricerca. Forse cercavi\n^1");
+            #else
+                frase.append("too many results, try to improve research. Were you looking for\n^1");
+            #endif
             frase.append(risultatoApprossimativo[0].id);
             frase.append("^2:^1 ");
             frase.append(risultatoApprossimativo[0].nick);
@@ -927,7 +931,7 @@ void Analyzer::op(char* line)
         std::string player=temp.substr(pos,end-pos);
         if (isA(line,_R_OP_NUMBER))
             i = findPlayer( player );
-        else 
+        else
             i = translatePlayer( player );
         if (i<0)
             #ifdef ITA
@@ -947,7 +951,7 @@ void Analyzer::op(char* line)
                 #ifdef ITA
                     server->tell("^1Fail: player non aggiunto alla lista admin.",numeroAdmin);
                 #else
-                    server->tell("^1Fail: player not added on admin's list.",numeroAdmin);
+                    server->tell("^1Fail: player not added to admin list.",numeroAdmin);
                 #endif
         }
     }
@@ -968,7 +972,7 @@ void Analyzer::deop(char* line)
         pos=temp.find_first_of("0123456789",pos+5);
         int end=temp.find_first_of(" ",pos);
         std::string numero=temp.substr(pos,end-pos);
-        
+
         //ho il numero, elimino dal database tutti i record relativi.
         std::string frase;
         if (database->deleteOp(numero))
@@ -1000,7 +1004,7 @@ void Analyzer::kick(char* line)
         pos=temp.find_first_not_of(" \t\n\r\f\v",pos+5);
         int end=temp.find_first_of(" ",pos);
         std::string player=temp.substr(pos,end-pos);
-        
+
         if (isA(line,_R_KICK_NUMBER))
         {
             #ifdef ITA
@@ -1060,7 +1064,7 @@ void Analyzer::mute(char* line)
             pos=temp.find_first_not_of(" \t\n\r\f\v",pos+5);
             int end=temp.find_first_of(" ",pos);
             std::string player=temp.substr(pos,end-pos);
-            
+
             if (isA(line,_R_MUTE_NUMBER))
             {
                 #ifdef ITA
@@ -1127,7 +1131,7 @@ void Analyzer::setStrict(char* line)
         pos=temp.find_first_not_of(" \t\n\r\f\v",pos+7);
         int end=temp.find_first_of(" ",pos);
         std::string variable=temp.substr(pos,end-pos);
-        
+
         if ( variable.compare("off")==0 || variable.compare("OFF")==0 )
         {
             (*m_dati)[m_dati->serverNumber].setStrict(0);
@@ -1254,7 +1258,7 @@ void Analyzer::nuke(char* line)
         pos=temp.find_first_not_of(" \t\n\r\f\v",pos+5);
         int end=temp.find_first_of(" ",pos);
         std::string player=temp.substr(pos,end-pos);
-        
+
         if (isA(line,_R_NUKE_NUMBER))
         {
             #ifdef ITA
@@ -1335,7 +1339,7 @@ void Analyzer::status(char* line)
             frase.append(database->ops());
             frase.append("\n^1Players currently banned: ");
             frase.append(database->banned());
-            frase.append("\n^1Players currently banned automatically: ");
+            frase.append("\n^1Players banned automatically: ");
             frase.append(database->autoBanned());
         #endif
         server->say(frase);
@@ -1358,9 +1362,9 @@ void Analyzer::force(char* line)
         std::string action=temp.substr(pos,end-pos);
         pos=temp.find_first_not_of(" \t\n\r\f\v",end+1);
         std::string player=temp.substr(pos);
-        if ( action.compare("spect") == 0 ) 
+        if ( action.compare("spect") == 0 )
             action = "spectator";
-        
+
         std::string frase;
         if (isA(line,_R_FORCE_NUMBER))
         {
@@ -1429,7 +1433,7 @@ void Analyzer::iamgod(char* line)
             #ifdef ITA
                 server->tell("^1Fail: player non aggiunto alla lista admin.",numero);
             #else
-                server->tell("^1Fail: player not added on admins\'s list.",numero);
+                server->tell("^1Fail: player not added to admin list.",numero);
             #endif
         #ifdef DEBUG_MODE
             std::cout << "Player number: " << i << "\n";
@@ -1445,7 +1449,7 @@ void Analyzer::map(char* line)
     //controllo se ho il giocatore e i suoi permessi, se la persona non è autorizzata non faccio nulla.
     std::string numeroAdmin;
     if (isAdminSay(line,numeroAdmin))
-    { 
+    {
         //prendo il numero o nome del player da aggiungere tra gli admin
         std::string temp(line);
         int pos=temp.find("!map");
@@ -1516,7 +1520,7 @@ void Analyzer::getDateAndTime(std::string &data,std::string &ora)
     char outstr[20];
     strftime(outstr, sizeof(outstr), "%H:%M", tmp);
     ora=outstr;
-    
+
     strftime(outstr, sizeof(outstr), "%F", tmp);
     data=outstr;
 }
@@ -1555,13 +1559,13 @@ void Analyzer::buttaFuori(const std::string &reason, const std::string numero, c
 }
 
 bool Analyzer::guidIsBanned(const std::string &guid, const std::string &nick, const std::string &numero, const std::string &ip)
-{   
+{
     //if ( (*m_dati)[m_dati->serverNumber].strict() > LEVEL0 )
     //{
         std::vector<Db::idMotiveStruct> risultato = database->idMotiveViaGuid(correggi(guid));
-        
+
         if ( risultato.size() )
-        {          
+        {
             //butto fuori la persona dal server
             #ifdef ITA
                 std::cout<<"  [!] kick a "<<nick<<" per ban ("<<risultato[0].motive<<").\n";
@@ -1571,7 +1575,7 @@ bool Analyzer::guidIsBanned(const std::string &guid, const std::string &nick, co
                 *(m_dati->log)<<"  [!] kicking "<<nick<<" for ban ("<<risultato[0].motive<<").\n";
             #endif
             buttaFuori(risultato[0].motive,numero,nick);
-            
+
             //aggiorno i dati sul database
             std::string ora;
             std::string data;
@@ -1586,19 +1590,19 @@ bool Analyzer::guidIsBanned(const std::string &guid, const std::string &nick, co
 bool Analyzer::nickIsBanned(const std::string &nick, const std::string &numero, const std::string &ip, const std::string &guid)
 {
     bool bannato = false;
-    
+
     //if ( (*m_dati)[m_dati->serverNumber].strict() > LEVEL0 )
     //{
         std::vector<Db::idMotiveStruct> risultato = database->idMotiveViaNick(correggi(nick));
         std::string ora;
         std::string data;
         getDateAndTime(data,ora);
-        
+
         if ( risultato.size() )
         {
             //se sono in modalità strict di livello 2, se il nick è bannato, butto fuori anche se è passata un'ora.
             if ( (*m_dati)[m_dati->serverNumber].strict() >= LEVEL2 ) {bannato = true;}
-            else 
+            else
             {
                 //sono in modalita' strict di livello 1. Se è bannato da meno di un'ora, lo butto fuori, altrimenti avviso gli admin
                 int oraAttuale=atoi(ora.substr(0,2).c_str());
@@ -1606,7 +1610,7 @@ bool Analyzer::nickIsBanned(const std::string &nick, const std::string &numero, 
                 int oraBan = atoi(risultato[0].time.substr(0,2).c_str());
                 int minutoBan = atoi(risultato[0].time.substr(3,5).c_str());
                 int diff = (oraAttuale*60+minutoAttuale)-(oraBan*60+minutoBan);
-                if ( data.compare(risultato[0].date) == 0 && diff>0 && diff<60 ) 
+                if ( data.compare(risultato[0].date) == 0 && diff>0 && diff<60 )
                 {
                     bannato = true;
                 }
@@ -1619,10 +1623,10 @@ bool Analyzer::nickIsBanned(const std::string &nick, const std::string &numero, 
                     #else
                         std::string frase("^0BanBot ^1warning: the nick '");
                         frase.append(nick);
-                        frase.append("' was banned.");
+                        frase.append("' is currently banned.");
                     #endif
                     tellToAdmins(frase);
-                }   
+                }
             }
             if ( bannato )
             {
@@ -1634,7 +1638,7 @@ bool Analyzer::nickIsBanned(const std::string &nick, const std::string &numero, 
                     *(m_dati->log)<<"  [!] kicking "<<nick<<" for ban ("<<risultato[0].motive<<").\n";
                 #endif
                 buttaFuori(risultato[0].motive, numero, nick);
-                
+
                 std::string ora;
                 std::string data;
                 getDateAndTime(data,ora);
@@ -1648,23 +1652,23 @@ bool Analyzer::nickIsBanned(const std::string &nick, const std::string &numero, 
 
 bool Analyzer::ipIsBanned(const std::string &ip, const std::string &numero, const std::string &nick, const std::string &guid)
 {
-    
+
     //if ( (*m_dati)[m_dati->serverNumber].strict() > LEVEL0 )
-    //{   
+    //{
         std::vector<Db::idMotiveStruct> risultato = database->idMotiveViaIp( ip );
-        
+
         if ( risultato.size() )
         {
             std::string ora;
             std::string data;
             getDateAndTime(data,ora);
-            
+
             int oraAttuale=atoi(ora.substr(0,2).c_str());
             int minutoAttuale=atoi(ora.substr(3,5).c_str());
             int oraBan=atoi(risultato[0].time.substr(0,2).c_str());
             int minutoBan=atoi(risultato[0].time.substr(3,5).c_str());
             int diff=(oraAttuale*60+minutoAttuale)-(oraBan*60+minutoBan);
-            if (data.compare(risultato[0].date)==0 && diff>0 && diff<60) 
+            if (data.compare(risultato[0].date)==0 && diff>0 && diff<60)
             {
                 #ifdef ITA
                     std::cout<<"  [!] kick a "<<nick<<" per ban ("<<risultato[0].motive<<").\n";
@@ -1674,7 +1678,7 @@ bool Analyzer::ipIsBanned(const std::string &ip, const std::string &numero, cons
                     *(m_dati->log)<<"  [!] kicking "<<nick<<" for ban ("<<risultato[0].motive<<").\n";
                 #endif
                 buttaFuori(risultato[0].motive, numero,nick);
-                
+
                 database->modifyBanned(correggi(nick),std::string(),data,ora,std::string(),risultato[0].id);
                 database->insertNewGuid(correggi(guid),risultato[0].id);
                 return true;
@@ -1743,7 +1747,7 @@ int Analyzer::findPlayer( std::string number )
 {
     bool nonTrovato = true;
     int index = -1;
-    
+
     for (unsigned int i=0; nonTrovato &&  (i<(*m_dati)[m_dati->serverNumber].size()); i++)
     {
         if ((*m_dati)[m_dati->serverNumber][i]->number.compare(number)==0)
@@ -1752,7 +1756,7 @@ int Analyzer::findPlayer( std::string number )
             nonTrovato=false;
         }
     }
-    
+
     return index;
 }
 
@@ -1764,14 +1768,14 @@ void Analyzer::main_loop()
         std::cout<<"[OK] BanBot avviato.\n\n";
         *(m_dati->errors)<<"[OK] BanBot avviato.\n\n";
     #else
-        std::cout<<"[OK] BanBot avviato.\n\n";
-        *(m_dati->errors)<<"[OK] BanBot avviato.\n\n";
+        std::cout<<"[OK] BanBot launched.\n\n";
+        *(m_dati->errors)<<"[OK] BanBot launched.\n\n";
     #endif
     while (true)
     {
         commandexecuted=false;
         //vedo è il caso di fare il backup
-        if(backup->doJobs()) 
+        if(backup->doJobs())
         {
             //eseguito il backup. Reload dei server
             server->reload(true);
@@ -1784,7 +1788,7 @@ void Analyzer::main_loop()
                 if (log->is_open())
                 {
                     //se il file è aperto, controllo la dimensione
-                    log->seekg (0, ios:: end); 
+                    log->seekg (0, ios:: end);
                     if (log->tellg ()<(*m_dati)[i].row()) (*m_dati)[i].setRow(0);
                 }
                 //altrimenti se non c'è il file, sono già sicuro che il backup è stato fatto.
@@ -1798,7 +1802,7 @@ void Analyzer::main_loop()
             }
             sleep(2);
         }
-        
+
         //ogni tot di giri controllo se sono cambiate le impostazioni
         if ( giri > 10 )
         {
@@ -1810,7 +1814,7 @@ void Analyzer::main_loop()
                 loadOptions();
             }
         }
-        
+
         //inzio il ciclo per gestire i server
         for (m_dati->serverNumber=0;m_dati->serverNumber<m_dati->size();m_dati->serverNumber++)
         {
@@ -1862,12 +1866,12 @@ void Analyzer::main_loop()
                         log->getline(line,1500,'\n');
                         //se non è la fine del file, mi salvo la riga dove sono arrivato
                         if (!log->eof() && !log->bad()) (*m_dati)[m_dati->serverNumber].setRow(log->tellg());
-                        
+
                         #ifdef DEBUG_MODE
-                        std::cout<< "  At: "<< (*m_dati)[m_dati->serverNumber].row()<<" contains: "<<line<<"\n";
-                        *(m_dati->log)<< "  At: "<< (*m_dati)[m_dati->serverNumber].row()<<" contains: "<<line<<"\n";
+                            std::cout<< "  At: "<< (*m_dati)[m_dati->serverNumber].row()<<" contains: "<<line<<"\n";
+                            *(m_dati->log)<< "  At: "<< (*m_dati)[m_dati->serverNumber].row()<<" contains: "<<line<<"\n";
                         #endif
-                        
+
                         //comincio coi test
                         if (isA(line, _R_CLIENT_USER_INFO))
                         {
@@ -2103,7 +2107,7 @@ void Analyzer::main_loop()
         }
         giri++;
         //fine ciclo, lascio passare un po' di tempo
-        if ( commandexecuted ) 
+        if ( commandexecuted )
         {
             fascia=0;
             contatore=0;
@@ -2114,10 +2118,10 @@ void Analyzer::main_loop()
             fascia++;
             contatore++;
         }
-        
+
         switch (fascia)
         {
-            case 0: 
+            case 0:
                 sleep(TIME_SLEEPING_MIN);
                 break;
             case 1:
