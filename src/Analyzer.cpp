@@ -755,9 +755,9 @@ void Analyzer::find(char* line)
 
         frase.clear();
         #ifdef ITA
-            std::string frase("^2Risultati ricerca: \n^1");
+            frase.append("^2Risultati ricerca: \n^1");
         #else
-            std::string frase("^2Search results: \n^1");
+            frase.append("^2Search results: \n^1");
         #endif
         if (risultatoApprossimativo.size()>15)
         {
@@ -877,9 +877,9 @@ void Analyzer::findOp(char* line)
 
         frase.clear();
         #ifdef ITA
-            std::string frase("^2Risultati ricerca: \n^1");
+            frase.append("^2Risultati ricerca: \n^1");
         #else
-            std::string frase("^2Search results: \n^1");
+            frase.append("^2Search results: \n^1");
         #endif
         if (risultatoApprossimativo.size()>15)
         {

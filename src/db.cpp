@@ -56,59 +56,7 @@ Db::Db( ConfigLoader::Options* conf )
 
     #endif
 
-    //  check only if i have valid info loaded
-    if( m_options->servers.size() > 0 ) {
-        //create databases if needed
-        for( unsigned int i = 0; i < m_options->servers.size(); i++ ) {
-            // set server number I'm working onDbCounter
-            m_options->serverNumber = i;
-
-            //get path to db folder
-            string dbPath = m_options->servers.at( i )->dbFolder();
-
-            if( dbPath[dbPath.size()-1] != '/' )
-                dbPath.append( "/" );
-
-            string pathWithFile( dbPath ); //set full file path
-            pathWithFile.append( DB_NAME );
-
-            if( !fileExistance( dbPath ) ) {    //does directory exist?
-                if( !dirCreate( dbPath ) ) {
-                    cout << "\e[1;31mDb::Db couldn't create database folder: " << dbPath << "\e[0m \n";
-                    *(m_options->log) << "Db::Db couldn't create database folder: " << dbPath << "\n";
-                }
-                else {
-                    cout << "\e[0;32m  [OK]created " << dbPath << " directory..\e[0m \n";
-                    *(m_options->log) << "  [OK]created " << dbPath << " directory..\n";
-                }
-            }
-            else
-                cout << "\e[0;33m database folder: " << dbPath << " already exists \e[0m \n";
-
-            if( !fileExistance( pathWithFile ) ) {  //does file exist?
-                if( !fileCreate( pathWithFile ) ) {
-                    cout << "\e[1;31mDb::Db couldn't create database file: " << pathWithFile << "\e[0m \n";
-                    *(m_options->log) << "Db::Db couldn't create database file: " << pathWithFile << "\n";
-                }
-                else {
-                    cout << "\e[0;32m [OK]created database file: " << pathWithFile << "\e[0m \n";
-                    *(m_options->log) << "[OK]created database file: " << pathWithFile << "\n";
-                    openDatabase();
-                    createDb();
-                    closeDatabase();
-                }
-            }
-            else {
-                cout << "\e[0;33m database file: " << pathWithFile << " already exists \e[0m \n";
-                openDatabase();
-                closeDatabase();
-            }
-        }
-        checkDatabases();   /* set various database validity flags */
-    }
-
-    // set server number back to start ( 0 )!!!
-    m_options->serverNumber = 0;
+    checkDatabases();   /* this does it all */
 }
 
 
@@ -211,19 +159,61 @@ bool Db::checkBanNick( const string& nick )
 
 void Db::checkDatabases()
 {
-    /* check all server objects to see if the dir of their database is valid */
-    for( unsigned int i = 0; i < m_options->size(); i++ ) {
-        string serverDb( (*m_options)[i].dbFolder() );
+    /* check all server objects to see if the dir of their database is valid and creates databases in case
+     * useful for when adding a new server to check "on the fly
+     */
 
-        #ifdef DB_DEBUG
-        cout << "Db::checkDatabases checking database path-> " << serverDb << endl;
-        #endif
+    for( unsigned int i = 0; i < m_options->servers.size(); i++ ) {
+        m_options->serverNumber = i;    /* set server number I'm working onDbCounter */
 
-        if( fileExistance( serverDb ) )
-            (*m_options)[i].setValid( true );   /* valid ( existing database file ) */
+        // get path to db folder
+        string dbPath = m_options->servers.at( i )->dbFolder();
+
+        if( dbPath[dbPath.size()-1] != '/' )
+            dbPath.append( "/" );
+
+        string pathWithFile( dbPath ); /* set full file path */
+        pathWithFile.append( DB_NAME );
+
+        /* DIRECTORY CHECK */
+        if( !fileExistance( dbPath ) ) {    // does directory exist?
+            if( !dirCreate( dbPath ) ) {
+                cout << "\e[1;31mDb::Db couldn't create database folder: " << dbPath << "\e[0m \n";
+                *(m_options->log) << "Db::Db couldn't create database folder: " << dbPath << "\n";
+            }
+            else {
+                cout << "\e[0;32m  [OK]created " << dbPath << " directory..\e[0m \n";
+                *(m_options->log) << "  [OK]created " << dbPath << " directory..\n";
+            }
+        }
         else
-            (*m_options)[i].setValid( false );   /* invalid ( non existing database file ) */
+            cout << "\e[0;33m database folder: " << dbPath << " already exists \e[0m \n";
+
+        /* FILE CHECK */
+        if( !fileExistance( pathWithFile ) ) {  // does file exist?
+            if( !fileCreate( pathWithFile ) ) { // create database if needed
+                cout << "\e[1;31mDb::Db couldn't create database file: " << pathWithFile << "\e[0m \n";
+                *(m_options->log) << "Db::Db couldn't create database file: " << pathWithFile << "\n";
+                (*m_options)[i].setValid( false );   // set database validity
+            }
+            else {
+                cout << "\e[0;32m [OK]created database file: " << pathWithFile << "\e[0m \n";
+                *(m_options->log) << "[OK]created database file: " << pathWithFile << "\n";
+                openDatabase();
+                createDb();
+                closeDatabase();
+                (*m_options)[i].setValid( true );   // set database validity
+            }
+        }
+        else {
+            cout << "\e[0;33m database file: " << pathWithFile << " already exists \e[0m \n";
+            openDatabase();
+            closeDatabase();
+            (*m_options)[i].setValid( true );   // set database validity
+        }
     }
+
+    m_options->serverNumber = 0;    // set server number back to start ( 0 )!!!
 }
 
 
