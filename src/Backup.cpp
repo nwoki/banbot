@@ -52,7 +52,11 @@ void Backup::creaCartelle()
     //controllo le cartelle dei server
     for (unsigned int i=0; i<m_options->size(); i++ )
     {
-        std::cout<<"\nInizializzo il sistema di backup di "<< (*m_options)[i].name() <<" ...\n";
+        #ifdef ITA
+            std::cout<<"\nInizializzo il sistema di backup di "<< (*m_options)[i].name() <<" ...\n";
+        #else
+            std::cout<<"\nInitializing backup system of "<< (*m_options)[i].name() <<" ...\n";
+        #endif
         std::string dir ( (*m_options)[i].backupDir() );
         unsigned int pos=0;
         bool ok=true;
@@ -78,8 +82,13 @@ void Backup::creaCartelle()
                 }
                 else
                 {
-                    std::cout<<"[EPIC FAIL] couldn't create directory '"<<cartella<<"/'.Please check permissions!\n";
-                    *(m_options->errors)<<"[EPIC FAIL] couldn't create directory '"<<cartella<<"/' for " << (*m_options)[i].name() << ". Please check permissions!\n";
+                    #ifdef ITA
+                        std::cout<<"[EPIC FAIL] non posso creare la cartella '"<<cartella<<"/'. Controlla i permessi!\n";
+                        *(m_options->errors)<<"[EPIC FAIL] non posso creare la cartella '"<<cartella<<"/' per " << (*m_options)[i].name() << ". Controlla i permessi!\n";
+                    #else
+                        std::cout<<"[EPIC FAIL] couldn't create directory '"<<cartella<<"/'. Please check permissions!\n";
+                        *(m_options->errors)<<"[EPIC FAIL] couldn't create directory '"<<cartella<<"/' for " << (*m_options)[i].name() << ". Please check permissions!\n";
+                    #endif
                     ok=false;
                 }
             }
@@ -87,7 +96,11 @@ void Backup::creaCartelle()
     }
     
     //controllo la cartella di backup generale
-    std::cout<<"\nInizializzo il sistema di backup generale ...\n";
+    #ifdef ITA
+        std::cout<<"\nInizializzo il sistema di backup generale ...\n";
+    #else
+        std::cout<<"\nInitializing general backup system ...\n";
+    #endif
     std::string dir ( m_options->generalBackup );
     unsigned int pos=0;
     bool ok=true;
@@ -113,8 +126,13 @@ void Backup::creaCartelle()
             }
             else
             {
-                std::cout<<"[EPIC FAIL] couldn't create directory '"<<cartella<<"/'.Please check permissions!\n";
-                *(m_options->errors)<<"[EPIC FAIL] couldn't create directory '"<<cartella<<"/' for general backup. Please check permissions!\n";
+                #ifdef ITA
+                    std::cout<<"[EPIC FAIL] non posso creare la cartella '"<<cartella<<"/'. Controlla i permessi!\n";
+                    *(m_options->errors)<<"[EPIC FAIL] non posso creare la cartella '"<<cartella<<"/'. Controlla i permessi!\n";
+                #else
+                    std::cout<<"[EPIC FAIL] couldn't create directory '"<<cartella<<"/'. Please check permissions!\n";
+                    *(m_options->errors)<<"[EPIC FAIL] couldn't create directory '"<<cartella<<"/'. Please check permissions!\n";
+                #endif
                 ok=false;
             }
         }
@@ -129,7 +147,11 @@ void Backup::checkFolder(std::string path)
   {
     if ( mkdir(path.c_str(),0777) !=0 )
     {
-      *(m_options->errors)<<"[EPIC FAIL] couldn't create directory '"<<path<<"/'. Please check permissions!\n";
+        #ifdef ITA
+            *(m_options->errors)<<"[EPIC FAIL] non posso creare la cartella '"<<path<<"/'. Controlla i permessi!\n";
+        #else
+            *(m_options->errors)<<"[EPIC FAIL] couldn't create directory '"<<path<<"/'. Please check permissions!\n";
+        #endif
     }
   }
 }
@@ -195,8 +217,13 @@ void Backup::spostaFiles( unsigned int server, std::string dirOfTheDay )
     std::string nomeFile=cartella;
     nomeFile.append((*m_options)[server].botLog().substr(pos));
     //sposto il file
-    std::cout<<" sposto "<<(*m_options)[server].botLog()<<" in "<<nomeFile<<".\n";
-    *(m_options->errors)<<" sposto "<<(*m_options)[server].botLog()<<" in "<<nomeFile<<".\n";
+    #ifdef ITA
+        std::cout<<" sposto "<<(*m_options)[server].botLog()<<" in "<<nomeFile<<".\n";
+        *(m_options->errors)<<" sposto "<<(*m_options)[server].botLog()<<" in "<<nomeFile<<".\n";
+    #else
+        std::cout<<" moving "<<(*m_options)[server].botLog()<<" in "<<nomeFile<<".\n";
+        *(m_options->errors)<<" moving "<<(*m_options)[server].botLog()<<" in "<<nomeFile<<".\n";
+    #endif
     std::rename((*m_options)[server].botLog().c_str(),nomeFile.c_str());
     
     //ServerLog
@@ -208,8 +235,13 @@ void Backup::spostaFiles( unsigned int server, std::string dirOfTheDay )
     nomeFile=cartella;
     nomeFile.append((*m_options)[server].serverLog().substr(pos));
     //sposto il file
-    std::cout<<" sposto "<<(*m_options)[server].serverLog()<<" in "<<nomeFile<<".\n";
-    *(m_options->errors)<<" sposto "<<(*m_options)[server].serverLog()<<" in "<<nomeFile<<".\n";
+    #ifdef ITA
+        std::cout<<" sposto "<<(*m_options)[server].serverLog()<<" in "<<nomeFile<<".\n";
+        *(m_options->errors)<<" sposto "<<(*m_options)[server].serverLog()<<" in "<<nomeFile<<".\n";
+    #else
+        std::cout<<" moving "<<(*m_options)[server].serverLog()<<" in "<<nomeFile<<".\n";
+        *(m_options->errors)<<" moving "<<(*m_options)[server].serverLog()<<" in "<<nomeFile<<".\n";
+    #endif
     std::rename((*m_options)[server].serverLog().c_str(),nomeFile.c_str());
 }
 
@@ -230,8 +262,13 @@ void Backup::spostaFilesGenerali(std::string dirOfTheDay)
 
     cartella.append(m_options->generalLog.substr(pos));
     //sposto il file
-    std::cout<<" moving "<<m_options->generalLog<<" in "<<cartella<<".\n";
-    *(m_options->errors)<<" moving "<<m_options->generalLog<<" in "<<cartella<<".\n";
+    #ifdef ITA
+        std::cout<<" sposto "<<m_options->generalLog<<" in "<<cartella<<".\n";
+        *(m_options->errors)<<" sposto "<<m_options->generalLog<<" in "<<cartella<<".\n";
+    #else
+        std::cout<<" moving "<<m_options->generalLog<<" in "<<cartella<<".\n";
+        *(m_options->errors)<<" moving "<<m_options->generalLog<<" in "<<cartella<<".\n";
+    #endif
     (m_options->errors)->close();
     std::rename(m_options->generalLog.c_str(),cartella.c_str());
 }
@@ -264,8 +301,13 @@ void Backup::backupDatabases(std::string dirOfTheDay)
         dest.append( (*m_options)[i].name() );
         
         //move file
-        std::cout<<" moving "<<db<<" in "<<dest<<".\n";
-        *( m_options->errors )<<" moving "<<db<<" in "<<dest<<".\n";
+        #ifdef ITA
+            std::cout<<" sposto "<<db<<" in "<<dest<<".\n";
+            *( m_options->errors )<<" sposto "<<db<<" in "<<dest<<".\n";
+        #else
+            std::cout<<" moving "<<db<<" in "<<dest<<".\n";
+            *( m_options->errors )<<" moving "<<db<<" in "<<dest<<".\n";
+        #endif
         ( m_options->errors )->close();
         std::rename( db.c_str(), dest.c_str() );
     }
@@ -274,32 +316,44 @@ void Backup::backupDatabases(std::string dirOfTheDay)
 
 bool Backup::doJobs()
 {
-  if (isTimeToWork())
-  {
-    std::cout<<"Starting backup...";
-    (m_options->errors)->timestamp();
-    *(m_options->errors)<<"\nStarting backup...";
-    
-    //inizializzazione
-    creaCartelle();
-    std::string dirOfTheDay( nameOfDir() );
-    
-    //faccio il backup per tutti i server...
-    for (unsigned int i=0; i<m_options->size(); i++)
+    if (isTimeToWork())
     {
-      spostaFiles( i, dirOfTheDay );
+        #ifdef ITA
+            std::cout<<"Inizio il backup...";
+            (m_options->errors)->timestamp();
+            *(m_options->errors)<<"\nInizio il backup...";
+        #else
+            std::cout<<"Starting backup...";
+            (m_options->errors)->timestamp();
+            *(m_options->errors)<<"\nStarting backup...";
+        #endif
+        
+        //inizializzazione
+        creaCartelle();
+        std::string dirOfTheDay( nameOfDir() );
+        
+        //faccio il backup per tutti i server...
+        for (unsigned int i=0; i<m_options->size(); i++)
+        {
+            spostaFiles( i, dirOfTheDay );
+        }
+        
+        backupDatabases( dirOfTheDay );
+        
+        spostaFilesGenerali( dirOfTheDay );
+        
+        #ifdef ITA
+            std::cout<<"Finito.\n";
+            (m_options->errors)->timestamp();
+            *(m_options->errors)<<"\nBackup eseguito.\n\n";
+        #else
+            std::cout<<"Finished.\n";
+            (m_options->errors)->timestamp();
+            *(m_options->errors)<<"\nBackup done.\n\n";
+        #endif
+        return true;
     }
-    
-    backupDatabases( dirOfTheDay );
-    
-    spostaFilesGenerali( dirOfTheDay );
-    
-    std::cout<<"Finished.\n";
-    (m_options->errors)->timestamp();
-    *(m_options->errors)<<"\nBackup done.\n\n";
-    return true;
-  }
-  return false;
+    return false;
 }
 
 #endif

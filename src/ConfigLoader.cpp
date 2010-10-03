@@ -118,12 +118,19 @@ void ConfigLoader::loadOptions()
                         std::cout << "General_Botlog catturato: " << newOptions->generalLog << "\n";
                         #endif
                     }
-
-                    if ( isA( temp, (char*)"^[ \t]*GENERAL_BACKUP_PATH[ \t]*=[ \t]*[^ \t\n\r\f\v]+$" ) )
+                    else if ( isA( temp, (char*)"^[ \t]*GENERAL_BACKUP_PATH[ \t]*=[ \t]*[^ \t\n\r\f\v]+$" ) )
                     {
                         newOptions->generalBackup = extract ( temp );
                         #ifdef DEBUG_MODE
                         std::cout << "General_Backup_path catturato: " << newOptions->generalBackup << "\n";
+                        #endif
+                    }
+                    else
+                    {
+                        #ifdef ITA
+                            std::cout << "Opzione non valida: " << temp << "\n";
+                        #else
+                            std::cout << "Opzion not valid: " << temp << "\n";
                         #endif
                     }
                 }
@@ -215,7 +222,7 @@ void ConfigLoader::loadOptions()
                                     newServer->setDbFolder( t );
                                 }
 
-                                else if ( isA( temp, (char*)"^[ \t]*STRICT_LEVEL[ \t]*=[ \t]*[0-3]{1}$" ) )
+                                else if ( isA( temp, (char*)"^[ \t]*STRICT_LEVEL[ \t]*=[ \t]*[0-2]{1}$" ) )
                                     newServer->setStrict( atoi( extract( temp ).c_str() ) );
 
                                 else if ( temp.compare("EXTERNAL_OPTIONS = YES") == 0 )
@@ -241,24 +248,44 @@ void ConfigLoader::loadOptions()
                                     }
                                     else
                                     {
-                                        std::cout << "[FAIL]: i can't open \"" << newServer->configFile() << "\".\n";
-                                        if ( opzioni->errors )
-                                        {
-                                            opzioni->errors->timestamp();
-                                            *(opzioni->errors) << "[FAIL]: i can't open \"" << newServer->configFile() << "\".\n";
-                                            opzioni->errors->close();
-                                        }
+                                        #ifdef ITA
+                                            std::cout << "[FAIL]: non riesco ad aprire \"" << newServer->configFile() << "\".\n";
+                                            if ( opzioni->errors )
+                                            {
+                                                opzioni->errors->timestamp();
+                                                *(opzioni->errors) << "[FAIL]: non riesco ad aprire \"" << newServer->configFile() << "\".\n";
+                                                opzioni->errors->close();
+                                            }
+                                        #else
+                                            std::cout << "[FAIL]: i can't open \"" << newServer->configFile() << "\".\n";
+                                            if ( opzioni->errors )
+                                            {
+                                                opzioni->errors->timestamp();
+                                                *(opzioni->errors) << "[FAIL]: i can't open \"" << newServer->configFile() << "\".\n";
+                                                opzioni->errors->close();
+                                            }
+                                        #endif
                                     }
                                 }
                                 else
                                 {
-                                    std::cout << "Warning: \"" << temp << "\" isn't a valid option.\n";
-                                    if ( opzioni->errors )
-                                    {
-                                        opzioni->errors->timestamp();
-                                        *(opzioni->errors) << "\nWarning: \"" << temp << "\" isn't a valid option.\n";
-                                        opzioni->errors->close();
-                                    }
+                                    #ifdef ITA
+                                        std::cout << "Attenzione: \"" << temp << "\" non e' un'opzione valida!.\n";
+                                        if ( opzioni->errors )
+                                        {
+                                            opzioni->errors->timestamp();
+                                            *(opzioni->errors) << "\nAttenzione: \"" << temp << "\" non e' un'opzione valida!.\n";
+                                            opzioni->errors->close();
+                                        }
+                                    #else
+                                        std::cout << "Warning: \"" << temp << "\" isn't a valid option.\n";
+                                        if ( opzioni->errors )
+                                        {
+                                            opzioni->errors->timestamp();
+                                            *(opzioni->errors) << "\nWarning: \"" << temp << "\" isn't a valid option.\n";
+                                            opzioni->errors->close();
+                                        }
+                                    #endif
                                 }
                             }
                         }
@@ -266,10 +293,17 @@ void ConfigLoader::loadOptions()
                         if ( newServer->test_for_options() )
                             newOptions->servers.push_back( newServer );
                         else
+                        {
+                            #ifdef ITA
+                                std::cout<<"Server ignorato per opzioni non valide o mancanti.\n";
+                            #else
+                                std::cout<<"Server ignored due to invalid or missed options.\n";
+                            #endif
                             delete newServer;
+                        }
                         
                         #ifdef DEBUG_MODE
-                        std::cout << "Finito il server\n";
+                            std::cout << "Finito il server\n";
                         #endif
                     }
                 }
@@ -291,19 +325,29 @@ void ConfigLoader::loadOptions()
                 delete newOptions;
                 
                 #ifdef DEBUG_MODE
-                std::cout << "Finito il caricamento delle opzioni.\n";
+                    std::cout << "Finito il caricamento delle opzioni.\n";
                 #endif
             }
             else
             {
                 //errore nelle impostazioni generali
-                std::cout << "[FAIL]: errors detected in general options. Ignoring new options\n";
-                if ( opzioni->errors )
-                {
-                    opzioni->errors->timestamp();
-                    *(opzioni->errors) << "\n[FAIL]: errors detected in general options. Ignoring new options\n";
-                    opzioni->errors->close();
-                }
+                #ifdef ITA
+                    std::cout << "[FAIL]: ho rilevato degli errori nelle opzioni generali. Ignoro le nuove opzioni.\n";
+                    if ( opzioni->errors )
+                    {
+                        opzioni->errors->timestamp();
+                        *(opzioni->errors) << "\n[FAIL]: ho rilevato degli errori nelle opzioni generali. Ignoro le nuove opzioni.\n";
+                        opzioni->errors->close();
+                    }
+                #else
+                    std::cout << "[FAIL]: errors detected in general options. Ignoring new options\n";
+                    if ( opzioni->errors )
+                    {
+                        opzioni->errors->timestamp();
+                        *(opzioni->errors) << "\n[FAIL]: errors detected in general options. Ignoring new options\n";
+                        opzioni->errors->close();
+                    }
+                #endif
             }
         }
         cfg->close();

@@ -58,6 +58,8 @@
 #include "ConfigLoader.h"
 #include "Backup.h"
 
+#define _VERSION "1.1"
+
 //tempi di attesa tra un giro e l'altro nell'analisi dei log (più è basso, più alto sarà il consumo (e spreco) di risorse,
 //d'altro canto più alto è, maggiore sarà il tempo di risposta del bot).
 #define TIME_SLEEPING_MIN 2         //tempo di pausa minimo (durante reazione ad eventi/comandi), aka fascia 0

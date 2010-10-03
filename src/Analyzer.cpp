@@ -1308,7 +1308,9 @@ void Analyzer::status(char* line)
     std::string numeroAdmin;
     if (isAdminSay(line,numeroAdmin))
     {
-        std::string frase("^0BanBot ^1status:  version 1.1, coded by [2s2h]n3m3s1s & [2s2h]Zamy.\n^1Strict level: ");
+        std::string frase( "^0BanBot ^1status: version " );
+        frase.append( _VERSION );
+        frase.append( ", coded by [2s2h]n3m3s1s & [2s2h]Zamy.\n^1Strict level: " );
         switch ((*m_dati)[m_dati->serverNumber].strict())
         {
             case 0:

@@ -36,15 +36,23 @@
 #define BANLIST "cfg/Banlist"
 #define ADMINLIST "cfg/Adminlist"
 
+#define _VERSION "1.1"
+
 using namespace std;
 
 int main( int argc, char *argv[] )
 {
     //pass argument to specify bot configfile
 
-    cout<<"BanBot version 1.1b, an open-source project by [2s2h]n3m3s1s and [2s2h]Zamy,\n   Copyright © 2010\n";
-    cout<<"look at GNU General Public License for legal purposes:  <http://www.gnu.org/licenses/>\n\n";
-    cout<<"Wait, pushing up this shit...\n";
+    #ifdef ITA
+        cout<<"BanBot versione"<<_VERSION<<", un progetto open-source di [2s2h]n3m3s1s and [2s2h]Zamy,\n   Copyright © 2010\n";
+        cout<<"per scopi legali, guarda la GNU General Public License:  <http://www.gnu.org/licenses/>\n\n";
+        cout<<"Attendere, inizio a caricare questa merda...\n";
+    #else
+        cout<<"BanBot version"<<_VERSION<<", an open-source project by [2s2h]n3m3s1s and [2s2h]Zamy,\n   Copyright © 2010\n";
+        cout<<"look at GNU General Public License for legal purposes:  <http://www.gnu.org/licenses/>\n\n";
+        cout<<"Wait, pushing up this shit...\n";
+    #endif
 
     //carico le impostazioni e le salvo su opzioni
     ConfigLoader * caricatore;
@@ -55,7 +63,11 @@ int main( int argc, char *argv[] )
 
     if ( caricatore->getOptions() == NULL )
     {
-        cout<<"[EPIC FAIL] Main config file not found. Wtf?!?!?\n";
+        #ifdef ITA
+            cout<<"[EPIC FAIL] File di configurazione principale non trovato. Wtf?!?!?\n";
+        #else
+            cout<<"[EPIC FAIL] Main config file not found. Wtf?!?!?\n";
+        #endif
     }
     else
     {
@@ -70,7 +82,11 @@ int main( int argc, char *argv[] )
 
         //Start analyzer
         Analyzer anal( serverCommand, d, caricatore );
-        std::cout<<"Start in 5 seconds...";
+        #ifdef ITA
+            std::cout<<"Inizio l'elaborazione tra 5 secondi...\n";
+        #else
+            std::cout<<"Start in 5 seconds...\n";
+        #endif
         sleep (5);
         anal.main_loop();
     }
