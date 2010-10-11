@@ -56,7 +56,8 @@ class InstructionsBlock
         
         InstructionsBlock* setNext ( InstructionsBlock* next ); //changes the next InstructionsBlock, and returns the old next.
         InstructionsBlock* getNext ();                          //get the next InstructionsBlock.
-        InstructionsBlock* moveToTail ();                        //move this InstructionsBlock on the tail, and returns the new head.
+        InstructionsBlock* moveToTail ();                       //move this InstructionsBlock on the tail, and returns the new head.
+        void addToTail ( InstructionsBlock* block );            //add a new block on tail.
         bool isEmpty ();                                        //returns true if all instructions are done.
   
     private:
