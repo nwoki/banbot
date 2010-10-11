@@ -74,12 +74,12 @@ void Connection::prepareConnection(int server)
     recvSize = sizeof( serverAdd );
 }
 
-void Connection::kick( string number )
+void Connection::kick( string number, int server )
 {
-  prepareConnection( m_options->serverNumber );
+  prepareConnection( server );
 
   string comando( "rcon ");
-  comando.append( (*m_options)[m_options->serverNumber].rcon() );
+  comando.append( (*m_options)[server].rcon() );
   comando.append( " kick " );
   comando.append( number );
 
@@ -90,12 +90,12 @@ void Connection::kick( string number )
   usleep(SOCKET_PAUSE);
 }
 
-void Connection::say( string frase )
+void Connection::say( string frase, int server )
 {
-  prepareConnection( m_options->serverNumber );
+  prepareConnection( server );
 
   string comando( "rcon " );
-  comando.append( (*m_options)[m_options->serverNumber].rcon() );
+  comando.append( (*m_options)[server].rcon() );
   comando.append( " say \"" );
   unsigned int i=0;
   while ( i<frase.size() )
@@ -125,12 +125,12 @@ void Connection::say( string frase )
   usleep(SOCKET_PAUSE);
 }
 
-void Connection::bigtext( string frase )
+void Connection::bigtext( string frase, int server )
 {
-    prepareConnection( m_options->serverNumber );
+    prepareConnection( server );
     
     string comando( "rcon " );
-    comando.append( (*m_options)[m_options->serverNumber].rcon() );
+    comando.append( (*m_options)[server].rcon() );
     comando.append( " bigtext \"" );
     comando.append( frase );
     comando.append( "\"");
@@ -142,12 +142,12 @@ void Connection::bigtext( string frase )
     usleep(SOCKET_PAUSE);
 }
 
-void Connection::tell( string frase, string player )
+void Connection::tell( string frase, string player, int server )
 {
-  prepareConnection( m_options->serverNumber );
+  prepareConnection( server );
 
   string comando( "rcon " );
-  comando.append( (*m_options)[m_options->serverNumber].rcon() );
+  comando.append( (*m_options)[server].rcon() );
   comando.append( " tell " );
   comando.append( player );
   comando.append( " \"" );
@@ -179,20 +179,19 @@ void Connection::tell( string frase, string player )
   usleep(SOCKET_PAUSE);
 }
 
-void Connection::reload(bool all)
+void Connection::reload( int server )
 {
-  if (!all)
+  if ( server >= 0 )
   {
     string comando("rcon ");
-    comando.append( (*m_options)[m_options->serverNumber].rcon() );
+    comando.append( (*m_options)[server].rcon() );
     comando.append(" reload");
 
     vector<char> command=makeCmd(comando);
     int bufferSize = command.size();
-    prepareConnection( m_options->serverNumber );
+    prepareConnection( server );
     sendto( socketID, command.data(), bufferSize, 0, &(sockaddr &)serverAdd, recvSize );
     close(socketID);
-    usleep(SOCKET_PAUSE);
   }
   else
   {
@@ -207,17 +206,18 @@ void Connection::reload(bool all)
       prepareConnection( i );
       sendto( socketID, command.data(), bufferSize, 0, &(sockaddr &)serverAdd, recvSize );
       close(socketID);
-      usleep(SOCKET_PAUSE);
+      
     }
   }
+  usleep(SOCKET_PAUSE);
 }
 
-void Connection::mute( string number)
+void Connection::mute( string number, int server )
 {
-  prepareConnection( m_options->serverNumber );
+  prepareConnection( server );
 
   string comando( "rcon " );
-  comando.append( (*m_options)[m_options->serverNumber].rcon() );
+  comando.append( (*m_options)[server].rcon() );
   comando.append( " mute " );
   comando.append( number );
 
@@ -228,18 +228,18 @@ void Connection::mute( string number)
   usleep(SOCKET_PAUSE);
 }
 
-void Connection::muteAll( string admin )
+void Connection::muteAll( string admin, int server )
 {
-    prepareConnection( m_options->serverNumber );
+    prepareConnection( server );
     
-    for ( int unsigned i=0; i<(*m_options)[m_options->serverNumber].size(); i++)
+    for ( int unsigned i=0; i<(*m_options)[server].size(); i++)
     {
-        if ( (*m_options)[m_options->serverNumber][i]->number.compare( admin ) != 0 )
+        if ( (*m_options)[server][i]->number.compare( admin ) != 0 )
         {
             string comando( "rcon " );
-            comando.append( (*m_options)[m_options->serverNumber].rcon() );
+            comando.append( (*m_options)[server].rcon() );
             comando.append( " mute " );
-            comando.append( (*m_options)[m_options->serverNumber][i]->number );
+            comando.append( (*m_options)[server][i]->number );
             
             vector< char > command = makeCmd( comando );
             int bufferSize = command.size();
@@ -251,12 +251,12 @@ void Connection::muteAll( string admin )
     usleep(SOCKET_PAUSE);
 }
 
-void Connection::veto()
+void Connection::veto( int server )
 {
-  prepareConnection( m_options->serverNumber );
+  prepareConnection( server );
 
   string comando( "rcon " );
-  comando.append( (*m_options)[m_options->serverNumber].rcon() );
+  comando.append( (*m_options)[server].rcon() );
   comando.append( " veto" );
 
   vector< char > command = makeCmd( comando );
@@ -266,12 +266,12 @@ void Connection::veto()
   usleep(SOCKET_PAUSE);
 }
 
-void Connection::slap( string number )
+void Connection::slap( string number, int server )
 {
-  prepareConnection( m_options->serverNumber );
+  prepareConnection( server );
 
   string comando( "rcon ");
-  comando.append( (*m_options)[m_options->serverNumber].rcon() );
+  comando.append( (*m_options)[server].rcon() );
   comando.append( " slap " );
   comando.append( number );
   
@@ -282,12 +282,12 @@ void Connection::slap( string number )
   usleep(SOCKET_PAUSE);
 }
 
-void Connection::nuke( string number )
+void Connection::nuke( string number, int server )
 {
-  prepareConnection( m_options->serverNumber );
+  prepareConnection( server );
 
   string comando( "rcon ");
-  comando.append( (*m_options)[m_options->serverNumber].rcon() );
+  comando.append( (*m_options)[server].rcon() );
   comando.append( " nuke " );
   comando.append( number );
   
@@ -298,12 +298,12 @@ void Connection::nuke( string number )
   usleep(SOCKET_PAUSE);
 }
 
-void Connection::force( string number, string where)
+void Connection::force( string number, string where, int server )
 {
-  prepareConnection( m_options->serverNumber );
+  prepareConnection( server );
 
   string comando( "rcon " );
-  comando.append( (*m_options)[m_options->serverNumber].rcon() );
+  comando.append( (*m_options)[server].rcon() );
   comando.append( " forceteam " );
   comando.append(number);
   comando.append(" ");
@@ -316,12 +316,12 @@ void Connection::force( string number, string where)
   usleep(SOCKET_PAUSE);
 }
 
-void Connection::map( string name )
+void Connection::map( string name, int server )
 {
-    prepareConnection( m_options->serverNumber );
+    prepareConnection( server );
     
     string comando( "rcon ");
-    comando.append( (*m_options)[m_options->serverNumber].rcon() );
+    comando.append( (*m_options)[server].rcon() );
     comando.append( " map " );
     comando.append( name );
     
@@ -332,12 +332,12 @@ void Connection::map( string name )
     usleep(SOCKET_PAUSE);
 }
 
-void Connection::nextmap( string name )
+void Connection::nextmap( string name, int server )
 {
-    prepareConnection( m_options->serverNumber );
+    prepareConnection( server );
     
     string comando( "rcon ");
-    comando.append( (*m_options)[m_options->serverNumber].rcon() );
+    comando.append( (*m_options)[server].rcon() );
     comando.append( " g_nextmap " );
     comando.append( name );
     

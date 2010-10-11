@@ -47,19 +47,19 @@ class Connection
         Connection(ConfigLoader::Options* opzioni);
         ~Connection();
 
-        void kick( string number );  //prende il numero del giocatore da buttare fuori.
-        void say( string frase );    //prende la frase da scrivere pubblicamente.
-        void bigtext( string frase );    //prende la frase da scrivere pubblicamente in grande.
-        void tell( string frase, string player ); //invia il messaggio privato @frase al giocatore del numero contenuto in @player.
-        void reload(bool all=false);            //fa un reload della mappa. Se viene passato true, lo fa su tutte le mappe.
-        void mute( string number ); //muta/smuta il player numero @number sul server attuale.
-        void muteAll( string admin ); //muta/smuta tutti i player tranne @admin
-        void veto();                  //comando di veto sul server attuale
-        void slap( string number ); //slappa il giocatore @number del server attuale
-        void nuke( string number ); //nuke al giocatore @number del server attuale
-        void force( string number, string where ); //forza il player numero @number sul server @server nel team @where
-        void map( string name ); //cambia mappa sul server
-        void nextmap( string name ); //cambia la nextmap sul server
+        void kick( string number, int server );  //number of the player to kick on @server.
+        void say( string frase, int server );    //phrase to print publically on @server.
+        void bigtext( string frase, int server );    //phrase to print publically (big) on @server.
+        void tell( string frase, string player, int server ); //@frase is the private message to send to @player.
+        void reload( int server );            //does a reload of the current map. If @server is -1, it does a reload on all servers.
+        void mute( string number, int server ); //mute/unmute the player @number.
+        void muteAll( string admin, int server ); //mute/unmute all players except @admin (number).
+        void veto( int server );                  //does a veto.
+        void slap( string number, int server ); //slaps the player @number.
+        void nuke( string number, int server ); //nukes the player @number.
+        void force( string number, string where, int server ); //move the player @number on the team @where
+        void map( string name, int server ); //change the map
+        void nextmap( string name, int server ); //change the nextmap
 
     private:
         sockaddr_in serverAdd;// clientAdd;
