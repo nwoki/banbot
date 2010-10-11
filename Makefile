@@ -23,7 +23,7 @@ CC = gcc
 #for 32bit optimization: -m32 -pipe -march=x86-32
 #for 64bit optimization: -m64 -pipe -march=x86-64
 OPTIMIZ =
-DEBUG = -ggdb -DDEBUG_MODE -DDB_DEBUG -DITA
+DEBUG =
 DEFINES = $(OPTIMIZ) $(DEBUG)
 #compiler flags
 CFLAGS = -c -Wall $(DEFINES)
