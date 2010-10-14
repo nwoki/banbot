@@ -26,15 +26,19 @@
 #ifndef _server_cpp_
 #define _server_cpp_
 
+#include "InstructionsBlock.h"
 #include "server.h"
 #include "handyFunctions.h"
 
 Server::Server()
+    : m_changed( true )
+    , m_valid( true )
+    , m_port( 0 )
+    , m_strict( 0 )
+    , m_priority1Inst( 0 )
+    , m_priority2Inst( 0 )
+    , m_priority3Inst( 0 )
 {
-  m_port=0;
-  m_changed=true;
-  m_valid=true;
-  m_strict=0;
 }
 
 Server::~Server()

@@ -35,7 +35,7 @@ class InstructionsBlock
     public:
         InstructionsBlock();
         ~InstructionsBlock();
-        
+
         void kick( std::string number );  //number of the player to kick.
         void say( std::string frase );    //phrase to print publically.
         void bigtext( std::string frase );    //phrase to print publically (big).
@@ -49,22 +49,19 @@ class InstructionsBlock
         void force( std::string number, std::string where ); //move the player @number on the team @where
         void map( std::string name ); //change the map
         void nextmap( std::string name ); //change the nextmap
-        
-        
+
+
         void execFirstCommand( Connection* conn, int server );  //execute the first command of the stack on @server,
                                                                 //using the given connection class.
-        
+
         InstructionsBlock* setNext ( InstructionsBlock* next ); //changes the next InstructionsBlock, and returns the old next.
         InstructionsBlock* getNext ();                          //get the next InstructionsBlock.
         InstructionsBlock* moveToTail ();                       //move this InstructionsBlock on the tail, and returns the new head.
         void addToTail ( InstructionsBlock* block );            //add a new block on tail.
         bool isEmpty ();                                        //returns true if all instructions are done.
-  
+
     private:
-        InstructionsBlock* next;
-        Common* list;
-        
-        //general command node
+        // general command node
         class Common
         {
             public:
@@ -72,8 +69,8 @@ class InstructionsBlock
                 Common* next;
                 virtual void exec ( Connection* conn, int server );
         };
-        
-        //kick command node
+
+        // kick command node
         class Kick : public Common
         {
             public:
@@ -85,6 +82,9 @@ class InstructionsBlock
             private:
                 std::string n;
         };
+
+        InstructionsBlock* next;
+        Common* list;
 };
 
 #endif // INSTRUCTIONSBLOCK_H

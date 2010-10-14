@@ -37,6 +37,7 @@ class Server
         Server();
         ~Server();
 
+        class InstructionsBlock;
         class Player
         {
             public:
@@ -44,12 +45,26 @@ class Server
                 std::string number;
                 std::string nick;
                 std::string ip;
-                Player() : GUID(""), number(""), nick(""), ip("") {};
-                Player( std::string g, std::string nu, std::string ni, std::string i ) : GUID(g), number(nu), nick(ni), ip(i) {};
+
+                Player()
+                    : GUID("")
+                    , number("")
+                    , nick("")
+                    , ip("")
+                    {
+                    };
+
+                Player( std::string g, std::string nu, std::string ni, std::string i )
+                    : GUID(g)
+                    , number(nu)
+                    , nick(ni)
+                    , ip(i)
+                    {
+                    };
                 Player* clone() { return new Player( GUID, number, nick, ip ); };
         };
 
-        //getters
+        // getters
         std::string name() const;
         std::string backupDir() const;
         std::string botLog() const;
@@ -65,7 +80,7 @@ class Server
         bool isChanged() const;
         bool isValid() const;
 
-        //setters
+        // setters
         void setName( std::string name );
         void setBackupDir( std::string backupDir );
         void setBotLog( std::string botLog );
@@ -81,9 +96,9 @@ class Server
         void setChanged( bool changed = true );
         void setValid( bool valid = true );
 
-        //funzioni per l'accesso diretto all'array dei giocatori
+        // functions that access directly the players array
         unsigned int size();
-        Player* operator[] ( int pos );    //overloading dell'operatore [int]
+        Player* operator[] ( int pos );    // overloading for the operator [int]
         void push_back( Player* player );
         std::vector<Server::Player*>::iterator begin();
         void erase( std::vector<Server::Player*>::iterator iteratore );
@@ -93,27 +108,28 @@ class Server
         void test_for_changes(Server* old);
         //controlla se sono state date impostate tutte le opzioni, true=ok.
         bool test_for_options();
-        
-        
+
+
         std::string toString();
 
   private:
-        bool m_changed;
-        bool m_valid;
-        std::string m_name;
-        std::string m_configFile;   //file di cfg del bot (quella relativa al singolo server, con rcon e file)
-        struct stat m_infos;    //contiene le info del file di configurazione, tra cui la data dell'ultima modifica
-        std::string m_rconpass;
-        std::string m_ip;
-        int m_port;
-        std::string m_backup;
-        std::string m_botLog;
-        std::string m_serverLog;
-        std::string m_dbFolder;
-        std::streampos m_row;
-        int m_strict;           //livello di restrizioni.
+        bool m_changed;                     // flag that indicates when a server options have been modified
+        bool m_valid;                       // flag that indicates wether the server is valid or not
+        std::string m_name;                 // server name
+        std::string m_configFile;           // bot config file( relative to the single server with rcon and file )
+        struct stat m_infos;                // contains config file infotra cui la data dell'ultima modifica
+        std::string m_rconpass;             // server rcon password
+        std::string m_ip;                   // server ip
+        int m_port;                         // server port
+        std::string m_backup;               // server backup directory
+        std::string m_botLog;               // server botlog directory
+        std::string m_serverLog;            // log of the server to parse
+        std::string m_dbFolder;             // server database folder directory
+        std::streampos m_row;               // current row on log file
+        int m_strict;                       // restriction level
 
-        std::vector<Player*> m_giocatori;
+        std::vector<Player*> m_giocatori;   // vector with the info of the players currently in the server
+        InstructionsBlock* m_priority1Inst, *m_priority2Inst, *m_priority3Inst;   // instruction priorities
 };
 
 #endif
