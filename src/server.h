@@ -129,7 +129,7 @@ class Server
         int m_strict;                       // restriction level
 
         std::vector<Player*> m_giocatori;   // vector with the info of the players currently in the server
-        InstructionsBlock* m_priority1Inst, *m_priority2Inst, *m_priority3Inst;   // instruction priorities
+        InstructionsBlock* m_lowPriorityInst, *m_mediumPriorityInst, *m_highPriorityInst;   // instruction priorities
 };
 
 #endif
