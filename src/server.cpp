@@ -201,7 +201,44 @@ void Server::setValid( bool valid )
   m_valid=valid;
 }
 
-//**************************************** funzioni per l'accesso diretto all'array di giocatori ************************
+InstructionsBlock* Server::priorityInst( PriorityLevel lvl )
+{
+    if( lvl == Server::LOW )
+        return m_lowPriorityInst;
+    else if( lvl == Server::MEDIUM )
+        return m_mediumPriorityInst;
+    else
+        return m_highPriorityInst;
+}
+
+void Server::setPriorityInstr( PriorityLevel lvl, InstructionsBlock *inst)
+{
+    if( !inst )     // empty isntruction block. No use for it
+        return;
+
+    if( lvl == Server::LOW ) {
+        if( !m_lowPriorityInst )
+            m_lowPriorityInst = inst;
+        else
+            m_lowPriorityInst->addToTail( inst );
+    }
+    else if( lvl == Server::MEDIUM ) {
+        if( !m_mediumPriorityInst )
+            m_mediumPriorityInst = inst;
+        else
+            m_mediumPriorityInst->addToTail( inst );
+    }
+    else {          // high priorityInst
+        if( !m_highPriorityInst )
+            m_highPriorityInst = inst;
+        else
+            m_highPriorityInst->addToTail( inst );
+    }
+}
+
+
+
+//**************************************** Functions for direct access to player vector ************************
 unsigned int Server::size()
 {
   return m_giocatori.size();
@@ -233,7 +270,7 @@ void Server::clear()
 }
 
 
-//************************************* altro ***********************
+//************************************* other ***********************
 
 void Server::test_for_changes(Server* old)
 {

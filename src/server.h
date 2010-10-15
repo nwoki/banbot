@@ -31,13 +31,14 @@
 #include <fstream>
 #include <vector>
 
+class InstructionsBlock;
+
 class Server
 {
     public:
         Server();
         ~Server();
 
-        class InstructionsBlock;
         class Player
         {
             public:
@@ -64,21 +65,28 @@ class Server
                 Player* clone() { return new Player( GUID, number, nick, ip ); };
         };
 
+        enum PriorityLevel {
+            LOW,
+            MEDIUM,
+            HIGH
+        };
+
         // getters
-        std::string name() const;
-        std::string backupDir() const;
-        std::string botLog() const;
-        std::string configFile() const;
-        std::string dbFolder() const;
+        std::string name() const;                               // returns server name
+        std::string backupDir() const;                          // returns path to server backup directory
+        std::string botLog() const;                             // returns path to server bot log file
+        std::string configFile() const;                         // returns path to server config file
+        std::string dbFolder() const;                           // returns path to server database folder
         struct stat infos() const;
-        std::string ip() const;
-        int port() const;
-        std::string rcon() const;
-        std::streampos row() const;
-        std::string serverLog() const;
-        int strict() const;
-        bool isChanged() const;
-        bool isValid() const;
+        std::string ip() const;                                 // returns server ip
+        int port() const;                                       // returns server port
+        std::string rcon() const;                               // returns server rcon pass
+        std::streampos row() const;                             // returns current row on log file
+        std::string serverLog() const;                          // returns server log path
+        int strict() const;                                     // returns strict level
+        bool isChanged() const;                                 // checks if server options have been changed
+        bool isValid() const;                                   // checks if server is valid
+        InstructionsBlock* priorityInst( Server::PriorityLevel lvl );   // returns pointer to InstructionBlock according to level specified
 
         // setters
         void setName( std::string name );
@@ -95,6 +103,7 @@ class Server
         void setStrict( int level = 1 );
         void setChanged( bool changed = true );
         void setValid( bool valid = true );
+        void setPriorityInstr( Server::PriorityLevel lvl, InstructionsBlock *inst );
 
         // functions that access directly the players array
         unsigned int size();
@@ -129,7 +138,7 @@ class Server
         int m_strict;                       // restriction level
 
         std::vector<Player*> m_giocatori;   // vector with the info of the players currently in the server
-        InstructionsBlock* m_lowPriorityInst, *m_mediumPriorityInst, *m_highPriorityInst;   // instruction priorities
+        InstructionsBlock *m_lowPriorityInst, *m_mediumPriorityInst, *m_highPriorityInst;   // instruction priorities
 };
 
 #endif
