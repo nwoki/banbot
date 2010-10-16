@@ -72,46 +72,47 @@ class Server
         };
 
         // getters
-        std::string name() const;                               // returns server name
-        std::string backupDir() const;                          // returns path to server backup directory
-        std::string botLog() const;                             // returns path to server bot log file
-        std::string configFile() const;                         // returns path to server config file
-        std::string dbFolder() const;                           // returns path to server database folder
-        struct stat infos() const;
-        std::string ip() const;                                 // returns server ip
-        int port() const;                                       // returns server port
-        std::string rcon() const;                               // returns server rcon pass
-        std::streampos row() const;                             // returns current row on log file
-        std::string serverLog() const;                          // returns server log path
-        int strict() const;                                     // returns strict level
-        bool isChanged() const;                                 // checks if server options have been changed
-        bool isValid() const;                                   // checks if server is valid
-        InstructionsBlock* priorityInst( Server::PriorityLevel lvl );   // returns pointer to InstructionBlock according to level specified
+        std::string name() const;                                           // returns server name
+        std::string backupDir() const;                                      // returns path to server backup directory
+        std::string botLog() const;                                         // returns path to server bot log file
+        std::string configFile() const;                                     // returns path to server config file
+        std::string dbFolder() const;                                       // returns path to server database folder
+        struct stat infos() const;                                          // returns server infos struct
+        std::string ip() const;                                             // returns server ip
+        int port() const;                                                   // returns server port
+        std::string rcon() const;                                           // returns server rcon pass
+        std::streampos row() const;                                         // returns current row on log file
+        std::string serverLog() const;                                      // returns server log path
+        int strict() const;                                                 // returns strict level
+        bool isChanged() const;                                             // checks if server options have been changed
+        bool isValid() const;                                               // checks if server is valid
+        InstructionsBlock* priorityInstrBlock( Server::PriorityLevel lvl ); // returns pointer to InstructionBlock according to level specified
 
         // setters
-        void setName( std::string name );
-        void setBackupDir( std::string backupDir );
-        void setBotLog( std::string botLog );
-        void setConfigFile( std::string configFile );
-        void setDbFolder( std::string dbFolder );
-        void setInfos( struct stat infos );
-        void setIP( std::string ip );
-        void setPort( int port );
-        void setRcon( std::string rcon );
-        void setRow( std::streampos row );
-        void setServerLog( std::string serverLog );
-        void setStrict( int level = 1 );
-        void setChanged( bool changed = true );
-        void setValid( bool valid = true );
-        void setPriorityInstr( Server::PriorityLevel lvl, InstructionsBlock *inst );
+        void setName( std::string name );                                   // set server name
+        void setBackupDir( std::string backupDir );                         // set server backup directory
+        void setBotLog( std::string botLog );                               // set server botlog file
+        void setConfigFile( std::string configFile );                       // set server ConfigFile
+        void setDbFolder( std::string dbFolder );                           // set server database folder
+        void setInfos( struct stat infos );                                 // set server infos struct
+        void setIP( std::string ip );                                       // set server ip
+        void setPort( int port );                                           // set server port
+        void setRcon( std::string rcon );                                   // set server rcon password
+        void setRow( std::streampos row );                                  // set server log row
+        void setServerLog( std::string serverLog );                         // set server server log file
+        void setStrict( int level = 1 );                                    // set server strict level
+        void setChanged( bool changed = true );                             // set server changed flag
+        void setValid( bool valid = true );                                 // set server validity flag
+        void addPriorityInstrBlock( Server::PriorityLevel lvl, InstructionsBlock *inst );   // ADDS TO TAIL given InstructionsBlock
+        void setPriorityInstrBlock( Server::PriorityLevel lvl, InstructionsBlock *inst );   // SUBSTITUTES current InstructionsBlock with the given one
 
         // functions that access directly the players array
-        unsigned int size();
-        Player* operator[] ( int pos );    // overloading for the operator [int]
-        void push_back( Player* player );
+        unsigned int size();                // returns the size of the player container
+        Player* operator[] ( int pos );     // overloading for the operator [int]
+        void push_back( Player* player );   // adds player to container
         std::vector<Server::Player*>::iterator begin();
-        void erase( std::vector<Server::Player*>::iterator iteratore );
-        void clear();
+        void erase( std::vector<Server::Player*>::iterator iteratore ); // erases given player from container
+        void clear();                       // clears players container
 
         //confronto con le vecchie opzioni, ed in caso di modifiche critiche lo resetta, altrimenti ripristina i dati dinamici.
         void test_for_changes(Server* old);

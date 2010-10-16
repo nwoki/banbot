@@ -201,7 +201,7 @@ void Server::setValid( bool valid )
   m_valid=valid;
 }
 
-InstructionsBlock* Server::priorityInst( PriorityLevel lvl )
+InstructionsBlock* Server::priorityInstrBlock( Server::PriorityLevel lvl )
 {
     if( lvl == Server::LOW )
         return m_lowPriorityInst;
@@ -211,7 +211,7 @@ InstructionsBlock* Server::priorityInst( PriorityLevel lvl )
         return m_highPriorityInst;
 }
 
-void Server::setPriorityInstr( PriorityLevel lvl, InstructionsBlock *inst)
+void Server::addPriorityInstrBlock( Server::PriorityLevel lvl, InstructionsBlock* inst )
 {
     if( !inst )     // empty isntruction block. No use for it
         return;
@@ -235,6 +235,38 @@ void Server::setPriorityInstr( PriorityLevel lvl, InstructionsBlock *inst)
             m_highPriorityInst->addToTail( inst );
     }
 }
+
+void Server::setPriorityInstrBlock( Server::PriorityLevel lvl, InstructionsBlock* inst )
+{
+    if( lvl == Server::LOW ) {
+        if( !m_lowPriorityInst )
+            m_lowPriorityInst = inst;
+        else {
+            InstructionsBlock *tempInstr = m_lowPriorityInst;   // get current InstructionsBlock
+            m_lowPriorityInst = inst;                           // change first pointer to the new InstructionsBlock given
+            m_lowPriorityInst->setNext( tempInstr );            // set new InstructionsBlock to point to old one
+        }
+    }
+    else if( lvl == Server::MEDIUM ) {
+        if( !m_mediumPriorityInst )
+            m_mediumPriorityInst = inst;
+        else {
+            InstructionsBlock *tempInstr = m_mediumPriorityInst;
+            m_mediumPriorityInst = inst;
+            m_mediumPriorityInst->setNext( tempInstr );
+        }
+    }
+    else {
+        if( !m_highPriorityInst )
+            m_highPriorityInst = inst;
+        else {
+            InstructionsBlock *tempInstr = m_highPriorityInst;
+            m_highPriorityInst = inst;
+            m_highPriorityInst->setNext( tempInstr );
+        }
+    }
+}
+
 
 
 

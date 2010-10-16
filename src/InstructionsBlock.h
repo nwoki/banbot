@@ -50,10 +50,10 @@ class InstructionsBlock
         void map( std::string name ); //change the map
         void nextmap( std::string name ); //change the nextmap
 
+        /// TODO ask zamy : "does this method automatically move the instruction block to the end? does it delete it?
+        void execFirstCommand( Connection* conn, int server );  //execute the first command of the stack on a server using the given connection class.
 
-        void execFirstCommand( Connection* conn, int server );  //execute the first command of the stack on @server,
-                                                                //using the given connection class.
-
+        /// TODO zamy: ci serve che torni un puntatore?? sinceramente lo farei "void" questo metodo
         InstructionsBlock* setNext ( InstructionsBlock* next ); //changes the next InstructionsBlock, and returns the old next.
         InstructionsBlock* getNext ();                          //get the next InstructionsBlock.
         InstructionsBlock* moveToTail ();                       //move this InstructionsBlock on the tail, and returns the new head.
@@ -83,8 +83,8 @@ class InstructionsBlock
                 std::string n;
         };
 
-        InstructionsBlock* next;
-        Common* list;
+        InstructionsBlock* m_next;
+        Common* m_list;
 };
 
 #endif // INSTRUCTIONSBLOCK_H

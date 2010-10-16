@@ -1,13 +1,15 @@
 #project files needed for executable
 OBJECTS = main.o \
 	  db.o \
-	  Analyzer.o \
 	  connection.o \
-	  ConfigLoader.o \
+	  analyzer.o \
+	  configLoader.o \
 	  logger.o \
-	  Backup.o \
+	  backup.o \
 	  server.o \
-	  sqlite3.o
+	  sqlite3.o \
+	  instructionsBlock.o \
+	  scheduler.o
 
 
 #compiler
@@ -70,20 +72,26 @@ db.o :	src/db.h src/db.cpp
 connection.o :	src/connection.h src/connection.cpp
 		$(CPP) $(CFLAGS) src/connection.h src/connection.cpp
 
-Analyzer.o :    src/Analyzer.h src/Analyzer.cpp
+analyzer.o :    src/Analyzer.h src/Analyzer.cpp
 		$(CPP) $(CFLAGS) src/Analyzer.h src/Analyzer.cpp
 
-ConfigLoader.o : src/ConfigLoader.h src/ConfigLoader.cpp
+configLoader.o : src/ConfigLoader.h src/ConfigLoader.cpp
 		$(CPP) $(CFLAGS) src/ConfigLoader.h src/ConfigLoader.cpp
 
 logger.o	: src/logger.h src/logger.cpp
 		$(CPP) $(CFLAGS) src/logger.h src/logger.cpp
 
-Backup.o	: src/Backup.h src/Backup.cpp
+backup.o	: src/Backup.h src/Backup.cpp
 		$(CPP) $(CFLAGS) src/Backup.h src/Backup.cpp
+
+server.o	: src/server.cpp src/server.h
+		$(CPP) $(CFLAGS) src/server.h src/server.cpp
 
 sqlite3.o	: src/sqlite3/sqlite3.c src/sqlite3/sqlite3.h
 		$(CC) $(CFLAGS) $(SQLITE3FLAGS) src/sqlite3/sqlite3.c src/sqlite3/sqlite3.h
 
-server.o	: src/server.cpp src/server.h
-		$(CPP) $(CFLAGS) src/server.cpp src/server.h
+instructionsBlock.o	: src/InstructionsBlock.h src/InstructionsBlock.cpp
+			$(CPP) $(CFLAGS) src/InstructionsBlock.h src/InstructionsBlock.cpp
+
+scheduler.o	: src/Scheduler.h src/Scheduler.cpp
+		$(CPP) $(CFLAGS) src/Scheduler.h src/Scheduler.cpp
