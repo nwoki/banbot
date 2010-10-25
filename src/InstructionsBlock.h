@@ -1,5 +1,5 @@
 /*
-    InstructionsBlock.cpp is part of BanBot.
+    InstructionsBlock.h is part of BanBot.
 
     BanBot is free software: you can redistribute it and/or modify
     it under the terms of the GNU General Public License as published by
@@ -37,10 +37,10 @@ class InstructionsBlock
         ~InstructionsBlock();
         
         void kick( std::string number );  //number of the player to kick.
-        void say( std::string frase );    //phrase to print publically.
-        void bigtext( std::string frase );    //phrase to print publically (big).
-        void tell( std::string frase, std::string player ); //@frase is the private message to send to @player.
-        void reload( int server );            //does a reload of the current map. If @server is -1, it does a reload on all servers.
+        void say( std::string phrase );    //phrase to print publically.
+        void bigtext( std::string phrase );    //phrase to print publically (big).
+        void tell( std::string phrase, std::string player ); //@phrase is the private message to send to @player.
+        void reload();            //does a reload of the current map. If @server is -1, it does a reload on all servers.
         void mute( std::string number ); //mute/unmute the player @number.
         void muteAll( std::string admin ); //mute/unmute all players except @admin (number).
         void veto();                  //does a veto.
@@ -61,16 +61,34 @@ class InstructionsBlock
         bool isEmpty ();                                        //returns true if all instructions are done.
   
     private:
-        InstructionsBlock* next;
-        Common* list;
-        
         //general command node
         class Common
         {
             public:
                 Common():next(0){};
                 Common* next;
-                virtual void exec ( Connection* conn, int server );
+                void addToTail( Common* command )                       //add a command at the end of the list
+                {
+                    if ( next != 0 )
+                    {
+                        next->addToTail( command );
+                    }
+                    else
+                    {
+                        next = command;
+                    }
+                };
+                //virtual methods
+                virtual void exec ( Connection* conn, int server );     //execute this command node
+                virtual void remove()                                   //delete this command node
+                {
+                    delete this;
+                };
+                virtual void removeAll()                                //delete all command nodes
+                {
+                    if ( next != 0 )  next->removeAll();
+                    remove();
+                };
         };
         
         //kick command node
@@ -85,6 +103,164 @@ class InstructionsBlock
             private:
                 std::string n;
         };
+        
+        //say command node
+        class Say : public Common
+        {
+            public:
+                Say( std::string phrase ):Common(),n(phrase){};
+                void exec ( Connection* conn, int server )
+                {
+                    conn->say( n, server );
+                };
+            private:
+                std::string n;
+        };
+        
+        //bigtext command node
+        class BigText : public Common
+        {
+            public:
+                BigText( std::string phrase ):Common(),n(phrase){};
+                void exec ( Connection* conn, int server )
+                {
+                    conn->bigtext( n, server );
+                };
+            private:
+                std::string n;
+        };
+        
+        //tell command node
+        class Tell : public Common
+        {
+            public:
+                Tell( std::string phrase, std::string player ):Common(),n(phrase),n1(player){};
+                void exec ( Connection* conn, int server )
+                {
+                    conn->tell( n, n1, server );
+                };
+            private:
+                std::string n;
+                std::string n1;
+        };
+        
+        //reload command node
+        class Reload : public Common
+        {
+            public:
+                Reload():Common(){};
+                void exec ( Connection* conn, int server )
+                {
+                    conn->reload( server );
+                };
+        };
+        
+        //mute command node
+        class Mute : public Common
+        {
+            public:
+                Mute( std::string number ):Common(),n(number){};
+                void exec ( Connection* conn, int server )
+                {
+                    conn->mute( n, server );
+                };
+            private:
+                std::string n;
+        };
+        
+        //muteAll command node
+        class MuteAll : public Common
+        {
+            public:
+                MuteAll( std::string admin ):Common(),n(admin){};
+                void exec ( Connection* conn, int server )
+                {
+                    conn->muteAll( n, server );
+                };
+            private:
+                std::string n;
+        };
+        
+        //veto command node
+        class Veto : public Common
+        {
+            public:
+                Veto():Common(){};
+                void exec ( Connection* conn, int server )
+                {
+                    conn->veto( server );
+                };
+        };
+        
+        //slap command node
+        class Slap : public Common
+        {
+            public:
+                Slap( std::string number ):Common(),n(number){};
+                void exec ( Connection* conn, int server )
+                {
+                    conn->slap( n, server );
+                };
+            private:
+                std::string n;
+        };
+        
+        //nuke command node
+        class Nuke : public Common
+        {
+            public:
+                Nuke( std::string number ):Common(),n(number){};
+                void exec ( Connection* conn, int server )
+                {
+                    conn->nuke( n, server );
+                };
+            private:
+                std::string n;
+        };
+        
+        //force command node
+        class Force : public Common
+        {
+            public:
+                Force( std::string number, std::string where ):Common(),n(number),n1(where){};
+                void exec ( Connection* conn, int server )
+                {
+                    conn->force( n, n1, server );
+                };
+            private:
+                std::string n;
+                std::string n1;
+        };
+        
+        //map command node
+        class Map : public Common
+        {
+            public:
+                Map( std::string name ):Common(),n(name){};
+                void exec ( Connection* conn, int server )
+                {
+                    conn->map( n, server );
+                };
+            private:
+                std::string n;
+        };
+        
+        //nextmap command node
+        class NextMap : public Common
+        {
+            public:
+                NextMap( std::string name ):Common(),n(name){};
+                void exec ( Connection* conn, int server )
+                {
+                    conn->nextmap( n, server );
+                };
+            private:
+                std::string n;
+        };
+        
+        //pointers
+        InstructionsBlock* next;
+        Common* list;
 };
 
 #endif // INSTRUCTIONSBLOCK_H
