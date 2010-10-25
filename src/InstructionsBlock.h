@@ -35,7 +35,7 @@ class InstructionsBlock
     public:
         InstructionsBlock();
         ~InstructionsBlock();
-        
+
         void kick( std::string number );  //number of the player to kick.
         void say( std::string phrase );    //phrase to print publically.
         void bigtext( std::string phrase );    //phrase to print publically (big).
@@ -49,19 +49,19 @@ class InstructionsBlock
         void force( std::string number, std::string where ); //move the player @number on the team @where
         void map( std::string name ); //change the map
         void nextmap( std::string name ); //change the nextmap
-        
-        
-        void execFirstCommand( Connection* conn, int server );  //execute the first command of the stack on @server,
-                                                                //using the given connection class.
-        
+
+        /// TODO ask zamy : "does this method automatically move the instruction block to the end? does it delete it?
+        void execFirstCommand( Connection* conn, int server );  //execute the first command of the stack on a server using the given connection class.
+
+        /// TODO zamy: ci serve che torni un puntatore?? sinceramente lo farei "void" questo metodo
         InstructionsBlock* setNext ( InstructionsBlock* next ); //changes the next InstructionsBlock, and returns the old next.
         InstructionsBlock* getNext ();                          //get the next InstructionsBlock.
         InstructionsBlock* moveToTail ();                       //move this InstructionsBlock on the tail, and returns the new head.
         void addToTail ( InstructionsBlock* block );            //add a new block on tail.
         bool isEmpty ();                                        //returns true if all instructions are done.
-  
+
     private:
-        //general command node
+        // general command node
         class Common
         {
             public:
@@ -90,8 +90,8 @@ class InstructionsBlock
                     remove();
                 };
         };
-        
-        //kick command node
+
+        // kick command node
         class Kick : public Common
         {
             public:
@@ -259,8 +259,8 @@ class InstructionsBlock
         };
         
         //pointers
-        InstructionsBlock* next;
-        Common* list;
+        InstructionsBlock* m_next;
+        Common* m_list;
 };
 
 #endif // INSTRUCTIONSBLOCK_H

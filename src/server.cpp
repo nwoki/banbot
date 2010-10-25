@@ -26,15 +26,19 @@
 #ifndef _server_cpp_
 #define _server_cpp_
 
+#include "InstructionsBlock.h"
 #include "server.h"
 #include "handyFunctions.h"
 
 Server::Server()
+    : m_changed( true )
+    , m_valid( true )
+    , m_port( 0 )
+    , m_strict( 0 )
+    , m_lowPriorityInst( 0 )
+    , m_mediumPriorityInst( 0 )
+    , m_highPriorityInst( 0 )
 {
-  m_port=0;
-  m_changed=true;
-  m_valid=true;
-  m_strict=0;
 }
 
 Server::~Server()
@@ -197,7 +201,76 @@ void Server::setValid( bool valid )
   m_valid=valid;
 }
 
-//**************************************** funzioni per l'accesso diretto all'array di giocatori ************************
+InstructionsBlock* Server::priorityInstrBlock( Server::PriorityLevel lvl )
+{
+    if( lvl == Server::LOW )
+        return m_lowPriorityInst;
+    else if( lvl == Server::MEDIUM )
+        return m_mediumPriorityInst;
+    else
+        return m_highPriorityInst;
+}
+
+void Server::addPriorityInstrBlock( Server::PriorityLevel lvl, InstructionsBlock* inst )
+{
+    if( !inst )     // empty isntruction block. No use for it
+        return;
+
+    if( lvl == Server::LOW ) {
+        if( !m_lowPriorityInst )
+            m_lowPriorityInst = inst;
+        else
+            m_lowPriorityInst->addToTail( inst );
+    }
+    else if( lvl == Server::MEDIUM ) {
+        if( !m_mediumPriorityInst )
+            m_mediumPriorityInst = inst;
+        else
+            m_mediumPriorityInst->addToTail( inst );
+    }
+    else {          // high priorityInst
+        if( !m_highPriorityInst )
+            m_highPriorityInst = inst;
+        else
+            m_highPriorityInst->addToTail( inst );
+    }
+}
+
+void Server::setPriorityInstrBlock( Server::PriorityLevel lvl, InstructionsBlock* inst )
+{
+    if( lvl == Server::LOW ) {
+        if( !m_lowPriorityInst )
+            m_lowPriorityInst = inst;
+        else {
+            InstructionsBlock *tempInstr = m_lowPriorityInst;   // get current InstructionsBlock
+            m_lowPriorityInst = inst;                           // change first pointer to the new InstructionsBlock given
+            m_lowPriorityInst->setNext( tempInstr );            // set new InstructionsBlock to point to old one
+        }
+    }
+    else if( lvl == Server::MEDIUM ) {
+        if( !m_mediumPriorityInst )
+            m_mediumPriorityInst = inst;
+        else {
+            InstructionsBlock *tempInstr = m_mediumPriorityInst;
+            m_mediumPriorityInst = inst;
+            m_mediumPriorityInst->setNext( tempInstr );
+        }
+    }
+    else {
+        if( !m_highPriorityInst )
+            m_highPriorityInst = inst;
+        else {
+            InstructionsBlock *tempInstr = m_highPriorityInst;
+            m_highPriorityInst = inst;
+            m_highPriorityInst->setNext( tempInstr );
+        }
+    }
+}
+
+
+
+
+//**************************************** Functions for direct access to player vector ************************
 unsigned int Server::size()
 {
   return m_giocatori.size();
@@ -229,7 +302,7 @@ void Server::clear()
 }
 
 
-//************************************* altro ***********************
+//************************************* other ***********************
 
 void Server::test_for_changes(Server* old)
 {

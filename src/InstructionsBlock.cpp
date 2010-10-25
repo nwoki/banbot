@@ -28,49 +28,49 @@
 #include "InstructionsBlock.h"
 
 InstructionsBlock::InstructionsBlock()
-: next(0)
-, list(0)
+: m_next(0)
+, m_list(0)
 {}
 
 
 InstructionsBlock::~InstructionsBlock()
 {
-    if (list != 0)
+    if (m_list != 0)
     {
-        list->removeAll();
+        m_list->removeAll();
     }
 }
 
 void InstructionsBlock::execFirstCommand( Connection* conn, int server )
 {
-    if ( list != 0 )
+    if ( m_list != 0 )
     {
-        list->exec(conn,server);
-        Common* temp = list;
-        list = list->next;
+        m_list->exec(conn,server);
+        Common* temp = m_list;
+        m_list = m_list->next;
         temp->remove();
     }
 }
 
 InstructionsBlock* InstructionsBlock::setNext ( InstructionsBlock* next )
 {
-    InstructionsBlock* t = this->next;
-    this->next = next;
+    InstructionsBlock* t = m_next;
+    m_next = next;
     return t;
 }
 
 InstructionsBlock* InstructionsBlock::getNext ()
 {
-    return next;
+    return m_next;
 }
 
 InstructionsBlock* InstructionsBlock::moveToTail ()
 {
     InstructionsBlock* newHead;
-    if ( next != 0 )
+    if ( m_next != 0 )
     {
-         newHead = next;
-         this->next = 0;
+         newHead = m_next;
+         m_next = 0;
          newHead->addToTail( this );
     }
     else
@@ -82,19 +82,19 @@ InstructionsBlock* InstructionsBlock::moveToTail ()
 
 void InstructionsBlock::addToTail ( InstructionsBlock* block )
 {
-    if ( next != 0 )
+    if ( m_next != 0 )
     {
-        next->addToTail( block );
+        m_next->addToTail( block );
     }
     else
     {
-        next = block;
+        m_next = block;
     }
 }
 
 bool InstructionsBlock::isEmpty ()
 {
-    if ( list != 0 ) return true;
+    if ( m_list != 0 ) return true;
     return false;
 }
 
@@ -103,156 +103,156 @@ bool InstructionsBlock::isEmpty ()
 //If the list is empty, it will be added as first element of the list.
 void InstructionsBlock::kick( std::string number )
 {
-    if ( list !=0 )
+    if ( m_list !=0 )
     {
-        list->addToTail( new Kick(number) );
+        m_list->addToTail( new Kick(number) );
     }
     else
     {
-        list = new Kick(number);
+        m_list = new Kick(number);
     }
 }
 
 void InstructionsBlock::say( std::string phrase )
 {
-    if ( list !=0 )
+    if ( m_list !=0 )
     {
-        list->addToTail( new Say(phrase) );
+        m_list->addToTail( new Say(phrase) );
     }
     else
     {
-        list = new Say(phrase);
+        m_list = new Say(phrase);
     }
 }
 
 void InstructionsBlock::bigtext( std::string phrase )
 {
-    if ( list !=0 )
+    if ( m_list !=0 )
     {
-        list->addToTail( new BigText(phrase) );
+        m_list->addToTail( new BigText(phrase) );
     }
     else
     {
-        list = new BigText(phrase);
+        m_list = new BigText(phrase);
     }
 }
 
 void InstructionsBlock::tell( std::string phrase, std::string player )
 {
-    if ( list !=0 )
+    if ( m_list !=0 )
     {
-        list->addToTail( new Tell(phrase, player) );
+        m_list->addToTail( new Tell(phrase, player) );
     }
     else
     {
-        list = new Tell(phrase, player);
+        m_list = new Tell(phrase, player);
     }
 }
 
 void InstructionsBlock::reload( )
 {
-    if ( list !=0 )
+    if ( m_list !=0 )
     {
-        list->addToTail( new Reload() );
+        m_list->addToTail( new Reload() );
     }
     else
     {
-        list = new Reload();
+        m_list = new Reload();
     }
 }
 
 void InstructionsBlock::mute( std::string number )
 {
-    if ( list !=0 )
+    if ( m_list !=0 )
     {
-        list->addToTail( new Mute(number) );
+        m_list->addToTail( new Mute(number) );
     }
     else
     {
-        list = new Mute(number);
+        m_list = new Mute(number);
     }
 }
 
 void InstructionsBlock::muteAll( std::string admin )
 {
-    if ( list !=0 )
+    if ( m_list !=0 )
     {
-        list->addToTail( new MuteAll(admin) );
+        m_list->addToTail( new MuteAll(admin) );
     }
     else
     {
-        list = new MuteAll(admin);
+        m_list = new MuteAll(admin);
     }
 }
 
 void InstructionsBlock::veto()
 {
-    if ( list !=0 )
+    if ( m_list !=0 )
     {
-        list->addToTail( new Veto() );
+        m_list->addToTail( new Veto() );
     }
     else
     {
-        list = new Veto();
+        m_list = new Veto();
     }
 }
 
 void InstructionsBlock::slap( std::string number )
 {
-    if ( list !=0 )
+    if ( m_list !=0 )
     {
-        list->addToTail( new Slap(number) );
+        m_list->addToTail( new Slap(number) );
     }
     else
     {
-        list = new Slap(number);
+        m_list = new Slap(number);
     }
 }
 
 void InstructionsBlock::nuke( std::string number )
 {
-    if ( list !=0 )
+    if ( m_list !=0 )
     {
-        list->addToTail( new Nuke(number) );
+        m_list->addToTail( new Nuke(number) );
     }
     else
     {
-        list = new Nuke(number);
+        m_list = new Nuke(number);
     }
 }
 
 void InstructionsBlock::force( std::string number, std::string where )
 {
-    if ( list !=0 )
+    if ( m_list !=0 )
     {
-        list->addToTail( new Force(number, where) );
+        m_list->addToTail( new Force(number, where) );
     }
     else
     {
-        list = new Force(number, where);
+        m_list = new Force(number, where);
     }
 }
 
 void InstructionsBlock::map( std::string name )
 {
-    if ( list !=0 )
+    if ( m_list !=0 )
     {
-        list->addToTail( new Map(name) );
+        m_list->addToTail( new Map(name) );
     }
     else
     {
-        list = new Map(name);
+        m_list = new Map(name);
     }
 }
 void InstructionsBlock::nextmap( std::string name )
 {
-    if ( list !=0 )
+    if ( m_list !=0 )
     {
-        list->addToTail( new NextMap(name) );
+        m_list->addToTail( new NextMap(name) );
     }
     else
     {
-        list = new NextMap(name);
+        m_list = new NextMap(name);
     }
 }
 

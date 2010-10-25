@@ -55,7 +55,7 @@ class ConfigLoader
 
                 Server& operator[] ( int number ) { return *servers[number]; }
                 unsigned int size() { return servers.size(); }
-                
+
                 //costruttore
                 Options()
                 {
@@ -68,12 +68,18 @@ class ConfigLoader
                     delete errors;
                     delete log;
                 };
+                // return current server i'm working on
+                Server* currentServer() const
+                {
+                    return servers.at( serverNumber );
+                }
+
                 //distrugge gli oggetti contenuti in servers.
                 void destroyServers()
                 {
                     for( unsigned int i = 0; i < servers.size(); i++ )
                         delete servers[i];
-                    
+
                 }
                 //comoda funzione per cercare un server per nome.
                 Server* searchServer(std::string name)
@@ -84,7 +90,7 @@ class ConfigLoader
                             t = servers[i];
                         return t;
                 };
-                
+
                 std::string toString ()
                 {
                     std::string t;
