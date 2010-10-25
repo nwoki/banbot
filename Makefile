@@ -7,6 +7,7 @@ OBJECTS = main.o \
 	  logger.o \
 	  Backup.o \
 	  server.o \
+	  InstructionsBlock.o \
 	  sqlite3.o
 
 
@@ -87,3 +88,6 @@ sqlite3.o	: src/sqlite3/sqlite3.c src/sqlite3/sqlite3.h
 
 server.o	: src/server.cpp src/server.h
 		$(CPP) $(CFLAGS) src/server.cpp src/server.h
+		
+InstructionsBlock.o	: src/InstructionsBlock.cpp src/InstructionsBlock.h
+		$(CPP) $(CFLAGS) src/InstructionsBlock.cpp src/InstructionsBlock.h
