@@ -37,6 +37,6 @@ bool fileCreate( const std::string &file ); /*!< checks for existance of given f
 std::string intToString( int number );  /*!< converts int to string */
 std::vector< std::string >split( std::string str, char ch );    /*!< splits given string every occurance of "ch" */
 std::string timeStamp();    /*!< returns timestamp of current localtime */  //TODO various ways, date, time long date ecc
-
+std::vector< std::string > detectRows ( std::string ); /*!< split the string in rows, depending on /n and max characters per row */
 
 #endif  //HANDYFUNCTIONS_H

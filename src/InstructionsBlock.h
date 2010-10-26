@@ -49,6 +49,8 @@ class InstructionsBlock
         void force( std::string number, std::string where ); //move the player @number on the team @where
         void map( std::string name ); //change the map
         void nextmap( std::string name ); //change the nextmap
+        void changePassword( std::string pass ); //change the private password of the server
+        void exec( std::string file ); //load a config file for the game server
 
         /// TODO ask zamy : "does this method automatically move the instruction block to the end? does it delete it?
         void execFirstCommand( Connection* conn, int server );  //execute the first command of the stack on a server using the given connection class.
@@ -70,13 +72,9 @@ class InstructionsBlock
                 void addToTail( Common* command )                       //add a command at the end of the list
                 {
                     if ( next != 0 )
-                    {
                         next->addToTail( command );
-                    }
                     else
-                    {
                         next = command;
-                    }
                 };
                 //virtual methods
                 virtual void exec ( Connection* conn, int server );     //execute this command node
@@ -253,6 +251,32 @@ class InstructionsBlock
                 void exec ( Connection* conn, int server )
                 {
                     conn->nextmap( n, server );
+                };
+            private:
+                std::string n;
+        };
+        
+        //changePassword command node
+        class ChangePassword : public Common
+        {
+            public:
+                ChangePassword( std::string pass ):Common(),n(pass){};
+                void exec ( Connection* conn, int server )
+                {
+                    conn->changePassword( n, server );
+                };
+            private:
+                std::string n;
+        };
+        
+        //exec command node
+        class Exec : public Common
+        {
+            public:
+                Exec( std::string file ):Common(),n(file){};
+                void exec ( Connection* conn, int server )
+                {
+                    conn->exec( n, server );
                 };
             private:
                 std::string n;

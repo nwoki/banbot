@@ -156,3 +156,26 @@ std::string timeStamp()
     strftime( buffer, sizeof( buffer ), "%d-%m-%Y", timeInfo );
     return std::string( buffer );
 }
+
+
+std::vector< std::string > detectRows ( std::string phrase)
+{
+    #define ROW 100         //max number of characters in a row
+    std::vector< std::string > temp = std::vector< std::string >();
+    unsigned int i=0;
+    while ( i<phrase.size() )
+    {
+        unsigned int pos=phrase.find("\n",i);
+        if ( (pos-i) > ROW )
+        {
+            temp.push_back( phrase.substr(i,ROW) );
+            i+=ROW+1;
+        }
+        else
+        {
+            temp.push_back( phrase.substr(i,pos-i) );
+            i=pos+1;
+        }
+    }
+    return temp;
+}

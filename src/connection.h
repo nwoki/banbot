@@ -37,7 +37,6 @@
 #include <stdlib.h>
 
 #define SOCKET_PAUSE 600000  //per permettere al socket di funzionare bene, inserisco una pausa, in microsecondi (1'000 = 1 ms, 1'000'000= 1 s)
-#define ROW 100         //numero massimo di caratteri per riga
 
 using namespace std;
 

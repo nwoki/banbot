@@ -26,6 +26,7 @@
 #ifndef INSTRUCTIONSBLOCK_CPP
 #define INSTRUCTIONSBLOCK_CPP
 #include "InstructionsBlock.h"
+#include "handyFunctions.h"
 
 InstructionsBlock::InstructionsBlock()
 : m_next(0)
@@ -83,19 +84,15 @@ InstructionsBlock* InstructionsBlock::moveToTail ()
 void InstructionsBlock::addToTail ( InstructionsBlock* block )
 {
     if ( m_next != 0 )
-    {
         m_next->addToTail( block );
-    }
     else
-    {
         m_next = block;
-    }
 }
 
 bool InstructionsBlock::isEmpty ()
 {
-    if ( m_list != 0 ) return true;
-    return false;
+    if ( m_list != 0 ) return false;
+    return true;
 }
 
 /* ************ command methods *********** */
@@ -104,156 +101,127 @@ bool InstructionsBlock::isEmpty ()
 void InstructionsBlock::kick( std::string number )
 {
     if ( m_list !=0 )
-    {
         m_list->addToTail( new Kick(number) );
-    }
     else
-    {
         m_list = new Kick(number);
-    }
 }
 
 void InstructionsBlock::say( std::string phrase )
 {
-    if ( m_list !=0 )
+    std::vector<std::string> rows = detectRows (phrase);
+    for (int i = 0; i < rows.size(); i++)
     {
-        m_list->addToTail( new Say(phrase) );
-    }
-    else
-    {
-        m_list = new Say(phrase);
+        if ( m_list != 0 )
+            m_list->addToTail( new Say( rows[i] ) );
+        else
+            m_list = new Say( rows[i] );
     }
 }
 
 void InstructionsBlock::bigtext( std::string phrase )
 {
     if ( m_list !=0 )
-    {
         m_list->addToTail( new BigText(phrase) );
-    }
     else
-    {
         m_list = new BigText(phrase);
-    }
 }
 
 void InstructionsBlock::tell( std::string phrase, std::string player )
 {
-    if ( m_list !=0 )
+    std::vector<std::string> rows = detectRows (phrase);
+    for (int i = 0; i < rows.size(); i++)
     {
-        m_list->addToTail( new Tell(phrase, player) );
-    }
-    else
-    {
-        m_list = new Tell(phrase, player);
+        if ( m_list !=0 )
+            m_list->addToTail( new Tell( rows[i], player ) );
+        else
+            m_list = new Tell( rows[i], player );
     }
 }
 
 void InstructionsBlock::reload( )
 {
     if ( m_list !=0 )
-    {
         m_list->addToTail( new Reload() );
-    }
     else
-    {
         m_list = new Reload();
-    }
 }
 
 void InstructionsBlock::mute( std::string number )
 {
     if ( m_list !=0 )
-    {
         m_list->addToTail( new Mute(number) );
-    }
     else
-    {
         m_list = new Mute(number);
-    }
 }
 
 void InstructionsBlock::muteAll( std::string admin )
 {
     if ( m_list !=0 )
-    {
         m_list->addToTail( new MuteAll(admin) );
-    }
     else
-    {
         m_list = new MuteAll(admin);
-    }
 }
 
 void InstructionsBlock::veto()
 {
     if ( m_list !=0 )
-    {
         m_list->addToTail( new Veto() );
-    }
     else
-    {
         m_list = new Veto();
-    }
 }
 
 void InstructionsBlock::slap( std::string number )
 {
     if ( m_list !=0 )
-    {
         m_list->addToTail( new Slap(number) );
-    }
     else
-    {
         m_list = new Slap(number);
-    }
 }
 
 void InstructionsBlock::nuke( std::string number )
 {
     if ( m_list !=0 )
-    {
         m_list->addToTail( new Nuke(number) );
-    }
     else
-    {
         m_list = new Nuke(number);
-    }
 }
 
 void InstructionsBlock::force( std::string number, std::string where )
 {
     if ( m_list !=0 )
-    {
         m_list->addToTail( new Force(number, where) );
-    }
     else
-    {
         m_list = new Force(number, where);
-    }
 }
 
 void InstructionsBlock::map( std::string name )
 {
     if ( m_list !=0 )
-    {
         m_list->addToTail( new Map(name) );
-    }
     else
-    {
         m_list = new Map(name);
-    }
 }
 void InstructionsBlock::nextmap( std::string name )
 {
     if ( m_list !=0 )
-    {
         m_list->addToTail( new NextMap(name) );
-    }
     else
-    {
         m_list = new NextMap(name);
-    }
+}
+
+void InstructionsBlock::changePassword( std::string pass )
+{
+    if ( m_list !=0 )
+        m_list->addToTail( new ChangePassword(pass) );
+    else
+        m_list = new ChangePassword(pass);
+}
+void InstructionsBlock::exec( std::string file )
+{
+    if ( m_list !=0 )
+        m_list->addToTail( new Exec(file) );
+    else
+        m_list = new Exec(file);
 }
 
 #endif // INSTRUCTIONSBLOCK_CPP

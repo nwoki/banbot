@@ -76,63 +76,48 @@ void Connection::prepareConnection(int server)
 
 void Connection::kick( string number, int server )
 {
-  prepareConnection( server );
-
-  string comando( "rcon ");
-  comando.append( (*m_options)[server].rcon() );
-  comando.append( " kick " );
-  comando.append( number );
-
-  vector< char > command = makeCmd( comando );
-  int bufferSize = command.size();
-  sendto( socketID, command.data(), bufferSize, 0, &(sockaddr &)serverAdd, recvSize );
-  close( socketID );
-  usleep(SOCKET_PAUSE);
+    prepareConnection( server );
+    
+    string comando( "rcon ");
+    comando.append( (*m_options)[server].rcon() );
+    comando.append( " kick " );
+    comando.append( number );
+    
+    vector< char > command = makeCmd( comando );
+    int bufferSize = command.size();
+    sendto( socketID, command.data(), bufferSize, 0, &(sockaddr &)serverAdd, recvSize );
+    close( socketID );
+    usleep(SOCKET_PAUSE);
 }
 
-void Connection::say( string frase, int server )
+void Connection::say( string phrase, int server )
 {
-  prepareConnection( server );
-
-  string comando( "rcon " );
-  comando.append( (*m_options)[server].rcon() );
-  comando.append( " say \"" );
-  unsigned int i=0;
-  while ( i<frase.size() )
-  {
-      unsigned int pos=frase.find("\n",i);
-      string finale ( comando );
-      if ( (pos-i) > ROW )
-      {
-          finale.append( frase.substr(i,ROW) );
-          i+=ROW+1;
-      }
-      else
-      {
-          finale.append( frase.substr(i,pos-i) );
-          i=pos+1;
-      }
-      finale.append( "\"" );
-      #ifdef DEBUG_MODE
-      std::cout << "Sending command: " << finale << "\n";
-      #endif
-      vector< char > command = makeCmd( finale );
-      int bufferSize = command.size();
-      sendto( socketID, command.data(), bufferSize, 0, &(sockaddr &)serverAdd, recvSize );
-      usleep(SOCKET_PAUSE);
-  }
-  close(socketID);
-  usleep(SOCKET_PAUSE);
+    prepareConnection( server );
+    
+    string comando( "rcon " );
+    comando.append( (*m_options)[server].rcon() );
+    comando.append( " say \"" );
+    comando.append( phrase );
+    comando.append( "\"" );
+    #ifdef DEBUG_MODE
+    std::cout << "Sending command: " << comando << "\n";
+    #endif
+    vector< char > command = makeCmd( comando );
+    int bufferSize = command.size();
+    sendto( socketID, command.data(), bufferSize, 0, &(sockaddr &)serverAdd, recvSize );
+    
+    usleep(SOCKET_PAUSE);
+    close(socketID);
 }
 
-void Connection::bigtext( string frase, int server )
+void Connection::bigtext( string phrase, int server )
 {
     prepareConnection( server );
     
     string comando( "rcon " );
     comando.append( (*m_options)[server].rcon() );
     comando.append( " bigtext \"" );
-    comando.append( frase );
+    comando.append( phrase );
     comando.append( "\"");
     
     vector< char > command = makeCmd( comando );
@@ -142,41 +127,25 @@ void Connection::bigtext( string frase, int server )
     usleep(SOCKET_PAUSE);
 }
 
-void Connection::tell( string frase, string player, int server )
+void Connection::tell( string phrase, string player, int server )
 {
-  prepareConnection( server );
-
-  string comando( "rcon " );
-  comando.append( (*m_options)[server].rcon() );
-  comando.append( " tell " );
-  comando.append( player );
-  comando.append( " \"" );
-  unsigned int i=0;
-  while ( i<frase.size() )
-  {
-    unsigned int pos=frase.find("\n",i);
-    string finale ( comando );
-    if ( (pos-i) > ROW )
-    {
-      finale.append( frase.substr(i,ROW) );
-      i+=ROW+1;
-    }
-    else
-    {
-      finale.append( frase.substr(i,pos-i) );
-      i=pos+1;
-    }
-    finale.append( "\"" );
+    prepareConnection( server );
+    
+    string comando( "rcon " );
+    comando.append( (*m_options)[server].rcon() );
+    comando.append( " tell " );
+    comando.append( player );
+    comando.append( " \"" );
+    comando.append( phrase );
+    comando.append( "\"" );
     #ifdef DEBUG_MODE
-        std::cout << "Sending command: " << finale << "\n";
+        std::cout << "Sending command: " << comando << "\n";
     #endif
-    vector< char > command = makeCmd( finale );
+    vector< char > command = makeCmd( comando );
     int bufferSize = command.size();
     sendto( socketID, command.data(), bufferSize, 0, &(sockaddr &)serverAdd, recvSize );
+    close(socketID);
     usleep(SOCKET_PAUSE);
-  }
-  close(socketID);
-  usleep(SOCKET_PAUSE);
 }
 
 void Connection::reload( int server )
