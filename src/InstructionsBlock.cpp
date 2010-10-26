@@ -37,9 +37,14 @@ InstructionsBlock::InstructionsBlock()
 InstructionsBlock::~InstructionsBlock()
 {
     if (m_list != 0)
-    {
         m_list->removeAll();
-    }
+}
+
+void InstructionsBlock::deleteAll()
+{
+    if ( m_next != 0 )
+        m_next->deleteAll();
+    delete this;
 }
 
 void InstructionsBlock::execFirstCommand( Connection* conn, int server )
@@ -109,7 +114,7 @@ void InstructionsBlock::kick( std::string number )
 void InstructionsBlock::say( std::string phrase )
 {
     std::vector<std::string> rows = detectRows (phrase);
-    for (int i = 0; i < rows.size(); i++)
+    for (unsigned int i = 0; i < rows.size(); i++)
     {
         if ( m_list != 0 )
             m_list->addToTail( new Say( rows[i] ) );
@@ -129,7 +134,7 @@ void InstructionsBlock::bigtext( std::string phrase )
 void InstructionsBlock::tell( std::string phrase, std::string player )
 {
     std::vector<std::string> rows = detectRows (phrase);
-    for (int i = 0; i < rows.size(); i++)
+    for (unsigned int i = 0; i < rows.size(); i++)
     {
         if ( m_list !=0 )
             m_list->addToTail( new Tell( rows[i], player ) );

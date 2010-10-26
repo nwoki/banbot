@@ -35,6 +35,7 @@ class InstructionsBlock
     public:
         InstructionsBlock();
         ~InstructionsBlock();
+        void deleteAll();           //delete the entire list of InstrutionsBlocks.
 
         void kick( std::string number );  //number of the player to kick.
         void say( std::string phrase );    //phrase to print publically.

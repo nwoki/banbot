@@ -40,7 +40,8 @@ CLEAN_TARGETS =  src/*.gch \
 		 src/sqlite3/*.cpp~ \
 		 src/sqlite3/*.gch \
 		 BanBot \
-		 $(OBJECTS)
+		 *.o
+		 #$(OBJECTS)
 
 TARGET = BanBot
 
