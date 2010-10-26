@@ -65,7 +65,35 @@ class Server
                 Player* clone() { return new Player( GUID, number, nick, ip ); };
         };
 
-        enum PriorityLevel {
+        class InstructionCounter
+        {
+        public:
+            InstructionCounter()
+            : m_highPr( 0 )
+            , m_medPr( 0 )
+            , m_lowPr( 0 )
+            {}
+
+            void resetCounters()
+            {
+                m_highPr = 0;
+                m_medPr = 0;
+                m_lowPr = 0;
+            }
+            // increments
+            void incrementHighPr() { m_highPr++; }      // increments high priority instruction counter by one
+            void incrementMedPr() { m_medPr++; }        // increments medium priority instruction counter by one
+            void incrementLowPr() { m_lowPr++; }        // increments low priority instruction counter by one
+            // getters
+            int hightPr() const { return m_highPr; }    // returns number of high priority instruction blocks commands executed
+            int medPr() const { return m_medPr; }       // returns number of medium priority instruction blocks commands executed
+            int lowPr() const { return m_lowPr; }       // returns number of low priority instruction blocks commands executed
+
+        private:
+            int m_highPr, m_medPr, m_lowPr;             // counter for various priority instructions
+        };
+
+        enum PriorityLevel {                                                // server intructions priority enum
             LOW,
             MEDIUM,
             HIGH
@@ -87,6 +115,7 @@ class Server
         bool isChanged() const;                                             // checks if server options have been changed
         bool isValid() const;                                               // checks if server is valid
         InstructionsBlock* priorityInstrBlock( Server::PriorityLevel lvl ); // returns pointer to InstructionBlock according to level specified
+        InstructionCounter *instructionCounter() const;                     // returns pointer to server's InstructionCounter
 
         // setters
         void setName( std::string name );                                   // set server name
@@ -103,6 +132,8 @@ class Server
         void setStrict( int level = 1 );                                    // set server strict level
         void setChanged( bool changed = true );                             // set server changed flag
         void setValid( bool valid = true );                                 // set server validity flag
+
+        // put these into scheduler and add server number to specify server to operate on
         void addPriorityInstrBlock( Server::PriorityLevel lvl, InstructionsBlock *inst );   // ADDS TO TAIL given InstructionsBlock
         void setPriorityInstrBlock( Server::PriorityLevel lvl, InstructionsBlock *inst );   // SUBSTITUTES current InstructionsBlock with the given one
 
@@ -123,22 +154,23 @@ class Server
         std::string toString();
 
   private:
-        bool m_changed;                     // flag that indicates when a server options have been modified
-        bool m_valid;                       // flag that indicates wether the server is valid or not
-        std::string m_name;                 // server name
-        std::string m_configFile;           // bot config file( relative to the single server with rcon and file )
-        struct stat m_infos;                // contains config file infotra cui la data dell'ultima modifica
-        std::string m_rconpass;             // server rcon password
-        std::string m_ip;                   // server ip
-        int m_port;                         // server port
-        std::string m_backup;               // server backup directory
-        std::string m_botLog;               // server botlog directory
-        std::string m_serverLog;            // log of the server to parse
-        std::string m_dbFolder;             // server database folder directory
-        std::streampos m_row;               // current row on log file
-        int m_strict;                       // restriction level
+        bool m_changed;                             // flag that indicates when a server options have been modified
+        bool m_valid;                               // flag that indicates wether the server is valid or not
+        std::string m_name;                         // server name
+        std::string m_configFile;                   // bot config file( relative to the single server with rcon and file )
+        struct stat m_infos;                        // contains config file infotra cui la data dell'ultima modifica
+        std::string m_rconpass;                     // server rcon password
+        std::string m_ip;                           // server ip
+        int m_port;                                 // server port
+        std::string m_backup;                       // server backup directory
+        std::string m_botLog;                       // server botlog directory
+        std::string m_serverLog;                    // log of the server to parse
+        std::string m_dbFolder;                     // server database folder directory
+        std::streampos m_row;                       // current row on log file
+        int m_strict;                               // restriction level
 
-        std::vector<Player*> m_giocatori;   // vector with the info of the players currently in the server
+        std::vector<Player*> m_giocatori;           // vector with the info of the players currently in the server
+        InstructionCounter *m_instructionCounter;   // instruction counter for server's various InstructionsBlock
         InstructionsBlock *m_lowPriorityInst, *m_mediumPriorityInst, *m_highPriorityInst;   // instruction priorities
 };
 

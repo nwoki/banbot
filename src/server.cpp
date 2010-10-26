@@ -35,6 +35,7 @@ Server::Server()
     , m_valid( true )
     , m_port( 0 )
     , m_strict( 0 )
+    , m_instructionCounter( new InstructionCounter() )
     , m_lowPriorityInst( 0 )
     , m_mediumPriorityInst( 0 )
     , m_highPriorityInst( 0 )
@@ -267,6 +268,10 @@ void Server::setPriorityInstrBlock( Server::PriorityLevel lvl, InstructionsBlock
     }
 }
 
+Server::InstructionCounter* Server::instructionCounter() const
+{
+    return m_instructionCounter;
+}
 
 
 

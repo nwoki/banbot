@@ -39,12 +39,6 @@ Scheduler::Scheduler( ConfigLoader::Options *op, Connection *conn )
     : m_connection( conn )
     , m_options( op )
 {
-    // create maps with server name associated to it's counter
-    for( unsigned int i = 0; i < m_options->size(); i++ ) {
-        Server *auxServer = m_options->servers.at( i ); // get pointer of server to operate with
-        std::map< std::string, InstructionCounter* >::value_type element( auxServer->name(), new InstructionCounter() );
-        m_serverCounters.insert( element );             // map it
-    }
 }
 
 Scheduler::~Scheduler()
@@ -70,25 +64,23 @@ bool Scheduler::executeInstructions()
 {
     for( unsigned int i = 0; i < m_options->size(); i++ ) {
         Server *auxServer = m_options->servers.at( i );
-        InstructionCounter *auxInstCounter = m_serverCounters[ auxServer->name() ];
-
+        Server::InstructionCounter *auxInstCounter = auxServer->instructionCounter();
         InstructionsBlock *auxHighPr = auxServer->priorityInstrBlock( Server::HIGH );
 
-        if( auxInstCounter ) {      // got InstructionBlock, executes commands
-            if( !auxInstCounter->hightPr() < MAX_HIGH_INST ) {          // check i haven't exceeded max counter
-                if( !auxHighPr->isEmpty() ) {                           // check if there are instructions to execute
+        if( !auxServer->instructionCounter()->hightPr() < MAX_HIGH_INST ) {          // check i haven't exceeded max counter
+            if( auxHighPr != 0 ) {                                  // check if there are instructions to execute ( it's a list! )
+                // here i assume that "execFirstCommand" deletes the instruction or removes it or does something
+                // to it so i don't have to touch anything inside. Ask zamy how he intends to implemente InstructionsBlock */
+                auxHighPr->execFirstCommand( m_connection, i );
+                auxInstCounter->incrementHighPr();
 
-                    /* here i assume that "execFirstCommand" deletes the instruction or removes it or does something
-                     * to it so i don't have to touch anything inside. Ask zamy how he intends to implemente InstructionsBlock */
-                    auxHighPr->execFirstCommand( m_connection, i );
-                    auxInstCounter->incrementHighPr();
-                    if( auxHighPr->isEmpty() ) {
-                        auxHighPr->setNext( auxHighPr->getNext() );     // set next instructions block
-                        delete auxHighPr;                               // delete empty instructions block
-                    }
-                    else                                                // move instructions to tail for later execution
-                        auxServer->setPriorityInstrBlock( Server::HIGH, auxHighPr->moveToTail() );
+                if( auxHighPr->isEmpty() ) {                        // are there instructions to execute?
+                    InstructionsBlock *tmp = auxHighPr;
+                    auxHighPr =  auxHighPr->getNext();              // set next instructions block
+                    delete tmp;                                     // delete empty instructions block
                 }
+                else
+                    auxHighPr->moveToTail();                        // move instructions to tail for later execution
             }
         }
     }

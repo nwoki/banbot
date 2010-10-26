@@ -33,7 +33,6 @@
 #define SCHEDULER_H
 
 #include "ConfigLoader.h"
-#include <map>
 
 class Connection;
 
@@ -44,41 +43,11 @@ public:
     ~Scheduler();
 
     void addInstructionBlock( InstructionsBlock *inst, Server::PriorityLevel lvl );     // adds instructionBlock to current server
-    bool executeInstructions();     // executes 3 instructions per server
-
-
-    class InstructionCounter
-    {
-    public:
-        InstructionCounter()
-        : m_highPr( 0 )
-        , m_medPr( 0 )
-        , m_lowPr( 0 )
-        {}
-
-        void resetCounters()
-        {
-            m_highPr = 0;
-            m_medPr = 0;
-            m_lowPr = 0;
-        }
-        // increments
-        void incrementHighPr() { m_highPr++; }      // increments high priority instruction counter by one
-        void incrementMedPr() { m_medPr++; }        // increments medium priority instruction counter by one
-        void incrementLowPr() { m_lowPr++; }        // increments low priority instruction counter by one
-        // getters
-        int hightPr() const { return m_highPr; }    // returns number of high priority instruction blocks commands executed
-        int medPr() const { return m_medPr; }       // returns number of medium priority instruction blocks commands executed
-        int lowPr() const { return m_lowPr; }       // returns number of low priority instruction blocks commands executed
-
-    private:
-        int m_highPr, m_medPr, m_lowPr; // counter for various priority instructions
-    };
+    bool executeInstructions();         // executes 3 instructions per server
 
 private:
     Connection *m_connection;           // connection class to send info to server
     ConfigLoader::Options *m_options;   // options class to keep track of servers, operate on them and their options
-    std::map< std::string, InstructionCounter* > m_serverCounters;   // a map to associate an instruction counter to relative server
 };
 
 #endif
