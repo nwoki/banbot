@@ -316,3 +316,35 @@ void Connection::nextmap( string name, int server )
     close(socketID);
     usleep(SOCKET_PAUSE);
 }
+
+void Connection::changePassword( string pass, int server )
+{
+    prepareConnection( server );
+    
+    string comando( "rcon ");
+    comando.append( (*m_options)[server].rcon() );
+    comando.append( " g_password " );
+    comando.append( pass );
+    
+    vector< char > command = makeCmd( comando );
+    int bufferSize = command.size();
+    sendto( socketID, command.data(), bufferSize, 0, &(sockaddr &)serverAdd, recvSize );
+    close(socketID);
+    usleep(SOCKET_PAUSE);
+}
+
+void Connection::exec( string file, int server )
+{
+    prepareConnection( server );
+    
+    string comando( "rcon ");
+    comando.append( (*m_options)[server].rcon() );
+    comando.append( " exec " );
+    comando.append( file );
+    
+    vector< char > command = makeCmd( comando );
+    int bufferSize = command.size();
+    sendto( socketID, command.data(), bufferSize, 0, &(sockaddr &)serverAdd, recvSize );
+    close(socketID);
+    usleep(SOCKET_PAUSE);
+}

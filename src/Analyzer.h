@@ -92,7 +92,9 @@
     ^2!force <red/blue/spect> <numero/nick> ^1: cambia team ad un player\n\
     ^2!map <nome> ^1: cambia la mappa (per esempio, ut4_casa)\n\
     ^2!nextmap <nome> ^1: imposta la mappa successiva (vedi !map)\n\
-    ^2!admins ^1: elenca gli admin attualmente in gioco\
+    ^2!admins ^1: elenca gli admin attualmente in gioco\n\
+    ^2!pass <pass> ^1: cambia la password al server\n\
+    ^2!config <file> ^1: carica un file di configurazione\
     "
 #else
     #define COMMANDLIST "^1Commands:\n\
@@ -112,7 +114,9 @@
     ^2!force <red/blue/spect> <number/nick> ^1: change team team of a player\n\
     ^2!map <name> ^1: change map (for example, ut4_casa)\n\
     ^2!nextmap <name> ^1: set the next map (see !map)\n\
-    ^2!admins ^1: show admins actually in game\
+    ^2!admins ^1: show admins actually in game\n\
+    ^2!pass <pass> ^1: change server's password\n\
+    ^2!config <file> ^1: load a configuration file\
     "
 #endif
 
@@ -152,6 +156,8 @@ private:
     void map(char* line);
     void nextmap(char* line);
     void admins(char* line);
+    void pass(char* line);
+    void config(char* line);
 
 protected:
     bool isA(char* line,const std::string &regex);          //testa se la riga soddisfa il regex.

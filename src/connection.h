@@ -59,6 +59,8 @@ class Connection
         void force( string number, string where, int server ); //move the player @number on the team @where
         void map( string name, int server ); //change the map
         void nextmap( string name, int server ); //change the nextmap
+        void changePassword( string pass, int server ); //change the password of the server
+        void exec( string file, int server ); //load a config file
 
     private:
         sockaddr_in serverAdd;// clientAdd;
