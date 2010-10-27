@@ -298,6 +298,7 @@ void Analyzer::clientUserInfo(char* line)
 
     //se la guid è vuota, sono cazzi amari...
     if (guid.empty() && (*m_dati)[m_dati->serverNumber].strict() >= LEVEL1)
+#include "InstructionsBlock.h"
     {
         if ( (*m_dati)[m_dati->serverNumber].strict() >= LEVEL2 )
         {
@@ -1510,6 +1511,58 @@ void Analyzer::admins(char* line)
                 mex.append(" ");
         }
         server->tell(mex,numeroAdmin);
+    }
+}
+
+void Analyzer::pass(char* line)
+{
+    std::cout<<"[!] g_Password";
+    (m_dati->log)->timestamp();
+    *(m_dati->log)<<"\n[!] g_Password";
+    //i check the player and his permissions, if he isn't autorized to use this command, nothing to do.
+    std::string numeroAdmin;
+    if (isAdminSay(line,numeroAdmin))
+    {
+        std::string temp = line;
+        int pos = temp.find( "!pass" );
+        pos = temp.find_first_not_of( " ", pos+5 );
+        int end = temp.find_first_of( " ", pos );
+        std::string password = temp.substr( pos, end-pos );
+        InstructionsBlock* block = new InstructionsBlock();
+        #ifdef ITA
+            std::string phrase ("^0BanBot:^1 password cambiata in ^2");
+        #else
+            std::string phrase ("^0BanBot:^1 password changed into ^2");
+        #endif
+        phrase.append( password );
+        block->changePassword( password );
+        block->tell(phrase,numeroAdmin);
+    }
+}
+
+void Analyzer::config(char* line)
+{
+    std::cout<<"[!] Config(exec)";
+    (m_dati->log)->timestamp();
+    *(m_dati->log)<<"\n[!] Config(exec)";
+    //i check the player and his permissions, if he isn't autorized to use this command, nothing to do.
+    std::string numeroAdmin;
+    if (isAdminSay(line,numeroAdmin))
+    {
+        std::string temp = line;
+        int pos = temp.find( "!config" );
+        pos = temp.find_first_not_of( " ", pos+7 );
+        int end = temp.find_first_of( " ", pos );
+        std::string file = temp.substr( pos, end-pos );
+        InstructionsBlock* block = new InstructionsBlock();
+        #ifdef ITA
+        std::string phrase ("^0BanBot:^1 carico il file di configurazione ^2");
+        #else
+        std::string phrase ("^0BanBot:^1 loading the configuration file ^2");
+        #endif
+        phrase.append( file );
+        block->say(phrase);
+        block->exec( file );
     }
 }
 
