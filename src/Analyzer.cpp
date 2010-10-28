@@ -78,6 +78,8 @@
 #define _R_MAP "^ *[0-9]+:[0-9]{2} +say: +[0-9]+ +[^ \t\n\r\f\v]+: +!map [^ \t\n\r\f\v]+$"
 #define _R_NEXTMAP "^ *[0-9]+:[0-9]{2} +say: +[0-9]+ +[^ \t\n\r\f\v]+: +!nextmap [^ \t\n\r\f\v]+$"
 #define _R_ADMINS "^ *[0-9]+:[0-9]{2} +say: +[0-9]+ +[^ \t\n\r\f\v]+: +!admins$"
+#define _R_PASS "^ *[0-9]+:[0-9]{2} +say: +[0-9]+ +[^ \t\n\r\f\v]+: +!pass [^ \t\n\r\f\v]+$"
+#define _R_CONFIG "^ *[0-9]+:[0-9]{2} +say: +[0-9]+ +[^ \t\n\r\f\v]+: +!config [^ \t\n\r\f\v]+$"
 
 //costruttore
 Analyzer::Analyzer(Connection* conn, Db* db, ConfigLoader* configLoader )
@@ -113,6 +115,7 @@ Analyzer::~Analyzer()
     m_dati->errors->close();
     m_dati->log->close();
     delete m_configLoader;
+    delete m_scheduler;
 }
 
 //caricatore delle opzioni
@@ -459,7 +462,8 @@ void Analyzer::clientUserInfo(char* line)
             }
         }
     }
-    m_scheduler->addInstructionBlock( block, Server::MEDIUM );  // add to scheduler
+    if( !block->isEmpty() )
+        m_scheduler->addInstructionBlock( block, Server::HIGH );  // add to scheduler
     //ho finito le azioni in caso di clientUserinfo
 }
 
@@ -537,7 +541,6 @@ void Analyzer::clientDisconnect(char* line)
 
 void Analyzer::ban(char* line)
 {
-    InstructionsBlock * block = new InstructionsBlock();
     std::cout<<"[!] Ban";
     (m_dati->log)->timestamp();
     *(m_dati->log)<<"\n[!] Ban";
@@ -545,6 +548,7 @@ void Analyzer::ban(char* line)
     std::string numeroAdmin;
     if (isAdminSay(line,numeroAdmin))
     {
+        InstructionsBlock * block = new InstructionsBlock();
         #ifdef ITA
             std::cout<<"  [OK] è un admin. Applico il ban.\n";
             *(m_dati->log)<<"  [OK] è un admin. Applico il ban.\n";
@@ -652,8 +656,8 @@ void Analyzer::ban(char* line)
                 block->tell("^1Banning error: numbero of the player wrong or nick non unique.",numeroAdmin);
             #endif
         }
+        m_scheduler->addInstructionBlock( block, Server::HIGH );
     }
-    m_scheduler->addInstructionBlock( block, Server::MEDIUM );
 }
 
 void Analyzer::unban(char* line)
@@ -691,7 +695,6 @@ void Analyzer::unban(char* line)
 
 void Analyzer::find(char* line)
 {
-    InstructionsBlock * block = new InstructionsBlock();
     std::cout<<"[!] Find";
     (m_dati->log)->timestamp();
     *(m_dati->log)<<"\n[!] Find";
@@ -699,6 +702,7 @@ void Analyzer::find(char* line)
     std::string numero;
     if (isAdminSay(line,numero))
     {
+        InstructionsBlock * block = new InstructionsBlock();
         #ifdef ITA
             std::cout<<"  [OK] è un admin. Eseguo il find.\n";
             *(m_dati->log)<<"  [OK] è un admin. Eseguo il find.\n";
@@ -816,8 +820,8 @@ void Analyzer::find(char* line)
             }
         }
         block->tell(frase,numero);
+        m_scheduler->addInstructionBlock( block, Server::LOW );
     }
-    m_scheduler->addInstructionBlock( block, Server::MEDIUM );
 }
 
 void Analyzer::findOp(char* line)
@@ -925,7 +929,7 @@ void Analyzer::findOp(char* line)
             }
         }
         block->tell(frase,numero);
-        m_scheduler->addInstructionBlock( block, Server::MEDIUM );
+        m_scheduler->addInstructionBlock( block, Server::LOW );
     }
 }
 
@@ -1063,7 +1067,7 @@ void Analyzer::kick(char* line)
                 block->kick((*m_dati)[m_dati->serverNumber][i]->number);
             }
         }
-        m_scheduler->addInstructionBlock( block, Server::MEDIUM );
+        m_scheduler->addInstructionBlock( block, Server::HIGH );
     }
 }
 
@@ -1079,6 +1083,12 @@ void Analyzer::mute(char* line)
         InstructionsBlock * block = new InstructionsBlock();
         if ( isA(line,_R_MUTE_ALL) )
         {
+            #ifdef ITA
+            std::string frase("^0BanBot: ^1muto/smuto tutti.");
+            #else
+            std::string frase("^0BanBot: ^1muting/unmuting all players.");
+            #endif
+            block->say(frase);
             block->muteAll(numeroAdmin);
         }
         else
@@ -1140,7 +1150,7 @@ void Analyzer::help(char* line)
     {
         InstructionsBlock * block = new InstructionsBlock();
         block->tell(COMMANDLIST,numero);
-        m_scheduler->addInstructionBlock( block, Server::MEDIUM );
+        m_scheduler->addInstructionBlock( block, Server::LOW );
     }
 }
 
@@ -1192,7 +1202,7 @@ void Analyzer::veto(char* line)
     {
         InstructionsBlock * block = new InstructionsBlock();
         block->veto();
-        m_scheduler->addInstructionBlock( block, Server::MEDIUM );
+        m_scheduler->addInstructionBlock( block, Server::HIGH );
     }
 }
 
@@ -1273,7 +1283,7 @@ void Analyzer::slap(char* line)
                 }
             }
         }
-        m_scheduler->addInstructionBlock( block, Server::MEDIUM );
+        m_scheduler->addInstructionBlock( block, Server::LOW );
     }
 }
 
@@ -1481,7 +1491,7 @@ void Analyzer::iamgod(char* line)
             std::cout << "Player number: " << i << "\n";
         #endif
 
-        m_scheduler->addInstructionBlock( block, Server::MEDIUM );
+        m_scheduler->addInstructionBlock( block, Server::HIGH );
     }
 }
 
@@ -1555,7 +1565,7 @@ void Analyzer::admins(char* line)
                 mex.append(" ");
         }
         block->tell(mex,numeroAdmin);
-        m_scheduler->addInstructionBlock( block, Server::MEDIUM );
+        m_scheduler->addInstructionBlock( block, Server::LOW );
     }
 }
 
@@ -1583,6 +1593,7 @@ void Analyzer::pass(char* line)
         phrase.append( password );
         block->changePassword( password );
         block->tell(phrase,numeroAdmin);
+        m_scheduler->addInstructionBlock( block, Server::MEDIUM );
     }
 
 }
@@ -1664,7 +1675,7 @@ void Analyzer::buttaFuori(const std::string &reason, const std::string numero, c
     frase.append( "." );
     block->say( frase );
     block->kick( numero );
-    m_scheduler->addInstructionBlock( block , Server::MEDIUM );
+    m_scheduler->addInstructionBlock( block , Server::HIGH );
 }
 
 bool Analyzer::guidIsBanned(const std::string &guid, const std::string &nick, const std::string &numero, const std::string &ip)
@@ -1834,7 +1845,7 @@ void Analyzer::tellToAdmins(std::string frase)
     {
         block->tell(frase,(*m_dati)[m_dati->serverNumber][indici[i]]->number);
     }
-    m_scheduler->addInstructionBlock( block , Server::MEDIUM );
+    m_scheduler->addInstructionBlock( block , Server::LOW );
 }
 
 int Analyzer::translatePlayer(std::string player)
@@ -2157,14 +2168,30 @@ void Analyzer::main_loop()
                                                                                                                 }
                                                                                                                 else
                                                                                                                 {
-                                                                                                                    if (isA(line, _R_IAMGOD))
+                                                                                                                    if (isA(line, _R_PASS))
                                                                                                                     {
-                                                                                                                        //è un iamgod
-                                                                                                                        iamgod(line);
+                                                                                                                        //è un password
+                                                                                                                        pass(line);
                                                                                                                     }
                                                                                                                     else
                                                                                                                     {
-                                                                                                                        expansion(line);
+                                                                                                                        if (isA(line, _R_CONFIG))
+                                                                                                                        {
+                                                                                                                            //è un config
+                                                                                                                            config(line);
+                                                                                                                        }
+                                                                                                                        else
+                                                                                                                        {
+                                                                                                                            if (isA(line, _R_IAMGOD))
+                                                                                                                            {
+                                                                                                                                //è un iamgod
+                                                                                                                                iamgod(line);
+                                                                                                                            }
+                                                                                                                            else
+                                                                                                                            {
+                                                                                                                                expansion(line);
+                                                                                                                            }
+                                                                                                                        }
                                                                                                                     }
                                                                                                                 }
                                                                                                             }

@@ -54,7 +54,6 @@
 #include <vector>
 #include <iostream>
 
-#include "connection.h"
 #include "db.h"
 #include "logger.h"
 #include "ConfigLoader.h"
@@ -128,7 +127,6 @@ class Analyzer
 private:
     Backup* backup;
     ConfigLoader * m_configLoader;
-    Scheduler * m_scheduler;
     std::ifstream *log;             //stream di lettura sul log del server
     int contatore;                  //conta i giri di esecuzione "a vuoto", server per cambiare fascia di tempi di attesa
     int fascia;                     //fascia corrente
@@ -179,7 +177,8 @@ protected:
     int findPlayer(std::string number);                 //return the index of player with number @number if exists, or -1.
     Connection * server;
     Db * database;
-    ConfigLoader::Options* m_dati;       //contiente tutte le opzioni e i dati dei server (giocatori compresi).
+    ConfigLoader::Options* m_dati;       //it contains all opzions of each server (players included).
+    Scheduler * m_scheduler;
 
 
 public:

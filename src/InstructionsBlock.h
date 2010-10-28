@@ -78,7 +78,7 @@ class InstructionsBlock
                         next = command;
                 };
                 //virtual methods
-                virtual void exec ( Connection* conn, int server );     //execute this command node
+                virtual void exec ( Connection* conn, int server ){}     //execute this command node
                 virtual void remove()                                   //delete this command node
                 {
                     delete this;
@@ -95,7 +95,7 @@ class InstructionsBlock
         {
             public:
                 Kick( std::string number ):Common(),n(number){};
-                void exec ( Connection* conn, int server )
+                virtual void exec ( Connection* conn, int server )
                 {
                     conn->kick( n, server );
                 };
@@ -108,7 +108,7 @@ class InstructionsBlock
         {
             public:
                 Say( std::string phrase ):Common(),n(phrase){};
-                void exec ( Connection* conn, int server )
+                virtual void exec ( Connection* conn, int server )
                 {
                     conn->say( n, server );
                 };
@@ -121,7 +121,7 @@ class InstructionsBlock
         {
             public:
                 BigText( std::string phrase ):Common(),n(phrase){};
-                void exec ( Connection* conn, int server )
+                virtual void exec ( Connection* conn, int server )
                 {
                     conn->bigtext( n, server );
                 };
@@ -134,7 +134,7 @@ class InstructionsBlock
         {
             public:
                 Tell( std::string phrase, std::string player ):Common(),n(phrase),n1(player){};
-                void exec ( Connection* conn, int server )
+                virtual void exec ( Connection* conn, int server )
                 {
                     conn->tell( n, n1, server );
                 };
@@ -148,7 +148,7 @@ class InstructionsBlock
         {
             public:
                 Reload():Common(){};
-                void exec ( Connection* conn, int server )
+                virtual void exec ( Connection* conn, int server )
                 {
                     conn->reload( server );
                 };
@@ -159,7 +159,7 @@ class InstructionsBlock
         {
             public:
                 Mute( std::string number ):Common(),n(number){};
-                void exec ( Connection* conn, int server )
+                virtual void exec ( Connection* conn, int server )
                 {
                     conn->mute( n, server );
                 };
@@ -172,7 +172,7 @@ class InstructionsBlock
         {
             public:
                 MuteAll( std::string admin ):Common(),n(admin){};
-                void exec ( Connection* conn, int server )
+                virtual void exec ( Connection* conn, int server )
                 {
                     conn->muteAll( n, server );
                 };
@@ -185,7 +185,7 @@ class InstructionsBlock
         {
             public:
                 Veto():Common(){};
-                void exec ( Connection* conn, int server )
+                virtual void exec ( Connection* conn, int server )
                 {
                     conn->veto( server );
                 };
@@ -196,7 +196,7 @@ class InstructionsBlock
         {
             public:
                 Slap( std::string number ):Common(),n(number){};
-                void exec ( Connection* conn, int server )
+                virtual void exec ( Connection* conn, int server )
                 {
                     conn->slap( n, server );
                 };
@@ -209,7 +209,7 @@ class InstructionsBlock
         {
             public:
                 Nuke( std::string number ):Common(),n(number){};
-                void exec ( Connection* conn, int server )
+                virtual void exec ( Connection* conn, int server )
                 {
                     conn->nuke( n, server );
                 };
@@ -222,7 +222,7 @@ class InstructionsBlock
         {
             public:
                 Force( std::string number, std::string where ):Common(),n(number),n1(where){};
-                void exec ( Connection* conn, int server )
+                virtual void exec ( Connection* conn, int server )
                 {
                     conn->force( n, n1, server );
                 };
@@ -236,7 +236,7 @@ class InstructionsBlock
         {
             public:
                 Map( std::string name ):Common(),n(name){};
-                void exec ( Connection* conn, int server )
+                virtual void exec ( Connection* conn, int server )
                 {
                     conn->map( n, server );
                 };
@@ -249,7 +249,7 @@ class InstructionsBlock
         {
             public:
                 NextMap( std::string name ):Common(),n(name){};
-                void exec ( Connection* conn, int server )
+                virtual void exec ( Connection* conn, int server )
                 {
                     conn->nextmap( n, server );
                 };
@@ -262,7 +262,7 @@ class InstructionsBlock
         {
             public:
                 ChangePassword( std::string pass ):Common(),n(pass){};
-                void exec ( Connection* conn, int server )
+                virtual void exec ( Connection* conn, int server )
                 {
                     conn->changePassword( n, server );
                 };
@@ -275,7 +275,7 @@ class InstructionsBlock
         {
             public:
                 Exec( std::string file ):Common(),n(file){};
-                void exec ( Connection* conn, int server )
+                virtual void exec ( Connection* conn, int server )
                 {
                     conn->exec( n, server );
                 };
