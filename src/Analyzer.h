@@ -42,21 +42,24 @@
  *
  *	Description:	Parte principale del bot, si preoccupa di controllare
  *                 	gli utenti connessi ed i ban. Utilizza un'altra classe per accedere
- *                  	al database (per controllare gli utenti bannati) e per accedere
- *                  	al server (per kickare i giocatori o inviare messaggi).
+ *                  al database (per controllare gli utenti bannati) e per accedere
+ *                  al server (per kickare i giocatori o inviare messaggi).
 */
 
 #ifndef _Analyzer_h_
 #define _Analyzer_h_
+
 #include <fstream>
 #include <string>
 #include <vector>
 #include <iostream>
+
 #include "connection.h"
 #include "db.h"
 #include "logger.h"
 #include "ConfigLoader.h"
 #include "Backup.h"
+#include "Scheduler.h"
 
 #define _VERSION "1.1"
 
@@ -123,17 +126,18 @@
 class Analyzer
 {
 private:
-    //variabili private
     Backup* backup;
     ConfigLoader * m_configLoader;
+    Scheduler * m_scheduler;
     std::ifstream *log;             //stream di lettura sul log del server
     int contatore;                  //conta i giri di esecuzione "a vuoto", server per cambiare fascia di tempi di attesa
     int fascia;                     //fascia corrente
     bool commandexecuted;           //indica se ho fatto un giro a vuoto o no
     int giri;                       //conta i cicli fatti, usato per controllare ogni tot di giri se le configurazioni sono cambiate.:;;
-    //funzione per il caricamento delle opzioni (le controlla ed in caso corregge la riga del file di log)
-    void loadOptions();
-    //funzioni associate ai regex (comandi dal server/eventi)
+
+    void loadOptions();             //funzione per il caricamento delle opzioni (le controlla ed in caso corregge la riga del file di log)
+
+    // funzioni associate ai regex (comandi dal server/eventi)
     void clientUserInfo(char* line);
     void clientConnect(char* line);
     void clientDisconnect(char* line);
@@ -179,7 +183,7 @@ protected:
 
 
 public:
-    Analyzer( Connection*, Db*, ConfigLoader* );
+    Analyzer( Connection *conn, Db *db, ConfigLoader *configLoader );
     ~Analyzer();
     void main_loop();
 };

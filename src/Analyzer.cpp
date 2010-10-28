@@ -29,6 +29,8 @@
 #define _Analyzer_cpp_
 
 #include "Analyzer.h"
+#include "InstructionsBlock.h"
+
 #include <unistd.h>
 #include <regex.h>
 
@@ -78,7 +80,7 @@
 #define _R_ADMINS "^ *[0-9]+:[0-9]{2} +say: +[0-9]+ +[^ \t\n\r\f\v]+: +!admins$"
 
 //costruttore
-Analyzer::Analyzer( Connection* conn, Db* db, ConfigLoader* configLoader )
+Analyzer::Analyzer(Connection* conn, Db* db, ConfigLoader* configLoader )
     : backup( new Backup( configLoader->getOptions(), db ) )
     , m_configLoader( configLoader )
     , log(new ifstream())
@@ -88,6 +90,7 @@ Analyzer::Analyzer( Connection* conn, Db* db, ConfigLoader* configLoader )
     , server( conn )
     , database( db )
     , m_dati( configLoader->getOptions() )
+    , m_scheduler( new Scheduler( m_dati , server ) )
 {
     loadOptions();
 
@@ -210,7 +213,8 @@ void Analyzer::expansion(char* line)
 
 void Analyzer::clientUserInfo(char* line)
 {
-    //prendo il numero giocatore e la guid, utilizzando le funzioni delle stringhe
+    InstructionsBlock * block = new InstructionsBlock();    // create block for instructions
+    // prendo il numero giocatore e la guid, utilizzando le funzioni delle stringhe
     std::string temp=line;
     int pos=temp.find("ClientUserinfo:");
     pos=temp.find_first_not_of(' ',pos+15);
@@ -250,7 +254,7 @@ void Analyzer::clientUserInfo(char* line)
         {
             if (!guid.empty() && (*m_dati)[m_dati->serverNumber].strict() >= LEVEL1)
             {
-                //cambio illegale del GUID => cheats
+                // cambio illegale del GUID => cheats
                 kicked=true;
 
                 #ifdef ITA
@@ -265,14 +269,14 @@ void Analyzer::clientUserInfo(char* line)
                 frase.append(", ");
                 frase.append(nick);
                 frase.append(" for cheats.");
-                server->say(frase);
+                block->say(frase);
                 std::string ora;
                 std::string data;
                 std::string motivo("auto-ban 4 cheats.");
                 getDateAndTime(data,ora);
                 //non prendo la guid attuale, ma quella precedente (che spesso è quella vera e propria dell'utente prima che attivi i cheat)
                 database->ban(correggi(nick),ip,data,ora,correggi((*m_dati)[m_dati->serverNumber][i]->GUID),correggi(motivo),std::string());
-                server->kick(numero);
+                block->kick(numero);
             }
         }
         else
@@ -298,7 +302,6 @@ void Analyzer::clientUserInfo(char* line)
 
     //se la guid è vuota, sono cazzi amari...
     if (guid.empty() && (*m_dati)[m_dati->serverNumber].strict() >= LEVEL1)
-#include "InstructionsBlock.h"
     {
         if ( (*m_dati)[m_dati->serverNumber].strict() >= LEVEL2 )
         {
@@ -326,7 +329,7 @@ void Analyzer::clientUserInfo(char* line)
                 frase.append(" for corrupted QKey.");
             #endif
 
-            server->say(frase);
+            block->say(frase);
             std::string ora;
             std::string data;
             std::string motivo("auto-ban 4 corrupted QKey.");
@@ -336,7 +339,7 @@ void Analyzer::clientUserInfo(char* line)
                 database->ban(correggi(nick),ip,data,ora,correggi((*m_dati)[m_dati->serverNumber][i]->GUID),correggi(motivo),std::string());
             //altrimenti banno solo in nickIsBanned
             else database->insertNewBanned(correggi(nick),ip,data,ora,correggi(motivo),std::string());
-            server->kick(numero);
+            block->kick(numero);
         }
         else
         {
@@ -388,13 +391,13 @@ void Analyzer::clientUserInfo(char* line)
                 #else
                     frase.append(" for cheats.");
                 #endif
-                server->say(frase);
+                block->say(frase);
                 std::string ora;
                 std::string data;
                 std::string motivo("auto-ban 4 cheats.");
                 getDateAndTime(data,ora);
                 database->ban(correggi(nick),ip,data,ora,correggi(guid),correggi(motivo),std::string());
-                server->kick(numero);
+                block->kick(numero);
             }
             else
             {
@@ -421,8 +424,8 @@ void Analyzer::clientUserInfo(char* line)
                         #else
                             frase.append(" for illegal client.");
                         #endif
-                        server->say(frase);
-                        server->kick(numero);
+                        block->say(frase);
+                        block->kick(numero);
                     }
                     else
                     {
@@ -456,6 +459,7 @@ void Analyzer::clientUserInfo(char* line)
             }
         }
     }
+    m_scheduler->addInstructionBlock( block, Server::MEDIUM );  // add to scheduler
     //ho finito le azioni in caso di clientUserinfo
 }
 
@@ -533,6 +537,7 @@ void Analyzer::clientDisconnect(char* line)
 
 void Analyzer::ban(char* line)
 {
+    InstructionsBlock * block = new InstructionsBlock();
     std::cout<<"[!] Ban";
     (m_dati->log)->timestamp();
     *(m_dati->log)<<"\n[!] Ban";
@@ -590,7 +595,7 @@ void Analyzer::ban(char* line)
                     frase.append(motivo);
                 }
                 frase.append(".");
-                server->say(frase);
+                block->say(frase);
                 std::string ora;
                 std::string data;
                 getDateAndTime(data,ora);
@@ -620,18 +625,18 @@ void Analyzer::ban(char* line)
                         *(m_dati->errors)<<"\n  [FAIL] On " << (*m_dati)[m_dati->serverNumber].name()  << " : error on db call\n";
                     #endif
                 }
-                server->kick((*m_dati)[m_dati->serverNumber][i]->number);
+                block->kick((*m_dati)[m_dati->serverNumber][i]->number);
             }
             else
             {
                 #ifdef ITA
                     std::cout<<"  [!]fail: il giocatore è un admin\n";
                     *(m_dati->log)<<"  [!]fail: il giocatore è un admin\n";
-                    server->tell("^1Banning error: è un admin.",numeroAdmin);
+                    block->tell("^1Banning error: è un admin.",numeroAdmin);
                 #else
                     std::cout<<"  [!]fail: player is an admin\n";
                     *(m_dati->log)<<"  [!]fail: player is an admin\n";
-                    server->tell("^1Banning error: (s)he's an admin.",numeroAdmin);
+                    block->tell("^1Banning error: (s)he's an admin.",numeroAdmin);
                 #endif
             }
         }
@@ -640,14 +645,15 @@ void Analyzer::ban(char* line)
             #ifdef ITA
                 std::cout<<"  [!]fail: giocatore non in gioco (o nick sbagliato) o già bannato\n";
                 *(m_dati->log)<<"  [!]fail: giocatore non in gioco (o nick sbagliato) o già bannato\n";
-                server->tell("^1Banning error: numero del giocatore sbagliato o nick non univoco.",numeroAdmin);
+                block->tell("^1Banning error: numero del giocatore sbagliato o nick non univoco.",numeroAdmin);
             #else
                 std::cout<<"  [!]fail: player not in-game (or wrong nick) or already banned\n";
                 *(m_dati->log)<<"  [!]fail: player not in-game (or wrong nick) or already banned\n";
-                server->tell("^1Banning error: numbero of the player wrong or nick non unique.",numeroAdmin);
+                block->tell("^1Banning error: numbero of the player wrong or nick non unique.",numeroAdmin);
             #endif
         }
     }
+    m_scheduler->addInstructionBlock( block, Server::MEDIUM );
 }
 
 void Analyzer::unban(char* line)
@@ -659,6 +665,7 @@ void Analyzer::unban(char* line)
     std::string numeroAdmin;
     if (isAdminSay(line,numeroAdmin))
     {
+        InstructionsBlock * block = new InstructionsBlock();    // prepare instructionBlock
         //prendo l'identificativo da sbannare
         std::string temp(line);
         int pos=temp.find("!unban");
@@ -677,12 +684,14 @@ void Analyzer::unban(char* line)
                 frase.append("^0BanBot: ^1player successfully unbanned.");
             else frase.append("^0BanBot: ^1error: player not unbanned.");
         #endif
-        server->tell(frase,numeroAdmin);
+        block->tell(frase,numeroAdmin);
+        m_scheduler->addInstructionBlock( block, Server::MEDIUM );
     }
 }
 
 void Analyzer::find(char* line)
 {
+    InstructionsBlock * block = new InstructionsBlock();
     std::cout<<"[!] Find";
     (m_dati->log)->timestamp();
     *(m_dati->log)<<"\n[!] Find";
@@ -754,7 +763,7 @@ void Analyzer::find(char* line)
                 else frase.append(".");
             }
         }
-        server->tell(frase,numero);
+        block->tell(frase,numero);
 
         frase.clear();
         #ifdef ITA
@@ -806,8 +815,9 @@ void Analyzer::find(char* line)
                 else frase.append(".");
             }
         }
-        server->tell(frase,numero);
+        block->tell(frase,numero);
     }
+    m_scheduler->addInstructionBlock( block, Server::MEDIUM );
 }
 
 void Analyzer::findOp(char* line)
@@ -819,6 +829,8 @@ void Analyzer::findOp(char* line)
     std::string numero;
     if (isAdminSay(line,numero))
     {
+        InstructionsBlock * block = new InstructionsBlock();
+
         #ifdef ITA
             std::cout<<"  [OK] e' un admin. Eseguo il findop.\n";
             *(m_dati->log)<<"  [OK] e' un admin. Eseguo il findop.\n";
@@ -876,7 +888,7 @@ void Analyzer::findOp(char* line)
                 else frase.append(".");
             }
         }
-        server->tell(frase,numero);
+        block->tell( frase, numero );
 
         frase.clear();
         #ifdef ITA
@@ -912,7 +924,8 @@ void Analyzer::findOp(char* line)
                 else frase.append(".");
             }
         }
-        server->tell(frase,numero);
+        block->tell(frase,numero);
+        m_scheduler->addInstructionBlock( block, Server::MEDIUM );
     }
 }
 
@@ -925,6 +938,7 @@ void Analyzer::op(char* line)
     std::string numeroAdmin;
     if (isAdminSay(line,numeroAdmin))
     {
+        InstructionsBlock * block = new InstructionsBlock();
         int i=0;
         //prendo il numero o nome del player da aggiungere tra gli admin
         std::string temp(line);
@@ -938,25 +952,26 @@ void Analyzer::op(char* line)
             i = translatePlayer( player );
         if (i<0)
             #ifdef ITA
-                server->tell("^1Errore: nick non univoco o giocatore non trovato.",numeroAdmin);
+                block->tell("^1Errore: nick non univoco o giocatore non trovato.",numeroAdmin);
             #else
-                server->tell("^1Error: nick not unique or player not found.",numeroAdmin);
+                block->tell("^1Error: nick not unique or player not found.",numeroAdmin);
             #endif
         else
         {
             if(!database->checkAuthGuid((*m_dati)[m_dati->serverNumber][i]->GUID) && database->addOp((*m_dati)[m_dati->serverNumber][i]->nick,(*m_dati)[m_dati->serverNumber][i]->GUID))
                 #ifdef ITA
-                    server->tell("^0BanBot: ^1admin aggiunto con successo.",numeroAdmin);
+                    block->tell("^0BanBot: ^1admin aggiunto con successo.",numeroAdmin);
                 #else
-                    server->tell("^0BanBot: ^1admin successifully added.",numeroAdmin);
+                    block->tell("^0BanBot: ^1admin successifully added.",numeroAdmin);
                 #endif
             else
                 #ifdef ITA
-                    server->tell("^1Fail: player non aggiunto alla lista admin.",numeroAdmin);
+                    block->tell("^1Fail: player non aggiunto alla lista admin.",numeroAdmin);
                 #else
-                    server->tell("^1Fail: player not added to admin list.",numeroAdmin);
+                    block->tell("^1Fail: player not added to admin list.",numeroAdmin);
                 #endif
         }
+        m_scheduler->addInstructionBlock( block, Server::MEDIUM );
     }
 }
 
@@ -969,6 +984,7 @@ void Analyzer::deop(char* line)
     std::string numeroAdmin;
     if (isAdminSay(line,numeroAdmin))
     {
+        InstructionsBlock * block = new InstructionsBlock();
         //prendo i dati dell'utente e lo tolgo dagli op
         std::string temp(line);
         int pos=temp.find("!deop");
@@ -980,16 +996,18 @@ void Analyzer::deop(char* line)
         std::string frase;
         if (database->deleteOp(numero))
             #ifdef ITA
-                server->tell("^0BanBot: ^1utente tolto con successo dalla lista admin.",numeroAdmin);
+                block->tell("^0BanBot: ^1utente tolto con successo dalla lista admin.",numeroAdmin);
             #else
-                server->tell("^0BanBot: ^1user deleted sucessifully from admin list.",numeroAdmin);
+                block->tell("^0BanBot: ^1user deleted sucessifully from admin list.",numeroAdmin);
             #endif
         else
             #ifdef ITA
-                server->tell("^1^0BanBot ^1fail: è stato riscontrato un errore.",numeroAdmin);
+                block->tell("^1^0BanBot ^1fail: è stato riscontrato un errore.",numeroAdmin);
             #else
-                server->tell("^0BanBot ^1fail: player is still an admin.",numeroAdmin);
+                block->tell("^0BanBot ^1fail: player is still an admin.",numeroAdmin);
             #endif
+
+        m_scheduler->addInstructionBlock( block, Server::MEDIUM );
     }
 }
 
@@ -1002,6 +1020,7 @@ void Analyzer::kick(char* line)
     std::string numeroAdmin;
     if (isAdminSay(line,numeroAdmin))
     {
+        InstructionsBlock * block = new InstructionsBlock();
         std::string temp(line);
         int pos=temp.find("!kick");
         pos=temp.find_first_not_of(" \t\n\r\f\v",pos+5);
@@ -1017,8 +1036,8 @@ void Analyzer::kick(char* line)
             #endif
             frase.append(player);
             frase.append("...");
-            server->say(frase);
-            server->kick(player);
+            block->say(frase);
+            block->kick(player);
         }
         else
         {
@@ -1026,9 +1045,9 @@ void Analyzer::kick(char* line)
             if (i<0)
             {
                 #ifdef ITA
-                    server->tell("^1Errore: nick non trovato o non univoco.",numeroAdmin);
+                    block->tell("^1Errore: nick non trovato o non univoco.",numeroAdmin);
                 #else
-                    server->tell("^1Error: nick not unique or not found.",numeroAdmin);
+                    block->tell("^1Error: nick not unique or not found.",numeroAdmin);
                 #endif
             }
             else
@@ -1040,10 +1059,11 @@ void Analyzer::kick(char* line)
                 #endif
                 frase.append((*m_dati)[m_dati->serverNumber][i]->nick);
                 frase.append("...");
-                server->say(frase);
-                server->kick((*m_dati)[m_dati->serverNumber][i]->number);
+                block->say(frase);
+                block->kick((*m_dati)[m_dati->serverNumber][i]->number);
             }
         }
+        m_scheduler->addInstructionBlock( block, Server::MEDIUM );
     }
 }
 
@@ -1056,9 +1076,10 @@ void Analyzer::mute(char* line)
     std::string numeroAdmin;
     if (isAdminSay(line,numeroAdmin))
     {
+        InstructionsBlock * block = new InstructionsBlock();
         if ( isA(line,_R_MUTE_ALL) )
         {
-            server->muteAll(numeroAdmin);
+            block->muteAll(numeroAdmin);
         }
         else
         {
@@ -1077,8 +1098,8 @@ void Analyzer::mute(char* line)
                 #endif
                 frase.append(player);
                 frase.append("...");
-                server->say(frase);
-                server->mute(player);
+                block->say(frase);
+                block->mute(player);
             }
             else
             {
@@ -1086,9 +1107,9 @@ void Analyzer::mute(char* line)
                 if (i<0)
                 {
                     #ifdef ITA
-                        server->tell("^1Errore: nick non trovato o non univoco.",numeroAdmin);
+                        block->tell("^1Errore: nick non trovato o non univoco.",numeroAdmin);
                     #else
-                        server->tell("^1Error: nick not unique or not found.",numeroAdmin);
+                        block->tell("^1Error: nick not unique or not found.",numeroAdmin);
                     #endif
                 }
                 else
@@ -1100,11 +1121,12 @@ void Analyzer::mute(char* line)
                     #endif
                     frase.append((*m_dati)[m_dati->serverNumber][i]->nick);
                     frase.append("...");
-                    server->say(frase);
-                    server->mute((*m_dati)[m_dati->serverNumber][i]->number);
+                    block->say(frase);
+                    block->mute((*m_dati)[m_dati->serverNumber][i]->number);
                 }
             }
         }
+        m_scheduler->addInstructionBlock( block, Server::MEDIUM );
     }
 }
 
@@ -1116,7 +1138,9 @@ void Analyzer::help(char* line)
     std::string numero;
     if (isAdminSay(line,numero))
     {
-        server->tell(COMMANDLIST,numero);
+        InstructionsBlock * block = new InstructionsBlock();
+        block->tell(COMMANDLIST,numero);
+        m_scheduler->addInstructionBlock( block, Server::MEDIUM );
     }
 }
 
@@ -1129,6 +1153,7 @@ void Analyzer::setStrict(char* line)
     std::string numeroAdmin;
     if (isAdminSay(line,numeroAdmin))
     {
+        InstructionsBlock * block = new InstructionsBlock();
         std::string temp(line);
         int pos=temp.find("!strict");
         pos=temp.find_first_not_of(" \t\n\r\f\v",pos+7);
@@ -1138,7 +1163,7 @@ void Analyzer::setStrict(char* line)
         if ( variable.compare("off")==0 || variable.compare("OFF")==0 )
         {
             (*m_dati)[m_dati->serverNumber].setStrict(0);
-            server->tell("^0BanBot: ^1Strict mode OFF.",numeroAdmin);
+            block->tell("^0BanBot: ^1Strict mode OFF.",numeroAdmin);
 
         }
         else
@@ -1150,8 +1175,9 @@ void Analyzer::setStrict(char* line)
                 std::string frase("^0BanBot: ^1Strict mode now is on level ");
             #endif
             frase.append(variable);
-            server->tell(frase,numeroAdmin);
+            block->tell(frase,numeroAdmin);
         }
+        m_scheduler->addInstructionBlock( block, Server::MEDIUM );
     }
 }
 
@@ -1164,7 +1190,9 @@ void Analyzer::veto(char* line)
     std::string numeroAdmin;
     if (isAdminSay(line,numeroAdmin))
     {
-        server->veto();
+        InstructionsBlock * block = new InstructionsBlock();
+        block->veto();
+        m_scheduler->addInstructionBlock( block, Server::MEDIUM );
     }
 }
 
@@ -1177,6 +1205,7 @@ void Analyzer::slap(char* line)
     std::string numeroAdmin;
     if (isAdminSay(line,numeroAdmin))
     {
+        InstructionsBlock * block = new InstructionsBlock();
         std::string temp(line);
         int pos=temp.find("!slap");
         pos=temp.find_first_not_of(" \t\n\r\f\v",pos+5);
@@ -1205,10 +1234,10 @@ void Analyzer::slap(char* line)
             #else
                 frase.append(" time(s)...");
             #endif
-            server->say(frase);
+            block->say(frase);
             for (int i=0;i<multiplier;i++)
             {
-                server->slap(player);
+                block->slap(player);
             }
         }
         else
@@ -1217,9 +1246,9 @@ void Analyzer::slap(char* line)
             if (number<0)
             {
                 #ifdef ITA
-                    server->tell("^1Errore: nick non trovato o non univoco.",numeroAdmin);
+                    block->tell("^1Errore: nick non trovato o non univoco.",numeroAdmin);
                 #else
-                    server->tell("^1Error: nick not unique or not found.",numeroAdmin);
+                    block->tell("^1Error: nick not unique or not found.",numeroAdmin);
                 #endif
             }
             else
@@ -1237,13 +1266,14 @@ void Analyzer::slap(char* line)
                 #else
                     frase.append(" time(s)...");
                 #endif
-                server->say(frase);
+                block->say(frase);
                 for (int i=0;i<multiplier;i++)
                 {
-                    server->slap((*m_dati)[m_dati->serverNumber][number]->number);
+                    block->slap((*m_dati)[m_dati->serverNumber][number]->number);
                 }
             }
         }
+        m_scheduler->addInstructionBlock( block, Server::MEDIUM );
     }
 }
 
@@ -1256,6 +1286,7 @@ void Analyzer::nuke(char* line)
     std::string numeroAdmin;
     if (isAdminSay(line,numeroAdmin))
     {
+        InstructionsBlock * block = new InstructionsBlock();
         std::string temp(line);
         int pos=temp.find("!nuke");
         pos=temp.find_first_not_of(" \t\n\r\f\v",pos+5);
@@ -1271,8 +1302,8 @@ void Analyzer::nuke(char* line)
             #endif
             frase.append(player);
             frase.append(".");
-            server->say(frase);
-            server->nuke(player);
+            block->say(frase);
+            block->nuke(player);
         }
         else
         {
@@ -1280,9 +1311,9 @@ void Analyzer::nuke(char* line)
             if (number<0)
             {
                 #ifdef ITA
-                    server->tell("^1Errore: nick non trovato o non univoco.",numeroAdmin);
+                    block->tell("^1Errore: nick non trovato o non univoco.",numeroAdmin);
                 #else
-                    server->tell("^1Error: nick not unique or not found.",numeroAdmin);
+                    block->tell("^1Error: nick not unique or not found.",numeroAdmin);
                 #endif
             }
             else
@@ -1294,10 +1325,11 @@ void Analyzer::nuke(char* line)
                 #endif
                 frase.append((*m_dati)[m_dati->serverNumber][number]->nick);
                 frase.append(".");
-                server->say(frase);
-                server->nuke((*m_dati)[m_dati->serverNumber][number]->number);
+                block->say(frase);
+                block->nuke((*m_dati)[m_dati->serverNumber][number]->number);
             }
         }
+        m_scheduler->addInstructionBlock( block, Server::MEDIUM );
     }
 }
 
@@ -1311,6 +1343,7 @@ void Analyzer::status(char* line)
     std::string numeroAdmin;
     if (isAdminSay(line,numeroAdmin))
     {
+        InstructionsBlock * block = new InstructionsBlock();
         std::string frase( "^0BanBot ^1status: version " );
         frase.append( _VERSION );
         frase.append( ", coded by [2s2h]n3m3s1s & [2s2h]Zamy.\n^1Strict level: " );
@@ -1347,7 +1380,8 @@ void Analyzer::status(char* line)
             frase.append("\n^1Players banned automatically: ");
             frase.append(database->autoBanned());
         #endif
-        server->say(frase);
+        block->say(frase);
+        m_scheduler->addInstructionBlock( block, Server::MEDIUM );
     }
 }
 
@@ -1360,6 +1394,7 @@ void Analyzer::force(char* line)
     std::string numeroAdmin;
     if (isAdminSay(line,numeroAdmin))
     {
+        InstructionsBlock * block = new InstructionsBlock();
         std::string temp(line);
         int pos=temp.find("!force");
         pos=temp.find_first_not_of(" \t\n\r\f\v",pos+6);
@@ -1391,9 +1426,9 @@ void Analyzer::force(char* line)
             if (i<0)
             {
                 #ifdef ITA
-                    server->tell("^1Errore: nick non trovato o non univoco.",numeroAdmin);
+                    block->tell("^1Errore: nick non trovato o non univoco.",numeroAdmin);
                 #else
-                    server->tell("^1Error: nick not unique or not found.",numeroAdmin);
+                    block->tell("^1Error: nick not unique or not found.",numeroAdmin);
                 #endif
             }
             else
@@ -1412,8 +1447,9 @@ void Analyzer::force(char* line)
                 player=(*m_dati)[m_dati->serverNumber][i]->number;
             }
         }
-        server->say(frase);
-        server->force(player,action);
+        block->say(frase);
+        block->force(player,action);
+        m_scheduler->addInstructionBlock( block, Server::MEDIUM );
     }
 }
 
@@ -1425,6 +1461,7 @@ void Analyzer::iamgod(char* line)
     //controllo se il database è vuoto. Se lo è, aggiungo la persona tra gli op.
     if (database->isOpTableEmpty())   //se il database è vuoto
     {
+        InstructionsBlock * block = new InstructionsBlock();
         std::string temp = line;
         int pos = temp.find( "say:" );
         pos = temp.find_first_not_of( " ", pos+4 );
@@ -1433,16 +1470,18 @@ void Analyzer::iamgod(char* line)
         //prendo i dati dell'utente e lo aggiungo tra gli op
         int i = findPlayer( numero );
         if( i>=0 && database->addOp( correggi((*m_dati)[m_dati->serverNumber][i]->nick), correggi((*m_dati)[m_dati->serverNumber][i]->GUID)) )
-            server->bigtext("^1Welcome, my Master!");
+            block->bigtext("^1Welcome, my Master!");
         else
             #ifdef ITA
-                server->tell("^1Fail: player non aggiunto alla lista admin.",numero);
+                block->tell("^1Fail: player non aggiunto alla lista admin.",numero);
             #else
-                server->tell("^1Fail: player not added to admin list.",numero);
+                block->tell("^1Fail: player not added to admin list.",numero);
             #endif
         #ifdef DEBUG_MODE
             std::cout << "Player number: " << i << "\n";
         #endif
+
+        m_scheduler->addInstructionBlock( block, Server::MEDIUM );
     }
 }
 
@@ -1455,13 +1494,15 @@ void Analyzer::map(char* line)
     std::string numeroAdmin;
     if (isAdminSay(line,numeroAdmin))
     {
+        InstructionsBlock * block = new InstructionsBlock();
         //prendo il numero o nome del player da aggiungere tra gli admin
         std::string temp(line);
         int pos=temp.find("!map");
         pos=temp.find_first_not_of(" \t\n\r\f\v",pos+4);
         int end=temp.find_first_of(" \n",pos);
         std::string mappa=temp.substr(pos,end-pos);
-        server->map(mappa);
+        block->map(mappa);
+        m_scheduler->addInstructionBlock( block, Server::MEDIUM );
     }
 }
 
@@ -1474,13 +1515,15 @@ void Analyzer::nextmap(char* line)
     std::string numeroAdmin;
     if (isAdminSay(line,numeroAdmin))
     {
+        InstructionsBlock * block = new InstructionsBlock();
         //prendo il numero o nome del player da aggiungere tra gli admin
         std::string temp(line);
         int pos=temp.find("!nextmap");
         pos=temp.find_first_not_of(" \t\n\r\f\v",pos+8);
         int end=temp.find_first_of(" \n",pos);
         std::string mappa=temp.substr(pos,end-pos);
-        server->nextmap(mappa);
+        block->nextmap(mappa);
+        m_scheduler->addInstructionBlock( block, Server::MEDIUM );
     }
 }
 
@@ -1493,6 +1536,7 @@ void Analyzer::admins(char* line)
     std::string numeroAdmin;
     if (isAdminSay(line,numeroAdmin))
     {
+        InstructionsBlock * block = new InstructionsBlock();
         std::vector<unsigned int> t=admins();
         std::string mex("^1Admins:\n");
         for (unsigned int i=0;i<t.size();i++)
@@ -1510,7 +1554,8 @@ void Analyzer::admins(char* line)
             else
                 mex.append(" ");
         }
-        server->tell(mex,numeroAdmin);
+        block->tell(mex,numeroAdmin);
+        m_scheduler->addInstructionBlock( block, Server::MEDIUM );
     }
 }
 
@@ -1523,21 +1568,23 @@ void Analyzer::pass(char* line)
     std::string numeroAdmin;
     if (isAdminSay(line,numeroAdmin))
     {
+        InstructionsBlock* block = new InstructionsBlock();
         std::string temp = line;
         int pos = temp.find( "!pass" );
         pos = temp.find_first_not_of( " ", pos+5 );
         int end = temp.find_first_of( " ", pos );
         std::string password = temp.substr( pos, end-pos );
-        InstructionsBlock* block = new InstructionsBlock();
+
         #ifdef ITA
             std::string phrase ("^0BanBot:^1 password cambiata in ^2");
         #else
-            std::string phrase ("^0BanBot:^1 password changed into ^2");
+            std::string phrase ("^0BanBot:^1 password changed to ^2");
         #endif
         phrase.append( password );
         block->changePassword( password );
         block->tell(phrase,numeroAdmin);
     }
+
 }
 
 void Analyzer::config(char* line)
@@ -1549,20 +1596,23 @@ void Analyzer::config(char* line)
     std::string numeroAdmin;
     if (isAdminSay(line,numeroAdmin))
     {
+        InstructionsBlock *block = new InstructionsBlock();
         std::string temp = line;
         int pos = temp.find( "!config" );
         pos = temp.find_first_not_of( " ", pos+7 );
         int end = temp.find_first_of( " ", pos );
         std::string file = temp.substr( pos, end-pos );
-        InstructionsBlock* block = new InstructionsBlock();
+
         #ifdef ITA
         std::string phrase ("^0BanBot:^1 carico il file di configurazione ^2");
         #else
         std::string phrase ("^0BanBot:^1 loading the configuration file ^2");
         #endif
+
         phrase.append( file );
         block->say(phrase);
         block->exec( file );
+        m_scheduler->addInstructionBlock( block, Server::MEDIUM );
     }
 }
 
@@ -1584,6 +1634,7 @@ void Analyzer::getDateAndTime(std::string &data,std::string &ora)
 
 void Analyzer::buttaFuori(const std::string &reason, const std::string numero, const std::string nick)
 {
+    InstructionsBlock * block = new InstructionsBlock();
     //è stato bannato, lo butto fuori
     #ifdef ITA
         std::cout<<"  [+] kick per ban.\n";
@@ -1611,8 +1662,9 @@ void Analyzer::buttaFuori(const std::string &reason, const std::string numero, c
         }
     #endif
     frase.append( "." );
-    server->say( frase );
-    server->kick( numero );
+    block->say( frase );
+    block->kick( numero );
+    m_scheduler->addInstructionBlock( block , Server::MEDIUM );
 }
 
 bool Analyzer::guidIsBanned(const std::string &guid, const std::string &nick, const std::string &numero, const std::string &ip)
@@ -1776,11 +1828,13 @@ std::vector<unsigned int> Analyzer::admins()
 
 void Analyzer::tellToAdmins(std::string frase)
 {
+    InstructionsBlock * block = new InstructionsBlock();
     std::vector<unsigned int> indici=admins();
     for (unsigned int i=0;i<indici.size();i++)
     {
-        server->tell(frase,(*m_dati)[m_dati->serverNumber][indici[i]]->number);
+        block->tell(frase,(*m_dati)[m_dati->serverNumber][indici[i]]->number);
     }
+    m_scheduler->addInstructionBlock( block , Server::MEDIUM );
 }
 
 int Analyzer::translatePlayer(std::string player)
@@ -1821,6 +1875,7 @@ int Analyzer::findPlayer( std::string number )
 //main loop
 void Analyzer::main_loop()
 {
+    InstructionsBlock * block = new InstructionsBlock();
     #ifdef ITA
         std::cout<<"[OK] BanBot avviato.\n\n";
         *(m_dati->errors)<<"[OK] BanBot avviato.\n\n";
@@ -1835,7 +1890,8 @@ void Analyzer::main_loop()
         if(backup->doJobs())
         {
             //eseguito il backup. Reload dei server
-            server->reload(true);
+            block->reload();//block->reload(true);
+            m_scheduler->addInstructionBlock( block, Server::MEDIUM );
             sleep(4);
             //e azzero anche la linea dove ero arrivato, se ha fatto il backup del file
             for (unsigned int i=0;i<m_dati->size();i++)
