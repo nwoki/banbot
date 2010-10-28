@@ -39,6 +39,12 @@ class Server
         Server();
         ~Server();
 
+        enum PriorityLevel {        // server intructions priority enum
+            LOW,
+            MEDIUM,
+            HIGH
+        };
+
         class Player
         {
             public:
@@ -81,9 +87,16 @@ class Server
                 m_lowPr = 0;
             }
             // increments
-            void incrementHighPr() { m_highPr++; }      // increments high priority instruction counter by one
-            void incrementMedPr() { m_medPr++; }        // increments medium priority instruction counter by one
-            void incrementLowPr() { m_lowPr++; }        // increments low priority instruction counter by one
+            void incrementPriority( Server::PriorityLevel lvl ) // increments given counter priority
+            {
+                if( lvl == HIGH )
+                    m_highPr++;
+                else if( lvl == MEDIUM )
+                    m_medPr++;
+                else
+                    m_lowPr++;
+            }
+
             // getters
             int hightPr() const { return m_highPr; }    // returns number of high priority instruction blocks commands executed
             int medPr() const { return m_medPr; }       // returns number of medium priority instruction blocks commands executed
@@ -91,12 +104,6 @@ class Server
 
         private:
             int m_highPr, m_medPr, m_lowPr;             // counter for various priority instructions
-        };
-
-        enum PriorityLevel {                                                // server intructions priority enum
-            LOW,
-            MEDIUM,
-            HIGH
         };
 
         // getters

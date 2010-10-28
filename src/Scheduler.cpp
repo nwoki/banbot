@@ -32,8 +32,6 @@
 #define MAX_MED_INST 2
 #define MAX_LOW_INST 1
 
-/// TODO make a method to check servers contained in the schedulers map that adds or deletes
-/// servers if there are new ones or not. Otherwise i'll get a segfault if i go operate on a NON-existant server
 
 Scheduler::Scheduler( ConfigLoader::Options *op, Connection *conn )
     : m_connection( conn )
@@ -50,38 +48,53 @@ void Scheduler::addInstructionBlock( InstructionsBlock* inst, Server::PriorityLe
     m_options->currentServer()->setPriorityInstrBlock( lvl, inst );
 }
 
-/*-creare un metodo che esegue 3 istruzioni per server (3 cicli), seguendo queste regole:
- * devono essere eseguite prima le istruzioni delle liste di maggior precedenza
- * dopo 3 esecuzioni di una istruzione nella lista a priorità alta, vengono eseguite quelle della priorità normale anche se ci sono altri blocchi a priorità alta.
- * dopo 2 esecuzioni di una istruzione nella lista a priorità normale, vengono eseguite quelle della priorità bassa anche se ci sono altri blocchi a priorità normale.
- * dopo 1 esecuzione di una istruzione nella lista a bassa priorità, se ce ne sono vengono eseguite quelle a priorità alta o normale.
- * dopo aver eseguito una istruzione di un blocco, lo sposta in fondo alla coda. ( if !ins->empty() )
- * utilizza il comando usleep() con una pausa di 600000 microsecondi, ma solo se deve fare un altro giro (fa una pausa solo tra 1° e 2°, e 2° e 3° giro: in pratica se deve uscire non fa pause).
- * se non ha nulla da eseguire, esce prima.
- q uesto metodo ritorna un booleano, che sarà vaero se ha eseguito qualche istruzione, false in caso contrario.*/
-
 bool Scheduler::executeInstructions()
 {
+    bool executedInstr = false;     // bool to check if i've executed at least one instruction
+
     for( unsigned int i = 0; i < m_options->size(); i++ ) {
         Server *auxServer = m_options->servers.at( i );
         Server::InstructionCounter *auxInstCounter = auxServer->instructionCounter();
+
+        // get various instruction block levels
         InstructionsBlock *auxHighPr = auxServer->priorityInstrBlock( Server::HIGH );
+        InstructionsBlock *auxMedPr = auxServer->priorityInstrBlock( Server::MEDIUM );
+        InstructionsBlock *auxLowPr = auxServer->priorityInstrBlock( Server::LOW );
 
-        if( !auxServer->instructionCounter()->hightPr() < MAX_HIGH_INST ) {          // check i haven't exceeded max counter
-            if( auxHighPr != 0 ) {                                  // check if there are instructions to execute ( it's a list! )
-                // here i assume that "execFirstCommand" deletes the instruction or removes it or does something
-                // to it so i don't have to touch anything inside. Ask zamy how he intends to implemente InstructionsBlock */
-                auxHighPr->execFirstCommand( m_connection, i );
-                auxInstCounter->incrementHighPr();
-
-                if( auxHighPr->isEmpty() ) {                        // are there instructions to execute?
-                    InstructionsBlock *tmp = auxHighPr;
-                    auxHighPr =  auxHighPr->getNext();              // set next instructions block
-                    delete tmp;                                     // delete empty instructions block
-                }
-                else
-                    auxHighPr->moveToTail();                        // move instructions to tail for later execution
-            }
+        for( int j = 0; j < 3; j++ ) {
+            if( auxServer->instructionCounter()->hightPr() < MAX_HIGH_INST )   // check i haven't exceeded max counter
+                executedInstr = executePriorityInstruction( auxHighPr, auxInstCounter, Server::HIGH, i );
+            else if( auxServer->instructionCounter()->medPr() < MAX_MED_INST )
+                executedInstr = executePriorityInstruction( auxMedPr, auxInstCounter, Server::MEDIUM, i );
+            else
+                if( auxServer->instructionCounter()->lowPr() < MAX_LOW_INST )
+                    executedInstr = executePriorityInstruction( auxLowPr, auxInstCounter, Server::LOW, i );
         }
+        usleep( 600000 );   // 0,6 sec
     }
+    return executedInstr;
+}
+
+bool Scheduler::executePriorityInstruction( InstructionsBlock* instr, Server::InstructionCounter *counter, Server::PriorityLevel lvl, int serverNum )
+{
+    if( instr != 0 ) {
+        // "execFirstCommand" deletes the instruction or removes it or does something to it so
+        // i don't have to touch anything inside
+        instr->execFirstCommand( m_connection, serverNum );     // execute command
+        counter->incrementPriority( lvl );                      // increment counter of instruction level
+
+        if( instr->isEmpty() ) {
+            InstructionsBlock *tmp = instr;
+            instr = instr->getNext();
+            delete tmp;
+        }
+        else
+            instr->moveToTail();
+
+        if( lvl == Server::LOW )                                // if I execute a low level instruction, I have to reset counters
+            counter->resetCounters();
+
+        return true;
+    }
+    return false;
 }
