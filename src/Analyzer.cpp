@@ -2258,21 +2258,24 @@ void Analyzer::main_loop()
             fascia++;
             contatore++;
         }
-
-        switch (fascia)
+        
+        if ( !m_scheduler->executeInstructions() )
         {
-            case 0:
-                sleep(TIME_SLEEPING_MIN);
-                break;
-            case 1:
-                sleep(TIME_SLEEPING_MIDDLE);
-                break;
-            case 2:
-                sleep(TIME_SLEEPING_MAX);
-                break;
-            default:
-                sleep(TIME_SLEEPING_MIN);
-                break;
+            switch (fascia)
+            {
+                case 0:
+                    sleep(TIME_SLEEPING_MIN);
+                    break;
+                case 1:
+                    sleep(TIME_SLEEPING_MIDDLE);
+                    break;
+                case 2:
+                    sleep(TIME_SLEEPING_MAX);
+                    break;
+                default:
+                    sleep(TIME_SLEEPING_MIN);
+                    break;
+            }
         }
     }
 }
