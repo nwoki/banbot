@@ -1730,20 +1730,23 @@ bool Analyzer::nickIsBanned(const std::string &nick, const std::string &numero, 
                 int oraBan = atoi(risultato[0].time.substr(0,2).c_str());
                 int minutoBan = atoi(risultato[0].time.substr(3,5).c_str());
                 int diff = (oraAttuale*60+minutoAttuale)-(oraBan*60+minutoBan);
-                if ( data.compare(risultato[0].date) == 0 && diff>0 && diff<60 )
+                if ( (data.compare(risultato[0].date) == 0) && diff>0 && diff<60 )
                 {
+                    #ifdef DEBUG_MODE
+                    std::cout<<"  Nick banned less than an hour ago.\n";
+                    #endif
                     bannato = true;
                 }
                 else
                 {
                     #ifdef ITA
-                        std::string frase("^0BanBot ^1attenzione: il nick '");
-                        frase.append(nick);
-                        frase.append("' e' tra quelli bannati.");
+                    std::string frase("^0BanBot ^1attenzione: il nick '");
+                    frase.append(nick);
+                    frase.append("' e' tra quelli bannati.");
                     #else
-                        std::string frase("^0BanBot ^1warning: the nick '");
-                        frase.append(nick);
-                        frase.append("' is currently banned.");
+                    std::string frase("^0BanBot ^1warning: the nick '");
+                    frase.append(nick);
+                    frase.append("' is currently banned.");
                     #endif
                     tellToAdmins(frase);
                 }
@@ -1751,14 +1754,17 @@ bool Analyzer::nickIsBanned(const std::string &nick, const std::string &numero, 
             if ( bannato )
             {
                 #ifdef ITA
-                    std::cout<<"  [!] kick a "<<nick<<" per ban ("<<risultato[0].motive<<").\n";
-                    *(m_dati->log)<<"  [!] kick a "<<nick<<" per ban ("<<risultato[0].motive<<").\n";
+                std::cout<<"  [!] kick a "<<nick<<" per ban ("<<risultato[0].motive<<").\n";
+                *(m_dati->log)<<"  [!] kick a "<<nick<<" per ban ("<<risultato[0].motive<<").\n";
                 #else
-                    std::cout<<"  [!] kicking "<<nick<<" for ban ("<<risultato[0].motive<<").\n";
-                    *(m_dati->log)<<"  [!] kicking "<<nick<<" for ban ("<<risultato[0].motive<<").\n";
+                std::cout<<"  [!] kicking "<<nick<<" for ban ("<<risultato[0].motive<<").\n";
+                *(m_dati->log)<<"  [!] kicking "<<nick<<" for ban ("<<risultato[0].motive<<").\n";
+                #endif
+                #ifdef DEBUG_MODE
+                std::cout<<"  Strict level was "<<(*m_dati)[m_dati->serverNumber].strict()<<".\n";
                 #endif
                 buttaFuori(risultato[0].motive, numero, nick);
-
+                
                 std::string ora;
                 std::string data;
                 getDateAndTime(data,ora);
