@@ -136,7 +136,7 @@ void ConfigLoader::loadOptions()
                 }
             }
 
-            //se sono stati impostati tutti i parametri generali, proseguo, altrimenti me ne strafrego perchè le impostazioni sono già sbagliate
+            //if i have all general parameters ok, i can go, else i'll stop, 'cause options are wrong.
             #ifdef DEBUG_MODE
             std::cout << "Caricate le opzioni generali, inizio con quelle dei server.\n";
             #endif
@@ -308,8 +308,8 @@ void ConfigLoader::loadOptions()
                     }
                 }
 
-                //ok, finito di caricare le impostazioni.
-                //confronto con i server precedenti
+                //ok, options loaded.
+                //if this is a change, i look for previouse servers parameters (like players in-game)
                 for ( unsigned int i = 0; i < newOptions->size(); i++ )
                     (*newOptions)[i].test_for_changes( opzioni->searchServer( (*newOptions)[i].name() ) );
 

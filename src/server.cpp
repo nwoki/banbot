@@ -315,20 +315,23 @@ void Server::test_for_changes(Server* old)
   {
     if ( ( !old->m_valid ) || ( m_serverLog.compare(old->m_serverLog) != 0 ) || ( m_dbFolder.compare(old->m_dbFolder) != 0 ) )
     {
-      //cambiamenti importanti. Non tengo niente dei vecchi dati.
+      //important changes. I'll delete old datas.
       m_changed = true;
     }
     else
     {
-      //nessun cambiamento importante: mi prendo i dati del server vecchio.
-      //copio i giocatori
+      //no important changes: i'll save old datas.
+      //copy of players list
       for (unsigned int i=0; i<old->size(); i++ )
       {
         m_giocatori.push_back( (*old)[i]->clone() );
       }
-      //e ripristino anche gli altri parametri dinamici
+      //copy of other params
       m_strict = old->m_strict;
       m_row = old->m_row;
+      m_highPriorityInst = old->m_highPriorityInst;
+      m_mediumPriorityInst = old->m_mediumPriorityInst;
+      m_lowPriorityInst = old->m_lowPriorityInst;
     }
   }
   else
@@ -365,6 +368,8 @@ std::string Server::toString()
     t.append( m_serverLog );
     t.append( "\n  Database folder : ");
     t.append( m_dbFolder );
+    t.append( "\n  Strict level : ");
+    t.append( intToString(m_strict) );
     t.append( "\n}\n" );
     return t;
 }
