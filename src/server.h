@@ -143,6 +143,8 @@ class Server
         bool isValid() const;                                               // checks if server is valid
         InstructionsBlock* priorityInstrBlock( Server::PriorityLevel lvl ); // returns pointer to InstructionBlock according to level specified
         InstructionCounter *instructionCounter() const;                     // returns pointer to server's InstructionCounter
+        std::vector<std::string> serverConfigs() const;                     // returns game server's config file list
+        std::string gameDirectory() const;                                  // returns the directory where the game is installed
 
         // setters
         void setName( std::string name );                                   // set server name
@@ -159,6 +161,8 @@ class Server
         void setStrict( int level = 1 );                                    // set server strict level
         void setChanged( bool changed = true );                             // set server changed flag
         void setValid( bool valid = true );                                 // set server validity flag
+        void setServerConfigs( std::vector<std::string> list );             // set game server's config file list
+        void setGameDirectory( std::string dir );                           // set the directory where the game is installed
 
         // put these into scheduler and add server number to specify server to operate on
         void addPriorityInstrBlock( Server::PriorityLevel lvl, InstructionsBlock *inst );   // ADDS TO TAIL given InstructionsBlock
@@ -202,6 +206,7 @@ class Server
         
         std::vector<std::string> m_configs;         // list of cfg files founded on this server
         std::vector<std::string> m_maps;            // list of maps founded on this server
+        std::string m_gameDir;                      // directory where the game in installed
         
 };
 
