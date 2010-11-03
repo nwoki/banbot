@@ -44,6 +44,26 @@ class Server
             MEDIUM,
             HIGH
         };
+        
+        enum Commands {             // bot instructions enum (used for permissions in servers)
+            HELP,
+            KICK,
+            BAN,
+            UNBAN,
+            MUTE,
+            OP,
+            DEOP,
+            STRICT,
+            NUKE,
+            SLAP,
+            VETO,
+            FORCE,
+            MAP,
+            NEXTMAP,
+            ADMINS,
+            PASS,
+            CONFIG
+        };
 
         class Player
         {
@@ -179,6 +199,10 @@ class Server
         std::vector<Player*> m_giocatori;           // vector with the info of the players currently in the server
         InstructionCounter *m_instructionCounter;   // instruction counter for server's various InstructionsBlock
         InstructionsBlock *m_lowPriorityInst, *m_mediumPriorityInst, *m_highPriorityInst;   // instruction priorities
+        
+        std::vector<std::string> m_configs;         // list of cfg files founded on this server
+        std::vector<std::string> m_maps;            // list of maps founded on this server
+        
 };
 
 #endif
