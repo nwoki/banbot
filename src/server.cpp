@@ -243,27 +243,21 @@ void Server::setPriorityInstrBlock( Server::PriorityLevel lvl, InstructionsBlock
         if( !m_lowPriorityInst )
             m_lowPriorityInst = inst;
         else {
-            InstructionsBlock *tempInstr = m_lowPriorityInst;   // get current InstructionsBlock
-            m_lowPriorityInst = inst;                           // change first pointer to the new InstructionsBlock given
-            m_lowPriorityInst->setNext( tempInstr );            // set new InstructionsBlock to point to old one
+            m_lowPriorityInst->setNext( inst );            // append the new block on the tail
         }
     }
     else if( lvl == Server::MEDIUM ) {
         if( !m_mediumPriorityInst )
             m_mediumPriorityInst = inst;
         else {
-            InstructionsBlock *tempInstr = m_mediumPriorityInst;
-            m_mediumPriorityInst = inst;
-            m_mediumPriorityInst->setNext( tempInstr );
+            m_mediumPriorityInst->setNext( inst );
         }
     }
     else {
         if( !m_highPriorityInst )
             m_highPriorityInst = inst;
         else {
-            InstructionsBlock *tempInstr = m_highPriorityInst;
-            m_highPriorityInst = inst;
-            m_highPriorityInst->setNext( tempInstr );
+            m_highPriorityInst->setNext( inst );
         }
     }
 }
