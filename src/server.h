@@ -62,7 +62,8 @@ class Server
             NEXTMAP,
             ADMINS,
             PASS,
-            CONFIG
+            CONFIG,
+            STATUS
         };
 
         class Player
@@ -144,7 +145,9 @@ class Server
         InstructionsBlock* priorityInstrBlock( Server::PriorityLevel lvl ); // returns pointer to InstructionBlock according to level specified
         InstructionCounter *instructionCounter() const;                     // returns pointer to server's InstructionCounter
         std::vector<std::string> serverConfigs() const;                     // returns game server's config file list
+        std::vector<std::string> serverMaps() const;                        // returns game server's map file list
         std::string gameDirectory() const;                                  // returns the directory where the game is installed
+        int commandPermission ( Commands cmd );                             // returns the minimum power level requested by a command.
 
         // setters
         void setName( std::string name );                                   // set server name
@@ -162,7 +165,11 @@ class Server
         void setChanged( bool changed = true );                             // set server changed flag
         void setValid( bool valid = true );                                 // set server validity flag
         void setServerConfigs( std::vector<std::string> list );             // set game server's config file list
+        void setServerMaps( std::vector<std::string> list );                // set game server's extra maps list
         void setGameDirectory( std::string dir );                           // set the directory where the game is installed
+        void setCommandPermission( Commands cmd, int value );               // set the minimum power level requested by a command.
+        
+        
 
         // put these into scheduler and add server number to specify server to operate on
         void addPriorityInstrBlock( Server::PriorityLevel lvl, InstructionsBlock *inst );   // ADDS TO TAIL given InstructionsBlock
@@ -207,7 +214,7 @@ class Server
         std::vector<std::string> m_configs;         // list of cfg files founded on this server
         std::vector<std::string> m_maps;            // list of maps founded on this server
         std::string m_gameDir;                      // directory where the game in installed
-        
+        std::vector<int> m_permissions;             // minimum power level requested for each command.
 };
 
 #endif

@@ -39,7 +39,34 @@ Server::Server()
     , m_lowPriorityInst( 0 )
     , m_mediumPriorityInst( 0 )
     , m_highPriorityInst( 0 )
+    , m_configs( std::vector<std::string>() )
+    , m_maps( std::vector<std::string>() )
+    , m_permissions( std::vector<int>() )
 {
+    //initializing command permissions' vector (default power levels needed)
+    //group 0 = full admin
+    //group 1 = admin
+    //group 2 = clan member
+    //group 3 = clan friends
+    //group 100 = others (all)
+    m_permissions.push_back( 100 );   //help level
+    m_permissions.push_back( 2 );     //kick level
+    m_permissions.push_back( 1 );     //ban level
+    m_permissions.push_back( 1 );     //unban level
+    m_permissions.push_back( 3 );     //mute level
+    m_permissions.push_back( 1 );     //op level
+    m_permissions.push_back( 1 );     //deop level
+    m_permissions.push_back( 0 );     //strict level
+    m_permissions.push_back( 3 );     //nuke level
+    m_permissions.push_back( 3 );     //slap level
+    m_permissions.push_back( 3 );     //veto level
+    m_permissions.push_back( 3 );     //force level
+    m_permissions.push_back( 2 );     //map level
+    m_permissions.push_back( 3 );     //nextmap level
+    m_permissions.push_back( 3 );     //admins level
+    m_permissions.push_back( 0 );     //pass level
+    m_permissions.push_back( 1 );     //config level
+    m_permissions.push_back( 100 );   //status level
 }
 
 Server::~Server()
@@ -267,7 +294,19 @@ Server::InstructionCounter* Server::instructionCounter() const
     return m_instructionCounter;
 }
 
+std::vector<std::string> Server::serverConfigs() const
+{
+    return m_configs;
+}
 
+void Server::setServerConfigs( std::vector<std::string> list )
+{
+    m_configs = list;
+}
+std::vector<std::string> serverMaps() const;
+void setServerMaps( std::vector<std::string> list );
+std::string gameDirectory() const;
+void setGameDirectory( std::string dir );      
 
 //**************************************** Functions for direct access to player vector ************************
 unsigned int Server::size()
