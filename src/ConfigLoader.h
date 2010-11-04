@@ -68,7 +68,7 @@ class ConfigLoader
                     delete errors;
                     delete log;
                 };
-                // return current server i'm working on
+                // return current server i'm working on (analyzer only)
                 Server* currentServer() const
                 {
                     return servers.at( serverNumber );

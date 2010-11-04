@@ -52,49 +52,44 @@ bool Scheduler::executeInstructions()
 {
     bool executedInstr = false;     // bool to check if i've executed at least one instruction
 
-    for( unsigned int i = 0; i < m_options->size(); i++ ) {
-        Server *auxServer = m_options->servers.at( i );
-        Server::InstructionCounter *auxInstCounter = auxServer->instructionCounter();
-
-        // get various instruction block levels
-        InstructionsBlock *auxHighPr = auxServer->priorityInstrBlock( Server::HIGH );
-        InstructionsBlock *auxMedPr = auxServer->priorityInstrBlock( Server::MEDIUM );
-        InstructionsBlock *auxLowPr = auxServer->priorityInstrBlock( Server::LOW );
-
-        for( int j = 0; j < 3; j++ ) {
-            if( auxServer->instructionCounter()->hightPr() < MAX_HIGH_INST )   // check i haven't exceeded max counter
-                executedInstr = executePriorityInstruction( auxHighPr, auxInstCounter, Server::HIGH, i );
-            else if( auxServer->instructionCounter()->medPr() < MAX_MED_INST )
-                executedInstr = executePriorityInstruction( auxMedPr, auxInstCounter, Server::MEDIUM, i );
-            else
-                if( auxServer->instructionCounter()->lowPr() < MAX_LOW_INST )
-                    executedInstr = executePriorityInstruction( auxLowPr, auxInstCounter, Server::LOW, i );
+    for( int j = 0; j < 3; j++ ) {
+        for( unsigned int i = 0; i < m_options->size(); i++  ) {
+            bool exec = true;
+            if( (*m_options)[i].priorityInstrBlock(Server::HIGH) != NULL && ( (*m_options)[i]->instructionCounter()->hightPr() < MAX_HIGH_INST ||
+                    ( (*m_options)[i].priorityInstrBlock(Server::MEDIUM) == NULL && (*m_options)[i].priorityInstrBlock(Server::LOW) == NULL ) ) )   // check i haven't exceeded max counter
+                executePriorityInstruction( (*m_options)[i].priorityInstrBlock( Server::HIGH ), (*m_options)[i]->instructionCounter(), Server::HIGH, i );
+            else if( (*m_options)[i].priorityInstrBlock( Server::MEDIUM ) != NULL && ( (*m_options)[i]->instructionCounter()->mediumPr() < MAX_MED_INST ||
+                (*m_options)[i].priorityInstrBlock(Server::LOW) == NULL ) )
+                executePriorityInstruction( (*m_options)[i].priorityInstrBlock( Server::MEDIUM ), (*m_options)[i]->instructionCounter(), Server::MEDIUM, i );
+            else if( auxServer->instructionCounter()->lowPr() < MAX_LOW_INST )
+                executePriorityInstruction( auxLowPr, auxInstCounter, Server::LOW, i );
+            else 
+            {   
+                (*m_options)[i]->instructionCounter()->resetCounters();
+                exec = false;
+            }
+            executedInstr = executedInstr || exec;
         }
         usleep( 600000 );   // 0,6 sec
     }
     return executedInstr;
 }
 
-bool Scheduler::executePriorityInstruction( InstructionsBlock* instr, Server::InstructionCounter *counter, Server::PriorityLevel lvl, int serverNum )
+void Scheduler::executePriorityInstruction( InstructionsBlock* &instr, Server::InstructionCounter* &counter, Server::PriorityLevel lvl, int serverNum )
 {
-    if( instr != 0 ) {
-        // "execFirstCommand" deletes the instruction or removes it or does something to it so
-        // i don't have to touch anything inside
-        instr->execFirstCommand( m_connection, serverNum );     // execute command
-        counter->incrementPriority( lvl );                      // increment counter of instruction level
+    // "execFirstCommand" deletes the instruction or removes it or does something to it so
+    // i don't have to touch anything inside
+    instr->execFirstCommand( m_connection, serverNum );     // execute command
+    counter->incrementPriority( lvl );                      // increment counter of instruction level
 
-        if( instr->isEmpty() ) {
-            InstructionsBlock *tmp = instr;
-            instr = instr->getNext();
-            delete tmp;
-        }
-        else
-            instr->moveToTail();
-
-        if( lvl == Server::LOW )                                // if I execute a low level instruction, I have to reset counters
-            counter->resetCounters();
-
-        return true;
+    if( instr->isEmpty() ) {
+        InstructionsBlock *tmp = instr;
+        instr = instr->getNext();
+        delete tmp;
     }
-    return false;
+    else
+        instr->moveToTail();
+
+    if( lvl == Server::LOW )                                // if I execute a low level instruction, I have to reset counters
+        counter->resetCounters();
 }

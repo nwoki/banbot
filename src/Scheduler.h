@@ -46,7 +46,7 @@ public:
     bool executeInstructions();         // executes 3 instructions per server
 
 private:
-    bool executePriorityInstruction( InstructionsBlock *instr, Server::InstructionCounter *counter, Server::PriorityLevel lvl, int serverNum );
+    void executePriorityInstruction( InstructionsBlock* &instr, Server::InstructionCounter* &counter, Server::PriorityLevel lvl, int serverNum );
 
     Connection *m_connection;           // connection class to send info to server
     ConfigLoader::Options *m_options;   // options class to keep track of servers, operate on them and their options
