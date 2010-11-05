@@ -41,7 +41,7 @@ ConfigLoader::ConfigLoader( const std::string &filePath )
 //distruttore:chiudo il file
 ConfigLoader::~ConfigLoader()
 {
-    if ( opzioni != 0 )
+    if ( opzioni != NULL )
         delete opzioni;
 }
 
@@ -52,7 +52,7 @@ ConfigLoader::Options* ConfigLoader::getOptions()
 
 bool ConfigLoader::testChanges()
 {
-    if (opzioni)
+    if (opzioni != NULL)
     {
         struct stat st;
         if( stat( generalFile.c_str(), &st ) == 0 )
