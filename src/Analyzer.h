@@ -77,49 +77,47 @@
 
 //stringa stampata all'utente con i comandi disponibili (quando viene dato il comando !help).
 #ifdef ITA
-    #define COMMANDLIST "^1Comandi disponibili:\n\
-    ^2!ban <numero/nick> [<motivo>] ^1: banna un player, con o senza motivo\n\
-    ^2!unban <id> ^1: sbanna un player (id dato da !find)\n\
-    ^2!kick <numero/nick> ^1: butta fuori un player\n\
-    ^2!mute <numero/nick/all> ^1: muta o smuta un singolo player, o tutti\n\
-    ^2!find <nick> ^1: cerca un player tra i bannati\n\
-    ^2!findop <nick> ^1: cerca un player tra gli admin\n\
-    ^2!op <numero/nick> ^1: da' lo stato di admin ad un player\n\
-    ^2!deop <id> ^1: toglie lo stato di admin ad un player (id da !findop)\n\
-    ^2!strict <OFF/0/1/2> ^1: cambia il livello di sicurezza del server\n\
-    ^2!nuke <numero/nick> ^1: lancia un nuke ad un player\n\
-    ^2!slap <numero/nick> [2/3/4/5] ^1: slappa una (o piu' volte) un player\n\
-    ^2!veto ^1: annulla la votazione in corso\n\
-    ^2!status ^1: informazioni sullo stato del bot\n\
-    ^2!force <red/blue/spect> <numero/nick> ^1: cambia team ad un player\n\
-    ^2!map <nome> ^1: cambia la mappa (per esempio, ut4_casa)\n\
-    ^2!nextmap <nome> ^1: imposta la mappa successiva (vedi !map)\n\
-    ^2!admins ^1: elenca gli admin attualmente in gioco\n\
-    ^2!pass <pass> ^1: cambia la password al server\n\
-    ^2!config <file> ^1: carica un file di configurazione\
-    "
+    #define COMMANDLIST "^1Comandi disponibili:"
+    #define H_BAN "^2!ban <numero/nick> [<motivo>] ^1: banna un player, con o senza motivo"
+    #define H_UNBAN "^2!unban <id> ^1: sbanna un player (id dato da !find)"
+    #define H_KICK "^2!kick <numero/nick> ^1: butta fuori un player"
+    #define H_MUTE "^2!mute <numero/nick/all> ^1: muta o smuta un singolo player, o tutti"
+    #define H_FIND "^2!find <nick> ^1: cerca un player tra i bannati"
+    #define H_FINDOP "^2!findop <nick> ^1: cerca un player tra gli admin"
+    #define H_OP "^2!op <numero/nick> ^1: da' lo stato di admin ad un player"
+    #define H_DEOP "^2!deop <id> ^1: toglie lo stato di admin ad un player (id da !findop)"
+    #define H_STRICT "^2!strict <OFF/0/1/2> ^1: cambia il livello di sicurezza del server"
+    #define H_NUKE "^2!nuke <numero/nick> ^1: lancia un nuke ad un player"
+    #define H_SLAP "^2!slap <numero/nick> [2-9] ^1: slappa una (o piu' volte) un player"
+    #define H_VETO "^2!veto ^1: annulla la votazione in corso"
+    #define H_STATUS "^2!status ^1: informazioni sullo stato del bot"
+    #define H_FORCE "^2!force <red/blue/spect> <numero/nick> ^1: cambia team ad un player"
+    #define H_MAP "^2!map <nome> ^1: cambia la mappa (per esempio, ut4_casa)"
+    #define H_NEXTMAP "^2!nextmap <nome> ^1: imposta la mappa successiva (vedi !map)"
+    #define H_ADMINS "^2!admins ^1: elenca gli admin attualmente in gioco"
+    #define H_PASS "^2!pass <pass> ^1: cambia la password al server"
+    #define CONFIG "^2!config <file> ^1: carica un file di configurazione"
 #else
-    #define COMMANDLIST "^1Commands:\n\
-    ^2!ban <number/nick> [<reason>] ^1: ban a player, with or without a reason\n\
-    ^2!unban <id> ^1: unban a player (id from !find)\n\
-    ^2!kick <number/nick> ^1: kick a player\n\
-    ^2!mute <number/nick/all> ^1: mute or unmute a player, or all\n\
-    ^2!find <nick> ^1: search a player from banned list\n\
-    ^2!findop <nick> ^1: search a player from admin list\n\
-    ^2!op <number/nick> ^1: register the player as admin\n\
-    ^2!deop <id> ^1: unregister the player as admin (id from !findop)\n\
-    ^2!strict <OFF/0/1/2> ^1: change the security level of the server\n\
-    ^2!nuke <number/nick> ^1: nuke a player\n\
-    ^2!slap <number/nick> [2/3/4/5] ^1: slaps once (or more times) a player\n\
-    ^2!veto ^1: cancel the vote in progress\n\
-    ^2!status ^1: information about the bot\n\
-    ^2!force <red/blue/spect> <number/nick> ^1: change team team of a player\n\
-    ^2!map <name> ^1: change map (for example, ut4_casa)\n\
-    ^2!nextmap <name> ^1: set the next map (see !map)\n\
-    ^2!admins ^1: show admins actually in game\n\
-    ^2!pass <pass> ^1: change server's password\n\
-    ^2!config <file> ^1: load a configuration file\
-    "
+    #define COMMANDLIST "^1Commands enabled:"
+    #define H_BAN "^2!ban <number/nick> [<reason>] ^1: ban a player, with or without a reason"
+    #define H_UNBAN "^2!unban <id> ^1: unban a player (id from !find)"
+    #define H_KICK "^2!kick <number/nick> ^1: kick a player"
+    #define H_MUTE "^2!mute <number/nick/all> ^1: mute or unmute a player, or all"
+    #define H_FIND "^2!find <nick> ^1: search a player from banned list"
+    #define H_FINDOP "^2!findop <nick> ^1: search a player from admin list"
+    #define H_OP "^2!op <number/nick> ^1: register the player as admin"
+    #define H_DEOP "^2!deop <id> ^1: unregister the player as admin (id from !findop)"
+    #define H_STRICT "^2!strict <OFF/0/1/2> ^1: change the security level of the server"
+    #define H_NUKE "^2!nuke <number/nick> ^1: nuke a player"
+    #define H_SLAP "^2!slap <number/nick> [2-9] ^1: slaps once (or more times) a player"
+    #define H_VETO "^2!veto ^1: cancel the vote in progress"
+    #define H_STATUS "^2!status ^1: information about the bot"
+    #define H_FORCE "^2!force <red/blue/spect> <number/nick> ^1: change team team of a player"
+    #define H_MAP "^2!map <name> ^1: change map (for example, ut4_casa)"
+    #define H_NEXTMAP "^2!nextmap <name> ^1: set the next map (see !map)"
+    #define H_ADMINS "^2!admins ^1: show admins actually in game"
+    #define H_PASS "^2!pass <pass> ^1: change server's password"
+    #define H_CONFIG "^2!config <file> ^1: load a configuration file"
 #endif
 
 class Analyzer
