@@ -365,6 +365,8 @@ void Server::test_for_changes(Server* old)
       m_highPriorityInst = old->m_highPriorityInst;
       m_mediumPriorityInst = old->m_mediumPriorityInst;
       m_lowPriorityInst = old->m_lowPriorityInst;
+      m_maps = old->m_maps;
+      m_configs = old->m_configs;
     }
   }
   else
@@ -375,7 +377,7 @@ void Server::test_for_changes(Server* old)
 
 bool Server::test_for_options()
 {
-  if ( !m_name.empty() && !m_rconpass.empty() && !m_ip.empty() && m_port!=0 && !m_backup.empty() && !m_botLog.empty() && !m_serverLog.empty() && !m_dbFolder.empty() )
+  if ( !m_name.empty() && !m_rconpass.empty() && !m_ip.empty() && m_port!=0 && !m_backup.empty() && !m_botLog.empty() && !m_serverLog.empty() && !m_dbFolder.empty() && !m_gameDir.empty())
     return true;
   return false;
 }
@@ -403,6 +405,8 @@ std::string Server::toString()
     t.append( m_dbFolder );
     t.append( "\n  Strict level : ");
     t.append( intToString(m_strict) );
+    t.append( "\n  Game folder : ");
+    t.append( m_gameDir );
     t.append( "\n}\n" );
     return t;
 }
