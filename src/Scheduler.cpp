@@ -55,17 +55,17 @@ bool Scheduler::executeInstructions()
     for( int j = 0; j < 3; j++ ) {
         for( unsigned int i = 0; i < m_options->size(); i++  ) {
             bool exec = true;
-            if( (*m_options)[i].priorityInstrBlock(Server::HIGH) != NULL && ( (*m_options)[i]->instructionCounter()->hightPr() < MAX_HIGH_INST ||
+            if( (*m_options)[i].priorityInstrBlock(Server::HIGH) != NULL && ( (*m_options)[i].instructionCounter()->highPr() < MAX_HIGH_INST ||
                     ( (*m_options)[i].priorityInstrBlock(Server::MEDIUM) == NULL && (*m_options)[i].priorityInstrBlock(Server::LOW) == NULL ) ) )   // check i haven't exceeded max counter
-                executePriorityInstruction( (*m_options)[i].priorityInstrBlock( Server::HIGH ), (*m_options)[i]->instructionCounter(), Server::HIGH, i );
-            else if( (*m_options)[i].priorityInstrBlock( Server::MEDIUM ) != NULL && ( (*m_options)[i]->instructionCounter()->mediumPr() < MAX_MED_INST ||
+                executePriorityInstruction( (*m_options)[i].priorityInstrBlock( Server::HIGH ), (*m_options)[i].instructionCounter(), Server::HIGH, i );
+            else if( (*m_options)[i].priorityInstrBlock( Server::MEDIUM ) != NULL && ( (*m_options)[i].instructionCounter()->medPr() < MAX_MED_INST ||
                 (*m_options)[i].priorityInstrBlock(Server::LOW) == NULL ) )
-                executePriorityInstruction( (*m_options)[i].priorityInstrBlock( Server::MEDIUM ), (*m_options)[i]->instructionCounter(), Server::MEDIUM, i );
-            else if( auxServer->instructionCounter()->lowPr() < MAX_LOW_INST )
-                executePriorityInstruction( auxLowPr, auxInstCounter, Server::LOW, i );
-            else 
-            {   
-                (*m_options)[i]->instructionCounter()->resetCounters();
+                executePriorityInstruction( (*m_options)[i].priorityInstrBlock( Server::MEDIUM ), (*m_options)[i].instructionCounter(), Server::MEDIUM, i );
+            else if( (*m_options)[i].priorityInstrBlock( Server::LOW ) != NULL )
+                executePriorityInstruction( (*m_options)[i].priorityInstrBlock( Server::LOW ), (*m_options)[i].instructionCounter(), Server::LOW, i );
+            else
+            {
+                (*m_options)[i].instructionCounter()->resetCounters();
                 exec = false;
             }
             executedInstr = executedInstr || exec;
@@ -75,7 +75,7 @@ bool Scheduler::executeInstructions()
     return executedInstr;
 }
 
-void Scheduler::executePriorityInstruction( InstructionsBlock* &instr, Server::InstructionCounter* &counter, Server::PriorityLevel lvl, int serverNum )
+void Scheduler::executePriorityInstruction( InstructionsBlock* &instr, Server::InstructionCounter* counter, Server::PriorityLevel lvl, int serverNum )
 {
     // "execFirstCommand" deletes the instruction or removes it or does something to it so
     // i don't have to touch anything inside
