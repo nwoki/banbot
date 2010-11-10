@@ -105,18 +105,23 @@ void Db::closeDatabase()
 }
 
 
-bool Db::checkAuthGuid( const string &guid )    //checks oplist for ops
+int Db::checkAuthGuid( const string &guid )    //checks oplist for ops
 {
 
 #ifdef DB_DEBUG
     cout << "Db::checkAuthGuid\n";
 #endif
 
-    string aux( "select guid from oplist where guid='" );
-    aux.append( guid );
-    aux.append( "'" );
+    string query( "select level from oplist where guid='" );
+    query.append( guid );
+    query.append( "'" );
 
-    return ( resultQuery( aux ) > 0 );
+    int convertedInt = 100;     // default value
+
+    if( execQuery( query ) )
+        convertedInt = stringToInt( m_data[0] );
+
+    return convertedInt;        // will be -1 on error or 100 if not found
 }
 
 
@@ -730,7 +735,7 @@ bool Db::deleteGuid( const string &id )
 /********************************
 *     OPLIST TABLE METHODS      *
 ********************************/
-bool Db::addOp( const string& nick, const string& guid )
+bool Db::addOp( const string& nick, const string& guid, const string &opLvl )
 {
     if ( checkAuthGuid( guid ) ) {
         cout << "\e[0;33m[!]Admin: " << nick << " : " << guid << " already exists on Database\e[0m \n";
@@ -738,17 +743,19 @@ bool Db::addOp( const string& nick, const string& guid )
         return false;
     }
 
-    string addOpQuery( "insert into oplist( nick, guid ) values('" );
+    string addOpQuery( "insert into oplist( nick, guid, level ) values('" );
     addOpQuery.append( nick );
     addOpQuery.append( "','" );
     addOpQuery.append( guid );
+    addOpQuery.append( "','" );
+    addOpQuery.append( opLvl );
     addOpQuery.append( "');" );
 
     return execQuery( addOpQuery ); //true on success
 }
 
 
-bool Db::modifyOp( const string& nick, const string& guid, const string& id )
+bool Db::modifyOp( const string& id, const string& nick, const string& guid, const string &opLvl )
 {
     string modifyQuery( "update oplist set ") ;
     bool paramCount = false;
@@ -765,6 +772,15 @@ bool Db::modifyOp( const string& nick, const string& guid, const string& id )
             modifyQuery.append( "," );
         modifyQuery.append( "guid = '" );
         modifyQuery.append( guid );
+        modifyQuery.append( "' " );
+        paramCount = true;
+    }
+
+    if( !opLvl.empty() ) {
+        if( paramCount )
+            modifyQuery.append( "," );
+        modifyQuery.append( "level='" );
+        modifyQuery.append( opLvl );
         modifyQuery.append( "' " );
     }
 
@@ -1079,7 +1095,7 @@ void Db::createDb()   //initial creation of database
 {
     string createBannedTable(
     "create table banned("
-    "id INTEGER PRIMARY KEY,"    //autoincrement
+    "id INTEGER PRIMARY KEY,"    // autoincrement
     "nick TEXT,"
     "ip TEXT,"
     "date TEXT,"
@@ -1087,9 +1103,9 @@ void Db::createDb()   //initial creation of database
     "motive TEXT,"
     "author TEXT);" );
 
-    string createGuidTable(     //for banned users
+    string createGuidTable(     // for banned users
     "create table guids("
-    "id INTEGER PRIMARY KEY,"    //autoincrement
+    "id INTEGER PRIMARY KEY,"   // autoincrement
     "guid TEXT,"
     "banId TEXT,"
     "FOREIGN KEY( banId ) REFERENCES banned( id ) );" );
@@ -1098,7 +1114,8 @@ void Db::createDb()   //initial creation of database
     "create table oplist("
     "id INTEGER PRIMARY KEY,"   //autoincrement
     "nick TEXT,"
-    "guid TEXT);" );
+    "guid TEXT,"
+    "level TEXT );" );
 
     //checks...
     if( resultQuery( createBannedTable ) == 0 ) {
@@ -1209,7 +1226,7 @@ bool Db::execQuery( const string &query )  //executes and returns status
     cout << "using database @: " << (*m_options)[m_options->serverNumber].dbFolder() << endl;
 #endif
 
-    //clean old m_data...
+    //clean old m_data... MUST clear otherwise i keep old values
     if( !m_data.empty() )
         m_data.clear();
 
