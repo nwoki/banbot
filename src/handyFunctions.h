@@ -26,6 +26,7 @@
 #ifndef HANDYFUNCTIONS_H
 #define HANDYFUNCTIONS_H
 
+#include <sstream>
 #include <string>
 #include <vector>
 
@@ -36,6 +37,7 @@ bool dirCreate( std::string path );  /*!< checks if path exists otherwise tries 
 bool fileCreate( const std::string &file ); /*!< checks for existance of given file otherwise tries to create it */
 std::string intToString( int number );  /*!< converts int to string */
 std::vector< std::string >split( std::string str, char ch );    /*!< splits given string every occurance of "ch" */
+int stringToInt( const std::string &str );
 std::string timeStamp();    /*!< returns timestamp of current localtime */  //TODO various ways, date, time long date ecc
 std::vector< std::string > detectRows ( std::string ); /*!< split the string in rows, depending on /n and max characters per row */
 

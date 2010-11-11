@@ -145,6 +145,18 @@ std::vector< std::string >split( const std::string &str, char ch )
     return aux;
 }
 
+int stringToInt( const std::string& str )
+{
+    int num;
+    std::istringstream sstrem( str );
+    sstrem >> num;
+
+    if( sstrem.good() )
+        return num;
+    else
+        return -1;      // error
+}
+
 
 std::string timeStamp()
 {

@@ -44,7 +44,7 @@ class Server
             MEDIUM,
             HIGH
         };
-        
+
         enum Commands {             // bot instructions enum (used for permissions in servers)
             HELP,
             KICK,
@@ -119,7 +119,7 @@ class Server
             }
 
             // getters
-            int hightPr() const { return m_highPr; }    // returns number of high priority instruction blocks commands executed
+            int highPr() const { return m_highPr; }     // returns number of high priority instruction blocks commands executed
             int medPr() const { return m_medPr; }       // returns number of medium priority instruction blocks commands executed
             int lowPr() const { return m_lowPr; }       // returns number of low priority instruction blocks commands executed
 
@@ -142,7 +142,7 @@ class Server
         int strict() const;                                                 // returns strict level
         bool isChanged() const;                                             // checks if server options have been changed
         bool isValid() const;                                               // checks if server is valid
-        InstructionsBlock* priorityInstrBlock( Server::PriorityLevel lvl ); // returns pointer to InstructionBlock according to level specified
+        InstructionsBlock* &priorityInstrBlock( Server::PriorityLevel lvl ); // returns pointer to InstructionBlock according to level specified
         InstructionCounter *instructionCounter() const;                     // returns pointer to server's InstructionCounter
         std::vector<std::string> serverConfigs() const;                     // returns game server's config file list
         std::vector<std::string> serverMaps() const;                        // returns game server's map file list
@@ -168,8 +168,8 @@ class Server
         void setServerMaps( std::vector<std::string> list );                // set game server's extra maps list
         void setGameDirectory( std::string dir );                           // set the directory where the game is installed
         void setCommandPermission( Commands cmd, int value );               // set the minimum power level requested by a command.
-        
-        
+
+
 
         // put these into scheduler and add server number to specify server to operate on
         void addPriorityInstrBlock( Server::PriorityLevel lvl, InstructionsBlock *inst );   // ADDS TO TAIL given InstructionsBlock
@@ -210,7 +210,7 @@ class Server
         std::vector<Player*> m_giocatori;           // vector with the info of the players currently in the server
         InstructionCounter *m_instructionCounter;   // instruction counter for server's various InstructionsBlock
         InstructionsBlock *m_lowPriorityInst, *m_mediumPriorityInst, *m_highPriorityInst;   // instruction priorities
-        
+
         std::vector<std::string> m_configs;         // list of cfg files founded on this server
         std::vector<std::string> m_maps;            // list of maps founded on this server
         std::string m_gameDir;                      // directory where the game in installed

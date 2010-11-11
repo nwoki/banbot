@@ -229,7 +229,7 @@ void Server::setValid( bool valid )
   m_valid=valid;
 }
 
-InstructionsBlock* Server::priorityInstrBlock( Server::PriorityLevel lvl )
+InstructionsBlock* &Server::priorityInstrBlock( Server::PriorityLevel lvl )
 {
     if( lvl == Server::LOW )
         return m_lowPriorityInst;
@@ -303,10 +303,14 @@ void Server::setServerConfigs( std::vector<std::string> list )
 {
     m_configs = list;
 }
-std::vector<std::string> serverMaps() const;
-void setServerMaps( std::vector<std::string> list );
-std::string gameDirectory() const;
-void setGameDirectory( std::string dir );      
+/*
+ * TODO simo, implementami queste funzioni
+ */
+
+// std::vector<std::string> serverMaps() const;
+// void setServerMaps( std::vector<std::string> list );
+// std::string gameDirectory() const;
+// void setGameDirectory( std::string dir );
 
 //**************************************** Functions for direct access to player vector ************************
 unsigned int Server::size()
