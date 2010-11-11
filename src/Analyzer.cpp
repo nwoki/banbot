@@ -38,7 +38,9 @@
 //#include <stdlib.h>
 //#include <sys/stat.h>
 
-//defines per i regex:
+//regex defines:
+#define _R_NUMBER "^[0-9]+$"
+
 #define _R_CLIENT_CONNECT " *[0-9]+:[0-9]{2} +ClientConnect:"
 #define _R_CLIENT_USER_INFO " *[0-9]+:[0-9]{2} +ClientUserinfo:"
 #define _R_COMPLETE_CLIENT_USER_INFO " *[0-9]+:[0-9]{2} +ClientUserinfo: +[0-9]+ +\\ip\\[0-9]{1,3}.[0-9]{1,3}.[0-9]{1,3}.[0-9]{1,3}:[0-9]{1,6}\\name\\[^ \t\n\r\f\v]+\\racered\
@@ -939,7 +941,8 @@ void Analyzer::op(char* line)
     *(m_dati->log)<<"\n[!] Op";
     //controllo se ho il giocatore e i suoi permessi, se la persona non è autorizzata non faccio nulla.
     std::string numeroAdmin;
-    if (isAdminSay(line,numeroAdmin) <= (*m_dati)[(*m_dati).serverNumber].commandPermission(Server::OP))
+    int level = isAdminSay(line,numeroAdmin);
+    if (level <= (*m_dati)[(*m_dati).serverNumber].commandPermission(Server::OP))
     {
         InstructionsBlock * block = new InstructionsBlock();
         int i=0;
@@ -949,6 +952,17 @@ void Analyzer::op(char* line)
         pos=temp.find_first_not_of(" \t\n\r\f\v",pos+3);
         int end=temp.find_first_of(" \n",pos);
         std::string player=temp.substr(pos,end-pos);
+        pos=temp.find_first_not_of(" \t\n\r\f\v",end);
+        end=temp.find_first_of(" \n",pos);
+        std::string newOpLevel=temp.substr(pos,end-pos);
+        int opLevel = level;
+        if (isA(newOpLevel,_R_NUMBER))
+        {
+            opLevel=atoi(newOpLevel.c_str());
+            //i don't permit an highter level of the admin
+            if ( opLevel > level )
+                opLevel = level;
+        }
         if (isA(line,_R_OP_NUMBER))
             i = findPlayer( player );
         else
@@ -962,11 +976,17 @@ void Analyzer::op(char* line)
         else
         {
             if(!database->checkAuthGuid((*m_dati)[m_dati->serverNumber][i]->GUID) && database->addOp((*m_dati)[m_dati->serverNumber][i]->nick,(*m_dati)[m_dati->serverNumber][i]->GUID))
+            {
+                std::string phrase ( "^0BanBot: ^1" );
+                phrase.append( database->addOp((*m_dati)[m_dati->serverNumber][i]->nick );
                 #ifdef ITA
-                    block->tell("^0BanBot: ^1admin aggiunto con successo.",numeroAdmin);
+                    phrase.append(" aggiunto con successo agli admin, livello ");
                 #else
-                    block->tell("^0BanBot: ^1admin successifully added.",numeroAdmin);
+                    phrase.append(" successifully added to admin list, level ");
                 #endif
+                phrase.append ( opLevel );
+                block->tell( phrase, numeroAdmin );
+            }
             else
                 #ifdef ITA
                     block->tell("^1Fail: player non aggiunto alla lista admin.",numeroAdmin);
