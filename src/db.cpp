@@ -118,10 +118,12 @@ int Db::checkAuthGuid( const string &guid )    //checks oplist for ops
 
     int convertedInt = 100;     // default value
 
-    if( execQuery( query ) )    //ERRORE!!! Questo è falso SOLO se c'e' un errore nell'esecuzione dela query, NON se la persona non c'è in oplist.
-        convertedInt = stringToInt( m_data[0] );
+    if( execQuery( query ) ) {
+        if( !m_data.empty() )
+            convertedInt = stringToInt( m_data[0] );
+    }
 
-    return convertedInt;        // will be -1 on error or 100 if not found
+    return convertedInt;        // 100 if not found
 }
 
 
@@ -993,7 +995,7 @@ vector< Db::idNickMotiveAuthorStruct > Db::findPreciseIdMotiveAuthorViaNickBanne
 
 vector< Db::idNickStruct > Db::findAproxIdNickViaNickOp( const string& nick )
 {
-    string query( "select id,nick from oplist where nick like '%" );
+    string query( "select id,nick,level from oplist where nick like '%" );
     query.append( nick );
     query.append( "%' limit 16;" );
 
@@ -1009,8 +1011,8 @@ vector< Db::idNickStruct > Db::findAproxIdNickViaNickOp( const string& nick )
         cout << "ANSWER " << i << " is -> " << m_data.at( i );
     #endif
 
-    for( unsigned int i = 0; i < m_data.size()/2; i++ )
-        structs.push_back( idNickStruct( m_data[2*i + 0], m_data[2*i + 1] ) );
+    for( unsigned int i = 0; i < m_data.size()/3; i++ )
+        structs.push_back( idNickStruct( m_data[3*i + 0], m_data[3*i + 1], m_data[3*i + 2] ) );
 
     return structs;
 }
@@ -1035,7 +1037,7 @@ vector< Db::idNickStruct > Db::findPreciseIdNickViaNickOp( const string& nick )
 
     /* SHOULD I ASSUME THAT THERE ARE NO DOUBLES?  YES FOR NOW */
     if( m_data.size() > 0 )
-        structs.push_back( idNickStruct( m_data[0], m_data[1] ) );  /* insert in order, id, nick, motive, author */
+        structs.push_back( idNickStruct( m_data[0], m_data[1], m_data[2] ) );
 
     return structs;
 }

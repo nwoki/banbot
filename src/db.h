@@ -84,11 +84,12 @@ class Db
         //  structs for ANALYZER'S custom queries
         struct idNickStruct
         {
-            string id, nick;
+            string id, nick, level;
 
-            idNickStruct( const string &id, const string &nick )
+            idNickStruct( const string &id, const string &nick, const string &lvl )
                 : id( id )
                 , nick( nick )
+                , level( lvl )
             {}
         };
 
