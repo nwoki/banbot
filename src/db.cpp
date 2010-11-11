@@ -118,7 +118,7 @@ int Db::checkAuthGuid( const string &guid )    //checks oplist for ops
 
     int convertedInt = 100;     // default value
 
-    if( execQuery( query ) )
+    if( execQuery( query ) )    //ERRORE!!! Questo è falso SOLO se c'e' un errore nell'esecuzione dela query, NON se la persona non c'è in oplist.
         convertedInt = stringToInt( m_data[0] );
 
     return convertedInt;        // will be -1 on error or 100 if not found
@@ -737,7 +737,7 @@ bool Db::deleteGuid( const string &id )
 ********************************/
 bool Db::addOp( const string& nick, const string& guid, const string &opLvl )
 {
-    if ( checkAuthGuid( guid ) ) {
+    if ( checkAuthGuid( guid ) > 100 ) {
         cout << "\e[0;33m[!]Admin: " << nick << " : " << guid << " already exists on Database\e[0m \n";
         *(m_options->log) << "[!]Admin: " << nick << " : " << guid << " already exists on Database\n";
         return false;

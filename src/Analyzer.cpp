@@ -975,10 +975,10 @@ void Analyzer::op(char* line)
             #endif
         else
         {
-            if(!database->checkAuthGuid((*m_dati)[m_dati->serverNumber][i]->GUID) && database->addOp((*m_dati)[m_dati->serverNumber][i]->nick,(*m_dati)[m_dati->serverNumber][i]->GUID))
+            if( database->addOp((*m_dati)[m_dati->serverNumber][i]->nick,(*m_dati)[m_dati->serverNumber][i]->GUID, opLevel) )
             {
                 std::string phrase ( "^0BanBot: ^1" );
-                phrase.append( database->addOp((*m_dati)[m_dati->serverNumber][i]->nick );
+                phrase.append( (*m_dati)[m_dati->serverNumber][i]->nick );
                 #ifdef ITA
                     phrase.append(" aggiunto con successo agli admin, livello ");
                 #else
@@ -1498,7 +1498,7 @@ void Analyzer::iamgod(char* line)
         std::string numero = temp.substr( pos, end-pos );
         //prendo i dati dell'utente e lo aggiungo tra gli op
         int i = findPlayer( numero );
-        if( i>=0 && database->addOp( correggi((*m_dati)[m_dati->serverNumber][i]->nick), correggi((*m_dati)[m_dati->serverNumber][i]->GUID)) )
+        if( i>=0 && database->addOp( correggi((*m_dati)[m_dati->serverNumber][i]->nick), correggi((*m_dati)[m_dati->serverNumber][i]->GUID), 0) )
             block->bigtext("^1Welcome, my Master!");
         else
             #ifdef ITA

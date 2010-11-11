@@ -53,7 +53,7 @@ class Db
         void closeDatabase();   // closes database connection
 
         // checks
-        int checkAuthGuid( const string &guid );   // checks for the existance of "guid" in the oplist table
+        int checkAuthGuid( const string &guid );   // checks for the existance of "guid" in the oplist table (returns the op level)
         bool checkBanGuid( const string &guid );    // checks if "guid" is present amongst the banned users
         bool checkBanNick( const string &nick );    // checks if "nick" is present amongst the banned users
         void checkDatabases();                      // creates and checks if database files exist and flags them in m_options
