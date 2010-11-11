@@ -52,8 +52,8 @@
 #define _R_FIND "^ *[0-9]+:[0-9]{2} +say: +[0-9]+ +[^ \t\n\r\f\v]+: +!find [^ \t\n\r\f\v]+$"
 #define _R_FINDOP "^ *[0-9]+:[0-9]{2} +say: +[0-9]+ +[^ \t\n\r\f\v]+: +!findop [^ \t\n\r\f\v]+$"
 #define _R_UNBAN "^ *[0-9]+:[0-9]{2} +say: +[0-9]+ +[^ \t\n\r\f\v]+: +!unban [0-9]+$"
-#define _R_OP "^ *[0-9]+:[0-9]{2} +say: +[0-9]+ +[^ \t\n\r\f\v]+: +!op [^ \t\n\r\f\v]+$"
-#define _R_OP_NUMBER "^ *[0-9]+:[0-9]{2} +say: +[0-9]+ +[^ \t\n\r\f\v]+: +!op [0-9]{1,2}$"
+#define _R_OP "^ *[0-9]+:[0-9]{2} +say: +[0-9]+ +[^ \t\n\r\f\v]+: +!op [^ \t\n\r\f\v]+"
+#define _R_OP_NUMBER "^ *[0-9]+:[0-9]{2} +say: +[0-9]+ +[^ \t\n\r\f\v]+: +!op [0-9]{1,2}"
 #define _R_DEOP "^ *[0-9]+:[0-9]{2} +say: +[0-9]+ +[^ \t\n\r\f\v]+: +!deop [0-9]+$"
 #define _R_GUID "[A-F0-9]{32}"
 #define _R_INITGAME "^ *[0-9]+:[0-9]{2} +InitGame:"
@@ -172,7 +172,7 @@ bool Analyzer::isA( char* line, const std::string& regex )
     return false;
 }
 
-bool Analyzer::isAdminSay( char* line, std::string &numero )
+int Analyzer::isAdminSay( char* line, std::string &numero )
 {
     //controllo se la persona che l'ha richiesto ha i permessi per farlo
     std::string temp = line;
@@ -193,8 +193,7 @@ bool Analyzer::isAdminSay( char* line, std::string &numero )
             std::cout<<" requested by "<<(*m_dati)[m_dati->serverNumber][i]->nick<<", "<<(*m_dati)[m_dati->serverNumber][i]->GUID<<"\n";
             *(m_dati->log)<<" requested by "<<(*m_dati)[m_dati->serverNumber][i]->nick<<", "<<(*m_dati)[m_dati->serverNumber][i]->GUID<<"\n";
         #endif
-        if( database->checkAuthGuid( correggi((*m_dati)[m_dati->serverNumber][i]->GUID)) )
-            return true;
+        return database->checkAuthGuid( correggi((*m_dati)[m_dati->serverNumber][i]->GUID) );
     }
     else
     {
@@ -206,7 +205,7 @@ bool Analyzer::isAdminSay( char* line, std::string &numero )
             *(m_dati->log)<<" requested by unknown. I'll ignore it.\n";
         #endif
     }
-    return false;
+    return 404;
 }
 
 //funzione da sovrascrivere nelle eventuali espansioni
@@ -546,7 +545,7 @@ void Analyzer::ban(char* line)
     *(m_dati->log)<<"\n[!] Ban";
     //controllo se ho trovato il giocatore e i suoi permessi, se la persona non è autorizzata non faccio nulla.
     std::string numeroAdmin;
-    if (isAdminSay(line,numeroAdmin))
+    if (isAdminSay(line,numeroAdmin) <= (*m_dati)[(*m_dati).serverNumber].commandPermission(Server::BAN))
     {
         InstructionsBlock * block = new InstructionsBlock();
         #ifdef ITA
@@ -667,7 +666,7 @@ void Analyzer::unban(char* line)
     *(m_dati->log)<<"\n[!] Unban";
     //controllo se ho il giocatore e i suoi permessi, se la persona non è autorizzata non faccio nulla.
     std::string numeroAdmin;
-    if (isAdminSay(line,numeroAdmin))
+    if (isAdminSay(line,numeroAdmin) <= (*m_dati)[(*m_dati).serverNumber].commandPermission(Server::UNBAN))
     {
         InstructionsBlock * block = new InstructionsBlock();    // prepare instructionBlock
         //prendo l'identificativo da sbannare
@@ -700,7 +699,7 @@ void Analyzer::find(char* line)
     *(m_dati->log)<<"\n[!] Find";
     //controllo se ho il giocatore e i suoi permessi, se la persona non è autorizzata non faccio nulla.
     std::string numero;
-    if (isAdminSay(line,numero))
+    if (isAdminSay(line,numero) <= (*m_dati)[(*m_dati).serverNumber].commandPermission(Server::UNBAN))
     {
         InstructionsBlock * block = new InstructionsBlock();
         #ifdef ITA
@@ -831,7 +830,7 @@ void Analyzer::findOp(char* line)
     *(m_dati->log)<<"\n[!] FindOp";
     //controllo se ho il giocatore e i suoi permessi, se la persona non è autorizzata non faccio nulla.
     std::string numero;
-    if (isAdminSay(line,numero))
+    if (isAdminSay(line,numero) <= (*m_dati)[(*m_dati).serverNumber].commandPermission(Server::DEOP))
     {
         InstructionsBlock * block = new InstructionsBlock();
 
@@ -940,7 +939,7 @@ void Analyzer::op(char* line)
     *(m_dati->log)<<"\n[!] Op";
     //controllo se ho il giocatore e i suoi permessi, se la persona non è autorizzata non faccio nulla.
     std::string numeroAdmin;
-    if (isAdminSay(line,numeroAdmin))
+    if (isAdminSay(line,numeroAdmin) <= (*m_dati)[(*m_dati).serverNumber].commandPermission(Server::OP))
     {
         InstructionsBlock * block = new InstructionsBlock();
         int i=0;
@@ -986,7 +985,7 @@ void Analyzer::deop(char* line)
     *(m_dati->log)<<"\n[!] Deop";
     //controllo se ho il giocatore e i suoi permessi, se la persona non è autorizzata non faccio nulla.
     std::string numeroAdmin;
-    if (isAdminSay(line,numeroAdmin))
+    if (isAdminSay(line,numeroAdmin) <= (*m_dati)[(*m_dati).serverNumber].commandPermission(Server::DEOP))
     {
         InstructionsBlock * block = new InstructionsBlock();
         //prendo i dati dell'utente e lo tolgo dagli op
@@ -1022,7 +1021,7 @@ void Analyzer::kick(char* line)
     *(m_dati->log)<<"\n[!] Kick";
     //controllo se ho il giocatore e i suoi permessi, se la persona non è autorizzata non faccio nulla.
     std::string numeroAdmin;
-    if (isAdminSay(line,numeroAdmin))
+    if (isAdminSay(line,numeroAdmin) <= (*m_dati)[(*m_dati).serverNumber].commandPermission(Server::KICK))
     {
         InstructionsBlock * block = new InstructionsBlock();
         std::string temp(line);
@@ -1078,7 +1077,7 @@ void Analyzer::mute(char* line)
     *(m_dati->log)<<"\n[!] Mute";
     //controllo se ho il giocatore e i suoi permessi, se la persona non è autorizzata non faccio nulla.
     std::string numeroAdmin;
-    if (isAdminSay(line,numeroAdmin))
+    if (isAdminSay(line,numeroAdmin) <= (*m_dati)[(*m_dati).serverNumber].commandPermission(Server::MUTE))
     {
         InstructionsBlock * block = new InstructionsBlock();
         if ( isA(line,_R_MUTE_ALL) )
@@ -1146,7 +1145,7 @@ void Analyzer::help(char* line)
     (m_dati->log)->timestamp();
     *(m_dati->log)<<"\n[!] Help";
     std::string numero;
-    if (isAdminSay(line,numero))
+    if (isAdminSay(line,numeroAdmin) <= (*m_dati)[(*m_dati).serverNumber].commandPermission(Server::HELP))
     {
         InstructionsBlock * block = new InstructionsBlock();
         block->tell(COMMANDLIST,numero);
@@ -1161,7 +1160,7 @@ void Analyzer::setStrict(char* line)
     *(m_dati->log)<<"\n[!] Strict";
     //controllo se ho il giocatore e i suoi permessi, se la persona non è autorizzata non faccio nulla.
     std::string numeroAdmin;
-    if (isAdminSay(line,numeroAdmin))
+    if (isAdminSay(line,numeroAdmin) <= (*m_dati)[(*m_dati).serverNumber].commandPermission(Server::STRICT))
     {
         InstructionsBlock * block = new InstructionsBlock();
         std::string temp(line);
@@ -1198,7 +1197,7 @@ void Analyzer::veto(char* line)
     *(m_dati->log)<<"\n[!] Veto";
     //controllo se ho il giocatore e i suoi permessi, se la persona non è autorizzata non faccio nulla.
     std::string numeroAdmin;
-    if (isAdminSay(line,numeroAdmin))
+    if (isAdminSay(line,numeroAdmin) <= (*m_dati)[(*m_dati).serverNumber].commandPermission(Server::VETO))
     {
         InstructionsBlock * block = new InstructionsBlock();
         block->veto();
@@ -1213,7 +1212,7 @@ void Analyzer::slap(char* line)
     *(m_dati->log)<<"\n[!] Slap";
     //controllo se ho il giocatore e i suoi permessi, se la persona non è autorizzata non faccio nulla.
     std::string numeroAdmin;
-    if (isAdminSay(line,numeroAdmin))
+    if (isAdminSay(line,numeroAdmin) <= (*m_dati)[(*m_dati).serverNumber].commandPermission(Server::SLAP))
     {
         InstructionsBlock * block = new InstructionsBlock();
         std::string temp(line);
@@ -1294,7 +1293,7 @@ void Analyzer::nuke(char* line)
     *(m_dati->log)<<"\n[!] Nuke";
     //controllo se ho il giocatore e i suoi permessi, se la persona non è autorizzata non faccio nulla.
     std::string numeroAdmin;
-    if (isAdminSay(line,numeroAdmin))
+    if (isAdminSay(line,numeroAdmin) <= (*m_dati)[(*m_dati).serverNumber].commandPermission(Server::NUKE))
     {
         InstructionsBlock * block = new InstructionsBlock();
         std::string temp(line);
@@ -1351,7 +1350,7 @@ void Analyzer::status(char* line)
     *(m_dati->log)<<"\n[!] Status";
     //controllo se ho il giocatore e i suoi permessi, se la persona non è autorizzata non faccio nulla.
     std::string numeroAdmin;
-    if (isAdminSay(line,numeroAdmin))
+    if (isAdminSay(line,numeroAdmin) <= (*m_dati)[(*m_dati).serverNumber].commandPermission(Server::STATUS))
     {
         InstructionsBlock * block = new InstructionsBlock();
         std::string frase( "^0BanBot ^1status: version " );
@@ -1402,7 +1401,7 @@ void Analyzer::force(char* line)
     *(m_dati->log)<<"\n[!] Force";
     //controllo se ho il giocatore e i suoi permessi, se la persona non è autorizzata non faccio nulla.
     std::string numeroAdmin;
-    if (isAdminSay(line,numeroAdmin))
+    if (isAdminSay(line,numeroAdmin) <= (*m_dati)[(*m_dati).serverNumber].commandPermission(Server::FORCE))
     {
         InstructionsBlock * block = new InstructionsBlock();
         std::string temp(line);
@@ -1502,7 +1501,7 @@ void Analyzer::map(char* line)
     *(m_dati->log)<<"\n[!] Map";
     //controllo se ho il giocatore e i suoi permessi, se la persona non è autorizzata non faccio nulla.
     std::string numeroAdmin;
-    if (isAdminSay(line,numeroAdmin))
+    if (isAdminSay(line,numeroAdmin) <= (*m_dati)[(*m_dati).serverNumber].commandPermission(Server::MAP))
     {
         InstructionsBlock * block = new InstructionsBlock();
         //prendo il numero o nome del player da aggiungere tra gli admin
@@ -1523,7 +1522,7 @@ void Analyzer::nextmap(char* line)
     *(m_dati->log)<<"\n[!] NextMap";
     //controllo se ho il giocatore e i suoi permessi, se la persona non è autorizzata non faccio nulla.
     std::string numeroAdmin;
-    if (isAdminSay(line,numeroAdmin))
+    if (isAdminSay(line,numeroAdmin) <= (*m_dati)[(*m_dati).serverNumber].commandPermission(Server::NEXTMAP))
     {
         InstructionsBlock * block = new InstructionsBlock();
         //prendo il numero o nome del player da aggiungere tra gli admin
@@ -1544,7 +1543,7 @@ void Analyzer::admins(char* line)
     *(m_dati->log)<<"\n[!] Admins";
     //controllo se ho il giocatore e i suoi permessi, se la persona non è autorizzata non faccio nulla.
     std::string numeroAdmin;
-    if (isAdminSay(line,numeroAdmin))
+    if (isAdminSay(line,numeroAdmin) <= (*m_dati)[(*m_dati).serverNumber].commandPermission(Server::ADMINS))
     {
         InstructionsBlock * block = new InstructionsBlock();
         std::vector<unsigned int> t=admins();
@@ -1576,7 +1575,7 @@ void Analyzer::pass(char* line)
     *(m_dati->log)<<"\n[!] g_Password";
     //i check the player and his permissions, if he isn't autorized to use this command, nothing to do.
     std::string numeroAdmin;
-    if (isAdminSay(line,numeroAdmin))
+    if (isAdminSay(line,numeroAdmin) <= (*m_dati)[(*m_dati).serverNumber].commandPermission(Server::PASS))
     {
         InstructionsBlock* block = new InstructionsBlock();
         std::string temp = line;
@@ -1605,7 +1604,7 @@ void Analyzer::config(char* line)
     *(m_dati->log)<<"\n[!] Config(exec)";
     //i check the player and his permissions, if he isn't autorized to use this command, nothing to do.
     std::string numeroAdmin;
-    if (isAdminSay(line,numeroAdmin))
+    if (isAdminSay(line,numeroAdmin) <= (*m_dati)[(*m_dati).serverNumber].commandPermission(Server::CONFIG))
     {
         InstructionsBlock *block = new InstructionsBlock();
         std::string temp = line;

@@ -84,7 +84,7 @@
     #define H_MUTE "^2!mute <numero/nick/all> ^1: muta o smuta un singolo player, o tutti"
     #define H_FIND "^2!find <nick> ^1: cerca un player tra i bannati"
     #define H_FINDOP "^2!findop <nick> ^1: cerca un player tra gli admin"
-    #define H_OP "^2!op <numero/nick> ^1: da' lo stato di admin ad un player"
+    #define H_OP "^2!op <numero/nick> [level] ^1: da' lo stato di admin ad un player"
     #define H_DEOP "^2!deop <id> ^1: toglie lo stato di admin ad un player (id da !findop)"
     #define H_STRICT "^2!strict <OFF/0/1/2> ^1: cambia il livello di sicurezza del server"
     #define H_NUKE "^2!nuke <numero/nick> ^1: lancia un nuke ad un player"
@@ -105,7 +105,7 @@
     #define H_MUTE "^2!mute <number/nick/all> ^1: mute or unmute a player, or all"
     #define H_FIND "^2!find <nick> ^1: search a player from banned list"
     #define H_FINDOP "^2!findop <nick> ^1: search a player from admin list"
-    #define H_OP "^2!op <number/nick> ^1: register the player as admin"
+    #define H_OP "^2!op <number/nick> [level] ^1: register the player as admin"
     #define H_DEOP "^2!deop <id> ^1: unregister the player as admin (id from !findop)"
     #define H_STRICT "^2!strict <OFF/0/1/2> ^1: change the security level of the server"
     #define H_NUKE "^2!nuke <number/nick> ^1: nuke a player"
@@ -161,7 +161,7 @@ private:
 
 protected:
     bool isA(char* line,const std::string &regex);          //testa se la riga soddisfa il regex.
-    bool isAdminSay(char *line, std::string &numero);		//ritorna true se la richiesta è stata fatta da un admin, salva in numero il numero del giocatore che ha fatto la richiesta.
+    int isAdminSay(char *line, std::string &numero);		//returns the player's op level, and save his number in @numero.
     virtual void expansion(char* line);                     //slot per facilitare eventuali espansioni fatte da terze parti (basta ereditare da Analyzer e scrivere i metodi nuovi facendo un overloading di questo metodo)
     void getDateAndTime(std::string &date,std::string &time); //salva nelle stringhe data e ora.
     bool guidIsBanned(const std::string& guid, const std::string& nick, const std::string& numero, const std::string& ip);               //controlla se la guid è stata bannata.
