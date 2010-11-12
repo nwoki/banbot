@@ -33,6 +33,12 @@
 #include "logger.h"
 #include "handyFunctions.cpp"
 
+// database versions
+// ver_1.1
+#define BANNED_1_1 "CREATE TABLE banned(id INTEGER PRIMARY KEY,nick TEXT,ip TEXT,date TEXT,time TEXT,motive TEXT)"
+#define GUIDS_1_1 "CREATE TABLE guids(id INTEGER PRIMARY KEY,guid TEXT,banId TEXT,FOREIGN KEY( banId ) REFERENCES banned( id ) )"
+#define OPLIST_1_1 "CREATE TABLE oplist(id INTEGER PRIMARY KEY,nick TEXT,guid TEXT)"
+
 /********************************
 *       PUBLIC  METHODS         *
 ********************************/
@@ -118,10 +124,12 @@ int Db::checkAuthGuid( const string &guid )    //checks oplist for ops
 
     int convertedInt = 100;     // default value
 
-    if( execQuery( query ) )    //ERRORE!!! Questo è falso SOLO se c'e' un errore nell'esecuzione dela query, NON se la persona non c'è in oplist.
-        convertedInt = stringToInt( m_data[0] );
+    if( execQuery( query ) ) {
+        if( !m_data.empty() )
+            convertedInt = stringToInt( m_data[0] );
+    }
 
-    return convertedInt;        // will be -1 on error or 100 if not found
+    return convertedInt;        // 100 if not found
 }
 
 
@@ -993,7 +1001,7 @@ vector< Db::idNickMotiveAuthorStruct > Db::findPreciseIdMotiveAuthorViaNickBanne
 
 vector< Db::idNickStruct > Db::findAproxIdNickViaNickOp( const string& nick )
 {
-    string query( "select id,nick from oplist where nick like '%" );
+    string query( "select id,nick,level from oplist where nick like '%" );
     query.append( nick );
     query.append( "%' limit 16;" );
 
@@ -1009,8 +1017,8 @@ vector< Db::idNickStruct > Db::findAproxIdNickViaNickOp( const string& nick )
         cout << "ANSWER " << i << " is -> " << m_data.at( i );
     #endif
 
-    for( unsigned int i = 0; i < m_data.size()/2; i++ )
-        structs.push_back( idNickStruct( m_data[2*i + 0], m_data[2*i + 1] ) );
+    for( unsigned int i = 0; i < m_data.size()/3; i++ )
+        structs.push_back( idNickStruct( m_data[3*i + 0], m_data[3*i + 1], m_data[3*i + 2] ) );
 
     return structs;
 }
@@ -1035,7 +1043,7 @@ vector< Db::idNickStruct > Db::findPreciseIdNickViaNickOp( const string& nick )
 
     /* SHOULD I ASSUME THAT THERE ARE NO DOUBLES?  YES FOR NOW */
     if( m_data.size() > 0 )
-        structs.push_back( idNickStruct( m_data[0], m_data[1] ) );  /* insert in order, id, nick, motive, author */
+        structs.push_back( idNickStruct( m_data[0], m_data[1], m_data[2] ) );
 
     return structs;
 }
@@ -1045,6 +1053,57 @@ vector< Db::idNickStruct > Db::findPreciseIdNickViaNickOp( const string& nick )
 /********************************
 *       PRIVATE METHODS         *
 ********************************/
+Db::DbVersion Db::checkDbVersion()
+{
+    if( checkForDbVersion1_1() )
+        return VER_1_1;
+//     if( checkForDbVersion1_2() )
+//         return VER_1_2;
+    else
+        return UNKOWN;
+}
+
+bool Db::checkForDbVersion1_1()
+{
+    bool banFlag = false
+    , oplistFlag = false
+    , guidsFlag = false;
+
+    // banned table check
+    if( execQuery( "select sql from sqlite_master where name='banned';" ) ) {
+        if( !m_data.empty() ) {
+            if( m_data[0] == BANNED_1_1 )
+                banFlag = true;
+        }
+    }
+
+    // oplist table check
+    if( execQuery( "select sql from sqlite_master where name='oplist';" ) ) {
+        if( !m_data.empty() ) {
+            if( m_data[0] == OPLIST_1_1 )
+                oplistFlag = true;
+        }
+    }
+
+    // banned table check
+    if( execQuery( "select sql from sqlite_master where name='guids';" ) ) {
+        if( !m_data.empty() ) {
+            if( m_data[0] == GUIDS_1_1 )
+                guidsFlag = true;
+        }
+    }
+
+    if( !banFlag || !oplistFlag || !guidsFlag  )
+        return false;
+    else
+        return true;
+}
+
+// bool Db::checkForDbVersion1_2()
+// {
+//
+// }
+
 bool Db::connect()  //called by Db::open ( public function )
 {
     cout << "\e[0;33m connecting to database in " << (*m_options)[m_options->serverNumber].dbFolder() << "\e[0m \n";
