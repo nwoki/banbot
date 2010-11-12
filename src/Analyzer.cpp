@@ -1180,10 +1180,57 @@ void Analyzer::help(char* line)
     (m_dati->log)->timestamp();
     *(m_dati->log)<<"\n[!] Help";
     std::string numero;
-    if (isAdminSay(line,numero) <= (*m_dati)[(*m_dati).serverNumber].commandPermission(Server::HELP))
+    int level = isAdminSay(line,numero);
+    if (level <= (*m_dati)[(*m_dati).serverNumber].commandPermission(Server::HELP))
     {
         InstructionsBlock * block = new InstructionsBlock();
-        block->tell(COMMANDLIST,numero);
+        //creation of the phrase to show
+        std::string phrase( COMMANDLIST );
+        if ( level <= (*m_dati)[(*m_dati).serverNumber].commandPermission(Server::KICK) )
+            phrase.append( H_KICK );
+        if ( level <= (*m_dati)[(*m_dati).serverNumber].commandPermission(Server::BAN) )
+            phrase.append( H_BAN );
+        if ( level <= (*m_dati)[(*m_dati).serverNumber].commandPermission(Server::UNBAN) )
+        {
+            phrase.append( H_FIND );
+            phrase.append( H_UNBAN );
+        }
+        if ( level <= (*m_dati)[(*m_dati).serverNumber].commandPermission(Server::MUTE) )
+            phrase.append( H_MUTE );
+        if ( level <= (*m_dati)[(*m_dati).serverNumber].commandPermission(Server::OP) )
+            phrase.append( H_OP );
+        if ( level <= (*m_dati)[(*m_dati).serverNumber].commandPermission(Server::DEOP) )
+        {
+            phrase.append( H_FINDOP );
+            phrase.append( H_DEOP );
+        }
+        if ( level <= (*m_dati)[(*m_dati).serverNumber].commandPermission(Server::STRICT) )
+            phrase.append( H_STRICT );
+        if ( level <= (*m_dati)[(*m_dati).serverNumber].commandPermission(Server::NUKE) )
+            phrase.append( H_NUKE );
+        if ( level <= (*m_dati)[(*m_dati).serverNumber].commandPermission(Server::SLAP) )
+            phrase.append( H_SLAP );
+        if ( level <= (*m_dati)[(*m_dati).serverNumber].commandPermission(Server::VETO) )
+            phrase.append( H_VETO );
+        if ( level <= (*m_dati)[(*m_dati).serverNumber].commandPermission(Server::FORCE) )
+            phrase.append( H_FORCE );
+        if ( level <= (*m_dati)[(*m_dati).serverNumber].commandPermission(Server::MAP) )
+            phrase.append( H_MAP );
+        if ( level <= (*m_dati)[(*m_dati).serverNumber].commandPermission(Server::NEXTMAP) )
+            phrase.append( H_NEXTMAP );
+        if ( level <= (*m_dati)[(*m_dati).serverNumber].commandPermission(Server::ADMINS) )
+            phrase.append( H_ADMINS );
+        if ( level <= (*m_dati)[(*m_dati).serverNumber].commandPermission(Server::PASS) )
+            phrase.append( H_PASS );
+        if ( level <= (*m_dati)[(*m_dati).serverNumber].commandPermission(Server::CONFIG) )
+            phrase.append( H_CONFIG );
+        if ( level <= (*m_dati)[(*m_dati).serverNumber].commandPermission(Server::STATUS) )
+            phrase.append( H_STATUS );
+        
+        
+        phrase.append( H_MESSAGE );
+        phrase.append( intToString(level) );
+        block->tell(phrase,numero);
         m_scheduler->addInstructionBlock( block, Server::LOW );
     }
 }
