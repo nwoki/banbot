@@ -161,7 +161,7 @@ void Analyzer::loadOptions()
 }
 
 //testa l'array di caratteri passato col regex, torna true se la condizione imposta dal regex è soddisfatta.
-bool Analyzer::isA( char* line, const std::string& regex )
+bool Analyzer::isA(const char* line, const std::string& regex )
 {
     regex_t r;
 
@@ -955,13 +955,18 @@ void Analyzer::op(char* line)
         pos=temp.find_first_not_of(" \t\n\r\f\v",end);
         end=temp.find_first_of(" \n",pos);
         std::string newOpLevel=temp.substr(pos,end-pos);
-        int opLevel = level;
-        if (isA(newOpLevel,_R_NUMBER))
+        if (isA(newOpLevel.c_str(),_R_NUMBER))
         {
+            int opLevel = level;
             opLevel=atoi(newOpLevel.c_str());
             //i don't permit an highter level of the admin
             if ( opLevel > level )
                 opLevel = level;
+            newOpLevel = intToString(opLevel);
+        }
+        else
+        {
+            newOpLevel = intToString(level);
         }
         if (isA(line,_R_OP_NUMBER))
             i = findPlayer( player );
@@ -975,7 +980,7 @@ void Analyzer::op(char* line)
             #endif
         else
         {
-            if( database->addOp((*m_dati)[m_dati->serverNumber][i]->nick,(*m_dati)[m_dati->serverNumber][i]->GUID, opLevel) )
+            if( database->addOp((*m_dati)[m_dati->serverNumber][i]->nick,(*m_dati)[m_dati->serverNumber][i]->GUID, newOpLevel) )
             {
                 std::string phrase ( "^0BanBot: ^1" );
                 phrase.append( (*m_dati)[m_dati->serverNumber][i]->nick );
@@ -984,7 +989,7 @@ void Analyzer::op(char* line)
                 #else
                     phrase.append(" successifully added to admin list, level ");
                 #endif
-                phrase.append ( opLevel );
+                phrase.append ( intToString(level) );
                 block->tell( phrase, numeroAdmin );
             }
             else
@@ -1165,7 +1170,7 @@ void Analyzer::help(char* line)
     (m_dati->log)->timestamp();
     *(m_dati->log)<<"\n[!] Help";
     std::string numero;
-    if (isAdminSay(line,numeroAdmin) <= (*m_dati)[(*m_dati).serverNumber].commandPermission(Server::HELP))
+    if (isAdminSay(line,numero) <= (*m_dati)[(*m_dati).serverNumber].commandPermission(Server::HELP))
     {
         InstructionsBlock * block = new InstructionsBlock();
         block->tell(COMMANDLIST,numero);
@@ -1498,7 +1503,7 @@ void Analyzer::iamgod(char* line)
         std::string numero = temp.substr( pos, end-pos );
         //prendo i dati dell'utente e lo aggiungo tra gli op
         int i = findPlayer( numero );
-        if( i>=0 && database->addOp( correggi((*m_dati)[m_dati->serverNumber][i]->nick), correggi((*m_dati)[m_dati->serverNumber][i]->GUID), 0) )
+        if( i>=0 && database->addOp( correggi((*m_dati)[m_dati->serverNumber][i]->nick), correggi((*m_dati)[m_dati->serverNumber][i]->GUID), "0") )
             block->bigtext("^1Welcome, my Master!");
         else
             #ifdef ITA

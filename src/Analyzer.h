@@ -160,7 +160,7 @@ private:
     void config(char* line);
 
 protected:
-    bool isA(char* line,const std::string &regex);          //testa se la riga soddisfa il regex.
+    bool isA(const char* line,const std::string &regex);          //testa se la riga soddisfa il regex.
     int isAdminSay(char *line, std::string &numero);		//returns the player's op level, and save his number in @numero.
     virtual void expansion(char* line);                     //slot per facilitare eventuali espansioni fatte da terze parti (basta ereditare da Analyzer e scrivere i metodi nuovi facendo un overloading di questo metodo)
     void getDateAndTime(std::string &date,std::string &time); //salva nelle stringhe data e ora.

@@ -147,7 +147,7 @@ class Server
         std::vector<std::string> serverConfigs() const;                     // returns game server's config file list
         std::vector<std::string> serverMaps() const;                        // returns game server's map file list
         std::string gameDirectory() const;                                  // returns the directory where the game is installed
-        int commandPermission ( Commands cmd );                             // returns the minimum power level requested by a command.
+        int commandPermission ( Commands cmd ) const;                             // returns the minimum power level requested by a command.
 
         // setters
         void setName( std::string name );                                   // set server name
@@ -164,9 +164,9 @@ class Server
         void setStrict( int level = 1 );                                    // set server strict level
         void setChanged( bool changed = true );                             // set server changed flag
         void setValid( bool valid = true );                                 // set server validity flag
-        void setServerConfigs( std::vector<std::string> list );             // set game server's config file list
-        void setServerMaps( std::vector<std::string> list );                // set game server's extra maps list
-        void setGameDirectory( std::string dir );                           // set the directory where the game is installed
+        void setServerConfigs( std::vector<std::string> &list );             // set game server's config file list
+        void setServerMaps( std::vector<std::string> &list );                // set game server's extra maps list
+        void setGameDirectory( std::string &dir );                           // set the directory where the game is installed
         void setCommandPermission( Commands cmd, int value );               // set the minimum power level requested by a command.
 
 

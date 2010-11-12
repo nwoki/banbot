@@ -299,19 +299,40 @@ std::vector<std::string> Server::serverConfigs() const
     return m_configs;
 }
 
-void Server::setServerConfigs( std::vector<std::string> list )
+void Server::setServerConfigs( std::vector<std::string> &list )
 {
     m_configs = list;
 }
-/*
- * TODO simo, implementami queste funzioni
- */
 
-// std::vector<std::string> serverMaps() const;
-// void setServerMaps( std::vector<std::string> list );
-// std::string gameDirectory() const;
-// void setGameDirectory( std::string dir );
+std::vector<std::string> Server::serverMaps() const
+{
+    return m_maps;
+}
 
+void Server::setServerMaps( std::vector<std::string> &list )
+{
+    m_maps = list;
+}
+
+std::string Server::gameDirectory() const
+{
+    return m_gameDir;
+}
+
+void Server::setGameDirectory( std::string &dir )
+{
+    m_gameDir = dir;
+}
+
+int Server::commandPermission ( Commands cmd ) const
+{
+    return m_permissions[cmd];
+}
+
+void Server::setCommandPermission( Commands cmd, int value )
+{
+    m_permissions[cmd] = value;
+}
 //**************************************** Functions for direct access to player vector ************************
 unsigned int Server::size()
 {
