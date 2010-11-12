@@ -879,6 +879,8 @@ void Analyzer::findOp(char* line)
             frase.append(risultato[0].id);
             frase.append("^2:^1 ");
             frase.append(risultato[0].nick);
+            frase.append("^2 l^1");
+            frase.append(risultato[0].level);
             frase.append(" ^2?");
         }
         else
@@ -889,6 +891,8 @@ void Analyzer::findOp(char* line)
                 frase.append(risultato[i].id);
                 frase.append("^2:^1 ");
                 frase.append(risultato[i].nick);
+                frase.append("^2 l^1");
+                frase.append(risultato[i].level);
                 if(i<risultato.size()-1) frase.append(",\n^1");
                 else frase.append(".");
             }
@@ -911,10 +915,14 @@ void Analyzer::findOp(char* line)
             frase.append(risultatoApprossimativo[0].id);
             frase.append("^2:^1 ");
             frase.append(risultatoApprossimativo[0].nick);
+            frase.append("^2 l^1");
+            frase.append(risultatoApprossimativo[0].level);
             frase.append("\n^2, o forse \n^1");
             frase.append(risultatoApprossimativo[1].id);
             frase.append("^2:^1 ");
             frase.append(risultatoApprossimativo[1].nick);
+            frase.append("^2 l^1");
+            frase.append(risultatoApprossimativo[1].level);
             frase.append(" ^2?");
         }
         else
@@ -925,6 +933,8 @@ void Analyzer::findOp(char* line)
                 frase.append(risultatoApprossimativo[i].id);
                 frase.append("^2:^1 ");
                 frase.append(risultatoApprossimativo[i].nick);
+                frase.append("^2 l^1");
+                frase.append(risultatoApprossimativo[i].level);
                 if(i<risultatoApprossimativo.size()-1) frase.append(",\n^1");
                 else frase.append(".");
             }
