@@ -176,11 +176,11 @@ void Db::checkDatabases()
      * useful for when adding a new server to check "on the fly
      */
 
-    for( unsigned int i = 0; i < m_options->servers.size(); i++ ) {
+    for( unsigned int i = 0; i < m_options->size(); i++ ) {
         m_options->serverNumber = i;    /* set server number I'm working onDbCounter */
 
         // get path to db folder
-        string dbPath = m_options->servers.at( i )->dbFolder();
+        string dbPath = (*m_options)[i].dbFolder();
 
         if( dbPath[dbPath.size()-1] != '/' )
             dbPath.append( "/" );
