@@ -43,6 +43,7 @@ using namespace std;
 int main( int argc, char *argv[] )
 {
     //pass argument to specify bot configfile
+    //pass -c to convert databases
 
     #ifdef ITA
         cout<<"BanBot versione"<<_VERSION<<", un progetto open-source di [2s2h]n3m3s1s and [2s2h]Zamy,\n   Copyright © 2010\n";
@@ -54,10 +55,17 @@ int main( int argc, char *argv[] )
         cout<<"Wait, pushing up this shit...\n";
     #endif
 
-    //carico le impostazioni e le salvo su opzioni
+    //load parameters and options, and save them in "opzioni"
     ConfigLoader * caricatore;
-    if ( argc == 2 )
-        caricatore = new ConfigLoader(argv[1]);
+    bool convert = false;
+    if ( argc > 1 )
+        for ( int i=1; i<argc; i++ )
+        {
+            if ( strcmp(argv[i],"-c") == 0 )
+                convert = true;
+            else
+                caricatore = new ConfigLoader(argv[i]);
+        }
     else
         caricatore = new ConfigLoader( BOTCONFIG );
 
@@ -73,22 +81,30 @@ int main( int argc, char *argv[] )
     {
         cout << caricatore->getOptions()->toString();
         cout << "\n";   //extra "a-capo"
-        //inizializzo db
-        Db *d = new Db( caricatore->getOptions()) ;
+        //inizialize db
+        Db *d = new Db( caricatore->getOptions());
+        //convert databases
+        bool run = true;
+        if ( convert )
+            run = d->sequentialDbUpgrade();
 
+        if (run)
+        {
+            //Start connection
+            Connection *serverCommand = new Connection(caricatore->getOptions());   //need vector with options
 
-        //Start connection
-        Connection *serverCommand = new Connection(caricatore->getOptions());   //need vector with options
-
-        //Start analyzer
-        Analyzer anal( serverCommand, d, caricatore );
-        #ifdef ITA
-            std::cout<<"Inizio l'elaborazione tra 5 secondi...\n";
-        #else
-            std::cout<<"Start in 5 seconds...\n";
-        #endif
-        sleep (5);
-        anal.main_loop();
+            //Start analyzer
+            Analyzer anal( serverCommand, d, caricatore );
+            #ifdef ITA
+                std::cout<<"Inizio l'elaborazione tra 5 secondi...\n";
+            #else
+                std::cout<<"Start in 5 seconds...\n";
+            #endif
+            sleep (5);
+            anal.main_loop();
+        }
+        else 
+            std::cout<<"Error converting databases. Stop.\n";
     }
 
 }
