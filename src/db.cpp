@@ -1049,6 +1049,40 @@ vector< Db::idNickStruct > Db::findPreciseIdNickViaNickOp( const string& nick )
 }
 
 
+/*******************************
+*     SPECIAL METHODS          *
+*******************************/
+
+bool Db::sequentialDbUpgrade()
+{
+    m_options->errors->timestamp();
+    *(m_options->errors)<<"********* Starting the upgrade: ***********\n";
+    for( unsigned int i = 0; i < m_options->size(); i++ )
+    {
+        //for each db, i'll check the version
+        m_options->serverNumber=i;
+        *(m_options->errors)<<"Starting version of database in \""<<(*m_options)[i].dbFolder()<<"\": ";
+        openDatabase();
+        DbVersion version = checkDbVersion();
+        *(m_options->errors)<<version<<"\n";
+        if( version == VER_1_1 )
+        {
+            *(m_options->errors)<<"converting it to "<<VER_1_2<<"\n";
+            if (execQuery("ALTER TABLE oplist ADD COLUMN level INT DEFAULT 0;"))
+                *(m_options->errors)<<"Ok, converted. ";
+            else
+            {
+                *(m_options->errors)<<"ERROR converting.\n";
+                return false;
+            }
+            version = checkDbVersion();
+            *(m_options->errors)<<"New version: "<<version<<"\n";
+        }
+    }
+    
+    m_options->serverNumber=0;
+    return true;
+}
 
 /********************************
 *       PRIVATE METHODS         *

@@ -139,6 +139,8 @@ class Db
         vector< idNickStruct > findAproxIdNickViaNickOp( const string &nick );                              //  returns idNick struct after aprox find query ( OPLIST TABLE )
         vector< idNickStruct > findPreciseIdNickViaNickOp( const string &nick );                            // returns idNick struct after precise find query ( OPLIST TABLE )
 
+        bool sequentialDbUpgrade();                                         // upgrade the db to be conpatible with the new version.
+        
     private:
         enum DbVersion {
             UNKOWN,     // unkown version, probably due to an error
@@ -149,6 +151,7 @@ class Db
         DbVersion checkDbVersion();                                         // checks current database version and returns version in use
         bool checkForDbVersion1_1();                                        // checks for database version 1
 //         bool checkForDbVersion1_2();                                        // checks for database version 2
+
         bool connect();                                                     // connects to the sqlite3 database
         bool copyFile( const string &source, const string &destination );   // copy a file to another one
         void createDb();                                                    // creates database
