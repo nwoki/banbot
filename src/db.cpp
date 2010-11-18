@@ -1055,27 +1055,36 @@ vector< Db::idNickStruct > Db::findPreciseIdNickViaNickOp( const string& nick )
 
 bool Db::sequentialDbUpgrade()
 {
+    std::cout<<"********* Starting the upgrade: ***********\n";
     m_options->errors->timestamp();
     *(m_options->errors)<<"********* Starting the upgrade: ***********\n";
     for( unsigned int i = 0; i < m_options->size(); i++ )
     {
         //for each db, i'll check the version
+        std::cout<<"Starting version of database in \""<<(*m_options)[i].dbFolder()<<"\": ";
         m_options->serverNumber=i;
         *(m_options->errors)<<"Starting version of database in \""<<(*m_options)[i].dbFolder()<<"\": ";
         openDatabase();
         DbVersion version = checkDbVersion();
+        std::cout<<version<<"\n";
         *(m_options->errors)<<version<<"\n";
         if( version == VER_1_1 )
         {
+            std::cout<<"converting it to "<<VER_1_2<<"\n";
             *(m_options->errors)<<"converting it to "<<VER_1_2<<"\n";
             if (execQuery("ALTER TABLE oplist ADD COLUMN level INT DEFAULT 0;"))
+            {
                 *(m_options->errors)<<"Ok, converted. ";
+                std::cout<<"Ok, converted. ";
+            }
             else
             {
+                std::cout<<"ERROR converting.\n";
                 *(m_options->errors)<<"ERROR converting.\n";
                 return false;
             }
             version = checkDbVersion();
+            std::cout<<"New version: "<<version<<"\n";
             *(m_options->errors)<<"New version: "<<version<<"\n";
         }
     }
