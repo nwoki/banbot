@@ -53,7 +53,8 @@
 #define _R_BAN_NUMBER "^ *[0-9]+:[0-9]{2} +say: +[0-9]+ +[^ \t\n\r\f\v]+: +!ban [0-9]{1,2}"
 #define _R_FIND "^ *[0-9]+:[0-9]{2} +say: +[0-9]+ +[^ \t\n\r\f\v]+: +!find [^ \t\n\r\f\v]+$"
 #define _R_FINDOP "^ *[0-9]+:[0-9]{2} +say: +[0-9]+ +[^ \t\n\r\f\v]+: +!findop [^ \t\n\r\f\v]+$"
-#define _R_UNBAN "^ *[0-9]+:[0-9]{2} +say: +[0-9]+ +[^ \t\n\r\f\v]+: +!unban [0-9]+$"
+#define _R_UNBAN "^ *[0-9]+:[0-9]{2} +say: +[0-9]+ +[^ \t\n\r\f\v]+: +!unban [^ \t\n\r\f\v]+$"
+#define _R_UNBAN_ID "^ *[0-9]+:[0-9]{2} +say: +[0-9]+ +[^ \t\n\r\f\v]+: +!unban [0-9]+$"
 #define _R_OP "^ *[0-9]+:[0-9]{2} +say: +[0-9]+ +[^ \t\n\r\f\v]+: +!op [^ \t\n\r\f\v]+"
 #define _R_OP_NUMBER "^ *[0-9]+:[0-9]{2} +say: +[0-9]+ +[^ \t\n\r\f\v]+: +!op [0-9]{1,2}"
 #define _R_DEOP "^ *[0-9]+:[0-9]{2} +say: +[0-9]+ +[^ \t\n\r\f\v]+: +!deop [0-9]+$"
@@ -671,25 +672,108 @@ void Analyzer::unban(char* line)
     if (isAdminSay(line,numeroAdmin) <= (*m_dati)[(*m_dati).serverNumber].commandPermission(Server::UNBAN))
     {
         InstructionsBlock * block = new InstructionsBlock();    // prepare instructionBlock
-        //prendo l'identificativo da sbannare
+        //take the argument
         std::string temp(line);
         int pos=temp.find("!unban");
         pos=temp.find_first_of("0123456789",pos+6);
         int end=temp.find_first_of(" ",pos);
-        std::string numero=temp.substr(pos,end-pos);
+        std::string player=temp.substr(pos,end-pos);
 
-        //ho il numero, elimino dal database tutti i record relativi.
-        std::string frase;
-        #ifdef ITA
-            if (database->deleteBanned(numero))
-                frase.append("^0BanBot: ^1utente sbannato con successo.");
-            else frase.append("^0BanBot: ^1è stato riscontrato un errore, utente non sbannato.");
-        #else
-            if (database->deleteBanned(numero))
-                frase.append("^0BanBot: ^1player successfully unbanned.");
-            else frase.append("^0BanBot: ^1error: player not unbanned.");
-        #endif
-        block->tell(frase,numeroAdmin);
+        if (!isA(line,_R_UNBAN_ID))
+        {
+            //search the precise nick on the database
+            std::string phrase;
+            std::vector<Db::idNickMotiveAuthorStruct> risultatoEsatto=database->findPreciseIdMotiveAuthorViaNickBanned(player);
+            if (risultatoEsatto.size() == 1)  //if i found an exact match, i'll unban it
+            {
+                #ifdef ITA
+                if (database->deleteBanned(risultatoEsatto[0].id))
+                {
+                    phrase.append("^0BanBot: ^1");
+                    phrase.append(risultatoEsatto[0].nick);
+                    phrase.append(" sbannato con successo.");
+                }
+                else phrase.append("^0BanBot: ^1è stato riscontrato un errore, utente non sbannato.");
+                #else
+                if (database->deleteBanned(risultatoEsatto[0].id))
+                {
+                    phrase.append("^0BanBot: ^1");
+                    phrase.append(risultatoEsatto[0].nick);
+                    phrase.append(" successfully unbanned.");
+                }
+                else phrase.append("^0BanBot: ^1error: player not unbanned.");
+                #endif
+            }
+            else if ( risultatoEsatto.size() == 0 )
+            {
+                //search the approx nick on db
+                std::vector<Db::idNickMotiveAuthorStruct> risultatoApprossimativo=database->findAproxIdMotiveAuthorViaNickBanned(player);
+                if (risultatoApprossimativo.size() == 1)  //else, if i found an aprox match, i'll unban it
+                {
+                    #ifdef ITA
+                    if (database->deleteBanned(risultatoApprossimativo[0].id))
+                    {
+                        phrase.append("^0BanBot: ^1");
+                        phrase.append(risultatoApprossimativo[0].nick);
+                        phrase.append(" sbannato con successo.");
+                    }
+                    else phrase.append("^0BanBot: ^1è stato riscontrato un errore, utente non sbannato.");
+                    #else
+                    if (database->deleteBanned(risultatoApprossimativo[0].id))
+                    {
+                        phrase.append("^0BanBot: ^1");
+                        phrase.append(risultatoApprossimativo[0].nick);
+                        phrase.append(" successfully unbanned.");
+                    }
+                    else phrase.append("^0BanBot: ^1error: player not unbanned.");
+                    #endif
+                }
+                else
+                {
+                    if ( risultatoApprossimativo.size() > 1 )
+                    {
+                        #ifdef ITA
+                        phrase.append("^0BanBot: ^1troppi risultati: specifica meglio il nick o usa !find");
+                        #else
+                        phrase.append("^0BanBot: ^1too results: use a complete nick or !find");
+                        #endif
+                    }
+                    else
+                    {
+                        #ifdef ITA
+                        phrase.append("^0BanBot: ^1nessun giocatore trovato da sbannare.");
+                        #else
+                        phrase.append("^0BanBot: ^1player not found");
+                        #endif
+                    }
+                }
+            }
+            else
+            {
+                //too players
+                #ifdef ITA
+                phrase.append("^0BanBot: ^1troppi risultati: specifica meglio il nick o usa !find");
+                #else
+                phrase.append("^0BanBot: ^1too results: use a complete nick or !find");
+                #endif
+            }
+            block->tell(phrase,numeroAdmin);
+        }
+        else
+        {
+            //i have the number, i'll delete it from database
+            std::string frase;
+            #ifdef ITA
+                if (database->deleteBanned(player))
+                    frase.append("^0BanBot: ^1utente sbannato con successo.");
+                else frase.append("^0BanBot: ^1è stato riscontrato un errore, utente non sbannato.");
+            #else
+                if (database->deleteBanned(player))
+                    frase.append("^0BanBot: ^1player successfully unbanned.");
+                else frase.append("^0BanBot: ^1error: player not unbanned.");
+            #endif
+            block->tell(frase,numeroAdmin);
+        }
         m_scheduler->addInstructionBlock( block, Server::MEDIUM );
     }
 }

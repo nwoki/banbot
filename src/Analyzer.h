@@ -97,7 +97,7 @@
     #define H_NEXTMAP "^2!nextmap <nome> ^1: imposta la mappa successiva (vedi !map)\n"
     #define H_ADMINS "^2!admins ^1: elenca gli admin attualmente in gioco\n"
     #define H_PASS "^2!pass <pass> ^1: cambia la password al server\n"
-    #define CONFIG "^2!config <file> ^1: carica un file di configurazione\n"
+    #define H_CONFIG "^2!config <file> ^1: carica un file di configurazione\n"
 #else
     #define COMMANDLIST "^1Commands enabled:\n"
     #define H_MESSAGE "^1Your level is ^2"
