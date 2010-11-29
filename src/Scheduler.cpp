@@ -88,7 +88,7 @@ void Scheduler::executePriorityInstruction( InstructionsBlock* &instr, Server::I
         delete tmp;
     }
     else
-        instr->moveToTail();
+        instr=instr->moveToTail();
 
     if( lvl == Server::LOW )                                // if I execute a low level instruction, I have to reset counters
         counter->resetCounters();

@@ -267,24 +267,24 @@ void Server::addPriorityInstrBlock( Server::PriorityLevel lvl, InstructionsBlock
 void Server::setPriorityInstrBlock( Server::PriorityLevel lvl, InstructionsBlock* inst )
 {
     if( lvl == Server::LOW ) {
-        if( !m_lowPriorityInst )
+        if( m_lowPriorityInst == NULL )
             m_lowPriorityInst = inst;
         else {
-            m_lowPriorityInst->setNext( inst );            // append the new block on the tail
+            m_lowPriorityInst->addToTail( inst );            // append the new block on the tail
         }
     }
     else if( lvl == Server::MEDIUM ) {
-        if( !m_mediumPriorityInst )
+        if( m_mediumPriorityInst == NULL )
             m_mediumPriorityInst = inst;
         else {
-            m_mediumPriorityInst->setNext( inst );
+            m_mediumPriorityInst->addToTail( inst );
         }
     }
     else {
-        if( !m_highPriorityInst )
+        if( m_highPriorityInst == NULL )
             m_highPriorityInst = inst;
         else {
-            m_highPriorityInst->setNext( inst );
+            m_highPriorityInst->addToTail( inst );
         }
     }
 }

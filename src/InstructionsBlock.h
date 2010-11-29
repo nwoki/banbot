@@ -72,7 +72,7 @@ class InstructionsBlock
                 Common* next;
                 void addToTail( Common* command )                       //add a command at the end of the list
                 {
-                    if ( next != 0 )
+                    if ( next != NULL )
                         next->addToTail( command );
                     else
                         next = command;

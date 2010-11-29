@@ -56,7 +56,7 @@ int main( int argc, char *argv[] )
     #endif
 
     //load parameters and options, and save them in "opzioni"
-    ConfigLoader * caricatore;
+    ConfigLoader * caricatore = NULL;
     bool convert = false;
     if ( argc > 1 )
         for ( int i=1; i<argc; i++ )
@@ -66,7 +66,7 @@ int main( int argc, char *argv[] )
             else
                 caricatore = new ConfigLoader(argv[i]);
         }
-    else
+    if (caricatore == NULL)
         caricatore = new ConfigLoader( BOTCONFIG );
 
     if ( caricatore->getOptions() == NULL )
@@ -87,7 +87,6 @@ int main( int argc, char *argv[] )
         bool run = true;
         if ( convert )
             run = d->sequentialDbUpgrade();
-
         if (run)
         {
             //Start connection

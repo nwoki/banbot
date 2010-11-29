@@ -29,27 +29,27 @@
 #include "handyFunctions.h"
 
 InstructionsBlock::InstructionsBlock()
-: m_next(0)
-, m_list(0)
+: m_next(NULL)
+, m_list(NULL)
 {}
 
 
 InstructionsBlock::~InstructionsBlock()
 {
-    if (m_list != 0)
+    if (m_list != NULL)
         m_list->removeAll();
 }
 
 void InstructionsBlock::deleteAll()
 {
-    if ( m_next != 0 )
+    if ( m_next != NULL )
         m_next->deleteAll();
     delete this;
 }
 
 void InstructionsBlock::execFirstCommand( Connection* conn, int server )
 {
-    if ( m_list != 0 )
+    if ( m_list != NULL )
     {
         m_list->exec(conn,server);
         Common* temp = m_list;
@@ -73,7 +73,7 @@ InstructionsBlock* InstructionsBlock::getNext ()
 InstructionsBlock* InstructionsBlock::moveToTail ()
 {
     InstructionsBlock* newHead;
-    if ( m_next != 0 )
+    if ( m_next != NULL )
     {
          newHead = m_next;
          m_next = 0;
@@ -88,7 +88,7 @@ InstructionsBlock* InstructionsBlock::moveToTail ()
 
 void InstructionsBlock::addToTail ( InstructionsBlock* block )
 {
-    if ( m_next != 0 )
+    if ( m_next != NULL )
         m_next->addToTail( block );
     else
         m_next = block;
@@ -96,7 +96,7 @@ void InstructionsBlock::addToTail ( InstructionsBlock* block )
 
 bool InstructionsBlock::isEmpty ()
 {
-    if ( m_list != 0 ) return false;
+    if ( m_list != NULL ) return false;
     return true;
 }
 
@@ -105,7 +105,7 @@ bool InstructionsBlock::isEmpty ()
 //If the list is empty, it will be added as first element of the list.
 void InstructionsBlock::kick( std::string number )
 {
-    if ( m_list !=0 )
+    if ( m_list !=NULL )
         m_list->addToTail( new Kick(number) );
     else
         m_list = new Kick(number);
@@ -116,7 +116,7 @@ void InstructionsBlock::say( std::string phrase )
     std::vector<std::string> rows = detectRows (phrase);
     for (unsigned int i = 0; i < rows.size(); i++)
     {
-        if ( m_list != 0 )
+        if ( m_list != NULL )
             m_list->addToTail( new Say( rows[i] ) );
         else
             m_list = new Say( rows[i] );
@@ -125,7 +125,7 @@ void InstructionsBlock::say( std::string phrase )
 
 void InstructionsBlock::bigtext( std::string phrase )
 {
-    if ( m_list !=0 )
+    if ( m_list != NULL )
         m_list->addToTail( new BigText(phrase) );
     else
         m_list = new BigText(phrase);
@@ -136,7 +136,7 @@ void InstructionsBlock::tell( std::string phrase, std::string player )
     std::vector<std::string> rows = detectRows (phrase);
     for (unsigned int i = 0; i < rows.size(); i++)
     {
-        if ( m_list !=0 )
+        if ( m_list != NULL )
             m_list->addToTail( new Tell( rows[i], player ) );
         else
             m_list = new Tell( rows[i], player );
@@ -145,7 +145,7 @@ void InstructionsBlock::tell( std::string phrase, std::string player )
 
 void InstructionsBlock::reload( )
 {
-    if ( m_list !=0 )
+    if ( m_list != NULL )
         m_list->addToTail( new Reload() );
     else
         m_list = new Reload();
@@ -153,7 +153,7 @@ void InstructionsBlock::reload( )
 
 void InstructionsBlock::mute( std::string number )
 {
-    if ( m_list !=0 )
+    if ( m_list != NULL )
         m_list->addToTail( new Mute(number) );
     else
         m_list = new Mute(number);
@@ -161,7 +161,7 @@ void InstructionsBlock::mute( std::string number )
 
 void InstructionsBlock::muteAll( std::string admin )
 {
-    if ( m_list !=0 )
+    if ( m_list != NULL )
         m_list->addToTail( new MuteAll(admin) );
     else
         m_list = new MuteAll(admin);
@@ -169,7 +169,7 @@ void InstructionsBlock::muteAll( std::string admin )
 
 void InstructionsBlock::veto()
 {
-    if ( m_list !=0 )
+    if ( m_list != NULL )
         m_list->addToTail( new Veto() );
     else
         m_list = new Veto();
@@ -177,7 +177,7 @@ void InstructionsBlock::veto()
 
 void InstructionsBlock::slap( std::string number )
 {
-    if ( m_list !=0 )
+    if ( m_list != NULL )
         m_list->addToTail( new Slap(number) );
     else
         m_list = new Slap(number);
@@ -185,7 +185,7 @@ void InstructionsBlock::slap( std::string number )
 
 void InstructionsBlock::nuke( std::string number )
 {
-    if ( m_list !=0 )
+    if ( m_list != NULL )
         m_list->addToTail( new Nuke(number) );
     else
         m_list = new Nuke(number);
@@ -193,7 +193,7 @@ void InstructionsBlock::nuke( std::string number )
 
 void InstructionsBlock::force( std::string number, std::string where )
 {
-    if ( m_list !=0 )
+    if ( m_list != NULL )
         m_list->addToTail( new Force(number, where) );
     else
         m_list = new Force(number, where);
@@ -201,14 +201,14 @@ void InstructionsBlock::force( std::string number, std::string where )
 
 void InstructionsBlock::map( std::string name )
 {
-    if ( m_list !=0 )
+    if ( m_list != NULL )
         m_list->addToTail( new Map(name) );
     else
         m_list = new Map(name);
 }
 void InstructionsBlock::nextmap( std::string name )
 {
-    if ( m_list !=0 )
+    if ( m_list != NULL )
         m_list->addToTail( new NextMap(name) );
     else
         m_list = new NextMap(name);
@@ -216,14 +216,14 @@ void InstructionsBlock::nextmap( std::string name )
 
 void InstructionsBlock::changePassword( std::string pass )
 {
-    if ( m_list !=0 )
+    if ( m_list != NULL )
         m_list->addToTail( new ChangePassword(pass) );
     else
         m_list = new ChangePassword(pass);
 }
 void InstructionsBlock::exec( std::string file )
 {
-    if ( m_list !=0 )
+    if ( m_list != NULL )
         m_list->addToTail( new Exec(file) );
     else
         m_list = new Exec(file);
