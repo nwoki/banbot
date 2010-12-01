@@ -40,7 +40,8 @@ CLEAN_TARGETS =  src/*.h~ \
 		 src/sqlite3/*.h~ \
 		 src/sqlite3/*.cpp~ \
 		 BanBot \
-		 src/.obj/*.o
+		 src/.obj/*.o\
+		 scripts/*~
 
 BOOST_INCPATH = -Isrc/boost_1_45
 BOOST_LIBS = -Lsrc/boost_1_45/BanbotLibs/lib -lboost_filesystem -lboost_system
