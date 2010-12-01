@@ -192,11 +192,11 @@ void Db::checkDatabases()
         if( !fileExistance( dbPath ) ) {    // does directory exist?
             if( !dirCreate( dbPath ) ) {
                 cout << "\e[1;31mDb::Db couldn't create database folder: " << dbPath << "\e[0m \n";
-                *(m_options->log) << "Db::Db couldn't create database folder: " << dbPath << "\n";
+                *(m_options->errors) << "Db::Db couldn't create database folder: " << dbPath << "\n";
             }
             else {
                 cout << "\e[0;32m  [OK]created " << dbPath << " directory..\e[0m \n";
-                *(m_options->log) << "  [OK]created " << dbPath << " directory..\n";
+                *(m_options->errors) << "  [OK]created " << dbPath << " directory..\n";
             }
         }
         else
@@ -206,12 +206,12 @@ void Db::checkDatabases()
         if( !fileExistance( pathWithFile ) ) {  // does file exist?
             if( !fileCreate( pathWithFile ) ) { // create database if needed
                 cout << "\e[1;31mDb::Db couldn't create database file: " << pathWithFile << "\e[0m \n";
-                *(m_options->log) << "Db::Db couldn't create database file: " << pathWithFile << "\n";
+                *(m_options->errors) << "Db::Db couldn't create database file: " << pathWithFile << "\n";
                 (*m_options)[i].setValid( false );   // set database validity
             }
             else {
                 cout << "\e[0;32m [OK]created database file: " << pathWithFile << "\e[0m \n";
-                *(m_options->log) << "[OK]created database file: " << pathWithFile << "\n";
+                *(m_options->errors) << "[OK]created database file: " << pathWithFile << "\n";
                 openDatabase();
                 createDb();
                 closeDatabase();
@@ -222,7 +222,18 @@ void Db::checkDatabases()
             cout << "\e[0;33m database file: " << pathWithFile << " already exists \e[0m \n";
             openDatabase();
             closeDatabase();
-            (*m_options)[i].setValid( true );   // set database validity
+            if( checkDbVersion() == VER_1_2 )
+                (*m_options)[i].setValid( true );   // set database validity
+            else
+            {
+                #ifdef ITA
+                cout<< "\e[1;31m Versione del database errata. Leggere il manuale per vedere come convertirlo.\e[0m \n";
+                *(m_options->errors) << "Versione del database errata. Leggere il manuale per vedere come convertirlo.\n";
+                #else
+                cout<< "\e[1;31m Wrong Db version: read the manual to see how to convert it.\e[0m \n";
+                *(m_options->errors) << "Wrong Db version: read the manual to see how to convert it.\n";
+                #endif
+            }
         }
     }
 
