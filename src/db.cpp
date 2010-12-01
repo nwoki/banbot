@@ -1115,7 +1115,7 @@ bool Db::checkForDbVersion1_1()
     // banned table check
     if( execQuery( "select sql from sqlite_master where name='banned';" ) ) {
         if( !m_data.empty() ) {
-            if( m_data[0] == BANNED_1_1 )
+            if( m_data[0].compare( BANNED_1_1 ) == 0 )
                 banFlag = true;
         }
     }
@@ -1123,7 +1123,7 @@ bool Db::checkForDbVersion1_1()
     // oplist table check
     if( execQuery( "select sql from sqlite_master where name='oplist';" ) ) {
         if( !m_data.empty() ) {
-            if( m_data[0] == OPLIST_1_1 )
+            if( m_data[0].compare( OPLIST_1_1 ) == 0 )
                 oplistFlag = true;
         }
     }
@@ -1131,7 +1131,7 @@ bool Db::checkForDbVersion1_1()
     // banned table check
     if( execQuery( "select sql from sqlite_master where name='guids';" ) ) {
         if( !m_data.empty() ) {
-            if( m_data[0] == GUIDS_1_1 )
+            if( m_data[0].compare( GUIDS_1_1 ) )
                 guidsFlag = true;
         }
     }
