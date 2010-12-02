@@ -11,8 +11,9 @@ OBJECTS = $(OBJECTS_PATH)main.o \
 	$(OBJECTS_PATH)server.o \
 	$(OBJECTS_PATH)sqlite3.o \
 	$(OBJECTS_PATH)InstructionsBlock.o \
-	$(OBJECTS_PATH)Scheduler.o \
-	$(OBJECTS_PATH)FileLister.o
+	$(OBJECTS_PATH)Scheduler.o
+
+# 	$(OBJECTS_PATH)FileLister.o
 
 
 #compiler
@@ -51,13 +52,13 @@ TARGET = BanBot
 #rules__________
 all: boost_build build_dir_check Makefile $(TARGET)
 
-$(TARGET): boost_build build_dir_check $(OBJECTS)
+$(TARGET): boost_build build_dir_check obj_dir_chcek $(OBJECTS)
 	@$(CPP) -o $(TARGET) $(OBJECTS) $(BOOST_LIBS)
 	@echo ""
 	@echo "BanBot ready for use ;)"
 
 boost_build :
-	@sh scripts/boostBuild.sh
+# 	@sh scripts/boostBuild.sh
 
 boost_clean :
 	@rm -rf src/boost_1_45/BanbotLibs
@@ -67,11 +68,14 @@ boost_clean :
 	@echo "cleaned boost build"
 
 build_dir_check :
-	@sh scripts/objDirCheck.sh
+# 	@sh scripts/objDirCheck.sh
 
 clean :
 	@rm -rf $(CLEAN_TARGETS)
 	@echo "cleaned BanBot files"
+
+obj_dir_chcek :
+	@sh scripts/objDirCheck.sh
 
 tar :
 	@make clean
@@ -112,8 +116,8 @@ instrucionsblock :	build_dir_check
 scheduler :	build_dir_check
 	$(CPP) $(CFLAGS) -o $(OBJECTS_PATH)Scheduler.o src/Scheduler.cpp
 
-filelister :	build_dir_check
-	$(CPP) $(CFLAGS) $(BOOST_INCPATH) -o $(OBJECTS_PATH)FileLister.o src/FileLister.cpp
+# filelister :	build_dir_check
+# 	$(CPP) $(CFLAGS) $(BOOST_INCPATH) -o $(OBJECTS_PATH)FileLister.o src/FileLister.cpp
 
 #compile_______
 
@@ -150,6 +154,6 @@ src/.obj/InstructionsBlock.o	: src/InstructionsBlock.h src/InstructionsBlock.cpp
 src/.obj/Scheduler.o	: src/Scheduler.h src/Scheduler.cpp
 		$(CPP) $(CFLAGS) -o $(OBJECTS_PATH)Scheduler.o src/Scheduler.cpp
 
-src/.obj/FileLister.o	: src/FileLister.h src/FileLister.cpp
-	$(CPP) $(CFLAGS) $(BOOST_INCPATH) -o $(OBJECTS_PATH)FileLister.o src/FileLister.cpp
+# src/.obj/FileLister.o	: src/FileLister.h src/FileLister.cpp
+# 	$(CPP) $(CFLAGS) $(BOOST_INCPATH) -o $(OBJECTS_PATH)FileLister.o src/FileLister.cpp
 
