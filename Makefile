@@ -11,7 +11,8 @@ OBJECTS = $(OBJECTS_PATH)main.o \
 	$(OBJECTS_PATH)server.o \
 	$(OBJECTS_PATH)sqlite3.o \
 	$(OBJECTS_PATH)InstructionsBlock.o \
-	$(OBJECTS_PATH)Scheduler.o
+	$(OBJECTS_PATH)Scheduler.o \
+	$(OBJECTS_PATH)handyFunctions.o
 
 # 	$(OBJECTS_PATH)FileLister.o
 
@@ -116,6 +117,8 @@ instrucionsblock :	build_dir_check
 scheduler :	build_dir_check
 	$(CPP) $(CFLAGS) -o $(OBJECTS_PATH)Scheduler.o src/Scheduler.cpp
 
+handyfunctions :	build_dir_check
+	$(CPP) $(CFLAGS) -o $(OBJECTS_PATH)handyFunctions.o src/handyFunctions.cpp
 # filelister :	build_dir_check
 # 	$(CPP) $(CFLAGS) $(BOOST_INCPATH) -o $(OBJECTS_PATH)FileLister.o src/FileLister.cpp
 
@@ -153,6 +156,9 @@ src/.obj/InstructionsBlock.o	: src/InstructionsBlock.h src/InstructionsBlock.cpp
 
 src/.obj/Scheduler.o	: src/Scheduler.h src/Scheduler.cpp
 		$(CPP) $(CFLAGS) -o $(OBJECTS_PATH)Scheduler.o src/Scheduler.cpp
+
+src/.obj/handyFunctions.o	: src/handyFunctions.h src/handyFunctions.cpp
+		$(CPP) $(CFLAGS) -o $(OBJECTS_PATH)handyFunctions.o src/handyFunctions.cpp
 
 # src/.obj/FileLister.o	: src/FileLister.h src/FileLister.cpp
 # 	$(CPP) $(CFLAGS) $(BOOST_INCPATH) -o $(OBJECTS_PATH)FileLister.o src/FileLister.cpp

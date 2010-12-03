@@ -99,7 +99,7 @@ class ConfigLoader
                     t.append( "\nGeneral backup : " );
                     t.append( generalBackup );
                     t.append( "\nServers number : " );
-                    t.append( intToString( servers.size() ) );
+                    t.append( handyFunctions::intToString( servers.size() ) );
                     t.append( "\n" );
                     for (unsigned int i = 0; i < servers.size(); i++ )
                     {

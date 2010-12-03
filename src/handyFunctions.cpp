@@ -23,8 +23,12 @@
     Software Foundation, Inc.
 */
 
+#ifndef HANDYFUNCTIONS_CPP
+#define HANDYFUNCTIONS_CPP
+
 #include "handyFunctions.h"
 #include <iostream>
+#include <fstream>
 #include <sstream>
 #include <stdio.h>
 #include <string>
@@ -32,162 +36,167 @@
 #include <time.h>
 #include <vector>
 
-bool fileExistance( const std::string &pathToFile )
-{
-#ifdef DB_MODE
-    std::cout << "FILEEXISTANCE -> path: " << pathToFile << std::endl;
-#endif
-    if( pathToFile.empty() ) {
-        std::cout << "\e[0;31m ERROR: handyFunctions::checkExistance given empty path to check! \e[0m \n";
-        return false;
-    }
+namespace handyFunctions{
 
-    struct stat st;
-
-    if( stat( pathToFile.c_str(), &st ) != 0 )  //file doesn't exist
-        return false;
-    else    //exists
-        return true;
-}
-
-
-bool dirCreate( std::string path )
-{
-#ifdef DB_MODE
-    std::cout << "DIRCREATE " << path << std::endl;
-#endif
-
-    //check if the path is terminated, otherwise add slash
-    if( path[path.size()] != '/' )
-        path.append( "/" );
-
-    int end = path.find_last_of( '/' );
-    int pos = 0;
-    bool ok = true;
-
-    //check per la cartella
-    while( pos < end && ok )
+    bool fileExistance( const std::string &pathToFile )
     {
-        pos = path.find( '/', pos + 1 );
-        std::string cartella = path.substr( 0, pos );
-
-        struct stat st;
-        if( stat( cartella.c_str(), &st ) != 0 )
-        {
-            if( mkdir( cartella.c_str(), 0777 ) != 0 )
-            {
-                std::cout<<"\e[1;31m[EPIC FAIL] couldn't create directory '"<<cartella<<"'.Please check permissions! \e[0m \n";
-                ok = false;
-            }
-        }
-    }
-    return ok;
-}
-
-bool fileCreate( const std::string &file )
-{
-
-#ifdef DB_MODE
-    std::cout << "fileCREATE " << file << std::endl;
-#endif
-
-    bool ok = true;
-    //check per il file
-    if( !file.empty() )
-    {
-        struct stat st;
-        if( stat( file.c_str(), &st ) != 0 )
-        {
-            std::cout << "\e[0;33m[!] " << file << " doesn't exist...Creating it...\e[0m \n";
-            //create logfile
-            std::ofstream OUT( file.c_str() );
-
-            if ( OUT.is_open() )
-                OUT.close();
-            else {
-                std::cout << "\ee[1;31m[EPIC FAIL] couldn't create " << file << ". Please check permissions!\e[0m \n";
-                return false;
-            }
-            return true;
-        }
-        else {
-            std::cout << "\e[0;33mfile " << file << " already exists.. \e[0m \n";
+    #ifdef DB_MODE
+        std::cout << "FILEEXISTANCE -> path: " << pathToFile << std::endl;
+    #endif
+        if( pathToFile.empty() ) {
+            std::cout << "\e[0;31m ERROR: handyFunctions::checkExistance given empty path to check! \e[0m \n";
             return false;
         }
-    }
-    return ok;
-}
 
-std::string intToString( int number )
-{
-    std::stringstream out;  //throw it out on cout...
-    out << number;  //..and catch it immediatly
-    return out.str();
-}
+        struct stat st;
 
-
-std::vector< std::string >split( const std::string &str, char ch )
-{
-    std::vector< std::string > aux; //  vector with splitted strings to return
-    std::string auxStr( str );   //  use this copy so i can change it
-
-    if( !str.length() ) //  empty string
-        return aux;
-
-    int pos = 0;    //use this to move around
-
-    while( pos != -1 ) {
-        pos = auxStr.find( ch );    //find occurance
-        aux.push_back( auxStr.substr( 0, pos ) );   // add to vector
-        auxStr.erase( 0, pos + 1 ); // erase bit I don't need anymore
+        if( stat( pathToFile.c_str(), &st ) != 0 )  //file doesn't exist
+            return false;
+        else    //exists
+            return true;
     }
 
-    return aux;
-}
 
-int stringToInt( const std::string& str )
-{
-    int num;
-    std::istringstream sstrem( str );
-    sstrem >> num;
-
-    if( sstrem.good() )
-        return num;
-    else
-        return -1;      // error
-}
-
-
-std::string timeStamp()
-{
-    time_t t;
-    t = time( NULL );
-    struct tm* timeInfo;
-    timeInfo = localtime( &t );
-    char buffer[80];    //to keep result of the time
-    strftime( buffer, sizeof( buffer ), "%d-%m-%Y", timeInfo );
-    return std::string( buffer );
-}
-
-
-std::vector< std::string > detectRows ( std::string phrase)
-{
-    #define ROW 100         //max number of characters in a row
-    std::vector< std::string > temp = std::vector< std::string >();
-    unsigned int i=0;
-    while ( i<phrase.size() )
+    bool dirCreate( std::string path )
     {
-        unsigned int pos=phrase.find("\n",i);
-        if ( (pos-i) > ROW )
+    #ifdef DB_MODE
+        std::cout << "DIRCREATE " << path << std::endl;
+    #endif
+
+        //check if the path is terminated, otherwise add slash
+        if( path[path.size()] != '/' )
+            path.append( "/" );
+
+        int end = path.find_last_of( '/' );
+        int pos = 0;
+        bool ok = true;
+
+        //check per la cartella
+        while( pos < end && ok )
         {
-            temp.push_back( phrase.substr(i,ROW) );
-            i+=ROW+1;
+            pos = path.find( '/', pos + 1 );
+            std::string cartella = path.substr( 0, pos );
+
+            struct stat st;
+            if( stat( cartella.c_str(), &st ) != 0 )
+            {
+                if( mkdir( cartella.c_str(), 0777 ) != 0 )
+                {
+                    std::cout<<"\e[1;31m[EPIC FAIL] couldn't create directory '"<<cartella<<"'.Please check permissions! \e[0m \n";
+                    ok = false;
+                }
+            }
         }
-        else
-        {
-            temp.push_back( phrase.substr(i,pos-i) );
-            i=pos+1;
-        }
+        return ok;
     }
-    return temp;
-}
+
+    bool fileCreate( const std::string &file )
+    {
+
+    #ifdef DB_MODE
+        std::cout << "fileCREATE " << file << std::endl;
+    #endif
+
+        bool ok = true;
+        //check per il file
+        if( !file.empty() )
+        {
+            struct stat st;
+            if( stat( file.c_str(), &st ) != 0 )
+            {
+                std::cout << "\e[0;33m[!] " << file << " doesn't exist...Creating it...\e[0m \n";
+                //create logfile
+                std::ofstream OUT( file.c_str() );
+
+                if ( OUT.is_open() )
+                    OUT.close();
+                else {
+                    std::cout << "\ee[1;31m[EPIC FAIL] couldn't create " << file << ". Please check permissions!\e[0m \n";
+                    return false;
+                }
+                return true;
+            }
+            else {
+                std::cout << "\e[0;33mfile " << file << " already exists.. \e[0m \n";
+                return false;
+            }
+        }
+        return ok;
+    }
+
+    std::string intToString( int number )
+    {
+        std::stringstream out;  //throw it out on cout...
+        out << number;  //..and catch it immediatly
+        return out.str();
+    }
+
+
+    std::vector< std::string > split( const std::string &str, char ch )
+    {
+        std::vector< std::string > aux;                 //  vector with splitted strings to return
+        std::string auxStr( str );                      //  use this copy so i can change it
+
+        if( !str.length() )                             //  empty string
+            return aux;
+
+        int pos = 0;                                    //use this to move around
+
+        while( pos != -1 ) {
+            pos = auxStr.find( ch );                    //find occurance
+            aux.push_back( auxStr.substr( 0, pos ) );   // add to vector
+            auxStr.erase( 0, pos + 1 );                 // erase bit I don't need anymore
+        }
+
+        return aux;
+    }
+
+    int stringToInt( const std::string& str )
+    {
+        int num;
+        std::istringstream sstrem( str );
+        sstrem >> num;
+
+        if( sstrem.good() )
+            return num;
+        else
+            return -1;      // error
+    }
+
+
+    std::string timeStamp()
+    {
+        time_t t;
+        t = time( NULL );
+        struct tm* timeInfo;
+        timeInfo = localtime( &t );
+        char buffer[80];    //to keep result of the time
+        strftime( buffer, sizeof( buffer ), "%d-%m-%Y", timeInfo );
+        return std::string( buffer );
+    }
+
+
+    std::vector< std::string > detectRows( std::string phrase )
+    {
+        #define ROW 100         //max number of characters in a row
+        std::vector< std::string > temp = std::vector< std::string >();
+        unsigned int i=0;
+        while ( i<phrase.size() )
+        {
+            unsigned int pos=phrase.find("\n",i);
+            if ( (pos-i) > ROW )
+            {
+                temp.push_back( phrase.substr(i,ROW) );
+                i+=ROW+1;
+            }
+            else
+            {
+                temp.push_back( phrase.substr(i,pos-i) );
+                i=pos+1;
+            }
+        }
+        return temp;
+    }
+};
+
+#endif  // HANDYFUNCTIONS_CPP

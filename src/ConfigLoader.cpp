@@ -29,7 +29,6 @@
 #include <regex.h>
 #include <stdlib.h>
 #include "ConfigLoader.h"
-#include "handyFunctions.h"
 
 //costruttore: apro il file
 ConfigLoader::ConfigLoader( const std::string &filePath )
@@ -181,41 +180,41 @@ void ConfigLoader::loadOptions()
                                 {
                                     //if it is a level power change
                                     if ( isA (temp, (char *)"^[ \t]*LEVEL_HELP[ \t]*=[ \t]*[0-9]{1,3}$" ) )
-                                        newServer->setCommandPermission( Server::HELP, /*ato*/ stringToInt(extract(temp)));
+                                        newServer->setCommandPermission( Server::HELP, /*ato*/ handyFunctions::stringToInt(extract(temp)));
                                     else if ( isA (temp, (char *)"^[ \t]*LEVEL_KICK[ \t]*=[ \t]*[0-9]{1,3}$" ) )
-                                        newServer->setCommandPermission( Server::KICK, /*atoi*/stringToInt(extract(temp)));
+                                        newServer->setCommandPermission( Server::KICK, /*atoi*/handyFunctions::stringToInt(extract(temp)));
                                     else if ( isA (temp, (char *)"^[ \t]*LEVEL_BAN[ \t]*=[ \t]*[0-9]{1,3}$" ) )
-                                        newServer->setCommandPermission( Server::BAN, /*atoi*/stringToInt(extract(temp)));
+                                        newServer->setCommandPermission( Server::BAN, /*atoi*/handyFunctions::stringToInt(extract(temp)));
                                     else if ( isA (temp, (char *)"^[ \t]*LEVEL_UNBAN[ \t]*=[ \t]*[0-9]{1,3}$" ) )
-                                        newServer->setCommandPermission( Server::UNBAN, /*atoi*/stringToInt(extract(temp)));
+                                        newServer->setCommandPermission( Server::UNBAN, /*atoi*/handyFunctions::stringToInt(extract(temp)));
                                     else if ( isA (temp, (char *)"^[ \t]*LEVEL_MUTE[ \t]*=[ \t]*[0-9]{1,3}$" ) )
-                                        newServer->setCommandPermission( Server::MUTE, /*atoi*/stringToInt(extract(temp)));
+                                        newServer->setCommandPermission( Server::MUTE, /*atoi*/handyFunctions::stringToInt(extract(temp)));
                                     else if ( isA (temp, (char *)"^[ \t]*LEVEL_OP[ \t]*=[ \t]*[0-9]{1,3}$" ) )
-                                        newServer->setCommandPermission( Server::OP, /*atoi*/stringToInt(extract(temp)));
+                                        newServer->setCommandPermission( Server::OP, /*atoi*/handyFunctions::stringToInt(extract(temp)));
                                     else if ( isA (temp, (char *)"^[ \t]*LEVEL_DEOP[ \t]*=[ \t]*[0-9]{1,3}$" ) )
-                                        newServer->setCommandPermission( Server::DEOP, /*atoi*/stringToInt(extract(temp)));
+                                        newServer->setCommandPermission( Server::DEOP, /*atoi*/handyFunctions::stringToInt(extract(temp)));
                                     else if ( isA (temp, (char *)"^[ \t]*LEVEL_STRICT[ \t]*=[ \t]*[0-9]{1,3}$" ) )
-                                        newServer->setCommandPermission( Server::STRICT, /*atoi*/stringToInt(extract(temp)));
+                                        newServer->setCommandPermission( Server::STRICT, /*atoi*/handyFunctions::stringToInt(extract(temp)));
                                     else if ( isA (temp, (char *)"^[ \t]*LEVEL_NUKE[ \t]*=[ \t]*[0-9]{1,3}$" ) )
-                                        newServer->setCommandPermission( Server::NUKE, /*atoi*/stringToInt(extract(temp)));
+                                        newServer->setCommandPermission( Server::NUKE, /*atoi*/handyFunctions::stringToInt(extract(temp)));
                                     else if ( isA (temp, (char *)"^[ \t]*LEVEL_SLAP[ \t]*=[ \t]*[0-9]{1,3}$" ) )
-                                        newServer->setCommandPermission( Server::SLAP, /*atoi*/stringToInt(extract(temp)));
+                                        newServer->setCommandPermission( Server::SLAP, /*atoi*/handyFunctions::stringToInt(extract(temp)));
                                     else if ( isA (temp, (char *)"^[ \t]*LEVEL_VETO[ \t]*=[ \t]*[0-9]{1,3}$" ) )
-                                        newServer->setCommandPermission( Server::VETO, /*atoi*/stringToInt(extract(temp)));
+                                        newServer->setCommandPermission( Server::VETO, /*atoi*/handyFunctions::stringToInt(extract(temp)));
                                     else if ( isA (temp, (char *)"^[ \t]*LEVEL_FORCE[ \t]*=[ \t]*[0-9]{1,3}$" ) )
-                                        newServer->setCommandPermission( Server::FORCE, /*atoi*/stringToInt(extract(temp)));
+                                        newServer->setCommandPermission( Server::FORCE, /*atoi*/handyFunctions::stringToInt(extract(temp)));
                                     else if ( isA (temp, (char *)"^[ \t]*LEVEL_MAP[ \t]*=[ \t]*[0-9]{1,3}$" ) )
-                                        newServer->setCommandPermission( Server::MAP, /*atoi*/stringToInt(extract(temp)));
+                                        newServer->setCommandPermission( Server::MAP, /*atoi*/handyFunctions::stringToInt(extract(temp)));
                                     else if ( isA (temp, (char *)"^[ \t]*LEVEL_NEXTMAP[ \t]*=[ \t]*[0-9]{1,3}$" ) )
-                                        newServer->setCommandPermission( Server::NEXTMAP, /*atoi*/stringToInt(extract(temp)));
+                                        newServer->setCommandPermission( Server::NEXTMAP, /*atoi*/handyFunctions::stringToInt(extract(temp)));
                                     else if ( isA (temp, (char *)"^[ \t]*LEVEL_ADMINS[ \t]*=[ \t]*[0-9]{1,3}$" ) )
-                                        newServer->setCommandPermission( Server::ADMINS, /*atoi*/stringToInt(extract(temp)));
+                                        newServer->setCommandPermission( Server::ADMINS, /*atoi*/handyFunctions::stringToInt(extract(temp)));
                                     else if ( isA (temp, (char *)"^[ \t]*LEVEL_PASS[ \t]*=[ \t]*[0-9]{1,3}$" ) )
-                                        newServer->setCommandPermission( Server::PASS, /*atoi*/stringToInt(extract(temp)));
+                                        newServer->setCommandPermission( Server::PASS, /*atoi*/handyFunctions::stringToInt(extract(temp)));
                                     else if ( isA (temp, (char *)"^[ \t]*LEVEL_CONFIG[ \t]*=[ \t]*[0-9]{1,3}$" ) )
-                                        newServer->setCommandPermission( Server::CONFIG, /*atoi*/stringToInt(extract(temp)));
+                                        newServer->setCommandPermission( Server::CONFIG, /*atoi*/handyFunctions::stringToInt(extract(temp)));
                                     else if ( isA (temp, (char *)"^[ \t]*LEVEL_STATUS[ \t]*=[ \t]*[0-9]{1,3}$" ) )
-                                        newServer->setCommandPermission( Server::STATUS, /*atoi*/stringToInt(extract(temp)));
+                                        newServer->setCommandPermission( Server::STATUS, /*atoi*/handyFunctions::stringToInt(extract(temp)));
                                 }
                                 else if ( isA( temp, (char *)"^[ \t]*SERVER_NAME[ \t]*=[ \t]*[^ \t\n\r\f\v]+$" ) )
                                     newServer->setName( extract( temp ) );

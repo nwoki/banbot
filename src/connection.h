@@ -30,7 +30,6 @@
 #include <iostream>
 #include <vector>
 #include <netdb.h>
-#include <string>
 #include <string.h>
 #include <sys/socket.h>
 #include "ConfigLoader.h"
@@ -38,29 +37,27 @@
 
 #define SOCKET_PAUSE 600000  //per permettere al socket di funzionare bene, inserisco una pausa, in microsecondi (1'000 = 1 ms, 1'000'000= 1 s)
 
-using namespace std;
-
 class Connection
 {
     public:
         Connection(ConfigLoader::Options* opzioni);
         ~Connection();
 
-        void kick( string number, int server );  //number of the player to kick on @server.
-        void say( string frase, int server );    //phrase to print publically on @server.
-        void bigtext( string frase, int server );    //phrase to print publically (big) on @server.
-        void tell( string frase, string player, int server ); //@frase is the private message to send to @player.
+        void kick( std::string number, int server );  //number of the player to kick on @server.
+        void say( std::string frase, int server );    //phrase to print publically on @server.
+        void bigtext( std::string frase, int server );    //phrase to print publically (big) on @server.
+        void tell( std::string frase, std::string player, int server ); //@frase is the private message to send to @player.
         void reload( int server );            //does a reload of the current map. If @server is -1, it does a reload on all servers.
-        void mute( string number, int server ); //mute/unmute the player @number.
-        void muteAll( string admin, int server ); //mute/unmute all players except @admin (number).
+        void mute( std::string number, int server ); //mute/unmute the player @number.
+        void muteAll( std::string admin, int server ); //mute/unmute all players except @admin (number).
         void veto( int server );                  //does a veto.
-        void slap( string number, int server ); //slaps the player @number.
-        void nuke( string number, int server ); //nukes the player @number.
-        void force( string number, string where, int server ); //move the player @number on the team @where
-        void map( string name, int server ); //change the map
-        void nextmap( string name, int server ); //change the nextmap
-        void changePassword( string pass, int server ); //change the password of the server
-        void exec( string file, int server ); //load a config file
+        void slap( std::string number, int server ); //slaps the player @number.
+        void nuke( std::string number, int server ); //nukes the player @number.
+        void force( std::string number, std::string where, int server ); //move the player @number on the team @where
+        void map( std::string name, int server ); //change the map
+        void nextmap( std::string name, int server ); //change the nextmap
+        void changePassword( std::string pass, int server ); //change the password of the server
+        void exec( std::string file, int server ); //load a config file
 
     private:
         sockaddr_in serverAdd;// clientAdd;
@@ -69,13 +66,13 @@ class Connection
         int recvSize; //message length in risposta
 
         void prepareConnection( int );
-        vector<char> makeCmd( string );
+        std::vector<char> makeCmd( std::string );
 
         ConfigLoader::Options* m_options;
 
         /*vector<char *>ip;
         vector<int> port;
-        vector<string>rconPass;*/
+        vector<std::string>rconPass;*/
 };
 
 

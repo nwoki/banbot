@@ -28,7 +28,6 @@
 
 #include "InstructionsBlock.h"
 #include "server.h"
-#include "handyFunctions.h"
 
 Server::Server()
     : m_changed( true )
@@ -419,7 +418,7 @@ std::string Server::toString()
     t.append( "\n  Ip : " );
     t.append( m_ip );
     t.append( "\n  Port : " );
-    t.append( intToString( m_port ) );
+    t.append( handyFunctions::intToString( m_port ) );
     t.append( "\n  Backup dir : " );
     t.append( m_backup );
     t.append( "\n  Bot log : " );
@@ -429,7 +428,7 @@ std::string Server::toString()
     t.append( "\n  Database folder : ");
     t.append( m_dbFolder );
     t.append( "\n  Strict level : ");
-    t.append( intToString(m_strict) );
+    t.append( handyFunctions::intToString(m_strict) );
     t.append( "\n  Game folder : ");
     t.append( m_gameDir );
     t.append( "\n}\n" );

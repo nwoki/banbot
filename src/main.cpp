@@ -23,7 +23,7 @@
     Software Foundation, Inc.
 */
 #include <iostream>
-#include <string>
+#include <string.h>
 #include <vector>
 #include "Analyzer.h"
 #include "db.h"
@@ -38,21 +38,19 @@
 
 #define _VERSION "1.1"
 
-using namespace std;
-
 int main( int argc, char *argv[] )
 {
     //pass argument to specify bot configfile
     //pass -c to convert databases
 
     #ifdef ITA
-        cout<<"BanBot versione"<<_VERSION<<", un progetto open-source di [2s2h]n3m3s1s and [2s2h]Zamy,\n   Copyright © 2010\n";
-        cout<<"per scopi legali, guarda la GNU General Public License:  <http://www.gnu.org/licenses/>\n\n";
-        cout<<"Attendere, inizio a caricare questa merda...\n";
+        std::cout<<"BanBot versione"<<_VERSION<<", un progetto open-source di [2s2h]n3m3s1s and [2s2h]Zamy,\n   Copyright © 2010\n";
+        std::cout<<"per scopi legali, guarda la GNU General Public License:  <http://www.gnu.org/licenses/>\n\n";
+        std::cout<<"Attendere, inizio a caricare questa merda...\n";
     #else
-        cout<<"BanBot version"<<_VERSION<<", an open-source project by [2s2h]n3m3s1s and [2s2h]Zamy,\n   Copyright © 2010\n";
-        cout<<"look at GNU General Public License for legal purposes:  <http://www.gnu.org/licenses/>\n\n";
-        cout<<"Wait, pushing up this shit...\n";
+        std::cout<<"BanBot version"<<_VERSION<<", an open-source project by [2s2h]n3m3s1s and [2s2h]Zamy,\n   Copyright © 2010\n";
+        std::cout<<"look at GNU General Public License for legal purposes:  <http://www.gnu.org/licenses/>\n\n";
+        std::cout<<"Wait, pushing up this shit...\n";
     #endif
 
     //load parameters and options, and save them in "opzioni"
@@ -72,15 +70,15 @@ int main( int argc, char *argv[] )
     if ( caricatore->getOptions() == NULL )
     {
         #ifdef ITA
-            cout<<"[EPIC FAIL] File di configurazione principale non trovato. Wtf?!?!?\n";
+            std::cout<<"[EPIC FAIL] File di configurazione principale non trovato. Wtf?!?!?\n";
         #else
-            cout<<"[EPIC FAIL] Main config file not found. Wtf?!?!?\n";
+            std::cout<<"[EPIC FAIL] Main config file not found. Wtf?!?!?\n";
         #endif
     }
     else
     {
-        cout << caricatore->getOptions()->toString();
-        cout << "\n";   //extra "a-capo"
+        std::cout << caricatore->getOptions()->toString();
+        std::cout << "\n";   //extra "a-capo"
         //inizialize db
         Db *d = new Db( caricatore->getOptions());
         //convert databases
@@ -90,7 +88,7 @@ int main( int argc, char *argv[] )
         if (run)
         {
             //Start connection
-            Connection *serverCommand = new Connection(caricatore->getOptions());   //need vector with options
+            Connection *serverCommand = new Connection(caricatore->getOptions());   //need std::vector with options
 
             //Start analyzer
             Analyzer anal( serverCommand, d, caricatore );
@@ -102,7 +100,7 @@ int main( int argc, char *argv[] )
             sleep (5);
             anal.main_loop();
         }
-        else 
+        else
             std::cout<<"Error converting databases. Stop.\n";
     }
 
