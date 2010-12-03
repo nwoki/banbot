@@ -23,6 +23,9 @@
     Software Foundation, Inc.
 */
 
+#ifndef DB_CPP
+#define DB_CPP
+
 #include <stdlib.h>
 #include "ConfigLoader.h"
 #include "db.h"
@@ -1528,3 +1531,5 @@ int Db::resultQuery( const std::string &query ) //ritorna quante corrispondenze 
 
     return answer;
 }
+
+#endif // DB_CPP

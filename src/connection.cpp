@@ -23,6 +23,8 @@
     Software Foundation, Inc.
 */
 
+#ifndef CONNECTION_CPP
+#define CONNECTION_CPP
 
 #include "connection.h"
 
@@ -348,3 +350,5 @@ void Connection::exec( std::string file, int server )
     close(socketID);
     usleep(SOCKET_PAUSE);
 }
+
+#endif  // CONNECTION_CPP

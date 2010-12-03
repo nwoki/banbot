@@ -32,8 +32,10 @@
  */
 #ifndef _backup_h_
 #define _backup_h_
+
 #include <string>
 #include <vector>
+
 #include "ConfigLoader.h"
 #include "logger.h"
 #include "db.h"
