@@ -2417,7 +2417,7 @@ void Analyzer::main_loop()
             }
         }
         giri++;
-        //fine ciclo, lascio passare un po' di tempo
+        //end of servers, wait some time.
         if ( commandexecuted )
         {
             fascia=0;

@@ -221,7 +221,6 @@ void Db::checkDatabases()
         else {
             cout << "\e[0;33m database file: " << pathWithFile << " already exists \e[0m \n";
             openDatabase();
-            closeDatabase();
             if( checkDbVersion() == VER_1_2 )
                 (*m_options)[i].setValid( true );   // set database validity
             else
@@ -234,6 +233,7 @@ void Db::checkDatabases()
                 *(m_options->errors) << "Wrong Db version: read the manual to see how to convert it.\n";
                 #endif
             }
+            closeDatabase();
         }
     }
 
