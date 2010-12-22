@@ -69,11 +69,12 @@
 #define TIME_SLEEPING_MAX 15        //tempo di pausa in relax totale (dopo circa 5 minuti di inattivita' in fascia media), aka fascia 2
 
 //livelli di strict:
-#define LEVEL0 0        //nessun controllo anti-cheat, nick ed ip bannati per un'ora, nessun avviso.
-#define LEVEL1 1        //controlli di base (guid non valida e cambiamento guid in game), con solo avvisi per casi dubbi e nick bannati da oltre un'ora.
-#define LEVEL2 2        //non avvisa gli admin ma banna direttamente nei casi dubbi.
-#define LEVEL3 3        //sperimentale: abilita i controlli avanzati, avvisa gli admin nei nuovi casi rilevati (non quelli risultanti dai livelli precedenti).
-#define LEVEL4 4        //sperimentale: controlli avanzati, butta fuori direttamente tutti quelli che non sono puliti al 100% (butta solo fuori, non banna).
+#define LEVEL0 0        // Bot disattivato. Risponde solo a status e strict
+#define LEVEL1 1        //nessun controllo anti-cheat, nick ed ip bannati per un'ora, nessun avviso.
+#define LEVEL2 2        //controlli di base (guid non valida e cambiamento guid in game), con solo avvisi per casi dubbi e nick bannati da oltre un'ora.
+#define LEVEL3 3        //non avvisa gli admin ma banna direttamente nei casi dubbi.
+#define LEVEL4 4        //sperimentale: abilita i controlli avanzati, avvisa gli admin nei nuovi casi rilevati (non quelli risultanti dai livelli precedenti).
+#define LEVEL5 5        //sperimentale: controlli avanzati, butta fuori direttamente tutti quelli che non sono puliti al 100% (butta solo fuori, non banna).
 
 //stringa stampata all'utente con i comandi disponibili (quando viene dato il comando !help).
 #ifdef ITA

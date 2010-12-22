@@ -125,7 +125,12 @@ int Db::checkAuthGuid( const std::string &guid )    //checks oplist for ops
 
     if( execQuery( query ) ) {
         if( !m_data.empty() )
-            convertedInt = handyFunctions::stringToInt( m_data[0] );
+        {
+            convertedInt = atoi( m_data[0].c_str() );
+            #ifdef DB_DEBUG
+            std::cout << "Level from db: "<<m_data[0]<<" converted in "<<convertedInt<<"\n";
+            #endif
+        }
     }
 
     return convertedInt;        // 100 if not found
@@ -482,7 +487,7 @@ void Db::dumpDatabases()
 
             #ifdef DB_DEBUG
                 *(m_options->errors) << "Checking the file...";
-                if( fileExistance( dest ) )
+                if( handyFunctions::fileExistance( dest ) )
                     *(m_options->errors) << "It exists!\n";
                 else
                     *(m_options->errors) << "Fail! Not found!\n";

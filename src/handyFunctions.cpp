@@ -151,6 +151,7 @@ namespace handyFunctions{
         return aux;
     }
 
+/**************************** THIS FUNCTION SUCKS! USE THE FUCKING ATOI instead of re-inventing (doing mistakes, too) the weel****************************************/
     int stringToInt( const std::string& str )
     {
         int num;
