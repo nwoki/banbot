@@ -32,7 +32,7 @@
 
 //costruttore: apro il file
 ConfigLoader::ConfigLoader( const std::string &filePath )
-{  
+{
     generalFile=filePath;
     opzioni=new Options();
     loadOptions();
@@ -140,7 +140,7 @@ void ConfigLoader::loadOptions()
             #ifdef DEBUG_MODE
             std::cout << "Caricate le opzioni generali, inizio con quelle dei server.\n";
             #endif
-            
+
             if ( !newOptions->generalBackup.empty() && !newOptions->generalLog.empty() )
             {
                 //vado a prendere tutto il resto
@@ -162,17 +162,17 @@ void ConfigLoader::loadOptions()
                         #ifdef DEBUG_MODE
                         std::cout << "Inizio il server...\n";
                         #endif
-                        
+
                         while( end < all.size() && pos >= end )
                         {
                             end = all.find('\n',pos);
-                            std::string temp ( all.substr( pos,end-pos ) ); 
-                            
+                            std::string temp ( all.substr( pos,end-pos ) );
+
                             #ifdef DEBUG_MODE
                             std::cout << temp << "\n";
                             #endif
                             pos=end+1;
-                            
+
                             if ( !isA( temp,(char*) "[ \t]*#") && isA( temp, (char*)"^[ \t]*[^ \t\n\r\f\v]+[ \t]*=[ \t]*[^ \t\n\r\f\v]+$" ) )
                             {
                                 //if it isn't a comment or shit....
@@ -180,41 +180,41 @@ void ConfigLoader::loadOptions()
                                 {
                                     //if it is a level power change
                                     if ( isA (temp, (char *)"^[ \t]*LEVEL_HELP[ \t]*=[ \t]*[0-9]{1,3}$" ) )
-                                        newServer->setCommandPermission( Server::HELP, atoi(extract(temp).c_str()));
+                                        newServer->setCommandPermission( Server::HELP, /*ato*/ handyFunctions::stringToInt(extract(temp)));
                                     else if ( isA (temp, (char *)"^[ \t]*LEVEL_KICK[ \t]*=[ \t]*[0-9]{1,3}$" ) )
-                                        newServer->setCommandPermission( Server::KICK, atoi(extract(temp).c_str()));
+                                        newServer->setCommandPermission( Server::KICK, /*atoi*/handyFunctions::stringToInt(extract(temp)));
                                     else if ( isA (temp, (char *)"^[ \t]*LEVEL_BAN[ \t]*=[ \t]*[0-9]{1,3}$" ) )
-                                        newServer->setCommandPermission( Server::BAN, atoi(extract(temp).c_str()));
+                                        newServer->setCommandPermission( Server::BAN, /*atoi*/handyFunctions::stringToInt(extract(temp)));
                                     else if ( isA (temp, (char *)"^[ \t]*LEVEL_UNBAN[ \t]*=[ \t]*[0-9]{1,3}$" ) )
-                                        newServer->setCommandPermission( Server::UNBAN, atoi(extract(temp).c_str()));
+                                        newServer->setCommandPermission( Server::UNBAN, /*atoi*/handyFunctions::stringToInt(extract(temp)));
                                     else if ( isA (temp, (char *)"^[ \t]*LEVEL_MUTE[ \t]*=[ \t]*[0-9]{1,3}$" ) )
-                                        newServer->setCommandPermission( Server::MUTE, atoi(extract(temp).c_str()));
+                                        newServer->setCommandPermission( Server::MUTE, /*atoi*/handyFunctions::stringToInt(extract(temp)));
                                     else if ( isA (temp, (char *)"^[ \t]*LEVEL_OP[ \t]*=[ \t]*[0-9]{1,3}$" ) )
-                                        newServer->setCommandPermission( Server::OP, atoi(extract(temp).c_str()));
+                                        newServer->setCommandPermission( Server::OP, /*atoi*/handyFunctions::stringToInt(extract(temp)));
                                     else if ( isA (temp, (char *)"^[ \t]*LEVEL_DEOP[ \t]*=[ \t]*[0-9]{1,3}$" ) )
-                                        newServer->setCommandPermission( Server::DEOP, atoi(extract(temp).c_str()));
+                                        newServer->setCommandPermission( Server::DEOP, /*atoi*/handyFunctions::stringToInt(extract(temp)));
                                     else if ( isA (temp, (char *)"^[ \t]*LEVEL_STRICT[ \t]*=[ \t]*[0-9]{1,3}$" ) )
-                                        newServer->setCommandPermission( Server::STRICT, atoi(extract(temp).c_str()));
+                                        newServer->setCommandPermission( Server::STRICT, /*atoi*/handyFunctions::stringToInt(extract(temp)));
                                     else if ( isA (temp, (char *)"^[ \t]*LEVEL_NUKE[ \t]*=[ \t]*[0-9]{1,3}$" ) )
-                                        newServer->setCommandPermission( Server::NUKE, atoi(extract(temp).c_str()));
+                                        newServer->setCommandPermission( Server::NUKE, /*atoi*/handyFunctions::stringToInt(extract(temp)));
                                     else if ( isA (temp, (char *)"^[ \t]*LEVEL_SLAP[ \t]*=[ \t]*[0-9]{1,3}$" ) )
-                                        newServer->setCommandPermission( Server::SLAP, atoi(extract(temp).c_str()));
+                                        newServer->setCommandPermission( Server::SLAP, /*atoi*/handyFunctions::stringToInt(extract(temp)));
                                     else if ( isA (temp, (char *)"^[ \t]*LEVEL_VETO[ \t]*=[ \t]*[0-9]{1,3}$" ) )
-                                        newServer->setCommandPermission( Server::VETO, atoi(extract(temp).c_str()));
+                                        newServer->setCommandPermission( Server::VETO, /*atoi*/handyFunctions::stringToInt(extract(temp)));
                                     else if ( isA (temp, (char *)"^[ \t]*LEVEL_FORCE[ \t]*=[ \t]*[0-9]{1,3}$" ) )
-                                        newServer->setCommandPermission( Server::FORCE, atoi(extract(temp).c_str()));
+                                        newServer->setCommandPermission( Server::FORCE, /*atoi*/handyFunctions::stringToInt(extract(temp)));
                                     else if ( isA (temp, (char *)"^[ \t]*LEVEL_MAP[ \t]*=[ \t]*[0-9]{1,3}$" ) )
-                                        newServer->setCommandPermission( Server::MAP, atoi(extract(temp).c_str()));
+                                        newServer->setCommandPermission( Server::MAP, /*atoi*/handyFunctions::stringToInt(extract(temp)));
                                     else if ( isA (temp, (char *)"^[ \t]*LEVEL_NEXTMAP[ \t]*=[ \t]*[0-9]{1,3}$" ) )
-                                        newServer->setCommandPermission( Server::NEXTMAP, atoi(extract(temp).c_str()));
+                                        newServer->setCommandPermission( Server::NEXTMAP, /*atoi*/handyFunctions::stringToInt(extract(temp)));
                                     else if ( isA (temp, (char *)"^[ \t]*LEVEL_ADMINS[ \t]*=[ \t]*[0-9]{1,3}$" ) )
-                                        newServer->setCommandPermission( Server::ADMINS, atoi(extract(temp).c_str()));
+                                        newServer->setCommandPermission( Server::ADMINS, /*atoi*/handyFunctions::stringToInt(extract(temp)));
                                     else if ( isA (temp, (char *)"^[ \t]*LEVEL_PASS[ \t]*=[ \t]*[0-9]{1,3}$" ) )
-                                        newServer->setCommandPermission( Server::PASS, atoi(extract(temp).c_str()));
+                                        newServer->setCommandPermission( Server::PASS, /*atoi*/handyFunctions::stringToInt(extract(temp)));
                                     else if ( isA (temp, (char *)"^[ \t]*LEVEL_CONFIG[ \t]*=[ \t]*[0-9]{1,3}$" ) )
-                                        newServer->setCommandPermission( Server::CONFIG, atoi(extract(temp).c_str()));
+                                        newServer->setCommandPermission( Server::CONFIG, /*atoi*/handyFunctions::stringToInt(extract(temp)));
                                     else if ( isA (temp, (char *)"^[ \t]*LEVEL_STATUS[ \t]*=[ \t]*[0-9]{1,3}$" ) )
-                                        newServer->setCommandPermission( Server::STATUS, atoi(extract(temp).c_str()));
+                                        newServer->setCommandPermission( Server::STATUS, /*atoi*/handyFunctions::stringToInt(extract(temp)));
                                 }
                                 else if ( isA( temp, (char *)"^[ \t]*SERVER_NAME[ \t]*=[ \t]*[^ \t\n\r\f\v]+$" ) )
                                     newServer->setName( extract( temp ) );
@@ -252,13 +252,13 @@ void ConfigLoader::loadOptions()
 
                                     newServer->setBackupDir( t );
                                 }
-                                
+
                                 else if ( isA( temp, (char*)"^[ \t]*GAME_DIR[ \t]*=[ \t]*[^ \t\n\r\f\v]+$" ) )
                                 {
                                     std::string t=extract( temp );
                                     if ( t.at(0) != '/' && secondary )
                                         t.insert( 0, newServer->configFile().substr(0,newServer->configFile().find_last_of("/")+1) );
-                                    
+
                                     newServer->setGameDirectory( t );
                                 }
 
@@ -338,7 +338,7 @@ void ConfigLoader::loadOptions()
                                 }
                             }
                         }
-                        //aggiungo il server se è ok, altrimenti lo scarto.
+                        //i'll add the server if it is ok, else fu.
                         if ( newServer->test_for_options() )
                             newOptions->servers.push_back( newServer );
                         else
@@ -350,7 +350,7 @@ void ConfigLoader::loadOptions()
                             #endif
                             delete newServer;
                         }
-                        
+
                         #ifdef DEBUG_MODE
                             std::cout << "Finito il server\n";
                         #endif
@@ -368,11 +368,11 @@ void ConfigLoader::loadOptions()
                 opzioni->errors = new Logger( newOptions->generalLog );
                 opzioni->generalLog = newOptions->generalLog;
                 opzioni->generalBackup = newOptions->generalBackup;
-                
+
 
                 //ok, sistemato il trasferimento di parametri da vecchi a nuovi ^^ elimino gli oggetti temporanei
                 delete newOptions;
-                
+
                 #ifdef DEBUG_MODE
                     std::cout << "Finito il caricamento delle opzioni.\n";
                 #endif

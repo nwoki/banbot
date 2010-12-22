@@ -88,7 +88,7 @@
 Analyzer::Analyzer(Connection* conn, Db* db, ConfigLoader* configLoader )
     : backup( new Backup( configLoader->getOptions(), db ) )
     , m_configLoader( configLoader )
-    , log(new ifstream())
+    , log(new std::ifstream())
     , contatore(0)
     , fascia(0)
     , giri(0)
@@ -129,11 +129,11 @@ void Analyzer::loadOptions()
     {
         if( (*m_dati)[i].isChanged() )
         {
-            ifstream * temp=new ifstream();
+            std::ifstream * temp=new std::ifstream();
             temp->open((*m_dati)[i].serverLog().c_str());
             if ( temp->is_open() )
             {
-                temp->seekg ( 0, ios:: end );
+                temp->seekg ( 0, std::ios::end );
                 (*m_dati)[i].setRow( temp->tellg() );
                 #ifdef DEBUG_MODE
                     #ifdef ITA
@@ -1056,11 +1056,11 @@ void Analyzer::op(char* line)
             //i don't permit an highter level of the admin
             if ( opLevel > level )
                 opLevel = level;
-            newOpLevel = intToString(opLevel);
+            newOpLevel = handyFunctions::intToString(opLevel);
         }
         else
         {
-            newOpLevel = intToString(level);
+            newOpLevel = handyFunctions::intToString(level);
         }
         if (isA(line,_R_OP_NUMBER))
             i = findPlayer( player );
@@ -1083,7 +1083,7 @@ void Analyzer::op(char* line)
                 #else
                     phrase.append(" successifully added to admin list, level ");
                 #endif
-                phrase.append ( intToString(level) );
+                phrase.append ( handyFunctions::intToString(level) );
                 block->tell( phrase, numeroAdmin );
             }
             else
@@ -1310,10 +1310,10 @@ void Analyzer::help(char* line)
             phrase.append( H_CONFIG );
         if ( level <= (*m_dati)[(*m_dati).serverNumber].commandPermission(Server::STATUS) )
             phrase.append( H_STATUS );
-        
-        
+
+
         phrase.append( H_MESSAGE );
-        phrase.append( intToString(level) );
+        phrase.append( handyFunctions::intToString(level) );
         block->tell(phrase,numero);
         m_scheduler->addInstructionBlock( block, Server::LOW );
     }
@@ -1929,7 +1929,7 @@ bool Analyzer::nickIsBanned(const std::string &nick, const std::string &numero, 
                 std::cout<<"  Strict level was "<<(*m_dati)[m_dati->serverNumber].strict()<<".\n";
                 #endif
                 buttaFuori(risultato[0].motive, numero, nick);
-                
+
                 std::string ora;
                 std::string data;
                 getDateAndTime(data,ora);
@@ -2078,12 +2078,12 @@ void Analyzer::main_loop()
             //e azzero anche la linea dove ero arrivato, se ha fatto il backup del file
             for (unsigned int i=0;i<m_dati->size();i++)
             {
-                log=new ifstream();
+                log=new std::ifstream();
                 log->open((*m_dati)[i].botLog().c_str());
                 if (log->is_open())
                 {
                     //se il file è aperto, controllo la dimensione
-                    log->seekg (0, ios:: end);
+                    log->seekg (0, std::ios::end);
                     if (log->tellg ()<(*m_dati)[i].row()) (*m_dati)[i].setRow(0);
                 }
                 //altrimenti se non c'è il file, sono già sicuro che il backup è stato fatto.
@@ -2122,7 +2122,7 @@ void Analyzer::main_loop()
                 #else
                     std::cout<<"Trying to open "<<(*m_dati)[m_dati->serverNumber].serverLog()<<"\n";
                 #endif
-                log=new ifstream();
+                log=new std::ifstream();
                 log->open((*m_dati)[m_dati->serverNumber].serverLog().c_str());
                 log->seekg((*m_dati)[m_dati->serverNumber].row());
                 if (!log->is_open())
@@ -2429,7 +2429,7 @@ void Analyzer::main_loop()
             fascia++;
             contatore++;
         }
-        
+
         if ( !m_scheduler->executeInstructions() )
         {
             switch (fascia)

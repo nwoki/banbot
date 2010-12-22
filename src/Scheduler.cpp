@@ -23,6 +23,9 @@
  *  Software Foundation, Inc.
  */
 
+#ifndef SCHEDULER_CPP
+#define SCHEDULER_CPP
+
 #include "connection.h"
 #include "InstructionsBlock.h"
 #include "Scheduler.h"
@@ -93,3 +96,5 @@ void Scheduler::executePriorityInstruction( InstructionsBlock* &instr, Server::I
     if( lvl == Server::LOW )                                // if I execute a low level instruction, I have to reset counters
         counter->resetCounters();
 }
+
+#endif  // SCHEDULER_CPP

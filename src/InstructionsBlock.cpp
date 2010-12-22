@@ -25,8 +25,8 @@
 
 #ifndef INSTRUCTIONSBLOCK_CPP
 #define INSTRUCTIONSBLOCK_CPP
+
 #include "InstructionsBlock.h"
-#include "handyFunctions.h"
 
 InstructionsBlock::InstructionsBlock()
 : m_next(NULL)
@@ -113,7 +113,7 @@ void InstructionsBlock::kick( std::string number )
 
 void InstructionsBlock::say( std::string phrase )
 {
-    std::vector<std::string> rows = detectRows (phrase);
+    std::vector<std::string> rows = handyFunctions::detectRows (phrase);
     for (unsigned int i = 0; i < rows.size(); i++)
     {
         if ( m_list != NULL )
@@ -133,7 +133,7 @@ void InstructionsBlock::bigtext( std::string phrase )
 
 void InstructionsBlock::tell( std::string phrase, std::string player )
 {
-    std::vector<std::string> rows = detectRows (phrase);
+    std::vector<std::string> rows = handyFunctions::detectRows (phrase);
     for (unsigned int i = 0; i < rows.size(); i++)
     {
         if ( m_list != NULL )

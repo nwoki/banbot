@@ -26,6 +26,7 @@
  */
 #ifndef _backup_cpp_
 #define _backup_cpp_
+
 #include "Backup.h"
 #include <stdlib.h>
 #include <sys/stat.h>
@@ -60,13 +61,13 @@ void Backup::creaCartelle()
         std::string dir ( (*m_options)[i].backupDir() );
         unsigned int pos=0;
         bool ok=true;
-        
+
         //check per la cartella
         while (pos<dir.size()-1 && ok)
         {
             pos=dir.find('/',pos+1);
             std::string cartella=dir.substr(0,pos);
-            
+
             struct stat st;
             if( stat( cartella.c_str(), &st ) == 0 )
             {
@@ -75,7 +76,7 @@ void Backup::creaCartelle()
             else
             {
                 std::cout<<"   [!]couldn't find dir '"<<cartella<<"/'! Creating dir '"<<cartella<<"/'..\n";
-                
+
                 if( mkdir( cartella.c_str(), 0777 ) == 0 )
                 {
                     std::cout<<"  [OK]created '"<<cartella<<"/' directory..\n";
@@ -94,7 +95,7 @@ void Backup::creaCartelle()
             }
         }
     }
-    
+
     //controllo la cartella di backup generale
     #ifdef ITA
         std::cout<<"\nInizializzo il sistema di backup generale ...\n";
@@ -104,13 +105,13 @@ void Backup::creaCartelle()
     std::string dir ( m_options->generalBackup );
     unsigned int pos=0;
     bool ok=true;
-    
+
     //check per la cartella
     while (pos<dir.size()-1 && ok)
     {
         pos=dir.find('/',pos+1);
         std::string cartella=dir.substr(0,pos);
-        
+
         struct stat st;
         if( stat( cartella.c_str(), &st ) == 0 )
         {
@@ -119,7 +120,7 @@ void Backup::creaCartelle()
         else
         {
             std::cout<<"   [!]couldn't find dir '"<<cartella<<"/'! Creating dir '"<<cartella<<"/'..\n";
-            
+
             if( mkdir( cartella.c_str(), 0777 ) == 0 )
             {
                 std::cout<<"  [OK]created '"<<cartella<<"/' directory..\n";
@@ -207,13 +208,13 @@ void Backup::spostaFiles( unsigned int server, std::string dirOfTheDay )
     cartella.append(dirOfTheDay);
     checkFolder(cartella);
     //sposto i files.
-    
+
     //BotLog
     //mi preparo la stringa con il file di destinazione
     int pos=(*m_options)[server].botLog().find_last_of("/");
     if (pos==-1) pos=0;
     else pos++;
-    
+
     std::string nomeFile=cartella;
     nomeFile.append((*m_options)[server].botLog().substr(pos));
     //sposto il file
@@ -225,7 +226,7 @@ void Backup::spostaFiles( unsigned int server, std::string dirOfTheDay )
         *(m_options->errors)<<" moving "<<(*m_options)[server].botLog()<<" in "<<nomeFile<<".\n";
     #endif
     std::rename((*m_options)[server].botLog().c_str(),nomeFile.c_str());
-    
+
     //ServerLog
     //mi preparo la stringa con il file di destinazione
     pos=(*m_options)[server].serverLog().find_last_of("/");
@@ -253,7 +254,7 @@ void Backup::spostaFilesGenerali(std::string dirOfTheDay)
   cartella.append(dirOfTheDay);
   checkFolder(cartella);
   //sposto i files.
-  
+
   //GeneralLog
     //mi preparo la stringa con il file di destinazione
     int pos=m_options->generalLog.find_last_of("/");
@@ -276,7 +277,7 @@ void Backup::spostaFilesGenerali(std::string dirOfTheDay)
 void Backup::backupDatabases(std::string dirOfTheDay)
 {
     database->dumpDatabases();
-    
+
     for( unsigned int i = 0; i < m_options->size(); i++ ) {
 
         //get current database directory
@@ -286,20 +287,20 @@ void Backup::backupDatabases(std::string dirOfTheDay)
         db.append( DB_NAME );
         db.append( ".backup-" );
         db.append( (*m_options)[i].name() );
-        
+
         //get backup directory
         std::string dest( (*m_options)[i].backupDir() );
         if( dest[ dest.length()-1 ] != '/' )
             dest.append( "/" );
-        
+
         //create the folder
         dest.append( dirOfTheDay );
         checkFolder(dest);
-        
+
         dest.append( DB_NAME );
         dest.append( ".backup-" );
         dest.append( (*m_options)[i].name() );
-        
+
         //move file
         #ifdef ITA
             std::cout<<" sposto "<<db<<" in "<<dest<<".\n";
@@ -311,7 +312,7 @@ void Backup::backupDatabases(std::string dirOfTheDay)
         ( m_options->errors )->close();
         std::rename( db.c_str(), dest.c_str() );
     }
-    
+
 }
 
 bool Backup::doJobs()
@@ -327,21 +328,21 @@ bool Backup::doJobs()
             (m_options->errors)->timestamp();
             *(m_options->errors)<<"\nStarting backup...";
         #endif
-        
+
         //inizializzazione
         creaCartelle();
         std::string dirOfTheDay( nameOfDir() );
-        
+
         //faccio il backup per tutti i server...
         for (unsigned int i=0; i<m_options->size(); i++)
         {
             spostaFiles( i, dirOfTheDay );
         }
-        
+
         backupDatabases( dirOfTheDay );
-        
+
         spostaFilesGenerali( dirOfTheDay );
-        
+
         #ifdef ITA
             std::cout<<"Finito.\n";
             (m_options->errors)->timestamp();

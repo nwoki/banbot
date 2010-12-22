@@ -28,7 +28,6 @@
 
 #include "InstructionsBlock.h"
 #include "server.h"
-#include "handyFunctions.h"
 
 Server::Server()
     : m_changed( true )
@@ -403,7 +402,15 @@ void Server::test_for_changes(Server* old)
 bool Server::test_for_options()
 {
   if ( !m_name.empty() && !m_rconpass.empty() && !m_ip.empty() && m_port!=0 && !m_backup.empty() && !m_botLog.empty() && !m_serverLog.empty() && !m_dbFolder.empty() && !m_gameDir.empty())
-    return true;
+  {
+      //i'll check for invalid command level and correct them
+      for (unsigned int i=0; i < m_permissions.size(); i++)
+      {
+          if( m_permissions[i] < 0 ) m_permissions[i] = 0;
+          else if( m_permissions[i] > 100 ) m_permissions[i] = 100;
+      }
+      return true;
+  }
   return false;
 }
 
@@ -419,7 +426,7 @@ std::string Server::toString()
     t.append( "\n  Ip : " );
     t.append( m_ip );
     t.append( "\n  Port : " );
-    t.append( intToString( m_port ) );
+    t.append( handyFunctions::intToString( m_port ) );
     t.append( "\n  Backup dir : " );
     t.append( m_backup );
     t.append( "\n  Bot log : " );
@@ -429,7 +436,7 @@ std::string Server::toString()
     t.append( "\n  Database folder : ");
     t.append( m_dbFolder );
     t.append( "\n  Strict level : ");
-    t.append( intToString(m_strict) );
+    t.append( handyFunctions::intToString(m_strict) );
     t.append( "\n  Game folder : ");
     t.append( m_gameDir );
     t.append( "\n}\n" );
