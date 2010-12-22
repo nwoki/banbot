@@ -46,7 +46,7 @@ CLEAN_TARGETS =  src/*.h~ \
 		 scripts/*~
 
 BOOST_INCPATH = -Isrc/boost_1_45
-BOOST_LIBS = -Lsrc/boost_1_45/BanbotLibs/lib -lboost_filesystem -lboost_system
+#BOOST_LIBS = -Lsrc/boost_1_45/BanbotLibs/lib -lboost_filesystem -lboost_system
 
 TARGET = BanBot
 
