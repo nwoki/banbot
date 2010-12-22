@@ -64,19 +64,20 @@
 
 //tempi di attesa tra un giro e l'altro nell'analisi dei log (più è basso, più alto sarà il consumo (e spreco) di risorse,
 //d'altro canto più alto è, maggiore sarà il tempo di risposta del bot).
-#define TIME_SLEEPING_MIN 2         //tempo di pausa minimo (durante reazione ad eventi/comandi), aka fascia 0
-#define TIME_SLEEPING_MIDDLE 5      //tempo di pausa medio (dopo circa 30 secondi di inattivita'), aka fascia 1
-#define TIME_SLEEPING_MAX 15        //tempo di pausa in relax totale (dopo circa 5 minuti di inattivita' in fascia media), aka fascia 2
+#define TIME_SLEEPING_MIN 1         //tempo di pausa minimo (durante reazione ad eventi/comandi), aka fascia 0
+#define TIME_SLEEPING_MIDDLE 3      //tempo di pausa medio (dopo circa 30 secondi di inattivita'), aka fascia 1
+#define TIME_SLEEPING_MAX 15        //tempo di pausa in relax totale (dopo circa 3 minuti di inattivita' in fascia media), aka fascia 2
 
 //livelli di strict:
-#define LEVEL0 0        // Bot disattivato. Risponde solo a status e strict
-#define LEVEL1 1        //nessun controllo anti-cheat, nick ed ip bannati per un'ora, nessun avviso.
-#define LEVEL2 2        //controlli di base (guid non valida e cambiamento guid in game), con solo avvisi per casi dubbi e nick bannati da oltre un'ora.
-#define LEVEL3 3        //non avvisa gli admin ma banna direttamente nei casi dubbi.
-#define LEVEL4 4        //sperimentale: abilita i controlli avanzati, avvisa gli admin nei nuovi casi rilevati (non quelli risultanti dai livelli precedenti).
-#define LEVEL5 5        //sperimentale: controlli avanzati, butta fuori direttamente tutti quelli che non sono puliti al 100% (butta solo fuori, non banna).
+#define LEVEL0 0        // Bot deactivated. React only to strict command.
+#define LEVEL1 1        //no anti-cheat controls activated, ban only with guid, no warnings.
+#define LEVEL3 3        //anticheat checks (with cheat recognition), only warnings.
+#define LEVEL4 4        //anticheat checks, clean and pure client checks, only warnings.
+#define LEVEL5 5        //like level 4, automated ban with anticheat checks, warnings if in dubt and for unpure client.
+#define LEVEL6 6        //like level 5, automated ban if in dubt too.
+#define LEVEL7 7        //like level 6, automated ban for everything, no warnings.
 
-//stringa stampata all'utente con i comandi disponibili (quando viene dato il comando !help).
+// !help defines.
 #ifdef ITA
     #define COMMANDLIST "^1Comandi disponibili:\n"
     #define H_MESSAGE "^1Il tuo livello e' ^2"

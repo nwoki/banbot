@@ -2424,7 +2424,7 @@ void Analyzer::main_loop()
             contatore=0;
         }
         else contatore++;
-        if ( (fascia == 0 && contatore > 15) || (fascia == 1 && contatore > 60) )
+        if ( (fascia == 0 && contatore > 30) || (fascia == 1 && contatore > 60) )
         {
             fascia++;
             contatore++;
