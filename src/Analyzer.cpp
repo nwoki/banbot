@@ -15,7 +15,7 @@
     along with BanBot (look at GPL_License.txt).
     If not, see <http://www.gnu.org/licenses/>.
 
-    Copyright © 2010, Zamy (Simone Daminato), N3m3s1s (Francesco Nwokeka)
+    Copyright © 2010, 2011 Zamy (Simone Daminato), N3m3s1s (Francesco Nwokeka)
 
 
     BanBot uses SQLite3:
@@ -83,6 +83,7 @@
 #define _R_ADMINS "^ *[0-9]+:[0-9]{2} +say: +[0-9]+ +[^ \t\n\r\f\v]+: +!admins$"
 #define _R_PASS "^ *[0-9]+:[0-9]{2} +say: +[0-9]+ +[^ \t\n\r\f\v]+: +!pass [^ \t\n\r\f\v]+$"
 #define _R_CONFIG "^ *[0-9]+:[0-9]{2} +say: +[0-9]+ +[^ \t\n\r\f\v]+: +!config [^ \t\n\r\f\v]+$"
+#define _R_WARNINGS "^ *[0-9]+:[0-9]{2} +say: +[0-9]+ +[^ \t\n\r\f\v]+: +!warnings (off|public|private)$"
 
 //costruttore
 Analyzer::Analyzer(Connection* conn, Db* db, ConfigLoader* configLoader )
@@ -257,31 +258,51 @@ void Analyzer::clientUserInfo(char* line)
     {
         if ((!(*m_dati)[m_dati->serverNumber][i]->GUID.empty() && (*m_dati)[m_dati->serverNumber][i]->GUID.compare(guid)!=0) || guid.empty())
         {
-            if (!guid.empty() && (*m_dati)[m_dati->serverNumber].strict() >= LEVEL1)
+            if (!guid.empty() && (*m_dati)[m_dati->serverNumber].strict() >= LEVEL2)
             {
-                // cambio illegale del GUID => cheats
-                kicked=true;
+                // illegal change of GUID => cheats
+                if ( (*m_dati)[m_dati->serverNumber].strict() >= LEVEL4 )
+                {
+                    kicked=true;
 
-                #ifdef ITA
-                    std::cout<<"  [!] ban automatico per cheats (GUID cambiata durante il gioco).\n";
-                    *(m_dati->log)<<"  [!] ban automatico per cheats (GUID cambiata durante il gioco).\n";
-                #else
-                    std::cout<<"  [!] automated ban for cheats (GUID changed during the game).\n";
-                    *(m_dati->log)<<"  [!] automated ban for cheats (GUID changed during the game).\n";
-                #endif
-                std::string frase("^0BanBot: ^1auto-banning player number ");
-                frase.append(numero);
-                frase.append(", ");
-                frase.append(nick);
-                frase.append(" for cheats.");
-                block->say(frase);
-                std::string ora;
-                std::string data;
-                std::string motivo("auto-ban 4 cheats.");
-                getDateAndTime(data,ora);
-                //non prendo la guid attuale, ma quella precedente (che spesso è quella vera e propria dell'utente prima che attivi i cheat)
-                database->ban(correggi(nick),ip,data,ora,correggi((*m_dati)[m_dati->serverNumber][i]->GUID),correggi(motivo),std::string());
-                block->kick(numero);
+                    #ifdef ITA
+                        std::cout<<"  [!] ban automatico per cheats (GUID cambiata durante il gioco).\n";
+                        *(m_dati->log)<<"  [!] ban automatico per cheats (GUID cambiata durante il gioco).\n";
+                    #else
+                        std::cout<<"  [!] automated ban for cheats (GUID changed during the game).\n";
+                        *(m_dati->log)<<"  [!] automated ban for cheats (GUID changed during the game).\n";
+                    #endif
+                    std::string phrase("^0BanBot: ^1auto-banning player number ");
+                    phrase.append(numero);
+                    phrase.append(", ");
+                    phrase.append(nick);
+                    phrase.append(" for cheats.");
+                    block->say(phrase);
+                    std::string ora;
+                    std::string data;
+                    std::string motivo("auto-ban 4 cheats.");
+                    getDateAndTime(data,ora);
+                    //non prendo la guid attuale, ma quella precedente (che spesso è quella vera e propria dell'utente prima che attivi i cheat)
+                    database->ban(correggi(nick),ip,data,ora,correggi((*m_dati)[m_dati->serverNumber][i]->GUID),correggi(motivo),std::string());
+                    block->kick(numero);
+                }
+                else
+                {
+                    #ifdef ITA
+                    std::string phrase("^0BanBot warning: ^1il giocatore numero ");
+                    phrase.append(numero);
+                    phrase.append(", ");
+                    phrase.append(nick);
+                    phrase.append(" sta usando cheats (la guid e' cambiata).");
+                    #else
+                    std::string phrase("^0BanBot warning: ^1player number ");
+                    phrase.append(numero);
+                    phrase.append(", ");
+                    phrase.append(nick);
+                    phrase.append(" is using cheats (guid changed).");
+                    #endif
+                    tellToAdmins(phrase);
+                }
             }
         }
         else
@@ -306,11 +327,11 @@ void Analyzer::clientUserInfo(char* line)
     }
 
     //se la guid è vuota, sono cazzi amari...
-    if (guid.empty() && (*m_dati)[m_dati->serverNumber].strict() >= LEVEL1)
+    if (guid.empty() && (*m_dati)[m_dati->serverNumber].strict() >= LEVEL2)
     {
-        if ( (*m_dati)[m_dati->serverNumber].strict() >= LEVEL2 )
+        //empty guid: cheat, or client touched (like qkey file deleted).
+        if ( (*m_dati)[m_dati->serverNumber].strict() >= LEVEL5 )
         {
-            //guid vuota, probabili cheats, sono in modalità strict, butto fuori (provo a bannare un'eventuale guid precedente).
             kicked=true;
             #ifdef ITA
                 std::cout<<"  [!] ban automatico per GUID non valida (vuota).\n";
@@ -321,20 +342,20 @@ void Analyzer::clientUserInfo(char* line)
             #endif
 
             #ifdef ITA
-                std::string frase("^0BanBot: ^1auto-ban al player numero ");
+                std::string phrase("^0BanBot: ^1auto-ban al player numero ");
             #else
-                std::string frase("^0BanBot: ^1auto-ban player number ");
+                std::string phrase("^0BanBot: ^1auto-ban player number ");
             #endif
-            frase.append(numero);
-            frase.append(", ");
-            frase.append(nick);
+            phrase.append(numero);
+            phrase.append(", ");
+            phrase.append(nick);
             #ifdef ITA
-                frase.append(" per QKey corrotta.");
+                phrase.append(" per QKey corrotta.");
             #else
-                frase.append(" for corrupted QKey.");
+                phrase.append(" for corrupted QKey.");
             #endif
 
-            block->say(frase);
+            block->say(phrase);
             std::string ora;
             std::string data;
             std::string motivo("auto-ban 4 corrupted QKey.");
@@ -348,107 +369,130 @@ void Analyzer::clientUserInfo(char* line)
         }
         else
         {
-            //guid vuota, ma non sono in strict mode. Semplicemente avviso gli amministratori.
+            //Low strict level: i'll advice.
             #ifdef ITA
-                std::string frase("^0BanBot ^1attenzione: il player numero ");
+                std::string phrase("^0BanBot ^1attenzione: il player numero ");
             #else
-                std::string frase("^0BanBot ^1warning: player number ");
+                std::string phrase("^0BanBot ^1warning: player number ");
             #endif
-            frase.append(numero);
-            frase.append(", ");
-            frase.append(nick);
+            phrase.append(numero);
+            phrase.append(", ");
+            phrase.append(nick);
             #ifdef ITA
-                frase.append(" ha la QKey corrotta:\n^1probabilmente sta usando dei cheats.");
+                phrase.append(" ha la QKey corrotta:\n^1probabilmente sta usando dei cheats.");
             #else
-                frase.append(" has a corrupted QKey:\n^1probably he's using cheats.");
+                phrase.append(" has a corrupted QKey:\n^1probably he's using cheats.");
             #endif
-            tellToAdmins(frase);
+            tellToAdmins(phrase);
         }
     }
 
-    //se è tutto a posto procedo coi controlli
+    //if all is ok, go with checks.
     if (!kicked)
     {
-        //faccio un pò di controlli:
-        //controllo che non sia stato già bannato
-        //controllo se la guid, il nick e l'ip sono bannati
+        //some checks: if he's banned, and others anticheat checks.
         if( !( guidIsBanned( guid, nick, numero, ip) || nickIsBanned( nick, numero, ip, guid ) || ipIsBanned( ip, numero, nick, guid )) )
         {
             //ok, non è stato bannato (per il momento). Controllo se ha un GUID valido.
-            if ( (*m_dati)[m_dati->serverNumber].strict() >= LEVEL1 && !guid.empty() && !isA(line, _R_GUID) )
+            if ( (*m_dati)[m_dati->serverNumber].strict() >= LEVEL2 && !guid.empty() && !isA(line, _R_GUID) )
             {
-                //il guid è illegale, ban diretto
-                #ifdef ITA
-                    std::cout<<"  [!] ban automatico per GUID illegale\n";
-                    *(m_dati->log)<<"  [!] ban automatico per GUID illegale\n";
-                    std::string frase("^0BanBot: ^1kick automatico al giocatore ");
-                #else
-                    std::cout<<"  [!] automated ban for illegal GUID.\n";
-                    *(m_dati->log)<<"  [!] automated ban for illegal GUID.\n";
-                    std::string frase("^0BanBot: ^1kicking player number ");
-                #endif
+                //wrong guid.
+                if ( (*m_dati)[m_dati->serverNumber].strict() >= LEVEL4 )
+                {
+                    #ifdef ITA
+                        std::cout<<"  [!] ban automatico per GUID illegale\n";
+                        *(m_dati->log)<<"  [!] ban automatico per GUID illegale\n";
+                        std::string phrase("^0BanBot: ^1kick automatico al giocatore ");
+                    #else
+                        std::cout<<"  [!] automated ban for illegal GUID.\n";
+                        *(m_dati->log)<<"  [!] automated ban for illegal GUID.\n";
+                        std::string phrase("^0BanBot: ^1kicking player number ");
+                    #endif
 
-                frase.append(numero);
-                frase.append(", ");
-                frase.append(nick);
-                #ifdef ITA
-                    frase.append(" per cheats.");
-                #else
-                    frase.append(" for cheats.");
-                #endif
-                block->say(frase);
-                std::string ora;
-                std::string data;
-                std::string motivo("auto-ban 4 cheats.");
-                getDateAndTime(data,ora);
-                database->ban(correggi(nick),ip,data,ora,correggi(guid),correggi(motivo),std::string());
-                block->kick(numero);
+                    phrase.append(numero);
+                    phrase.append(", ");
+                    phrase.append(nick);
+                    #ifdef ITA
+                        phrase.append(" per cheats.");
+                    #else
+                        phrase.append(" for cheats.");
+                    #endif
+                    block->say(phrase);
+                    std::string ora;
+                    std::string data;
+                    std::string motivo("auto-ban 4 cheats.");
+                    getDateAndTime(data,ora);
+                    database->ban(correggi(nick),ip,data,ora,correggi(guid),correggi(motivo),std::string());
+                    block->kick(numero);
+                }
+                else
+                {
+                    #ifdef ITA
+                    std::cout<<"  [!] warning per GUID illegale\n";
+                    *(m_dati->log)<<"  [!] warning per GUID illegale\n";
+                    std::string phrase("^0BanBot warning: ^1il giocatore ");
+                    #else
+                    std::cout<<"  [!] warning for illegal GUID.\n";
+                    *(m_dati->log)<<"  [!] warning for illegal GUID.\n";
+                    std::string phrase("^0BanBot warning: ^1player number ");
+                    #endif
+                    
+                    phrase.append(numero);
+                    phrase.append(", ");
+                    phrase.append(nick);
+                    #ifdef ITA
+                    phrase.append(" ha dei cheat attivi.");
+                    #else
+                    phrase.append(" has cheats activated.");
+                    #endif
+                    tellToAdmins(phrase);
+                }
             }
             else
             {
-                //fin qua, tutto a posto. Controlli avanzati:
+                //advanced checks:
                 if ( (*m_dati)[m_dati->serverNumber].strict() >= LEVEL3 && !isA( line,_R_COMPLETE_CLIENT_USER_INFO ) )
                 {
                     if ( (*m_dati)[m_dati->serverNumber].strict() >= LEVEL4 )
                     {
-                        //butto fuori
+                        //automated action
                         #ifdef ITA
                             std::cout<<"  [!] kick automatico per client non pulito (controlli avanzati non superati).\n";
                             *(m_dati->log)<<"  [!] kick automatico per client non pulito (controlli avanzati non superati).\n";
-                            std::string frase("^0BanBot: ^1auto-kick al giocatore ");
+                            std::string phrase("^0BanBot: ^1auto-kick al giocatore ");
                         #else
                             std::cout<<"  [!] automated kick for illegal client ( advanced checks not passed ).\n";
                             *(m_dati->log)<<"  [!] automated kick for illegal client ( advanced checks not passed ).\n";
-                            std::string frase("^0BanBot: ^1auto-kicking player number ");
+                            std::string phrase("^0BanBot: ^1auto-kicking player number ");
                         #endif
-                        frase.append(numero);
-                        frase.append(", ");
-                        frase.append(nick);
+                        phrase.append(numero);
+                        phrase.append(", ");
+                        phrase.append(nick);
                         #ifdef ITA
-                            frase.append(" per client non pulito.");
+                            phrase.append(" per client non pulito.");
                         #else
-                            frase.append(" for illegal client.");
+                            phrase.append(" for illegal client.");
                         #endif
-                        block->say(frase);
+                        block->say(phrase);
                         block->kick(numero);
                     }
                     else
                     {
-                        //avviso solo gli admin
+                        //only warning
                         #ifdef ITA
-                        std::string frase("^0BanBot ^1attenzione: il giocatore numero ");
+                        std::string phrase("^0BanBot ^1attenzione: il giocatore numero ");
                         #else
-                        std::string frase("^0BanBot ^1warning: player number ");
+                        std::string phrase("^0BanBot ^1warning: player number ");
                         #endif
-                        frase.append(numero);
-                        frase.append(", ");
-                        frase.append(nick);
+                        phrase.append(numero);
+                        phrase.append(", ");
+                        phrase.append(nick);
                         #ifdef ITA
-                            frase.append(" ha un client non pulito.");
+                            phrase.append(" ha un client non pulito.");
                         #else
-                            frase.append(" has an illegal client.");
+                            phrase.append(" has an illegal client.");
                         #endif
-                        tellToAdmins(frase);
+                        tellToAdmins(phrase);
                     }
                 }
                 else
@@ -582,26 +626,26 @@ void Analyzer::ban(char* line)
                 #ifdef ITA
                     std::cout<<"  [+]banno "<<(*m_dati)[m_dati->serverNumber][i]->nick<<" con guid "<<(*m_dati)[m_dati->serverNumber][i]->GUID<<"\n";
                     *(m_dati->log)<<"  [+]banno "<<(*m_dati)[m_dati->serverNumber][i]->nick<<" con guid "<<(*m_dati)[m_dati->serverNumber][i]->GUID<<"\n";
-                    std::string frase("^0BanBot: ^1banno il giocatore ");
+                    std::string phrase("^0BanBot: ^1banno il giocatore ");
                 #else
                     std::cout<<"  [+]banning "<<(*m_dati)[m_dati->serverNumber][i]->nick<<" with guid "<<(*m_dati)[m_dati->serverNumber][i]->GUID<<"\n";
                     *(m_dati->log)<<"  [+]banning "<<(*m_dati)[m_dati->serverNumber][i]->nick<<" with guid "<<(*m_dati)[m_dati->serverNumber][i]->GUID<<"\n";
-                    std::string frase("^0BanBot: ^1banning player number ");
+                    std::string phrase("^0BanBot: ^1banning player number ");
                 #endif
-                frase.append((*m_dati)[m_dati->serverNumber][i]->number);
-                frase.append(", ");
-                frase.append((*m_dati)[m_dati->serverNumber][i]->nick);
+                phrase.append((*m_dati)[m_dati->serverNumber][i]->number);
+                phrase.append(", ");
+                phrase.append((*m_dati)[m_dati->serverNumber][i]->nick);
                 if (!motivo.empty())
                 {
                     #ifdef ITA
-                        frase.append(" per ");
+                        phrase.append(" per ");
                     #else
-                        frase.append(" for ");
+                        phrase.append(" for ");
                     #endif
-                    frase.append(motivo);
+                    phrase.append(motivo);
                 }
-                frase.append(".");
-                block->say(frase);
+                phrase.append(".");
+                block->say(phrase);
                 std::string ora;
                 std::string data;
                 getDateAndTime(data,ora);
@@ -762,17 +806,17 @@ void Analyzer::unban(char* line)
         else
         {
             //i have the number, i'll delete it from database
-            std::string frase;
+            std::string phrase;
             #ifdef ITA
                 if (database->deleteBanned(player))
-                    frase.append("^0BanBot: ^1utente sbannato con successo.");
-                else frase.append("^0BanBot: ^1è stato riscontrato un errore, utente non sbannato.");
+                    phrase.append("^0BanBot: ^1utente sbannato con successo.");
+                else phrase.append("^0BanBot: ^1è stato riscontrato un errore, utente non sbannato.");
             #else
                 if (database->deleteBanned(player))
-                    frase.append("^0BanBot: ^1player successfully unbanned.");
-                else frase.append("^0BanBot: ^1error: player not unbanned.");
+                    phrase.append("^0BanBot: ^1player successfully unbanned.");
+                else phrase.append("^0BanBot: ^1error: player not unbanned.");
             #endif
-            block->tell(frase,numeroAdmin);
+            block->tell(phrase,numeroAdmin);
         }
         m_scheduler->addInstructionBlock( block, Server::MEDIUM );
     }
@@ -815,96 +859,96 @@ void Analyzer::find(char* line)
 
         #ifdef ITA
             std::cout<<"ricerca: "<<risultato.size()<<" "<<risultatoApprossimativo.size()<<"\n";
-            std::string frase("^2Risultati esatti: \n^1");
+            std::string phrase("^2Risultati esatti: \n^1");
         #else
             std::cout<<"search: "<<risultato.size()<<" "<<risultatoApprossimativo.size()<<"\n";
-            std::string frase("^2Exact results: \n^1");
+            std::string phrase("^2Exact results: \n^1");
         #endif
         if (risultato.size()>5)
         {
             #ifdef ITA
-                frase.append("troppi risultati, prova a migliorare la ricerca. Forse cercavi\n^1");
+                phrase.append("troppi risultati, prova a migliorare la ricerca. Forse cercavi\n^1");
             #else
-                frase.append("too many results, try to improve research. Were you looking for\n^1");
+                phrase.append("too many results, try to improve research. Were you looking for\n^1");
             #endif
-            frase.append(risultato[0].id);
-            frase.append("^2:^1 ");
-            frase.append(risultato[0].nick);
-            frase.append(" ");
-            frase.append(risultato[0].motive);
-            frase.append(" ^2by^1 ");
-            frase.append(risultato[0].author);
-            frase.append(" ^2?");
+            phrase.append(risultato[0].id);
+            phrase.append("^2:^1 ");
+            phrase.append(risultato[0].nick);
+            phrase.append(" ");
+            phrase.append(risultato[0].motive);
+            phrase.append(" ^2by^1 ");
+            phrase.append(risultato[0].author);
+            phrase.append(" ^2?");
         }
         else
         {
-            if (risultato.empty()) frase.append("none.");
+            if (risultato.empty()) phrase.append("none.");
             else for (unsigned int i=0; i<risultato.size();i++)
             {
-                frase.append(risultato[i].id);
-                frase.append("^2:^1 ");
-                frase.append(risultato[i].nick);
-                frase.append(" ");
-                frase.append(risultato[i].motive);
-                frase.append(" ^2by^1 ");
-                frase.append(risultato[i].author);
-                if(i<risultato.size()-1) frase.append(",\n^1");
-                else frase.append(".");
+                phrase.append(risultato[i].id);
+                phrase.append("^2:^1 ");
+                phrase.append(risultato[i].nick);
+                phrase.append(" ");
+                phrase.append(risultato[i].motive);
+                phrase.append(" ^2by^1 ");
+                phrase.append(risultato[i].author);
+                if(i<risultato.size()-1) phrase.append(",\n^1");
+                else phrase.append(".");
             }
         }
-        block->tell(frase,numero);
+        block->tell(phrase,numero);
 
-        frase.clear();
+        phrase.clear();
         #ifdef ITA
-            frase.append("^2Risultati ricerca: \n^1");
+            phrase.append("^2Risultati ricerca: \n^1");
         #else
-            frase.append("^2Search results: \n^1");
+            phrase.append("^2Search results: \n^1");
         #endif
         if (risultatoApprossimativo.size()>15)
         {
             #ifdef ITA
-                frase.append("troppi risultati, prova a migliorare la ricerca. Forse cercavi\n^1");
+                phrase.append("troppi risultati, prova a migliorare la ricerca. Forse cercavi\n^1");
             #else
-                frase.append("too many results, try to improve research. Were you looking for\n^1");
+                phrase.append("too many results, try to improve research. Were you looking for\n^1");
             #endif
-            frase.append(risultatoApprossimativo[0].id);
-            frase.append("^2:^1 ");
-            frase.append(risultatoApprossimativo[0].nick);
-            frase.append(" ");
-            frase.append(risultatoApprossimativo[0].motive);
-            frase.append(" ^2by^1 ");
-            frase.append(risultatoApprossimativo[0].author);
+            phrase.append(risultatoApprossimativo[0].id);
+            phrase.append("^2:^1 ");
+            phrase.append(risultatoApprossimativo[0].nick);
+            phrase.append(" ");
+            phrase.append(risultatoApprossimativo[0].motive);
+            phrase.append(" ^2by^1 ");
+            phrase.append(risultatoApprossimativo[0].author);
             #ifdef ITA
-                frase.append("\n^2, o forse \n ^1");
+                phrase.append("\n^2, o forse \n ^1");
             #else
-                frase.append("\n^2, or \n ^1");
+                phrase.append("\n^2, or \n ^1");
             #endif
-            frase.append(risultatoApprossimativo[1].id);
-            frase.append("^2:^1 ");
-            frase.append(risultatoApprossimativo[1].nick);
-            frase.append(" ");
-            frase.append(risultatoApprossimativo[1].motive);
-            frase.append(" ^2by^1 ");
-            frase.append(risultatoApprossimativo[1].author);
-            frase.append(" ^2?");
+            phrase.append(risultatoApprossimativo[1].id);
+            phrase.append("^2:^1 ");
+            phrase.append(risultatoApprossimativo[1].nick);
+            phrase.append(" ");
+            phrase.append(risultatoApprossimativo[1].motive);
+            phrase.append(" ^2by^1 ");
+            phrase.append(risultatoApprossimativo[1].author);
+            phrase.append(" ^2?");
         }
         else
         {
-            if (risultatoApprossimativo.empty()) frase.append("none.");
+            if (risultatoApprossimativo.empty()) phrase.append("none.");
             else for (unsigned int i=0; i<risultatoApprossimativo.size();i++)
             {
-                frase.append(risultatoApprossimativo[i].id);
-                frase.append("^2:^1 ");
-                frase.append(risultatoApprossimativo[i].nick);
-                frase.append(" ");
-                frase.append(risultatoApprossimativo[i].motive);
-                frase.append(" ^2by^1 ");
-                frase.append(risultatoApprossimativo[i].author);
-                if(i<risultatoApprossimativo.size()-1) frase.append(",\n^1");
-                else frase.append(".");
+                phrase.append(risultatoApprossimativo[i].id);
+                phrase.append("^2:^1 ");
+                phrase.append(risultatoApprossimativo[i].nick);
+                phrase.append(" ");
+                phrase.append(risultatoApprossimativo[i].motive);
+                phrase.append(" ^2by^1 ");
+                phrase.append(risultatoApprossimativo[i].author);
+                if(i<risultatoApprossimativo.size()-1) phrase.append(",\n^1");
+                else phrase.append(".");
             }
         }
-        block->tell(frase,numero);
+        block->tell(phrase,numero);
         m_scheduler->addInstructionBlock( block, Server::LOW );
     }
 }
@@ -948,82 +992,82 @@ void Analyzer::findOp(char* line)
 
         #ifdef ITA
             std::cout<<"ricerca: "<<risultato.size()<<" "<<risultatoApprossimativo.size()<<"\n";
-            std::string frase("^2Risultati esatti: \n^1");
+            std::string phrase("^2Risultati esatti: \n^1");
         #else
             std::cout<<"search: "<<risultato.size()<<" "<<risultatoApprossimativo.size()<<"\n";
-            std::string frase("^2Exact results: \n^1");
+            std::string phrase("^2Exact results: \n^1");
         #endif
         if (risultato.size()>5)
         {
             #ifdef ITA
-                frase.append("troppi risultati, prova a migliorare la ricerca. Forse cercavi\n^1");
+                phrase.append("troppi risultati, prova a migliorare la ricerca. Forse cercavi\n^1");
             #else
-                frase.append("too many results, try to improve research. Were you looking for\n^1");
+                phrase.append("too many results, try to improve research. Were you looking for\n^1");
             #endif
-            frase.append(risultato[0].id);
-            frase.append("^2:^1 ");
-            frase.append(risultato[0].nick);
-            frase.append("^2 l^1");
-            frase.append(risultato[0].level);
-            frase.append(" ^2?");
+            phrase.append(risultato[0].id);
+            phrase.append("^2:^1 ");
+            phrase.append(risultato[0].nick);
+            phrase.append("^2 l^1");
+            phrase.append(risultato[0].level);
+            phrase.append(" ^2?");
         }
         else
         {
-            if (risultato.empty()) frase.append("none.");
+            if (risultato.empty()) phrase.append("none.");
             else for (unsigned int i=0; i<risultato.size();i++)
             {
-                frase.append(risultato[i].id);
-                frase.append("^2:^1 ");
-                frase.append(risultato[i].nick);
-                frase.append("^2 l^1");
-                frase.append(risultato[i].level);
-                if(i<risultato.size()-1) frase.append(",\n^1");
-                else frase.append(".");
+                phrase.append(risultato[i].id);
+                phrase.append("^2:^1 ");
+                phrase.append(risultato[i].nick);
+                phrase.append("^2 l^1");
+                phrase.append(risultato[i].level);
+                if(i<risultato.size()-1) phrase.append(",\n^1");
+                else phrase.append(".");
             }
         }
-        block->tell( frase, numero );
+        block->tell( phrase, numero );
 
-        frase.clear();
+        phrase.clear();
         #ifdef ITA
-            frase.append("^2Risultati ricerca: \n^1");
+            phrase.append("^2Risultati ricerca: \n^1");
         #else
-            frase.append("^2Search results: \n^1");
+            phrase.append("^2Search results: \n^1");
         #endif
         if (risultatoApprossimativo.size()>15)
         {
             #ifdef ITA
-                frase.append("troppi risultati, prova a migliorare la ricerca. Forse cercavi\n^1");
+                phrase.append("troppi risultati, prova a migliorare la ricerca. Forse cercavi\n^1");
             #else
-                frase.append("too many results, try to improve research. Were you looking for\n^1");
+                phrase.append("too many results, try to improve research. Were you looking for\n^1");
             #endif
-            frase.append(risultatoApprossimativo[0].id);
-            frase.append("^2:^1 ");
-            frase.append(risultatoApprossimativo[0].nick);
-            frase.append("^2 l^1");
-            frase.append(risultatoApprossimativo[0].level);
-            frase.append("\n^2, o forse \n^1");
-            frase.append(risultatoApprossimativo[1].id);
-            frase.append("^2:^1 ");
-            frase.append(risultatoApprossimativo[1].nick);
-            frase.append("^2 l^1");
-            frase.append(risultatoApprossimativo[1].level);
-            frase.append(" ^2?");
+            phrase.append(risultatoApprossimativo[0].id);
+            phrase.append("^2:^1 ");
+            phrase.append(risultatoApprossimativo[0].nick);
+            phrase.append("^2 l^1");
+            phrase.append(risultatoApprossimativo[0].level);
+            phrase.append("\n^2, o forse \n^1");
+            phrase.append(risultatoApprossimativo[1].id);
+            phrase.append("^2:^1 ");
+            phrase.append(risultatoApprossimativo[1].nick);
+            phrase.append("^2 l^1");
+            phrase.append(risultatoApprossimativo[1].level);
+            phrase.append(" ^2?");
         }
         else
         {
-            if (risultatoApprossimativo.empty()) frase.append("none.");
+            if (risultatoApprossimativo.empty()) phrase.append("none.");
             else for (unsigned int i=0; i<risultatoApprossimativo.size();i++)
             {
-                frase.append(risultatoApprossimativo[i].id);
-                frase.append("^2:^1 ");
-                frase.append(risultatoApprossimativo[i].nick);
-                frase.append("^2 l^1");
-                frase.append(risultatoApprossimativo[i].level);
-                if(i<risultatoApprossimativo.size()-1) frase.append(",\n^1");
-                else frase.append(".");
+                phrase.append(risultatoApprossimativo[i].id);
+                phrase.append("^2:^1 ");
+                phrase.append(risultatoApprossimativo[i].nick);
+                phrase.append("^2 l^1");
+                phrase.append(risultatoApprossimativo[i].level);
+                if(i<risultatoApprossimativo.size()-1) phrase.append(",\n^1");
+                else phrase.append(".");
             }
         }
-        block->tell(frase,numero);
+        block->tell(phrase,numero);
         m_scheduler->addInstructionBlock( block, Server::LOW );
     }
 }
@@ -1115,7 +1159,7 @@ void Analyzer::deop(char* line)
         std::string numero=temp.substr(pos,end-pos);
 
         //ho il numero, elimino dal database tutti i record relativi.
-        std::string frase;
+        std::string phrase;
         if (database->deleteOp(numero))
             #ifdef ITA
                 block->tell("^0BanBot: ^1utente tolto con successo dalla lista admin.",numeroAdmin);
@@ -1152,13 +1196,13 @@ void Analyzer::kick(char* line)
         if (isA(line,_R_KICK_NUMBER))
         {
             #ifdef ITA
-                std::string frase("^0BanBot: ^1butto fuori il player numero ");
+                std::string phrase("^0BanBot: ^1butto fuori il player numero ");
             #else
-                std::string frase("^0BanBot: ^1kicking player number ");
+                std::string phrase("^0BanBot: ^1kicking player number ");
             #endif
-            frase.append(player);
-            frase.append("...");
-            block->say(frase);
+            phrase.append(player);
+            phrase.append("...");
+            block->say(phrase);
             block->kick(player);
         }
         else
@@ -1175,13 +1219,13 @@ void Analyzer::kick(char* line)
             else
             {
                 #ifdef ITA
-                    std::string frase("^0BanBot: ^1butto fuori ");
+                    std::string phrase("^0BanBot: ^1butto fuori ");
                 #else
-                    std::string frase("^0BanBot: ^1kicking ");
+                    std::string phrase("^0BanBot: ^1kicking ");
                 #endif
-                frase.append((*m_dati)[m_dati->serverNumber][i]->nick);
-                frase.append("...");
-                block->say(frase);
+                phrase.append((*m_dati)[m_dati->serverNumber][i]->nick);
+                phrase.append("...");
+                block->say(phrase);
                 block->kick((*m_dati)[m_dati->serverNumber][i]->number);
             }
         }
@@ -1202,11 +1246,11 @@ void Analyzer::mute(char* line)
         if ( isA(line,_R_MUTE_ALL) )
         {
             #ifdef ITA
-            std::string frase("^0BanBot: ^1muto/smuto tutti.");
+            std::string phrase("^0BanBot: ^1muto/smuto tutti.");
             #else
-            std::string frase("^0BanBot: ^1muting/unmuting all players.");
+            std::string phrase("^0BanBot: ^1muting/unmuting all players.");
             #endif
-            block->say(frase);
+            block->say(phrase);
             block->muteAll(numeroAdmin);
         }
         else
@@ -1220,13 +1264,13 @@ void Analyzer::mute(char* line)
             if (isA(line,_R_MUTE_NUMBER))
             {
                 #ifdef ITA
-                    std::string frase("^0BanBot: ^1muto/smuto il giocatore numero ");
+                    std::string phrase("^0BanBot: ^1muto/smuto il giocatore numero ");
                 #else
-                    std::string frase("^0BanBot: ^1muting/unmuting player number ");
+                    std::string phrase("^0BanBot: ^1muting/unmuting player number ");
                 #endif
-                frase.append(player);
-                frase.append("...");
-                block->say(frase);
+                phrase.append(player);
+                phrase.append("...");
+                block->say(phrase);
                 block->mute(player);
             }
             else
@@ -1243,13 +1287,13 @@ void Analyzer::mute(char* line)
                 else
                 {
                     #ifdef ITA
-                        std::string frase("^0BanBot: ^1muto/smuto ");
+                        std::string phrase("^0BanBot: ^1muto/smuto ");
                     #else
-                        std::string frase("^0BanBot: ^1muting/unmuting ");
+                        std::string phrase("^0BanBot: ^1muting/unmuting ");
                     #endif
-                    frase.append((*m_dati)[m_dati->serverNumber][i]->nick);
-                    frase.append("...");
-                    block->say(frase);
+                    phrase.append((*m_dati)[m_dati->serverNumber][i]->nick);
+                    phrase.append("...");
+                    block->say(phrase);
                     block->mute((*m_dati)[m_dati->serverNumber][i]->number);
                 }
             }
@@ -1310,9 +1354,10 @@ void Analyzer::help(char* line)
             phrase.append( H_CONFIG );
         if ( level <= (*m_dati)[(*m_dati).serverNumber].commandPermission(Server::STATUS) )
             phrase.append( H_STATUS );
+        if ( level <= (*m_dati)[(*m_dati).serverNumber].commandPermission(Server::WARNINGS) )
+            phrase.append( H_WARNINGS );
 
-
-        phrase.append( H_MESSAGE );
+        phrase.append( H_LEVEL );
         phrase.append( handyFunctions::intToString(level) );
         block->tell(phrase,numero);
         m_scheduler->addInstructionBlock( block, Server::LOW );
@@ -1345,12 +1390,12 @@ void Analyzer::setStrict(char* line)
         {
             (*m_dati)[m_dati->serverNumber].setStrict( atoi(variable.c_str()) );
             #ifdef ITA
-                std::string frase("^0BanBot: ^1Strict ora è al livello ");
+                std::string phrase("^0BanBot: ^1Strict ora è al livello ");
             #else
-                std::string frase("^0BanBot: ^1Strict mode now is on level ");
+                std::string phrase("^0BanBot: ^1Strict mode now is on level ");
             #endif
-            frase.append(variable);
-            block->tell(frase,numeroAdmin);
+            phrase.append(variable);
+            block->tell(phrase,numeroAdmin);
         }
         m_scheduler->addInstructionBlock( block, Server::MEDIUM );
     }
@@ -1397,19 +1442,19 @@ void Analyzer::slap(char* line)
         if (isA(line,_R_SLAP_NUMBER))
         {
             #ifdef ITA
-                std::string frase("^0BanBot: ^1slappo il giocatore numero ");
+                std::string phrase("^0BanBot: ^1slappo il giocatore numero ");
             #else
-                std::string frase("^0BanBot: ^1slapping player number ");
+                std::string phrase("^0BanBot: ^1slapping player number ");
             #endif
-            frase.append(player);
-            frase.append(" ");
-            frase.append(mul_string);
+            phrase.append(player);
+            phrase.append(" ");
+            phrase.append(mul_string);
             #ifdef ITA
-                frase.append(" volta(e)...");
+                phrase.append(" volta(e)...");
             #else
-                frase.append(" time(s)...");
+                phrase.append(" time(s)...");
             #endif
-            block->say(frase);
+            block->say(phrase);
             for (int i=0;i<multiplier;i++)
             {
                 block->slap(player);
@@ -1429,19 +1474,19 @@ void Analyzer::slap(char* line)
             else
             {
                 #ifdef ITA
-                    std::string frase("^0BanBot: ^1slappo ");
+                    std::string phrase("^0BanBot: ^1slappo ");
                 #else
-                    std::string frase("^0BanBot: ^1slapping ");
+                    std::string phrase("^0BanBot: ^1slapping ");
                 #endif
-                frase.append((*m_dati)[m_dati->serverNumber][number]->nick);
-                frase.append(" ");
-                frase.append(mul_string);
+                phrase.append((*m_dati)[m_dati->serverNumber][number]->nick);
+                phrase.append(" ");
+                phrase.append(mul_string);
                 #ifdef ITA
-                    frase.append(" volta(e)...");
+                    phrase.append(" volta(e)...");
                 #else
-                    frase.append(" time(s)...");
+                    phrase.append(" time(s)...");
                 #endif
-                block->say(frase);
+                block->say(phrase);
                 for (int i=0;i<multiplier;i++)
                 {
                     block->slap((*m_dati)[m_dati->serverNumber][number]->number);
@@ -1471,13 +1516,13 @@ void Analyzer::nuke(char* line)
         if (isA(line,_R_NUKE_NUMBER))
         {
             #ifdef ITA
-                std::string frase("^0BanBot: ^1nuke al giocatore numero ");
+                std::string phrase("^0BanBot: ^1nuke al giocatore numero ");
             #else
-                std::string frase("^0BanBot: ^1nuking player number ");
+                std::string phrase("^0BanBot: ^1nuking player number ");
             #endif
-            frase.append(player);
-            frase.append(".");
-            block->say(frase);
+            phrase.append(player);
+            phrase.append(".");
+            block->say(phrase);
             block->nuke(player);
         }
         else
@@ -1494,13 +1539,13 @@ void Analyzer::nuke(char* line)
             else
             {
                 #ifdef ITA
-                    std::string frase("^0BanBot: ^1nuke a ");
+                    std::string phrase("^0BanBot: ^1nuke a ");
                 #else
-                    std::string frase("^0BanBot: ^1nuking ");
+                    std::string phrase("^0BanBot: ^1nuking ");
                 #endif
-                frase.append((*m_dati)[m_dati->serverNumber][number]->nick);
-                frase.append(".");
-                block->say(frase);
+                phrase.append((*m_dati)[m_dati->serverNumber][number]->nick);
+                phrase.append(".");
+                block->say(phrase);
                 block->nuke((*m_dati)[m_dati->serverNumber][number]->number);
             }
         }
@@ -1514,48 +1559,66 @@ void Analyzer::status(char* line)
     std::cout<<"[!] Status";
     (m_dati->log)->timestamp();
     *(m_dati->log)<<"\n[!] Status";
-    //controllo se ho il giocatore e i suoi permessi, se la persona non è autorizzata non faccio nulla.
+    //i check the player and his permissions, if he isn't autorized to use this command, nothing to do.
     std::string numeroAdmin;
     if (isAdminSay(line,numeroAdmin) <= (*m_dati)[(*m_dati).serverNumber].commandPermission(Server::STATUS))
     {
         InstructionsBlock * block = new InstructionsBlock();
-        std::string frase( "^0BanBot ^1status: version " );
-        frase.append( _VERSION );
-        frase.append( ", coded by [2s2h]n3m3s1s & [2s2h]Zamy.\n^1Strict level: " );
+        std::string phrase( "^0BanBot ^1status: version " );
+        phrase.append( _VERSION );
+        phrase.append( ", coded by [2s2h]n3m3s1s & [2s2h]Zamy.\n^1Strict level: " );
         switch ((*m_dati)[m_dati->serverNumber].strict())
         {
             case 0:
-                frase.append("OFF");
+                phrase.append("OFF");
                 break;
             case 1:
-                frase.append("1");
+                phrase.append("1");
                 break;
             case 2:
-                frase.append("2");
+                phrase.append("2");
                 break;
             case 3:
-                frase.append("3");
+                phrase.append("3");
+                break;
+            case 4:
+                phrase.append("4");
+                break;
+            case 5:
+                phrase.append("5");
                 break;
             default:
-                frase.append("4");
+                phrase.append("6");
                 break;
         }
         #ifdef ITA
-            frase.append("\n^1Numbero degli admin: ");
-            frase.append(database->ops());
-            frase.append("\n^1Giocatori bannati: ");
-            frase.append(database->banned());
-            frase.append("\n^1Giocatori bannati automaticamente: ");
-            frase.append(database->autoBanned());
+            phrase.append("\n^1Numbero degli admin: ");
+            phrase.append(database->ops());
+            phrase.append("\n^1Giocatori bannati: ");
+            phrase.append(database->banned());
+            phrase.append("\n^1Giocatori bannati automaticamente: ");
+            phrase.append(database->autoBanned());
+            phrase.append("\n^1Messaggi warning: ");
+            if ((*m_dati)[(*m_dati).serverNumber].warnings() == Server::DISABLED)
+                phrase.append("disattivati");
+            else if ((*m_dati)[(*m_dati).serverNumber].warnings() == Server::PUBLIC)
+                phrase.append("pubblici");
+            else phrase.append("privati");
         #else
-            frase.append("\n^1Number of admins: ");
-            frase.append(database->ops());
-            frase.append("\n^1Players currently banned: ");
-            frase.append(database->banned());
-            frase.append("\n^1Players banned automatically: ");
-            frase.append(database->autoBanned());
+            phrase.append("\n^1Number of admins: ");
+            phrase.append(database->ops());
+            phrase.append("\n^1Players currently banned: ");
+            phrase.append(database->banned());
+            phrase.append("\n^1Players banned automatically: ");
+            phrase.append(database->autoBanned());
+            phrase.append("\n^1Warning messages: ");
+            if ((*m_dati)[(*m_dati).serverNumber].warnings() == Server::DISABLED)
+                phrase.append("disabled");
+            else if ((*m_dati)[(*m_dati).serverNumber].warnings() == Server::PUBLIC)
+                phrase.append("public");
+            else phrase.append("private");
         #endif
-        block->say(frase);
+        block->say(phrase);
         m_scheduler->addInstructionBlock( block, Server::MEDIUM );
     }
 }
@@ -1565,7 +1628,7 @@ void Analyzer::force(char* line)
     std::cout<<"[!] Force";
     (m_dati->log)->timestamp();
     *(m_dati->log)<<"\n[!] Force";
-    //controllo se ho il giocatore e i suoi permessi, se la persona non è autorizzata non faccio nulla.
+    //i check the player and his permissions, if he isn't autorized to use this command, nothing to do.
     std::string numeroAdmin;
     if (isAdminSay(line,numeroAdmin) <= (*m_dati)[(*m_dati).serverNumber].commandPermission(Server::FORCE))
     {
@@ -1580,20 +1643,20 @@ void Analyzer::force(char* line)
         if ( action.compare("spect") == 0 )
             action = "spectator";
 
-        std::string frase;
+        std::string phrase;
         if (isA(line,_R_FORCE_NUMBER))
         {
             #ifdef ITA
-                frase.append("^0BanBot: ^1sposto il giocatore numero ");
-                frase.append(player);
-                frase.append(" in ");
+                phrase.append("^0BanBot: ^1sposto il giocatore numero ");
+                phrase.append(player);
+                phrase.append(" in ");
             #else
-                frase.append("^0BanBot: ^1forcing player number ");
-                frase.append(player);
-                frase.append(" to ");
+                phrase.append("^0BanBot: ^1forcing player number ");
+                phrase.append(player);
+                phrase.append(" to ");
             #endif
-            frase.append(action);
-            frase.append(".");
+            phrase.append(action);
+            phrase.append(".");
         }
         else
         {
@@ -1609,20 +1672,20 @@ void Analyzer::force(char* line)
             else
             {
                 #ifdef ITA
-                    frase.append("^0BanBot: ^1sposto ");
-                    frase.append((*m_dati)[m_dati->serverNumber][i]->nick);
-                    frase.append(" in ");
+                    phrase.append("^0BanBot: ^1sposto ");
+                    phrase.append((*m_dati)[m_dati->serverNumber][i]->nick);
+                    phrase.append(" in ");
                 #else
-                    frase.append("^0BanBot: ^1forcing ");
-                    frase.append((*m_dati)[m_dati->serverNumber][i]->nick);
-                    frase.append(" to ");
+                    phrase.append("^0BanBot: ^1forcing ");
+                    phrase.append((*m_dati)[m_dati->serverNumber][i]->nick);
+                    phrase.append(" to ");
                 #endif
-                frase.append(action);
-                frase.append(".");
+                phrase.append(action);
+                phrase.append(".");
                 player=(*m_dati)[m_dati->serverNumber][i]->number;
             }
         }
-        block->say(frase);
+        block->say(phrase);
         block->force(player,action);
         m_scheduler->addInstructionBlock( block, Server::MEDIUM );
     }
@@ -1633,8 +1696,8 @@ void Analyzer::iamgod(char* line)
     std::cout<<"[!] iamgod";
     (m_dati->log)->timestamp();
     *(m_dati->log)<<"\n[!] iamgod";
-    //controllo se il database è vuoto. Se lo è, aggiungo la persona tra gli op.
-    if (database->isOpTableEmpty())   //se il database è vuoto
+    //this command have to work only when there aren't admins, it exists only to simplify the installation
+    if (database->isOpTableEmpty())   //if the oplist table is empty, i should execute this command.
     {
         InstructionsBlock * block = new InstructionsBlock();
         std::string temp = line;
@@ -1642,7 +1705,7 @@ void Analyzer::iamgod(char* line)
         pos = temp.find_first_not_of( " ", pos+4 );
         int end = temp.find_first_of( " ", pos );
         std::string numero = temp.substr( pos, end-pos );
-        //prendo i dati dell'utente e lo aggiungo tra gli op
+        //i take player infos, and then add him in op list with level 0 (hightest admin level).
         int i = findPlayer( numero );
         if( i>=0 && database->addOp( correggi((*m_dati)[m_dati->serverNumber][i]->nick), correggi((*m_dati)[m_dati->serverNumber][i]->GUID), "0") )
             block->bigtext("^1Welcome, my Master!");
@@ -1665,12 +1728,11 @@ void Analyzer::map(char* line)
     std::cout<<"[!] Map";
     (m_dati->log)->timestamp();
     *(m_dati->log)<<"\n[!] Map";
-    //controllo se ho il giocatore e i suoi permessi, se la persona non è autorizzata non faccio nulla.
+    //i check the player and his permissions, if he isn't autorized to use this command, nothing to do.
     std::string numeroAdmin;
     if (isAdminSay(line,numeroAdmin) <= (*m_dati)[(*m_dati).serverNumber].commandPermission(Server::MAP))
     {
         InstructionsBlock * block = new InstructionsBlock();
-        //prendo il numero o nome del player da aggiungere tra gli admin
         std::string temp(line);
         int pos=temp.find("!map");
         pos=temp.find_first_not_of(" \t\n\r\f\v",pos+4);
@@ -1686,7 +1748,7 @@ void Analyzer::nextmap(char* line)
     std::cout<<"[!] NextMap";
     (m_dati->log)->timestamp();
     *(m_dati->log)<<"\n[!] NextMap";
-    //controllo se ho il giocatore e i suoi permessi, se la persona non è autorizzata non faccio nulla.
+    //i check the player and his permissions, if he isn't autorized to use this command, nothing to do.
     std::string numeroAdmin;
     if (isAdminSay(line,numeroAdmin) <= (*m_dati)[(*m_dati).serverNumber].commandPermission(Server::NEXTMAP))
     {
@@ -1707,7 +1769,7 @@ void Analyzer::admins(char* line)
     std::cout<<"[!] Admins";
     (m_dati->log)->timestamp();
     *(m_dati->log)<<"\n[!] Admins";
-    //controllo se ho il giocatore e i suoi permessi, se la persona non è autorizzata non faccio nulla.
+    //i check the player and his permissions, if he isn't autorized to use this command, nothing to do.
     std::string numeroAdmin;
     if (isAdminSay(line,numeroAdmin) <= (*m_dati)[(*m_dati).serverNumber].commandPermission(Server::ADMINS))
     {
@@ -1792,6 +1854,38 @@ void Analyzer::config(char* line)
     }
 }
 
+void Analyzer::warnings(char* line)
+{
+    std::cout<<"[!] Warnings";
+    (m_dati->log)->timestamp();
+    *(m_dati->log)<<"\n[!] Warnings";
+    //i check the player and his permissions, if he isn't autorized to use this command, nothing to do.
+    std::string numeroAdmin;
+    if (isAdminSay(line,numeroAdmin) <= (*m_dati)[(*m_dati).serverNumber].commandPermission(Server::WARNINGS))
+    {
+        InstructionsBlock* block = new InstructionsBlock();
+        std::string temp = line;
+        int pos = temp.find( "!warnings" );
+        pos = temp.find_first_not_of( " ", pos+9 );
+        std::string type = temp.substr( pos );
+        if (type.compare("off"))
+        {
+            (*m_dati)[(*m_dati).serverNumber].setWarnings(Server::DISABLED);
+            block->tell("^0BanBot:^1 warning messages now are ^2disabled.",numeroAdmin);
+        }
+        else if (type.compare("public"))
+        {
+            (*m_dati)[(*m_dati).serverNumber].setWarnings(Server::PUBLIC);
+            block->tell("^0BanBot:^1 warning messages now are ^2public.",numeroAdmin);
+        }
+        else
+        {
+            (*m_dati)[(*m_dati).serverNumber].setWarnings(Server::PRIVATE);
+            block->tell("^0BanBot:^1 warning messages now are ^2private.",numeroAdmin);
+        }
+        m_scheduler->addInstructionBlock(block, Server::MEDIUM);
+    }
+}
 /*************************************************************************** UTILS **************************************/
 
 void Analyzer::getDateAndTime(std::string &data,std::string &ora)
@@ -1815,30 +1909,30 @@ void Analyzer::buttaFuori(const std::string &reason, const std::string numero, c
     #ifdef ITA
         std::cout<<"  [+] kick per ban.\n";
         *(m_dati->log)<<"  [+] kick per ban.\n";
-        std::string frase( "^0BanBot: ^1kick per il giocatore numero " );
-        frase.append(numero);
-        frase.append( ", " );
-        frase.append( nick );
+        std::string phrase( "^0BanBot: ^1kick per il giocatore numero " );
+        phrase.append(numero);
+        phrase.append( ", " );
+        phrase.append( nick );
         if ( !reason.empty() )
         {
-            frase.append( " bannato per " );
-            frase.append( reason );
+            phrase.append( " bannato per " );
+            phrase.append( reason );
         }
     #else
         std::cout<<"  [+] kick due to ban.\n";
         *(m_dati->log)<<"  [+] kick due to ban.\n";
-        std::string frase( "^0BanBot: ^1kicking player number " );
-        frase.append(numero);
-        frase.append( ", " );
-        frase.append( nick );
+        std::string phrase( "^0BanBot: ^1kicking player number " );
+        phrase.append(numero);
+        phrase.append( ", " );
+        phrase.append( nick );
         if ( !reason.empty() )
         {
-            frase.append( " banned for " );
-            frase.append( reason );
+            phrase.append( " banned for " );
+            phrase.append( reason );
         }
     #endif
-    frase.append( "." );
-    block->say( frase );
+    phrase.append( "." );
+    block->say( phrase );
     block->kick( numero );
     m_scheduler->addInstructionBlock( block , Server::HIGH );
 }
@@ -1905,15 +1999,15 @@ bool Analyzer::nickIsBanned(const std::string &nick, const std::string &numero, 
                 else
                 {
                     #ifdef ITA
-                    std::string frase("^0BanBot ^1attenzione: il nick '");
-                    frase.append(nick);
-                    frase.append("' e' tra quelli bannati.");
+                    std::string phrase("^0BanBot ^1attenzione: il nick '");
+                    phrase.append(nick);
+                    phrase.append("' e' tra quelli bannati.");
                     #else
-                    std::string frase("^0BanBot ^1warning: the nick '");
-                    frase.append(nick);
-                    frase.append("' is currently banned.");
+                    std::string phrase("^0BanBot ^1warning: the nick '");
+                    phrase.append(nick);
+                    phrase.append("' is currently banned.");
                     #endif
-                    tellToAdmins(frase);
+                    tellToAdmins(phrase);
                 }
             }
             if ( bannato )
@@ -2008,15 +2102,26 @@ std::vector<unsigned int> Analyzer::admins()
     return temp;
 }
 
-void Analyzer::tellToAdmins(std::string frase)
+void Analyzer::tellToAdmins(std::string phrase)
 {
-    InstructionsBlock * block = new InstructionsBlock();
-    std::vector<unsigned int> indici=admins();
-    for (unsigned int i=0;i<indici.size();i++)
+    if ( (*m_dati)[m_dati->serverNumber].warnings() != Server::DISABLED )
     {
-        block->tell(frase,(*m_dati)[m_dati->serverNumber][indici[i]]->number);
+        InstructionsBlock * block = new InstructionsBlock();
+        if ( (*m_dati)[m_dati->serverNumber].warnings() == Server::PRIVATE )
+        {
+            std::vector<unsigned int> indici=admins();
+            for (unsigned int i=0;i<indici.size();i++)
+            {
+                block->tell(phrase,(*m_dati)[m_dati->serverNumber][indici[i]]->number);
+            }
+           
+        }
+        else
+        {
+            block->say(phrase);
+        }
+        m_scheduler->addInstructionBlock( block , Server::LOW );
     }
-    m_scheduler->addInstructionBlock( block , Server::LOW );
 }
 
 int Analyzer::translatePlayer(std::string player)

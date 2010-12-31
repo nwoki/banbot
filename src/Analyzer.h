@@ -16,7 +16,7 @@
  *   	along with BanBot (look at GPL_License.txt).
  *   	If not, see <http://www.gnu.org/licenses/>.
  *
- *   	Copyright © 2010, Zamy (Simone Daminato), N3m3s1s (Francesco Nwokeka)
+ *   	Copyright © 2010, 2011 Zamy (Simone Daminato), N3m3s1s (Francesco Nwokeka)
  *
  *
  *   	BanBot uses SQLite3:
@@ -64,23 +64,23 @@
 
 //tempi di attesa tra un giro e l'altro nell'analisi dei log (più è basso, più alto sarà il consumo (e spreco) di risorse,
 //d'altro canto più alto è, maggiore sarà il tempo di risposta del bot).
-#define TIME_SLEEPING_MIN 1         //tempo di pausa minimo (durante reazione ad eventi/comandi), aka fascia 0
-#define TIME_SLEEPING_MIDDLE 3      //tempo di pausa medio (dopo circa 30 secondi di inattivita'), aka fascia 1
-#define TIME_SLEEPING_MAX 15        //tempo di pausa in relax totale (dopo circa 3 minuti di inattivita' in fascia media), aka fascia 2
+#define TIME_SLEEPING_MIN 1         //minimum pause time (when events/commands occurs), aka fascia 0
+#define TIME_SLEEPING_MIDDLE 3      //middle pause time (after approx 30 seconds of inactivity), aka fascia 1
+#define TIME_SLEEPING_MAX 15        //maximum pause time, aka stand-by mode, (after approx 3 minutes if inactivity in fascia 1), aka fascia 2
 
 //livelli di strict:
-#define LEVEL0 0        // Bot deactivated. React only to strict command.
+#define LEVEL0 0        // Bot deactivated. Reacts only to strict and status commands.
 #define LEVEL1 1        //no anti-cheat controls activated, ban only with guid, no warnings.
-#define LEVEL3 3        //anticheat checks (with cheat recognition), only warnings.
-#define LEVEL4 4        //anticheat checks, clean and pure client checks, only warnings.
-#define LEVEL5 5        //like level 4, automated ban with anticheat checks, warnings if in dubt and for unpure client.
-#define LEVEL6 6        //like level 5, automated ban if in dubt too.
-#define LEVEL7 7        //like level 6, automated ban for everything, no warnings.
+#define LEVEL2 2        //anticheat checks (with cheat recognition), only warnings.
+#define LEVEL3 3        //anticheat checks, clean and pure client checks, only warnings.
+#define LEVEL4 4        //like level 4, automated ban with anticheat checks, warnings if in dubt and for unpure client.
+#define LEVEL5 5        //like level 5, automated ban if in dubt too.
+#define LEVEL6 6        //like level 6, automated ban for everything, no warnings.
 
 // !help defines.
 #ifdef ITA
     #define COMMANDLIST "^1Comandi disponibili:\n"
-    #define H_MESSAGE "^1Il tuo livello e' ^2"
+    #define H_LEVEL "^1Il tuo livello e' ^2"
     #define H_BAN "^2!ban <numero/nick> [<motivo>] ^1: banna un player, con o senza motivo\n"
     #define H_UNBAN "^2!unban <id> ^1: sbanna un player (id dato da !find)\n"
     #define H_KICK "^2!kick <numero/nick> ^1: butta fuori un player\n"
@@ -100,9 +100,10 @@
     #define H_ADMINS "^2!admins ^1: elenca gli admin attualmente in gioco\n"
     #define H_PASS "^2!pass <pass> ^1: cambia la password al server\n"
     #define H_CONFIG "^2!config <file> ^1: carica un file di configurazione\n"
+    #define H_WARNINGS "^2!warnings <off/public/private> ^1: imposta come inviare i warnings\n"
 #else
     #define COMMANDLIST "^1Commands enabled:\n"
-    #define H_MESSAGE "^1Your level is ^2"
+    #define H_LEVEL "^1Your level is ^2"
     #define H_BAN "^2!ban <number/nick> [<reason>] ^1: ban a player, with or without a reason\n"
     #define H_UNBAN "^2!unban <id> ^1: unban a player (id from !find)\n"
     #define H_KICK "^2!kick <number/nick> ^1: kick a player\n"
@@ -122,6 +123,7 @@
     #define H_ADMINS "^2!admins ^1: show admins actually in game\n"
     #define H_PASS "^2!pass <pass> ^1: change server's password\n"
     #define H_CONFIG "^2!config <file> ^1: load a configuration file\n"
+    #define H_WARNINGS "^2!warnings <off/public/private> ^1: sets how to send warnings\n"
 #endif
 
 class Analyzer
@@ -162,6 +164,7 @@ private:
     void admins(char* line);
     void pass(char* line);
     void config(char* line);
+    void warnings(char* line);
 
 protected:
     bool isA(const char* line,const std::string &regex);          //testa se la riga soddisfa il regex.
@@ -174,7 +177,7 @@ protected:
     void buttaFuori(const std::string& reason, const std::string numero, const std::string nick);
     std::string correggi(std::string stringa);          //corregge la riga di testo per l'inserimento e l'utilizzo col database
     std::vector<unsigned int> admins();                          //restituisce gli indici dell'array dei player dei giocatori attualmente nel server che sono admin.
-    void tellToAdmins(std::string frase);               //invia un messaggio a tutti gli admin attualmente in game (messaggio privato).
+    void tellToAdmins(std::string phrase);               //invia un messaggio a tutti gli admin attualmente in game (messaggio privato).
     int translatePlayer(std::string player);            //@player rappresenta un nick o una parte del nick di un player in game, la funzione restituisce l'indice nell'array dei giocatori indicato da @player, se non trovato o non univoco restituisce -1.
     int findPlayer(std::string number);                 //return the index of player with number @number if exists, or -1.
     Connection * server;

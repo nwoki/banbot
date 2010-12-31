@@ -15,7 +15,7 @@
     along with BanBot (look at GPL_License.txt).
     If not, see <http://www.gnu.org/licenses/>.
 
-    Copyright © 2010, Zamy (Simone Daminato), N3m3s1s (Francesco Nwokeka)
+    Copyright © 2010, 2011 Zamy (Simone Daminato), N3m3s1s (Francesco Nwokeka)
 
 
     BanBot uses SQLite3:
@@ -34,6 +34,7 @@ Server::Server()
     , m_valid( true )
     , m_port( 0 )
     , m_strict( 0 )
+    , m_warnings( PRIVATE )
     , m_instructionCounter( new InstructionCounter() )
     , m_lowPriorityInst( NULL )
     , m_mediumPriorityInst( NULL )
@@ -66,6 +67,7 @@ Server::Server()
     m_permissions.push_back( 0 );     //pass level
     m_permissions.push_back( 1 );     //config level
     m_permissions.push_back( 100 );   //status level
+    m_permissions.push_back( 2 );     //warnings level
 }
 
 Server::~Server()
@@ -331,6 +333,16 @@ int Server::commandPermission ( Commands cmd ) const
 void Server::setCommandPermission( Commands cmd, int value )
 {
     m_permissions[cmd] = value;
+}
+
+Server::Warnings Server::warnings () const
+{
+    return m_warnings;
+}
+
+void Server::setWarnings ( Server::Warnings type )
+{
+    m_warnings = type;
 }
 //**************************************** Functions for direct access to player vector ************************
 unsigned int Server::size()

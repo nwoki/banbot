@@ -15,7 +15,7 @@
  *  along with BanBot (look at GPL_License.txt).
  *  If not, see <http://www.gnu.org/licenses/>.
  *
- *  Copyright © 2010, Zamy (Simone Daminato), N3m3s1s (Francesco Nwokeka)
+ *  Copyright © 2010, 2011 Zamy (Simone Daminato), N3m3s1s (Francesco Nwokeka)
  *
  *
  *  BanBot uses SQLite3:

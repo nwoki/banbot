@@ -15,7 +15,7 @@
     along with BanBot (look at GPL_License.txt).
     If not, see <http://www.gnu.org/licenses/>.
 
-    Copyright © 2010, Zamy (Simone Daminato), N3m3s1s (Francesco Nwokeka)
+    Copyright © 2010, 2011 Zamy (Simone Daminato), N3m3s1s (Francesco Nwokeka)
 
 
     BanBot uses SQLite3:
@@ -39,6 +39,12 @@ class Server
         Server();
         ~Server();
 
+        enum Warnings {              //server messages (warnings) type
+            DISABLED,
+            PRIVATE,
+            PUBLIC
+        };
+        
         enum PriorityLevel {        // server intructions priority enum
             LOW,
             MEDIUM,
@@ -63,7 +69,8 @@ class Server
             ADMINS,
             PASS,
             CONFIG,
-            STATUS
+            STATUS,
+            WARNINGS
         };
 
         class Player
@@ -147,7 +154,8 @@ class Server
         std::vector<std::string> serverConfigs() const;                     // returns game server's config file list
         std::vector<std::string> serverMaps() const;                        // returns game server's map file list
         std::string gameDirectory() const;                                  // returns the directory where the game is installed
-        int commandPermission ( Commands cmd ) const;                             // returns the minimum power level requested by a command.
+        int commandPermission ( Commands cmd ) const;                       // returns the minimum power level requested by a command.
+        Warnings warnings () const;                                         // return the message type setted.
 
         // setters
         void setName( std::string name );                                   // set server name
@@ -168,6 +176,7 @@ class Server
         void setServerMaps( std::vector<std::string> &list );                // set game server's extra maps list
         void setGameDirectory( std::string &dir );                           // set the directory where the game is installed
         void setCommandPermission( Commands cmd, int value );               // set the minimum power level requested by a command.
+        void setWarnings ( Server::Warnings type );
 
 
 
@@ -206,6 +215,7 @@ class Server
         std::string m_dbFolder;                     // server database folder directory
         std::streampos m_row;                       // current row on log file
         int m_strict;                               // restriction level
+        Warnings m_warnings;                        // message type (warnings)
 
         std::vector<Player*> m_giocatori;           // vector with the info of the players currently in the server
         InstructionCounter *m_instructionCounter;   // instruction counter for server's various InstructionsBlock

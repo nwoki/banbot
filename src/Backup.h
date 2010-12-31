@@ -16,7 +16,7 @@
  *   	along with BanBot (look at GPL_License.txt).
  *   	If not, see <http://www.gnu.org/licenses/>.
  *
- *   	Copyright © 2010, Zamy (Simone Daminato), N3m3s1s (Francesco Nwokeka)
+ *   	Copyright © 2010, 2011 Zamy (Simone Daminato), N3m3s1s (Francesco Nwokeka)
  *
  *
  *   	BanBot uses SQLite3:
@@ -26,8 +26,8 @@
  *					Backup
  *	Author:		[2s2h]Zamy
  *
- *	Description:	Questa classe si occupa di effettuare un backup giornaliero di tutti
- *			i file di log ad una determinata ora del giorno (di default le 6:30 A.M.).
+ *	Description:	This class is to do a daily backup of all files (log, databases, etc.) at a specific time 
+                    (default is 5:30 A.M.).
  *
  */
 #ifndef _backup_h_
@@ -47,9 +47,9 @@
 //se il bot viene impostato per fare il suo lavoro più volte al minuto,
 //e' ragionevole impostare un solo minuto, e quindi con OVERMINUTE uguale a MINUTE.
 //tanto per sicurezza, lascio uno spiraglio di 2 minuti:
-#define HOUR "05"   //ora
-#define MINUTE "30"
-#define OVERMINUTE "31"
+#define HOUR "05"   //hour
+#define MINUTE "30"  //minimum minute of the hour
+#define OVERMINUTE "31" //maximum minute of the hour, with minimum defines the range within do the backup.
 
 class Backup
 {
