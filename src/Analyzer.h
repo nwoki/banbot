@@ -70,12 +70,15 @@
 
 //livelli di strict:
 #define LEVEL0 0        // Bot deactivated. Reacts only to strict and status commands.
-#define LEVEL1 1        //no anti-cheat controls activated, ban only with guid, no warnings.
+#define LEVEL1 1        //no anti-cheat controls activated, only banned players will be kicked.
 #define LEVEL2 2        //anticheat checks (with cheat recognition), only warnings.
 #define LEVEL3 3        //anticheat checks, clean and pure client checks, only warnings.
-#define LEVEL4 4        //like level 4, automated ban with anticheat checks, warnings if in dubt and for unpure client.
-#define LEVEL5 5        //like level 5, automated ban if in dubt too.
-#define LEVEL6 6        //like level 6, automated ban for everything, no warnings.
+#define LEVEL4 4        //like level 3, automated ban with anticheat checks, warnings if in dubt and for unpure client.
+#define LEVEL5 5        //like level 4, automated ban if in dubt too.
+#define LEVEL6 6        //like level 5, automated ban for everything, no warnings.
+
+//TODO definire variabile per la durata dei ban a nick e ip.
+//TODO definire variabile per abilitare/disattivare il check sulla guid "UNKNOWN"
 
 // !help defines.
 #ifdef ITA
@@ -89,7 +92,7 @@
     #define H_FINDOP "^2!findop <nick> ^1: cerca un player tra gli admin\n"
     #define H_OP "^2!op <numero/nick> [level] ^1: da' lo stato di admin ad un player\n"
     #define H_DEOP "^2!deop <id> ^1: toglie lo stato di admin ad un player (id da !findop)\n"
-    #define H_STRICT "^2!strict <OFF/0/1/2> ^1: cambia il livello di sicurezza del server\n"
+    #define H_STRICT "^2!strict <0/1/2/3/4/5/6> ^1: cambia il livello di sicurezza del server\n"
     #define H_NUKE "^2!nuke <numero/nick> ^1: lancia un nuke ad un player\n"
     #define H_SLAP "^2!slap <numero/nick> [2-9] ^1: slappa una (o piu' volte) un player\n"
     #define H_VETO "^2!veto ^1: annulla la votazione in corso\n"
@@ -112,7 +115,7 @@
     #define H_FINDOP "^2!findop <nick> ^1: search a player from admin list\n"
     #define H_OP "^2!op <number/nick> [level] ^1: register the player as admin\n"
     #define H_DEOP "^2!deop <id> ^1: unregister the player as admin (id from !findop)\n"
-    #define H_STRICT "^2!strict <OFF/0/1/2> ^1: change the security level of the server\n"
+    #define H_STRICT "^2!strict <0/1/2/3/4/5/6> ^1: change the security level of the server\n"
     #define H_NUKE "^2!nuke <number/nick> ^1: nuke a player\n"
     #define H_SLAP "^2!slap <number/nick> [2-9] ^1: slaps once (or more times) a player\n"
     #define H_VETO "^2!veto ^1: cancel the vote in progress\n"
@@ -129,6 +132,12 @@
 class Analyzer
 {
 private:
+    enum CheckTimingEnum{
+        BANNED,
+        WARNING,
+        NOPE
+    };
+    
     Backup* backup;
     ConfigLoader * m_configLoader;
     std::ifstream *log;             //stream di lettura sul log del server
@@ -180,10 +189,11 @@ protected:
     void tellToAdmins(std::string phrase);               //invia un messaggio a tutti gli admin attualmente in game (messaggio privato).
     int translatePlayer(std::string player);            //@player rappresenta un nick o una parte del nick di un player in game, la funzione restituisce l'indice nell'array dei giocatori indicato da @player, se non trovato o non univoco restituisce -1.
     int findPlayer(std::string number);                 //return the index of player with number @number if exists, or -1.
+    CheckTimingEnum checkTiming (const std::vector<Db::idMotiveStruct> &records, const Server::Timing &option, const std::string &nick, const std::string &numero );  //it decides if nick or ip is to considered banned.
     Connection * server;
     Db * database;
-    ConfigLoader::Options* m_dati;       //it contains all opzions of each server (players included).
-    Scheduler * m_scheduler;
+    ConfigLoader::Options* m_dati;                      //it contains all options of each server (players included).
+    Scheduler * m_scheduler;                            //instance of scheduler class, it decides what command have to be executed.
 
 
 public:

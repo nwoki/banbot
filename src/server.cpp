@@ -35,6 +35,8 @@ Server::Server()
     , m_port( 0 )
     , m_strict( 0 )
     , m_warnings( PRIVATE )
+    , m_banNick( NEVER )
+    , m_banIp( NEVER )
     , m_instructionCounter( new InstructionCounter() )
     , m_lowPriorityInst( NULL )
     , m_mediumPriorityInst( NULL )
@@ -343,6 +345,36 @@ Server::Warnings Server::warnings () const
 void Server::setWarnings ( Server::Warnings type )
 {
     m_warnings = type;
+}
+
+Server::Timing Server::banNick () const
+{
+    return m_banNick;
+}
+
+void Server::setBanNick( Server::Timing time )
+{
+    m_banNick = time;
+}
+
+Server::Timing Server::banIp () const
+{
+    return m_banIp;
+}
+
+void Server::setBanIp( Server::Timing time )
+{
+    m_banIp = time;
+}
+
+bool Server::banWarnings () const
+{
+    return m_banWarnings;
+}
+
+void Server::setBanWarnings( bool option )
+{
+    m_banWarnings = option;
 }
 //**************************************** Functions for direct access to player vector ************************
 unsigned int Server::size()

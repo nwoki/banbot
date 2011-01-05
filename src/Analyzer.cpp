@@ -66,7 +66,7 @@
 #define _R_MUTE " *[0-9]+:[0-9]{2} +say: +[0-9]+ +[^ \t\n\r\f\v]+: +!mute [^ \t\n\r\f\v]+$"
 #define _R_MUTE_ALL "^ *[0-9]+:[0-9]{2} +say: +[0-9]+ +[^ \t\n\r\f\v]+: +!mute (all)|(ALL)$"
 #define _R_MUTE_NUMBER "^ *[0-9]+:[0-9]{2} +say: +[0-9]+ +[^ \t\n\r\f\v]+: +!mute [0-9]{1,2}$"
-#define _R_STRICT "^ *[0-9]+:[0-9]{2} +say: +[0-9]+ +[^ \t\n\r\f\v]+: +!strict (OFF|off|[0-2]{1})$"
+#define _R_STRICT "^ *[0-9]+:[0-9]{2} +say: +[0-9]+ +[^ \t\n\r\f\v]+: +!strict (OFF|off|[0-6]{1})$"
 #define _R_VETO "^ *[0-9]+:[0-9]{2} +say: +[0-9]+ +[^ \t\n\r\f\v]+: +!veto$"
 #define _R_SLAP "^ *[0-9]+:[0-9]{2} +say: +[0-9]+ +[^ \t\n\r\f\v]+: +!slap [^\t\n\r\f\v]+$"
 #define _R_SLAP_NUMBER "^ *[0-9]+:[0-9]{2} +say: +[0-9]+ +[^ \t\n\r\f\v]+: +!slap [0-9]{1,2}"
@@ -1868,20 +1868,31 @@ void Analyzer::warnings(char* line)
         int pos = temp.find( "!warnings" );
         pos = temp.find_first_not_of( " ", pos+9 );
         std::string type = temp.substr( pos );
-        if (type.compare("off"))
+        if (type.compare("off") == 0)
         {
             (*m_dati)[(*m_dati).serverNumber].setWarnings(Server::DISABLED);
+            #ifdef ITA
+            block->tell("^0BanBot:^1 i messaggi di warning adesso sono ^2disabilitati.",numeroAdmin);
+            #else
             block->tell("^0BanBot:^1 warning messages now are ^2disabled.",numeroAdmin);
+            #endif
         }
-        else if (type.compare("public"))
+        else if (type.compare("public") == 0)
         {
-            (*m_dati)[(*m_dati).serverNumber].setWarnings(Server::PUBLIC);
+            #ifdef ITA
+            block->tell("^0BanBot:^1 i messaggi di warning adesso sono ^2pubblici.",numeroAdmin);
+            #else
             block->tell("^0BanBot:^1 warning messages now are ^2public.",numeroAdmin);
+            #endif
         }
         else
         {
             (*m_dati)[(*m_dati).serverNumber].setWarnings(Server::PRIVATE);
+            #ifdef ITA
+            block->tell("^0BanBot:^1 i messaggi di warning adesso sono ^2privati.",numeroAdmin);
+            #else
             block->tell("^0BanBot:^1 warning messages now are ^2private.",numeroAdmin);
+            #endif
         }
         m_scheduler->addInstructionBlock(block, Server::MEDIUM);
     }
@@ -1937,10 +1948,71 @@ void Analyzer::buttaFuori(const std::string &reason, const std::string numero, c
     m_scheduler->addInstructionBlock( block , Server::HIGH );
 }
 
+Analyzer::CheckTimingEnum Analyzer::checkTiming ( const std::vector<Db::idMotiveStruct> &records, const Server::Timing &option )
+{
+    // depending on actual time, time of ban, and options, i decide if the player has to be kicked, or if advice admins.
+    if ( option != Server::NEVER &&  records.size() )
+    {
+        if ( option == Server::ALWAYS ) return Analyzer::BANNED;
+        
+        std::string ora;
+        std::string data;
+        getDateAndTime(data,ora);
+        
+        if (data.compare(records[0].date) == 0)
+        {
+        
+            int oraAttuale=atoi(ora.substr(0,2).c_str());
+            int minutoAttuale=atoi(ora.substr(3,5).c_str());
+            int oraBan = atoi(records[0].time.substr(0,2).c_str());
+            int minutoBan = atoi(records[0].time.substr(3,5).c_str());
+            int diff = (oraAttuale*60+minutoAttuale)-(oraBan*60+minutoBan);
+            
+            bool advice = false;
+            
+            if ( diff > 30 ) advice = true;
+            else if ( option == Server::TIRTEEN ) return Analyzer::BANNED;
+            else if ( diff > 15 ) advice = true;
+            else if ( option == Server::FIFTEEN ) return Analyzer::BANNED;
+            else if ( diff > 10 ) advice = true;
+            else if ( option == Server::TEN ) return Analyzer::BANNED;
+            else if ( diff > 5 ) advice = true;
+            else return Analyzer::BANNED;
+                
+            if ( advice && (*m_dati)[m_dati->serverNumber].banWarnings() )
+            {
+                
+            }
+            
+            
+            {
+                #ifdef DEBUG_MODE
+                std::cout<<"  Nick banned less than ten minutes ago.\n";
+                #endif
+                bannato = true;
+            }
+            else
+            {
+                #ifdef ITA
+                std::string phrase("^0BanBot ^1attenzione: il nick '");
+                phrase.append(nick);
+                phrase.append("' e' tra quelli bannati.");
+                #else
+                std::string phrase("^0BanBot ^1warning: the nick '");
+                phrase.append(nick);
+                phrase.append("' is currently banned.");
+                #endif
+                tellToAdmins(phrase);
+            }
+        }
+    }
+    return false
+}
+
 bool Analyzer::guidIsBanned(const std::string &guid, const std::string &nick, const std::string &numero, const std::string &ip)
 {
-    //if ( (*m_dati)[m_dati->serverNumber].strict() > LEVEL0 )
-    //{
+    if ( (*m_dati)[m_dati->serverNumber].strict() > LEVEL0 )
+    {
         std::vector<Db::idMotiveStruct> risultato = database->idMotiveViaGuid(correggi(guid));
 
         if ( risultato.size() )
@@ -1962,7 +2034,7 @@ bool Analyzer::guidIsBanned(const std::string &guid, const std::string &nick, co
             database->modifyBanned(correggi(nick),ip,data,ora,std::string(),risultato[0].id);
             return true;
         }
-    //}
+    }
     return false;
 }
 
@@ -1970,8 +2042,8 @@ bool Analyzer::nickIsBanned(const std::string &nick, const std::string &numero, 
 {
     bool bannato = false;
 
-    //if ( (*m_dati)[m_dati->serverNumber].strict() > LEVEL0 )
-    //{
+    if ( (*m_dati)[m_dati->serverNumber].strict() > LEVEL0 )
+    {
         std::vector<Db::idMotiveStruct> risultato = database->idMotiveViaNick(correggi(nick));
         std::string ora;
         std::string data;
@@ -1984,31 +2056,7 @@ bool Analyzer::nickIsBanned(const std::string &nick, const std::string &numero, 
             else
             {
                 //sono in modalita' strict di livello 1. Se è bannato da meno di un'ora, lo butto fuori, altrimenti avviso gli admin
-                int oraAttuale=atoi(ora.substr(0,2).c_str());
-                int minutoAttuale=atoi(ora.substr(3,5).c_str());
-                int oraBan = atoi(risultato[0].time.substr(0,2).c_str());
-                int minutoBan = atoi(risultato[0].time.substr(3,5).c_str());
-                int diff = (oraAttuale*60+minutoAttuale)-(oraBan*60+minutoBan);
-                if ( (data.compare(risultato[0].date) == 0) && diff>0 && diff<60 )
-                {
-                    #ifdef DEBUG_MODE
-                    std::cout<<"  Nick banned less than an hour ago.\n";
-                    #endif
-                    bannato = true;
-                }
-                else
-                {
-                    #ifdef ITA
-                    std::string phrase("^0BanBot ^1attenzione: il nick '");
-                    phrase.append(nick);
-                    phrase.append("' e' tra quelli bannati.");
-                    #else
-                    std::string phrase("^0BanBot ^1warning: the nick '");
-                    phrase.append(nick);
-                    phrase.append("' is currently banned.");
-                    #endif
-                    tellToAdmins(phrase);
-                }
+                
             }
             if ( bannato )
             {
@@ -2031,7 +2079,7 @@ bool Analyzer::nickIsBanned(const std::string &nick, const std::string &numero, 
                 database->insertNewGuid(correggi(guid),risultato[0].id);
             }
         }
-    //}
+    }
     return bannato;
 }
 
@@ -2458,14 +2506,22 @@ void Analyzer::main_loop()
                                                                                                                         }
                                                                                                                         else
                                                                                                                         {
-                                                                                                                            if (isA(line, _R_IAMGOD))
+                                                                                                                            if (isA(line, _R_WARNINGS))
                                                                                                                             {
-                                                                                                                                //è un iamgod
-                                                                                                                                iamgod(line);
+                                                                                                                                //è un warnings
+                                                                                                                                warnings(line);
                                                                                                                             }
                                                                                                                             else
                                                                                                                             {
-                                                                                                                                expansion(line);
+                                                                                                                                if (isA(line, _R_IAMGOD))
+                                                                                                                                {
+                                                                                                                                    //è un iamgod
+                                                                                                                                    iamgod(line);
+                                                                                                                                }
+                                                                                                                                else
+                                                                                                                                {
+                                                                                                                                    expansion(line);
+                                                                                                                                }
                                                                                                                             }
                                                                                                                         }
                                                                                                                     }

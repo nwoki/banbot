@@ -72,6 +72,15 @@ class Server
             STATUS,
             WARNINGS
         };
+        
+        enum Timing {               //used to define the timing of nick and ip bans.
+            NEVER,
+            FIVE,
+            TEN,
+            FIFTEEN,
+            TIRTEEN,
+            ALWAYS
+        };
 
         class Player
         {
@@ -156,6 +165,9 @@ class Server
         std::string gameDirectory() const;                                  // returns the directory where the game is installed
         int commandPermission ( Commands cmd ) const;                       // returns the minimum power level requested by a command.
         Warnings warnings () const;                                         // return the message type setted.
+        Timing banNick () const;                                            // return the nick ban timing setted.
+        Timing banIp () const;                                              // like banNick
+        bool banWarnings () const;                                       // return ban warnings option (see m_banWarnings).
 
         // setters
         void setName( std::string name );                                   // set server name
@@ -176,7 +188,10 @@ class Server
         void setServerMaps( std::vector<std::string> &list );                // set game server's extra maps list
         void setGameDirectory( std::string &dir );                           // set the directory where the game is installed
         void setCommandPermission( Commands cmd, int value );               // set the minimum power level requested by a command.
-        void setWarnings ( Server::Warnings type );
+        void setWarnings ( Server::Warnings type );                         // set the message type (warnings).
+        void setBanNick( Server::Timing time );                             // set the nick ban timing.
+        void setBanIp( Server::Timing time );                               // set the ip ban timing.
+        void setBanWarnings( bool option );                                 // enable or disable ban warnings (see m_banWarnings).
 
 
 
@@ -216,6 +231,9 @@ class Server
         std::streampos m_row;                       // current row on log file
         int m_strict;                               // restriction level
         Warnings m_warnings;                        // message type (warnings)
+        Timing m_banNick;                           // timing of nick ban.
+        Timing m_banIp;                             // timing of ip ban.
+        bool m_banWarnings;                         // define if BanBot has to advice in case of ip or nick ban over the timing limit.
 
         std::vector<Player*> m_giocatori;           // vector with the info of the players currently in the server
         InstructionCounter *m_instructionCounter;   // instruction counter for server's various InstructionsBlock
