@@ -1985,7 +1985,7 @@ Analyzer::CheckTimingEnum Analyzer::checkTiming ( const std::vector<Db::idMotive
             }
             
             
-            {
+            /*{
                 #ifdef DEBUG_MODE
                 std::cout<<"  Nick banned less than ten minutes ago.\n";
                 #endif
@@ -2003,10 +2003,10 @@ Analyzer::CheckTimingEnum Analyzer::checkTiming ( const std::vector<Db::idMotive
                 phrase.append("' is currently banned.");
                 #endif
                 tellToAdmins(phrase);
-            }
+            }*/
         }
     }
-    return false
+    return BANNED;
 }
 
 bool Analyzer::guidIsBanned(const std::string &guid, const std::string &nick, const std::string &numero, const std::string &ip)

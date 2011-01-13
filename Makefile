@@ -12,9 +12,8 @@ OBJECTS = $(OBJECTS_PATH)main.o \
 	$(OBJECTS_PATH)sqlite3.o \
 	$(OBJECTS_PATH)InstructionsBlock.o \
 	$(OBJECTS_PATH)Scheduler.o \
-	$(OBJECTS_PATH)handyFunctions.o
-
-# 	$(OBJECTS_PATH)FileLister.o
+	$(OBJECTS_PATH)handyFunctions.o \
+ 	$(OBJECTS_PATH)FileLister.o
 
 
 #compiler
@@ -30,7 +29,7 @@ CC = gcc
 #for 32bit optimization: -m32 -pipe -march=x86-32
 #for 64bit optimization: -m64 -pipe -march=x86-64
 OPTIMIZ =
-DEBUG =
+DEBUG = -ggdb -DDB_DEBUG
 DEFINES = $(OPTIMIZ) $(DEBUG)
 #compiler flags
 CFLAGS = -c -Wall $(DEFINES)
@@ -45,8 +44,8 @@ CLEAN_TARGETS =  src/*.h~ \
 		 src/.obj/*.o\
 		 scripts/*~
 
-BOOST_INCPATH = -Isrc/boost_1_45
-#BOOST_LIBS = -Lsrc/boost_1_45/BanbotLibs/lib -lboost_filesystem -lboost_system
+BOOST_INCPATH = -Iboost_1_45
+#BOOST_LIBS = -Lsboost_1_45/BanbotLibs/ -lboost_filesystem -lboost_system
 
 TARGET = BanBot
 
@@ -59,18 +58,16 @@ $(TARGET): boost_build build_dir_check obj_dir_chcek $(OBJECTS)
 	@echo "BanBot ready for use ;)"
 
 boost_build :
-# 	@sh scripts/boostBuild.sh
+	@sh scripts/boostBuild.sh
 
 boost_clean :
-	@rm -rf src/boost_1_45/BanbotLibs
-	@rm -rf src/boost_1_45/bin.v2
-	@rm src/boost_1_45/bjam
-	@rm -rf src/boost_1_45/project-config.jam*
+	@rm -rf boost_1_45/BanbotLibs
+	@rm -rf boost_1_45/bin.v2
 	@echo "cleaned boost build"
 
-build_dir_check :
-# 	@sh scripts/objDirCheck.sh
-
+build_dir_check: 
+	@sh scripts/objDirCheck.sh
+ 	
 clean :
 	@rm -rf $(CLEAN_TARGETS)
 	@echo "cleaned BanBot files"
@@ -119,8 +116,9 @@ scheduler :	build_dir_check
 
 handyfunctions :	build_dir_check
 	$(CPP) $(CFLAGS) -o $(OBJECTS_PATH)handyFunctions.o src/handyFunctions.cpp
-# filelister :	build_dir_check
-# 	$(CPP) $(CFLAGS) $(BOOST_INCPATH) -o $(OBJECTS_PATH)FileLister.o src/FileLister.cpp
+	
+filelister : build_dir_check
+	$(CPP) $(CFLAGS) $(BOOST_INCPATH) -o $(OBJECTS_PATH)FileLister.o src/FileLister.cpp
 
 #compile_______
 
@@ -160,6 +158,6 @@ src/.obj/Scheduler.o	: src/Scheduler.h src/Scheduler.cpp
 src/.obj/handyFunctions.o	: src/handyFunctions.h src/handyFunctions.cpp
 		$(CPP) $(CFLAGS) -o $(OBJECTS_PATH)handyFunctions.o src/handyFunctions.cpp
 
-# src/.obj/FileLister.o	: src/FileLister.h src/FileLister.cpp
-# 	$(CPP) $(CFLAGS) $(BOOST_INCPATH) -o $(OBJECTS_PATH)FileLister.o src/FileLister.cpp
+src/.obj/FileLister.o	: src/FileLister.h src/FileLister.cpp
+	$(CPP) $(CFLAGS) $(BOOST_INCPATH) -o $(OBJECTS_PATH)FileLister.o src/FileLister.cpp -lBanBot
 

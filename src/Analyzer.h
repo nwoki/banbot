@@ -189,7 +189,7 @@ protected:
     void tellToAdmins(std::string phrase);               //invia un messaggio a tutti gli admin attualmente in game (messaggio privato).
     int translatePlayer(std::string player);            //@player rappresenta un nick o una parte del nick di un player in game, la funzione restituisce l'indice nell'array dei giocatori indicato da @player, se non trovato o non univoco restituisce -1.
     int findPlayer(std::string number);                 //return the index of player with number @number if exists, or -1.
-    CheckTimingEnum checkTiming (const std::vector<Db::idMotiveStruct> &records, const Server::Timing &option, const std::string &nick, const std::string &numero );  //it decides if nick or ip is to considered banned.
+    CheckTimingEnum checkTiming (const std::vector<Db::idMotiveStruct> &records, const Server::Timing &option);  //it decides if nick or ip is to considered banned.
     Connection * server;
     Db * database;
     ConfigLoader::Options* m_dati;                      //it contains all options of each server (players included).
