@@ -45,16 +45,16 @@ class ConfigLoader
         class Options
         {
             public:
-                struct stat infos;                 //contiene le info del file di configurazione, tra cui la data dell'ultima modifica
+                struct stat infos;                              // has info about configuration file plus date of last modification
                 std::string generalLog;
                 std::string generalBackup;
                 std::vector<Server*> servers;
-                Logger* errors;                     //log dedicato a notifiche ed errori
-                Logger* log;                        //log dedicato ai server (cambia di file)
-                unsigned int serverNumber;                   //numero del server su cui sto lavorando
+                Logger* errors;                                 // pointer to log object used for notifications and errors
+                Logger* log;                                    // pointer to log object dedicated to a server ( changes file )
+                unsigned int serverNumber;                      // number of the server currently working on
 
                 Server& operator[] ( int number ) { return *servers[number]; }
-                unsigned int size() { return servers.size(); }
+                unsigned int size() { return servers.size(); }  // returns number of servers
 
                 //costruttore
                 Options()

@@ -21,7 +21,7 @@ OBJECTS = $(OBJECTS_PATH)main.o \
 	$(BOOST_OBJECTS_PATH)sp_debug_hooks.o \
 	$(BOOST_OBJECTS_PATH)v2_operations.o \
 	$(BOOST_OBJECTS_PATH)v2_path.o \
-	$(BOOST_OBJECTS_PATH)v2_portability.o 
+	$(BOOST_OBJECTS_PATH)v2_portability.o
 
 
 #compiler
@@ -37,7 +37,7 @@ CC = gcc
 #for 32bit optimization: -m32 -pipe -march=x86-32
 #for 64bit optimization: -m64 -pipe -march=x86-64
 OPTIMIZ =
-DEBUG = -ggdb -DDB_DEBUG
+DEBUG =
 DEFINES = $(OPTIMIZ) $(DEBUG)
 #compiler flags
 CFLAGS = -c -Wall $(DEFINES)
@@ -72,9 +72,9 @@ boost_clean :
 	@rm -rf src/boost_1_45/BanbotLibs
 	@echo "cleaned boost build"
 
-build_dir_check: 
+build_dir_check:
 	@sh scripts/BanbotLibsDirCheck.sh
- 	
+
 clean :
 	@rm -rf $(CLEAN_TARGETS)
 	@echo "cleaned BanBot files"
@@ -123,7 +123,7 @@ scheduler :	build_dir_check
 
 handyfunctions :	build_dir_check
 	$(CPP) $(CFLAGS) -o $(OBJECTS_PATH)handyFunctions.o src/handyFunctions.cpp
-	
+
 filelister : build_dir_check
 	$(CPP) $(CFLAGS) $(BOOST_INCPATH) -o $(OBJECTS_PATH)FileLister.o src/FileLister.cpp
 
@@ -168,20 +168,24 @@ src/.obj/handyFunctions.o	: src/handyFunctions.h src/handyFunctions.cpp
 src/.obj/FileLister.o	: src/FileLister.h src/FileLister.cpp
 	$(CPP) $(CFLAGS) $(BOOST_INCPATH) -o $(OBJECTS_PATH)FileLister.o src/FileLister.cpp
 
-src/boost_1_45/BanbotLibs/error_code.o : 
+#
+#  BOOST LIBS
+#
+
+src/boost_1_45/BanbotLibs/error_code.o :
 		$(CPP) $(CFLAGS) $(BOOST_INCPATH) -o $(BOOST_OBJECTS_PATH)error_code.o src/boost_1_45/libs/system/src/error_code.cpp
-		
-src/boost_1_45/BanbotLibs/sp_collector.o : 
+
+src/boost_1_45/BanbotLibs/sp_collector.o :
 		$(CPP) $(CFLAGS) $(BOOST_INCPATH) -o $(BOOST_OBJECTS_PATH)sp_collector.o src/boost_1_45/libs/smart_ptr/src/sp_collector.cpp
 
-src/boost_1_45/BanbotLibs/sp_debug_hooks.o : 
+src/boost_1_45/BanbotLibs/sp_debug_hooks.o :
 		$(CPP) $(CFLAGS) $(BOOST_INCPATH) -o $(BOOST_OBJECTS_PATH)sp_debug_hooks.o src/boost_1_45/libs/smart_ptr/src/sp_debug_hooks.cpp
 
-src/boost_1_45/BanbotLibs/v2_operations.o : 
+src/boost_1_45/BanbotLibs/v2_operations.o :
 		$(CPP) $(CFLAGS) $(BOOST_INCPATH) -o $(BOOST_OBJECTS_PATH)v2_operations.o src/boost_1_45/libs/filesystem/v2/src/v2_operations.cpp
 
-src/boost_1_45/BanbotLibs/v2_path.o : 
+src/boost_1_45/BanbotLibs/v2_path.o :
 		$(CPP) $(CFLAGS) $(BOOST_INCPATH) -o $(BOOST_OBJECTS_PATH)v2_path.o src/boost_1_45/libs/filesystem/v2/src/v2_path.cpp
-		
-src/boost_1_45/BanbotLibs/v2_portability.o : 
+
+src/boost_1_45/BanbotLibs/v2_portability.o :
 		$(CPP) $(CFLAGS) $(BOOST_INCPATH) -o $(BOOST_OBJECTS_PATH)v2_portability.o src/boost_1_45/libs/filesystem/v2/src/v2_portability.cpp
