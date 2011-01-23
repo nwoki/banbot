@@ -79,6 +79,10 @@ clean :
 	@rm -rf $(CLEAN_TARGETS)
 	@echo "cleaned BanBot files"
 
+clean_all:
+	@make boost_clean
+	@make clean
+
 obj_dir_check :
 	@sh scripts/objDirCheck.sh
 
