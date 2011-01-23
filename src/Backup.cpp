@@ -58,34 +58,25 @@ void Backup::creaCartelle()
             std::cout<<"\n \e[0;33m Initializing backup system of "<< (*m_options)[i].name() <<" ... \e[0m \n";
         #endif
         std::string dir ( (*m_options)[i].backupDir() );
-        unsigned int pos=0;
-        bool ok=true;
 
         //check per la cartella
-        while (pos<dir.size()-1 && ok)
+        if( handyFunctions::fileOrDirExistance( dir ) )
+            std::cout << "\e[0;31m[*]dir: '" << dir << "' found \e[0m \n";
+        else
         {
-            pos=dir.find('/',pos+1);
-            std::string cartella=dir.substr(0,pos);
+            std::cout << "\e[0;33m[!]couldn't find dir '" << dir << "/'! Creating dir '" << dir << "'.. \e[0m \n";
 
-            if( handyFunctions::fileOrDirExistance( cartella ) )
-                std::cout << "\e[0;31m[*]dir '" << cartella << "/' found \e[0m \n";
+            if( handyFunctions::createDir( dir ) )
+                std::cout<<"\e[0;32m[OK]created '"<< dir <<"/' directory.. \e[0m \n";
             else
             {
-                std::cout << "\e[0;33m[!]couldn't find dir '" << cartella << "/'! Creating dir '" << cartella << "/'.. \e[0m \n";
-
-                if( handyFunctions::createDir( cartella ) )
-                    std::cout<<"\e[0;32m[OK]created '"<<cartella<<"/' directory.. \e[0m \n";
-                else
-                {
-                    #ifdef ITA
-                        std::cout<<"\e[1;31m[EPIC FAIL] non posso creare la cartella '"<<cartella<<"/'. Controlla i permessi! \e[0m \n";
-                        *(m_options->errors)<<"[EPIC FAIL] non posso creare la cartella '"<<cartella<<"/' per " << (*m_options)[i].name() << ". Controlla i permessi!\n";
-                    #else
-                        std::cout<<"\e[1;31m[EPIC FAIL] couldn't create directory '"<<cartella<<"/'. Please check permissions! \e[0m \n";
-                        *(m_options->errors)<<"[EPIC FAIL] couldn't create directory '"<<cartella<<"/' for " << (*m_options)[i].name() << ". Please check permissions!\n";
-                    #endif
-                    ok=false;
-                }
+                #ifdef ITA
+                    std::cout<<"\e[1;31m[EPIC FAIL] non posso creare la directory '" << dir <<"'. Controlla i permessi! \e[0m \n";
+                    *(m_options->errors)<<"[EPIC FAIL] non posso creare la cartella '" << dir <<"' per " << (*m_options)[i].name() << ". Controlla i permessi!\n";
+                #else
+                    std::cout<<"\e[1;31m[EPIC FAIL] couldn't create directory '" << dir << "/'. Please check permissions! \e[0m \n";
+                    *(m_options->errors)<<"[EPIC FAIL] couldn't create directory '" << dir << "/' for " << (*m_options)[i].name() << ". Please check permissions!\n";
+                #endif
             }
         }
     }
@@ -97,34 +88,24 @@ void Backup::creaCartelle()
         std::cout<<"\nInitializing general backup system ...\n";
     #endif
     std::string dir ( m_options->generalBackup );
-    unsigned int pos=0;
-    bool ok=true;
 
-    //check per la cartella
-    while (pos<dir.size()-1 && ok)
+    if( handyFunctions::fileOrDirExistance( dir ) )
+        std::cout<<"\e[0;32m[*]dir '"<< dir <<"' found \e[0m \n";
+    else
     {
-        pos=dir.find('/',pos+1);
-        std::string cartella=dir.substr(0,pos);
+        std::cout<<"\e[0;33m[!]couldn't find dir '" << dir << "'! Creating dir '" << dir << "'.. \e[0m \n";
 
-        if( handyFunctions::fileOrDirExistance( cartella ) )
-            std::cout<<"\e[0;32m[*]dir '"<<cartella<<"/' found \e[0m \n";
+        if( handyFunctions::createDir( dir ) )
+            std::cout<<"\e[;32m[OK]created '" << dir << "' directory.. \e[0m \n";
         else
         {
-            std::cout<<"\e[0;33m[!]couldn't find dir '"<<cartella<<"/'! Creating dir '"<<cartella<<"/'.. \e[0m \n";
-
-            if( handyFunctions::createDir( cartella ) )
-                std::cout<<"\e[;32m[OK]created '"<<cartella<<"/' directory.. \e[0m \n";
-            else
-            {
-                #ifdef ITA
-                    std::cout<<"\e[1;31m[EPIC FAIL] non posso creare la cartella '"<<cartella<<"/'. Controlla i permessi! \e[0m \n";
-                    *(m_options->errors)<<"[EPIC FAIL] non posso creare la cartella '"<<cartella<<"/'. Controlla i permessi!\n";
-                #else
-                    std::cout<<"\e[1;31m[EPIC FAIL] couldn't create directory '"<<cartella<<"/'. Please check permissions! \e[0m \n";
-                    *(m_options->errors)<<"[EPIC FAIL] couldn't create directory '"<<cartella<<"/'. Please check permissions!\n";
-                #endif
-                ok=false;
-            }
+            #ifdef ITA
+                std::cout<<"\e[1;31m[EPIC FAIL] non posso creare la cartella '" << dir << "'. Controlla i permessi! \e[0m \n";
+                *(m_options->errors)<<"[EPIC FAIL] non posso creare la cartella '" << dir << "'. Controlla i permessi!\n";
+            #else
+                std::cout<<"\e[1;31m[EPIC FAIL] couldn't create directory '" << dir << "'. Please check permissions! \e[0m \n";
+                *(m_options->errors)<<"[EPIC FAIL] couldn't create directory '" << dir << "'. Please check permissions!\n";
+            #endif
         }
     }
 }
