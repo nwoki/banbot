@@ -46,7 +46,7 @@ void Logger::checkFile()
   int end=path.find_last_of('/');
   int pos=0;
   bool ok=true;
-  
+
   //check per la cartella
   while (pos<end && ok)
   {
@@ -58,12 +58,12 @@ void Logger::checkFile()
     {
       if( mkdir( cartella.c_str(), 0777 ) != 0 )
       {
-          std::cout<<"[EPIC FAIL] couldn't create directory '"<<cartella<<"/'.Please check permissions!\n";
+          std::cout<<"\e[1;31m[EPIC FAIL] couldn't create directory '"<<cartella<<"/'.Please check permissions! \e[0m \n";
           ok=false;
       }
     }
   }
-    
+
   //check per il file log
   if( ok )
   {
@@ -74,7 +74,7 @@ void Logger::checkFile()
       //create logfile
       std::ofstream OUT(path.c_str());
       if ( OUT.is_open() ) OUT.close();
-      else std::cout<<"[EPIC FAIL] couldn't create the log file. Please check permissions!\n";
+      else std::cout<<" \e[1;31m [EPIC FAIL] couldn't create the log file. Please check permissions! \e[0m \n";
     }
   }
 }

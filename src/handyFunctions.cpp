@@ -38,7 +38,7 @@ namespace fs = boost::filesystem;
 
 namespace handyFunctions{
 
-    bool fileExistance( const std::string &pathToFile )
+    bool fileOrDirExistance( const std::string &pathToFile )
     {
     #ifdef DB_MODE
         std::cout << "FILEEXISTANCE -> path: " << pathToFile << std::endl;
@@ -55,7 +55,7 @@ namespace handyFunctions{
     }
 
 
-    bool dirCreate( std::string path )
+    bool createDir( std::string path )
     {
     #ifdef DB_MODE
         std::cout << "DIRCREATE " << path << std::endl;
@@ -81,7 +81,8 @@ namespace handyFunctions{
         return status;
     }
 
-    bool fileCreate( const std::string &file )
+
+    bool createFile( const std::string &file )
     {
 
     #ifdef DB_MODE
@@ -111,6 +112,7 @@ namespace handyFunctions{
         }
         return ok;
     }
+
 
     std::string intToString( int number )
     {

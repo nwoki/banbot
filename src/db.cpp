@@ -193,8 +193,8 @@ void Db::checkDatabases()
         pathWithFile.append( DB_NAME );
 
         /* DIRECTORY CHECK */
-        if( !handyFunctions::fileExistance( dbPath ) ) {    // does directory exist?
-            if( !handyFunctions::dirCreate( dbPath ) ) {
+        if( !handyFunctions::fileOrDirExistance( dbPath ) ) {    // does directory exist?
+            if( !handyFunctions::createDir( dbPath ) ) {
                 std::cout << "\e[1;31mDb::Db couldn't create database folder: " << dbPath << "\e[0m \n";
                 *(m_options->errors) << "Db::Db couldn't create database folder: " << dbPath << "\n";
             }
@@ -207,8 +207,8 @@ void Db::checkDatabases()
             std::cout << "\e[0;33m database folder: " << dbPath << " already exists \e[0m \n";
 
         /* FILE CHECK */
-        if( !handyFunctions::fileExistance( pathWithFile ) ) {  // does file exist?
-            if( !handyFunctions::fileCreate( pathWithFile ) ) { // create database if needed
+        if( !handyFunctions::fileOrDirExistance( pathWithFile ) ) {  // does file exist?
+            if( !handyFunctions::createFile( pathWithFile ) ) { // create database if needed
                 std::cout << "\e[1;31mDb::Db couldn't create database file: " << pathWithFile << "\e[0m \n";
                 *(m_options->errors) << "Db::Db couldn't create database file: " << pathWithFile << "\n";
                 (*m_options)[i].setValid( false );   // set database validity

@@ -29,7 +29,6 @@
 
 #include "Backup.h"
 #include <stdlib.h>
-#include <sys/stat.h>
 #include <time.h>
 #include <stdio.h>
 #include <iostream>
@@ -54,9 +53,9 @@ void Backup::creaCartelle()
     for (unsigned int i=0; i<m_options->size(); i++ )
     {
         #ifdef ITA
-            std::cout<<"\nInizializzo il sistema di backup di "<< (*m_options)[i].name() <<" ...\n";
+            std::cout<<"\n \e[0;33m Inizializzo il sistema di backup di "<< (*m_options)[i].name() <<" ... \e[0m \n";
         #else
-            std::cout<<"\nInitializing backup system of "<< (*m_options)[i].name() <<" ...\n";
+            std::cout<<"\n \e[0;33m Initializing backup system of "<< (*m_options)[i].name() <<" ... \e[0m \n";
         #endif
         std::string dir ( (*m_options)[i].backupDir() );
         unsigned int pos=0;
@@ -68,26 +67,21 @@ void Backup::creaCartelle()
             pos=dir.find('/',pos+1);
             std::string cartella=dir.substr(0,pos);
 
-            struct stat st;
-            if( stat( cartella.c_str(), &st ) == 0 )
-            {
-                std::cout<<"  [*]dir '"<<cartella<<"/' found\n";
-            }
+            if( handyFunctions::fileOrDirExistance( cartella ) )
+                std::cout << "\e[0;31m[*]dir '" << cartella << "/' found \e[0m \n";
             else
             {
-                std::cout<<"   [!]couldn't find dir '"<<cartella<<"/'! Creating dir '"<<cartella<<"/'..\n";
+                std::cout << "\e[0;33m[!]couldn't find dir '" << cartella << "/'! Creating dir '" << cartella << "/'.. \e[0m \n";
 
-                if( mkdir( cartella.c_str(), 0777 ) == 0 )
-                {
-                    std::cout<<"  [OK]created '"<<cartella<<"/' directory..\n";
-                }
+                if( handyFunctions::createDir( cartella ) )
+                    std::cout<<"\e[0;32m[OK]created '"<<cartella<<"/' directory.. \e[0m \n";
                 else
                 {
                     #ifdef ITA
-                        std::cout<<"[EPIC FAIL] non posso creare la cartella '"<<cartella<<"/'. Controlla i permessi!\n";
+                        std::cout<<"\e[1;31m[EPIC FAIL] non posso creare la cartella '"<<cartella<<"/'. Controlla i permessi! \e[0m \n";
                         *(m_options->errors)<<"[EPIC FAIL] non posso creare la cartella '"<<cartella<<"/' per " << (*m_options)[i].name() << ". Controlla i permessi!\n";
                     #else
-                        std::cout<<"[EPIC FAIL] couldn't create directory '"<<cartella<<"/'. Please check permissions!\n";
+                        std::cout<<"\e[1;31m[EPIC FAIL] couldn't create directory '"<<cartella<<"/'. Please check permissions! \e[0m \n";
                         *(m_options->errors)<<"[EPIC FAIL] couldn't create directory '"<<cartella<<"/' for " << (*m_options)[i].name() << ". Please check permissions!\n";
                     #endif
                     ok=false;
@@ -112,26 +106,21 @@ void Backup::creaCartelle()
         pos=dir.find('/',pos+1);
         std::string cartella=dir.substr(0,pos);
 
-        struct stat st;
-        if( stat( cartella.c_str(), &st ) == 0 )
-        {
-            std::cout<<"  [*]dir '"<<cartella<<"/' found\n";
-        }
+        if( handyFunctions::fileOrDirExistance( cartella ) )
+            std::cout<<"\e[0;32m[*]dir '"<<cartella<<"/' found \e[0m \n";
         else
         {
-            std::cout<<"   [!]couldn't find dir '"<<cartella<<"/'! Creating dir '"<<cartella<<"/'..\n";
+            std::cout<<"\e[0;33m[!]couldn't find dir '"<<cartella<<"/'! Creating dir '"<<cartella<<"/'.. \e[0m \n";
 
-            if( mkdir( cartella.c_str(), 0777 ) == 0 )
-            {
-                std::cout<<"  [OK]created '"<<cartella<<"/' directory..\n";
-            }
+            if( handyFunctions::createDir( cartella ) )
+                std::cout<<"\e[;32m[OK]created '"<<cartella<<"/' directory.. \e[0m \n";
             else
             {
                 #ifdef ITA
-                    std::cout<<"[EPIC FAIL] non posso creare la cartella '"<<cartella<<"/'. Controlla i permessi!\n";
+                    std::cout<<"\e[1;31m[EPIC FAIL] non posso creare la cartella '"<<cartella<<"/'. Controlla i permessi! \e[0m \n";
                     *(m_options->errors)<<"[EPIC FAIL] non posso creare la cartella '"<<cartella<<"/'. Controlla i permessi!\n";
                 #else
-                    std::cout<<"[EPIC FAIL] couldn't create directory '"<<cartella<<"/'. Please check permissions!\n";
+                    std::cout<<"\e[1;31m[EPIC FAIL] couldn't create directory '"<<cartella<<"/'. Please check permissions! \e[0m \n";
                     *(m_options->errors)<<"[EPIC FAIL] couldn't create directory '"<<cartella<<"/'. Please check permissions!\n";
                 #endif
                 ok=false;
@@ -142,19 +131,23 @@ void Backup::creaCartelle()
 
 void Backup::checkFolder(std::string path)
 {
-  //controllo se esiste la directory: se non esiste la creo.
-  struct stat st;
-  if (stat(path.c_str(),&st))
-  {
-    if ( mkdir(path.c_str(),0777) !=0 )
+    // controllo se esiste la directory: se non esiste la creo.
+    if( !handyFunctions::fileOrDirExistance( path ) )
     {
         #ifdef ITA
-            *(m_options->errors)<<"[EPIC FAIL] non posso creare la cartella '"<<path<<"/'. Controlla i permessi!\n";
+        std::cout << "\e[0;33m[BACKUP] '" << path << "' non esiste, cerco di creare la cartella..\e[0m";
         #else
-            *(m_options->errors)<<"[EPIC FAIL] couldn't create directory '"<<path<<"/'. Please check permissions!\n";
+        std::cout << "\e[0;33m[BACKUP] '" << path << "' doesn't exist, trying to create it..\e[0m";
         #endif
+
+        if( handyFunctions::createDir( path ) ) {
+            #ifdef ITA
+                *(m_options->errors)<<"[EPIC FAIL] non posso creare la cartella '"<<path<<"/'. Controlla i permessi!\n";
+            #else
+                *(m_options->errors)<<"[EPIC FAIL] couldn't create directory '"<<path<<"/'. Please check permissions!\n";
+            #endif
+        }
     }
-  }
 }
 
 std::string Backup::nameOfDir()
@@ -194,9 +187,8 @@ bool Backup::isTimeToWork()
     }
   }
   else
-  {
-     done=false;
-  }
+     done = false;
+
   return false;
 }
 

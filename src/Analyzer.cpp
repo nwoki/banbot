@@ -104,7 +104,7 @@ Analyzer::Analyzer(Connection* conn, Db* db, ConfigLoader* configLoader )
         std::cout<<"[OK] Analyzer inizializzato.\n";
         *(m_dati->errors)<<"[OK] Analyzer inizializzato.\n\n";
     #else
-        std::cout<<"[OK] Analyzer initialized.\n";
+        std::cout<<"\e[0;32m[OK] Analyzer initialized. \e[0m \n";
         *(m_dati->errors)<<"[OK] Analyzer initialized.\n\n";
     #endif
     sleep(1);
@@ -436,7 +436,7 @@ void Analyzer::clientUserInfo(char* line)
                     *(m_dati->log)<<"  [!] warning for illegal GUID.\n";
                     std::string phrase("^0BanBot warning: ^1player number ");
                     #endif
-                    
+
                     phrase.append(numero);
                     phrase.append(", ");
                     phrase.append(nick);
@@ -1954,22 +1954,22 @@ Analyzer::CheckTimingEnum Analyzer::checkTiming ( const std::vector<Db::idMotive
     if ( option != Server::NEVER &&  records.size() )
     {
         if ( option == Server::ALWAYS ) return Analyzer::BANNED;
-        
+
         std::string ora;
         std::string data;
         getDateAndTime(data,ora);
-        
+
         if (data.compare(records[0].date) == 0)
         {
-        
+
             int oraAttuale=atoi(ora.substr(0,2).c_str());
             int minutoAttuale=atoi(ora.substr(3,5).c_str());
             int oraBan = atoi(records[0].time.substr(0,2).c_str());
             int minutoBan = atoi(records[0].time.substr(3,5).c_str());
             int diff = (oraAttuale*60+minutoAttuale)-(oraBan*60+minutoBan);
-            
+
             bool advice = false;
-            
+
             if ( diff > 30 ) advice = true;
             else if ( option == Server::TIRTEEN ) return Analyzer::BANNED;
             else if ( diff > 15 ) advice = true;
@@ -1978,13 +1978,13 @@ Analyzer::CheckTimingEnum Analyzer::checkTiming ( const std::vector<Db::idMotive
             else if ( option == Server::TEN ) return Analyzer::BANNED;
             else if ( diff > 5 ) advice = true;
             else return Analyzer::BANNED;
-                
+
             if ( advice && (*m_dati)[m_dati->serverNumber].banWarnings() )
             {
-                
+
             }
-            
-            
+
+
             /*{
                 #ifdef DEBUG_MODE
                 std::cout<<"  Nick banned less than ten minutes ago.\n";
@@ -2056,7 +2056,7 @@ bool Analyzer::nickIsBanned(const std::string &nick, const std::string &numero, 
             else
             {
                 //sono in modalita' strict di livello 1. Se è bannato da meno di un'ora, lo butto fuori, altrimenti avviso gli admin
-                
+
             }
             if ( bannato )
             {
@@ -2162,7 +2162,7 @@ void Analyzer::tellToAdmins(std::string phrase)
             {
                 block->tell(phrase,(*m_dati)[m_dati->serverNumber][indici[i]]->number);
             }
-           
+
         }
         else
         {
@@ -2212,10 +2212,10 @@ void Analyzer::main_loop()
 {
     InstructionsBlock * block = new InstructionsBlock();
     #ifdef ITA
-        std::cout<<"[OK] BanBot avviato.\n\n";
+        std::cout<<"\e[0;32m[OK] BanBot avviato. \e[0m \n\n";
         *(m_dati->errors)<<"[OK] BanBot avviato.\n\n";
     #else
-        std::cout<<"[OK] BanBot launched.\n\n";
+        std::cout<<"\e[0;32m[OK] BanBot launched. \e[0m \n\n";
         *(m_dati->errors)<<"[OK] BanBot launched.\n\n";
     #endif
     while (true)
