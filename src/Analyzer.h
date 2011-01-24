@@ -82,7 +82,7 @@
 
 // !help defines.
 #ifdef ITA
-    #define COMMANDLIST "^1Comandi disponibili:\n"
+    #define COMMANDLIST "^1Comandi che puoi utilizzare:\n"
     #define H_LEVEL "^1Il tuo livello e' ^2"
     #define H_BAN "^2!ban <numero/nick> [<motivo>] ^1: banna un player, con o senza motivo\n"
     #define H_UNBAN "^2!unban <id> ^1: sbanna un player (id dato da !find)\n"
@@ -105,7 +105,7 @@
     #define H_CONFIG "^2!config <file> ^1: carica un file di configurazione\n"
     #define H_WARNINGS "^2!warnings <off/public/private> ^1: imposta come inviare i warnings\n"
 #else
-    #define COMMANDLIST "^1Commands enabled:\n"
+    #define COMMANDLIST "^1You can use this commands:\n"
     #define H_LEVEL "^1Your level is ^2"
     #define H_BAN "^2!ban <number/nick> [<reason>] ^1: ban a player, with or without a reason\n"
     #define H_UNBAN "^2!unban <id> ^1: unban a player (id from !find)\n"

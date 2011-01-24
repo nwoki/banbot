@@ -215,6 +215,8 @@ void ConfigLoader::loadOptions()
                                         newServer->setCommandPermission( Server::CONFIG, atoi(extract(temp).c_str()));
                                     else if ( isA (temp, (char *)"^[ \t]*LEVEL_STATUS[ \t]*=[ \t]*[0-9]{1,3}$" ) )
                                         newServer->setCommandPermission( Server::STATUS, atoi(extract(temp).c_str()));
+                                    else if ( isA (temp, (char *)"^[ \t]*LEVEL_WARNINGS[ \t]*=[ \t]*[0-9]{1,3}$" ) )
+                                        newServer->setCommandPermission( Server::WARNINGS, atoi(extract(temp).c_str()));
                                 }
                                 else if ( isA( temp, (char *)"^[ \t]*SERVER_NAME[ \t]*=[ \t]*[^ \t\n\r\f\v]+$" ) )
                                     newServer->setName( extract( temp ) );
