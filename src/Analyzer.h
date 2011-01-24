@@ -79,6 +79,7 @@
 
 
 //TODO definire variabile per abilitare/disattivare il check sulla guid "UNKNOWN"
+//TODO comandi e opzioni(in configloader) per modificare timing, e i 2 warnings.
 
 // !help defines.
 #ifdef ITA

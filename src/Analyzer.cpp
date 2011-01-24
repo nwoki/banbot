@@ -1436,7 +1436,7 @@ void Analyzer::slap(char* line)
         std::string mul_string( "1" );
         if (isA(line,_R_SLAP_MORE))
         {
-            pos=temp.find_first_of("2345",end);
+            pos=temp.find_first_of("23456789",end);
             mul_string=temp.at(pos);
             multiplier=atoi(mul_string.c_str());
         }
@@ -1969,12 +1969,12 @@ Analyzer::CheckTimingEnum Analyzer::checkTiming ( const std::vector<Db::idMotive
             int minutoBan = atoi(records[0].time.substr(3,5).c_str());
             int diff = (oraAttuale*60+minutoAttuale)-(oraBan*60+minutoBan);
             
-            //i check options to see if i hava to ban or advice.
+            //i check options to see if i have to ban or advice.
             if ( (diff < 30 && option == Server::TIRTEEN) || (diff < 15 && option == Server::FIFTEEN) || (diff < 10 && option == Server::TEN) ||
                 diff < 5 ) return Analyzer::BANNED;
                 
             //if i arrived at this point, player is in db like banned player, but he isn't to be kicked. I'll check if i have to show a warning.
-            if ( (*m_dati)[m_dati->serverNumber].banWarnings() != Server::DISABLED )
+            if ( (*m_dati)[m_dati->serverNumber].banWarnings() )
                 return Analyzer::WARNING;
             else return Analyzer::NOPE;
         }

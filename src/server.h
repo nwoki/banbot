@@ -167,7 +167,7 @@ class Server
         Warnings warnings () const;                                         // return the message type setted.
         Timing banNick () const;                                            // return the nick ban timing setted.
         Timing banIp () const;                                              // like banNick
-        Warnings banWarnings () const;                                       // return ban warnings option (see m_banWarnings).
+        bool banWarnings () const;                                          // return ban warnings option (see m_banWarnings).
 
         // setters
         void setName( std::string name );                                   // set server name
@@ -188,9 +188,9 @@ class Server
         void setServerMaps( std::vector<std::string> &list );                // set game server's extra maps list
         void setGameDirectory( std::string &dir );                           // set the directory where the game is installed
         void setCommandPermission( Commands cmd, int value );               // set the minimum power level requested by a command.
-        void setWarnings ( Server::Warnings type );                         // set the message type (warnings).
+        void setWarnings ( Server::Warnings type );                         // set the warnings type (public, private or disabled) 
         void setBanNick( Server::Timing time );                             // set the nick ban timing.
-        void setBanIp( Server::Timing time );                               // set the ip ban timing.
+        void setBanIp( Server::Timing time );                               // set the ip ban timing.                                 
         void setBanWarnings( bool option );                                 // enable or disable ban warnings (see m_banWarnings).
 
 
