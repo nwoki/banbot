@@ -37,6 +37,7 @@ Server::Server()
     , m_warnings( PRIVATE )
     , m_banNick( NEVER )
     , m_banIp( NEVER )
+    , m_banWarnings( true )
     , m_instructionCounter( new InstructionCounter() )
     , m_lowPriorityInst( NULL )
     , m_mediumPriorityInst( NULL )
@@ -367,7 +368,7 @@ void Server::setBanIp( Server::Timing time )
     m_banIp = time;
 }
 
-Server::bool Server::banWarnings () const
+bool Server::banWarnings () const
 {
     return m_banWarnings;
 }
