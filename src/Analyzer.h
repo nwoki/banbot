@@ -77,7 +77,7 @@
 #define LEVEL5 5        //like level 4, automated ban if in dubt too.
 #define LEVEL6 6        //like level 5, automated ban for everything, no warnings.
 
-//TODO definire variabile per la durata dei ban a nick e ip.
+
 //TODO definire variabile per abilitare/disattivare il check sulla guid "UNKNOWN"
 
 // !help defines.

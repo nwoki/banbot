@@ -167,7 +167,7 @@ class Server
         Warnings warnings () const;                                         // return the message type setted.
         Timing banNick () const;                                            // return the nick ban timing setted.
         Timing banIp () const;                                              // like banNick
-        bool banWarnings () const;                                       // return ban warnings option (see m_banWarnings).
+        Warnings banWarnings () const;                                       // return ban warnings option (see m_banWarnings).
 
         // setters
         void setName( std::string name );                                   // set server name

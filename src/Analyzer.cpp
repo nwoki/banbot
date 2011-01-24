@@ -326,7 +326,7 @@ void Analyzer::clientUserInfo(char* line)
         i = (*m_dati)[m_dati->serverNumber].size() - 1;
     }
 
-    //se la guid è vuota, sono cazzi amari...
+    //if guid is enmpty, it's a problem...
     if (guid.empty() && (*m_dati)[m_dati->serverNumber].strict() >= LEVEL2)
     {
         //empty guid: cheat, or client touched (like qkey file deleted).
@@ -510,6 +510,7 @@ void Analyzer::clientUserInfo(char* line)
     }
     if( !block->isEmpty() )
         m_scheduler->addInstructionBlock( block, Server::HIGH );  // add to scheduler
+    else delete block;
     //ho finito le azioni in caso di clientUserinfo
 }
 
@@ -1951,7 +1952,7 @@ void Analyzer::buttaFuori(const std::string &reason, const std::string numero, c
 Analyzer::CheckTimingEnum Analyzer::checkTiming ( const std::vector<Db::idMotiveStruct> &records, const Server::Timing &option )
 {
     // depending on actual time, time of ban, and options, i decide if the player has to be kicked, or if advice admins.
-    if ( option != Server::NEVER &&  records.size() )
+    if ( option != Server::NEVER && records.size() )
     {
         if ( option == Server::ALWAYS ) return Analyzer::BANNED;
         
@@ -1968,45 +1969,17 @@ Analyzer::CheckTimingEnum Analyzer::checkTiming ( const std::vector<Db::idMotive
             int minutoBan = atoi(records[0].time.substr(3,5).c_str());
             int diff = (oraAttuale*60+minutoAttuale)-(oraBan*60+minutoBan);
             
-            bool advice = false;
-            
-            if ( diff > 30 ) advice = true;
-            else if ( option == Server::TIRTEEN ) return Analyzer::BANNED;
-            else if ( diff > 15 ) advice = true;
-            else if ( option == Server::FIFTEEN ) return Analyzer::BANNED;
-            else if ( diff > 10 ) advice = true;
-            else if ( option == Server::TEN ) return Analyzer::BANNED;
-            else if ( diff > 5 ) advice = true;
-            else return Analyzer::BANNED;
+            //i check options to see if i hava to ban or advice.
+            if ( (diff < 30 && option == Server::TIRTEEN) || (diff < 15 && option == Server::FIFTEEN) || (diff < 10 && option == Server::TEN) ||
+                diff < 5 ) return Analyzer::BANNED;
                 
-            if ( advice && (*m_dati)[m_dati->serverNumber].banWarnings() )
-            {
-                
-            }
-            
-            
-            /*{
-                #ifdef DEBUG_MODE
-                std::cout<<"  Nick banned less than ten minutes ago.\n";
-                #endif
-                bannato = true;
-            }
-            else
-            {
-                #ifdef ITA
-                std::string phrase("^0BanBot ^1attenzione: il nick '");
-                phrase.append(nick);
-                phrase.append("' e' tra quelli bannati.");
-                #else
-                std::string phrase("^0BanBot ^1warning: the nick '");
-                phrase.append(nick);
-                phrase.append("' is currently banned.");
-                #endif
-                tellToAdmins(phrase);
-            }*/
+            //if i arrived at this point, player is in db like banned player, but he isn't to be kicked. I'll check if i have to show a warning.
+            if ( (*m_dati)[m_dati->serverNumber].banWarnings() != Server::DISABLED )
+                return Analyzer::WARNING;
+            else return Analyzer::NOPE;
         }
     }
-    return BANNED;
+    return Analyzer::NOPE;
 }
 
 bool Analyzer::guidIsBanned(const std::string &guid, const std::string &nick, const std::string &numero, const std::string &ip)
@@ -2040,7 +2013,6 @@ bool Analyzer::guidIsBanned(const std::string &guid, const std::string &nick, co
 
 bool Analyzer::nickIsBanned(const std::string &nick, const std::string &numero, const std::string &ip, const std::string &guid)
 {
-    bool bannato = false;
 
     if ( (*m_dati)[m_dati->serverNumber].strict() > LEVEL0 )
     {
@@ -2048,76 +2020,107 @@ bool Analyzer::nickIsBanned(const std::string &nick, const std::string &numero, 
         std::string ora;
         std::string data;
         getDateAndTime(data,ora);
+        
+        Analyzer::CheckTimingEnum ris = checkTiming( risultato, (*m_dati)[m_dati->serverNumber].banNick() );
 
-        if ( risultato.size() )
+        if( ris == Analyzer::BANNED )
         {
-            //se sono in modalità strict di livello 2, se il nick è bannato, butto fuori anche se è passata un'ora.
-            if ( (*m_dati)[m_dati->serverNumber].strict() >= LEVEL2 ) {bannato = true;}
-            else
-            {
-                //sono in modalita' strict di livello 1. Se è bannato da meno di un'ora, lo butto fuori, altrimenti avviso gli admin
-                
-            }
-            if ( bannato )
-            {
-                #ifdef ITA
-                std::cout<<"  [!] kick a "<<nick<<" per ban ("<<risultato[0].motive<<").\n";
-                *(m_dati->log)<<"  [!] kick a "<<nick<<" per ban ("<<risultato[0].motive<<").\n";
-                #else
-                std::cout<<"  [!] kicking "<<nick<<" for ban ("<<risultato[0].motive<<").\n";
-                *(m_dati->log)<<"  [!] kicking "<<nick<<" for ban ("<<risultato[0].motive<<").\n";
-                #endif
-                #ifdef DEBUG_MODE
-                std::cout<<"  Strict level was "<<(*m_dati)[m_dati->serverNumber].strict()<<".\n";
-                #endif
-                buttaFuori(risultato[0].motive, numero, nick);
+            #ifdef ITA
+            std::cout<<"  [!] kick a "<<nick<<" per ban sul nick ("<<risultato[0].motive<<").\n";
+            *(m_dati->log)<<"  [!] kick a "<<nick<<" per ban sul nick ("<<risultato[0].motive<<").\n";
+            #else
+            std::cout<<"  [!] kicking "<<nick<<" for banned nick ("<<risultato[0].motive<<").\n";
+            *(m_dati->log)<<"  [!] kicking "<<nick<<" for banned nick ("<<risultato[0].motive<<").\n";
+            #endif
+            #ifdef DEBUG_MODE
+            std::cout<<"  Strict level was "<<(*m_dati)[m_dati->serverNumber].strict()<<".\n";
+            #endif
+            buttaFuori(risultato[0].motive, numero, nick);
 
-                std::string ora;
-                std::string data;
-                getDateAndTime(data,ora);
-                database->modifyBanned(std::string(),ip,data,ora,std::string(),risultato[0].id);
-                database->insertNewGuid(correggi(guid),risultato[0].id);
+            std::string ora;
+            std::string data;
+            getDateAndTime(data,ora);
+            database->modifyBanned(std::string(),ip,data,ora,std::string(),risultato[0].id);
+            database->insertNewGuid(correggi(guid),risultato[0].id);
+            return true;
+        }
+        else if ( ris == Analyzer::WARNING )
+        {
+            std::string message("^0BanBot: ^1");
+            #ifdef ITA
+                message.append("attenzione, il nick '^2");
+                message.append(nick);
+                message.append("^1' e' tra quelli bannati.");
+            #else
+                message.append("warning, the nick '^2");
+                message.append(nick);
+                message.append("^1' is into banned list.");
+            #endif
+            //already checked if warnings are disabled
+            if ( (*m_dati)[m_dati->serverNumber].banWarnings() == Server::PRIVATE )
+                tellToAdmins(message);
+            else {
+                InstructionsBlock *block=new InstructionsBlock();
+                block->say(message);
+                m_scheduler->addInstructionBlock(block, Server::LOW);
             }
         }
     }
-    return bannato;
+    return false;
 }
 
 bool Analyzer::ipIsBanned(const std::string &ip, const std::string &numero, const std::string &nick, const std::string &guid)
 {
 
-    //if ( (*m_dati)[m_dati->serverNumber].strict() > LEVEL0 )
-    //{
+    if ( (*m_dati)[m_dati->serverNumber].strict() > LEVEL0 )
+    {
         std::vector<Db::idMotiveStruct> risultato = database->idMotiveViaIp( ip );
 
-        if ( risultato.size() )
+        Analyzer::CheckTimingEnum ris = checkTiming( risultato, (*m_dati)[m_dati->serverNumber].banIp() );
+        
+        if( ris == Analyzer::BANNED )
         {
+            #ifdef ITA
+            std::cout<<"  [!] kick a "<<nick<<" per ban sull'ip ("<<risultato[0].motive<<").\n";
+            *(m_dati->log)<<"  [!] kick a "<<nick<<" per ban sull'ip ("<<risultato[0].motive<<").\n";
+            #else
+            std::cout<<"  [!] kicking "<<nick<<" for banned ip ("<<risultato[0].motive<<").\n";
+            *(m_dati->log)<<"  [!] kicking "<<nick<<" for banned ip ("<<risultato[0].motive<<").\n";
+            #endif
+            #ifdef DEBUG_MODE
+            std::cout<<"  Strict level was "<<(*m_dati)[m_dati->serverNumber].strict()<<".\n";
+            #endif
+            buttaFuori(risultato[0].motive, numero, nick);
+            
             std::string ora;
             std::string data;
             getDateAndTime(data,ora);
-
-            int oraAttuale=atoi(ora.substr(0,2).c_str());
-            int minutoAttuale=atoi(ora.substr(3,5).c_str());
-            int oraBan=atoi(risultato[0].time.substr(0,2).c_str());
-            int minutoBan=atoi(risultato[0].time.substr(3,5).c_str());
-            int diff=(oraAttuale*60+minutoAttuale)-(oraBan*60+minutoBan);
-            if (data.compare(risultato[0].date)==0 && diff>0 && diff<60)
-            {
-                #ifdef ITA
-                    std::cout<<"  [!] kick a "<<nick<<" per ban ("<<risultato[0].motive<<").\n";
-                    *(m_dati->log)<<"  [!] kick a "<<nick<<" per ban ("<<risultato[0].motive<<").\n";
-                #else
-                    std::cout<<"  [!] kicking "<<nick<<" for ban ("<<risultato[0].motive<<").\n";
-                    *(m_dati->log)<<"  [!] kicking "<<nick<<" for ban ("<<risultato[0].motive<<").\n";
-                #endif
-                buttaFuori(risultato[0].motive, numero,nick);
-
-                database->modifyBanned(correggi(nick),std::string(),data,ora,std::string(),risultato[0].id);
-                database->insertNewGuid(correggi(guid),risultato[0].id);
-                return true;
+            database->modifyBanned(std::string(),ip,data,ora,std::string(),risultato[0].id);
+            database->insertNewGuid(correggi(guid),risultato[0].id);
+            return true;
+        }
+        else if ( ris == Analyzer::WARNING )
+        {
+            std::string message("^0BanBot: ^1");
+            #ifdef ITA
+            message.append("attenzione, l'ip del player '^2");
+            message.append(nick);
+            message.append("^1' e' tra quelli bannati.");
+            #else
+            message.append("warning, the ip of '^2");
+            message.append(nick);
+            message.append("^1' is into banned list.");
+            #endif
+            //already checked if warnings are disabled
+            if ( (*m_dati)[m_dati->serverNumber].banWarnings() == Server::PRIVATE )
+                tellToAdmins(message);
+            else {
+                InstructionsBlock *block=new InstructionsBlock();
+                block->say(message);
+                m_scheduler->addInstructionBlock(block, Server::LOW);
             }
         }
-    //}
+    }
     return false;
 }
 

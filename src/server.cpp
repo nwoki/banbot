@@ -367,12 +367,12 @@ void Server::setBanIp( Server::Timing time )
     m_banIp = time;
 }
 
-bool Server::banWarnings () const
+Server::Warnings Server::banWarnings () const
 {
     return m_banWarnings;
 }
 
-void Server::setBanWarnings( bool option )
+void Server::setBanWarnings( Server::Warnings option )
 {
     m_banWarnings = option;
 }
