@@ -1952,32 +1952,34 @@ void Analyzer::buttaFuori(const std::string &reason, const std::string numero, c
 Analyzer::CheckTimingEnum Analyzer::checkTiming ( const std::vector<Db::idMotiveStruct> &records, const Server::Timing &option )
 {
     // depending on actual time, time of ban, and options, i decide if the player has to be kicked, or if advice admins.
-    if ( option != Server::NEVER && records.size() )
+    if ( records.size() )
     {
-        if ( option == Server::ALWAYS ) return Analyzer::BANNED;
-        
-        std::string ora;
-        std::string data;
-        getDateAndTime(data,ora);
-        
-        if (data.compare(records[0].date) == 0)
+        if ( option != Server::NEVER && records.size() )
         {
-        
-            int oraAttuale=atoi(ora.substr(0,2).c_str());
-            int minutoAttuale=atoi(ora.substr(3,5).c_str());
-            int oraBan = atoi(records[0].time.substr(0,2).c_str());
-            int minutoBan = atoi(records[0].time.substr(3,5).c_str());
-            int diff = (oraAttuale*60+minutoAttuale)-(oraBan*60+minutoBan);
+            if ( option == Server::ALWAYS ) return Analyzer::BANNED;
             
-            //i check options to see if i have to ban or advice.
-            if ( (diff < 30 && option == Server::TIRTEEN) || (diff < 15 && option == Server::FIFTEEN) || (diff < 10 && option == Server::TEN) ||
-                diff < 5 ) return Analyzer::BANNED;
+            std::string ora;
+            std::string data;
+            getDateAndTime(data,ora);
+            
+            if (data.compare(records[0].date) == 0)
+            {
+            
+                int oraAttuale=atoi(ora.substr(0,2).c_str());
+                int minutoAttuale=atoi(ora.substr(3,5).c_str());
+                int oraBan = atoi(records[0].time.substr(0,2).c_str());
+                int minutoBan = atoi(records[0].time.substr(3,5).c_str());
+                int diff = (oraAttuale*60+minutoAttuale)-(oraBan*60+minutoBan);
                 
-            //if i arrived at this point, player is in db like banned player, but he isn't to be kicked. I'll check if i have to show a warning.
-            if ( (*m_dati)[m_dati->serverNumber].banWarnings() )
-                return Analyzer::WARNING;
-            else return Analyzer::NOPE;
+                //i check options to see if i have to ban or advice.
+                if ( (diff < 30 && option == Server::TIRTEEN) || (diff < 15 && option == Server::FIFTEEN) || (diff < 10 && option == Server::TEN) ||
+                    diff < 5 ) return Analyzer::BANNED;
+            }
         }
+        //if i arrived at this point, player is in db like banned player, but he hasn't to be kicked. I'll check if i have to show a warning.
+        if ( (*m_dati)[m_dati->serverNumber].banWarnings() )
+            return Analyzer::WARNING;
+        else return Analyzer::NOPE;
     }
     return Analyzer::NOPE;
 }

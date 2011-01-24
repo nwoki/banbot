@@ -224,7 +224,37 @@ void ConfigLoader::loadOptions()
                                     newServer->setIP( extract( temp ) );
                                 else if ( isA( temp, (char*)"^[ \t]*PORT[ \t]*=[ \t]*[0-9]{1,5}$" ) )
                                     newServer->setPort( atoi( extract( temp ).c_str() ) );
-
+                                else if ( isA( temp, (char*)"^[ \t]*WARNINGS[ \t]*=[ \t]*(off|private|public)$" ) )
+                                {
+                                    if ( extract( temp ).compare("off") == 0 ) newServer->setWarnings( Server::DISABLED );
+                                    else if ( extract( temp ).compare("private") == 0 ) newServer->setWarnings( Server::PRIVATE );
+                                    else  newServer->setWarnings( Server::PUBLIC );
+                                }
+                                else if ( isA( temp, (char*)"^[ \t]*BAN_WARNINGS[ \t]*=[ \t]*(off|on)$" ) )
+                                {
+                                    if ( extract( temp ).compare("off") == 0 ) newServer->setBanWarnings( false );
+                                    else  newServer->setBanWarnings( true );
+                                }
+                                else if ( isA( temp, (char*)"^[ \t]*NICK_TIMING[ \t]*=[ \t]*(never|5|10|15|30|always)$" ) )
+                                {
+                                    std::string opt = extract( temp );
+                                    if ( opt.compare("never") == 0 ) newServer->setBanNick( Server::NEVER );
+                                    else if ( opt.compare("5") == 0 ) newServer->setBanNick( Server::FIVE );
+                                    else if ( opt.compare("10") == 0 ) newServer->setBanNick( Server::TEN );
+                                    else if ( opt.compare("15") == 0 ) newServer->setBanNick( Server::FIFTEEN );
+                                    else if ( opt.compare("30") == 0 ) newServer->setBanNick( Server::TIRTEEN );
+                                    else  newServer->setBanNick( Server::ALWAYS );
+                                }
+                                else if ( isA( temp, (char*)"^[ \t]*IP_TIMING[ \t]*=[ \t]*(never|5|10|15|30|always)$" ) )
+                                {
+                                    std::string opt = extract( temp );
+                                    if ( opt.compare("never") == 0 ) newServer->setBanIp( Server::NEVER );
+                                    else if ( opt.compare("5") == 0 ) newServer->setBanIp( Server::FIVE );
+                                    else if ( opt.compare("10") == 0 ) newServer->setBanIp( Server::TEN );
+                                    else if ( opt.compare("15") == 0 ) newServer->setBanIp( Server::FIFTEEN );
+                                    else if ( opt.compare("30") == 0 ) newServer->setBanIp( Server::TIRTEEN );
+                                    else  newServer->setBanIp( Server::ALWAYS );
+                                }
                                 else if ( isA( temp, (char*)"^[ \t]*RCON_PASSWORD[ \t]*=[ \t]*[^ \t\n\r\f\v]+$" ) )
                                     newServer->setRcon( extract( temp ) );
 
