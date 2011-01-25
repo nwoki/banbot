@@ -44,7 +44,7 @@ class Server
             PRIVATE,
             PUBLIC
         };
-        
+
         enum PriorityLevel {        // server intructions priority enum
             LOW,
             MEDIUM,
@@ -72,7 +72,7 @@ class Server
             STATUS,
             WARNINGS
         };
-        
+
         enum Timing {               //used to define the timing of nick and ip bans.
             NEVER,
             FIVE,
@@ -184,8 +184,8 @@ class Server
         void setStrict( int level = 1 );                                    // set server strict level
         void setChanged( bool changed = true );                             // set server changed flag
         void setValid( bool valid = true );                                 // set server validity flag
-        void setServerConfigs( std::vector<std::string> &list );             // set game server's config file list
-        void setServerMaps( std::vector<std::string> &list );                // set game server's extra maps list
+        void setServerConfigs( std::vector<std::string> list );             // set game server's config file list
+        void setServerMaps( std::vector<std::string> list );                // set game server's extra maps list
         void setGameDirectory( std::string &dir );                           // set the directory where the game is installed
         void setCommandPermission( Commands cmd, int value );               // set the minimum power level requested by a command.
         void setWarnings ( Server::Warnings type );                         // set the warnings type (public, private or disabled) 

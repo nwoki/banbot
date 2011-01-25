@@ -26,6 +26,7 @@
 #ifndef _logger_cpp_
 #define _logger_cpp_
 
+#include "handyFunctions.h"
 #include "logger.h"
 #include <time.h>
 #include <stdio.h>
@@ -43,40 +44,25 @@ Logger::Logger():path( "" ),isOpen( false )
 
 void Logger::checkFile()
 {
-  int end=path.find_last_of('/');
-  int pos=0;
-  bool ok=true;
-  
-  //check per la cartella
-  while (pos<end && ok)
-  {
-    pos=path.find('/',pos+1);
-    std::string cartella=path.substr(0,pos);
+    bool ok = true;                                                         // remains true only if log directory exists
+    int end = path.find_last_of( "/" );
 
-    struct stat st;
-    if( stat( cartella.c_str(), &st ) != 0 )
-    {
-      if( mkdir( cartella.c_str(), 0777 ) != 0 )
-      {
-          std::cout<<"[EPIC FAIL] couldn't create directory '"<<cartella<<"/'.Please check permissions!\n";
-          ok=false;
-      }
+    // check existance of folder
+    if( !handyFunctions::fileOrDirExistance( path ) ) {
+        std::cout<<"\e[0;33m[!] Logfile doesn't exist... I'll create it. \e[0m \n";
+
+        // create directory first
+        if( !handyFunctions::createDir( path.substr( 0, end + 1 ) ) ) {     // had to use substr because path has file included
+            std::cout<<"\e[1;31m[EPIC FAIL] couldn't create directory '" << path << "'.Please check permissions! \e[0m \n";
+            ok = false;
+        }
+
+        if( ok ) {
+            // create logfile
+            if( !handyFunctions::createFile( path ) )
+                std::cout<<" \e[1;31m [EPIC FAIL] couldn't create the log file. Please check permissions! \e[0m \n";
+        }
     }
-  }
-    
-  //check per il file log
-  if( ok )
-  {
-    struct stat st;
-    if( stat( path.c_str(), &st ) != 0 )
-    {
-      std::cout<<"[!] Logfile doesn't exist... I'll create it.\n";
-      //create logfile
-      std::ofstream OUT(path.c_str());
-      if ( OUT.is_open() ) OUT.close();
-      else std::cout<<"[EPIC FAIL] couldn't create the log file. Please check permissions!\n";
-    }
-  }
 }
 
 Logger::~Logger()

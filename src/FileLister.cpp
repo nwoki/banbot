@@ -22,10 +22,10 @@
     Copyright (C) 1994, 1995, 1996, 1999, 2000, 2001, 2002, 2004, 2005 Free
     Software Foundation, Inc.
 */
+#ifndef FILELISTER_CPP
+#define FILELISTER_CPP
 
-#include <boost/filesystem.hpp>
-#include <boost/filesystem/operations.hpp>
-#include <boost/filesystem/path.hpp>
+#include "boost_1_45/boost/filesystem.hpp"
 
 #include "FileLister.h"
 
@@ -34,6 +34,52 @@ namespace bf = boost::filesystem;                   // just for ease of use
 FileLister::FileLister( ConfigLoader::Options* config )
     : m_options( config )
 {
+}
+
+void FileLister::updateServerConfigMapList()
+{
+    for( unsigned int i = 0; i < m_options->size(); i++ ) {
+        std::vector< std::string > filesList = listFiles( (*m_options)[i].gameDirectory() );
+        (*m_options)[i].setServerConfigs( configOrMapFiles( filesList, CONFIG ) );
+        (*m_options)[i].setServerMaps( configOrMapFiles( filesList, MAP ) );
+    }
+}
+
+
+/*********************
+ * PRIVATE FUNCTIONS *
+ ********************/
+
+std::vector< std::string > FileLister::configOrMapFiles( std::vector< std::string > filesList, fileType type )
+{
+    std::string suffix;
+
+    if( type == CONFIG )
+        suffix = ".cfg";
+    else
+        suffix = ".pk3";
+
+    std::vector< std::string > auxList;
+
+    for( unsigned int i = 0; i < filesList.size(); i++ ) {
+        std::string auxStr = filesList.at( i );
+        int strSize = auxStr.size();
+
+        if( auxStr.substr( ( strSize - 4 ), 4  ) == suffix ) {
+            #ifdef DEBUG_MODE
+            std::cout << "File: " << auxStr << "\n";
+            std::cout << "ending is: " << auxStr.substr( ( strSize - 4 ), 4  ) << "\n";
+            #endif
+            auxList.push_back( auxStr );        // add to list
+        }
+    }
+
+#ifdef DEBUG_MODE
+    std::cout << "FileLister::configMapFiles files are: \n";
+    for( unsigned int j = 0; j < auxList.size(); j++ )
+        std::cout << auxList.at( j ) << "\n";
+#endif
+    return auxList;
 }
 
 std::vector< std::string > FileLister::listFiles( const std::string& path )
@@ -49,7 +95,15 @@ std::vector< std::string > FileLister::listFiles( const std::string& path )
         }
     }
 
+#ifdef DEBUG_MODE
+    std::cout << "FileLister::listFiles files are: \n";
+    for( unsigned int i = 0; i < fileList.size(); i++ )
+        std::cout << fileList.at( i ) << "\n";
+#endif
+
     return fileList;
 }
+
+#endif  // FILELISTER_CPP
 
 

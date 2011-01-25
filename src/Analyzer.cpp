@@ -104,7 +104,7 @@ Analyzer::Analyzer(Connection* conn, Db* db, ConfigLoader* configLoader )
         std::cout<<"[OK] Analyzer inizializzato.\n";
         *(m_dati->errors)<<"[OK] Analyzer inizializzato.\n\n";
     #else
-        std::cout<<"[OK] Analyzer initialized.\n";
+        std::cout<<"\e[0;32m[OK] Analyzer initialized. \e[0m \n";
         *(m_dati->errors)<<"[OK] Analyzer initialized.\n\n";
     #endif
     sleep(1);
@@ -436,7 +436,7 @@ void Analyzer::clientUserInfo(char* line)
                     *(m_dati->log)<<"  [!] warning for illegal GUID.\n";
                     std::string phrase("^0BanBot warning: ^1player number ");
                     #endif
-                    
+
                     phrase.append(numero);
                     phrase.append(", ");
                     phrase.append(nick);
@@ -2167,7 +2167,7 @@ void Analyzer::tellToAdmins(std::string phrase)
             {
                 block->tell(phrase,(*m_dati)[m_dati->serverNumber][indici[i]]->number);
             }
-           
+
         }
         else
         {
@@ -2217,10 +2217,10 @@ void Analyzer::main_loop()
 {
     InstructionsBlock * block = new InstructionsBlock();
     #ifdef ITA
-        std::cout<<"[OK] BanBot avviato.\n\n";
+        std::cout<<"\e[0;32m[OK] BanBot avviato. \e[0m \n\n";
         *(m_dati->errors)<<"[OK] BanBot avviato.\n\n";
     #else
-        std::cout<<"[OK] BanBot launched.\n\n";
+        std::cout<<"\e[0;32m[OK] BanBot launched. \e[0m \n\n";
         *(m_dati->errors)<<"[OK] BanBot launched.\n\n";
     #endif
     while (true)

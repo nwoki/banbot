@@ -26,19 +26,19 @@
 #ifndef HANDYFUNCTIONS_CPP
 #define HANDYFUNCTIONS_CPP
 
+#include "boost/filesystem.hpp"
 #include "handyFunctions.h"
 #include <iostream>
 #include <fstream>
-#include <sstream>
-#include <stdio.h>
 #include <string>
-#include <sys/stat.h>
 #include <time.h>
 #include <vector>
 
+namespace fs = boost::filesystem;
+
 namespace handyFunctions{
 
-    bool fileExistance( const std::string &pathToFile )
+    bool fileOrDirExistance( const std::string &pathToFile )
     {
     #ifdef DB_MODE
         std::cout << "FILEEXISTANCE -> path: " << pathToFile << std::endl;
@@ -48,49 +48,41 @@ namespace handyFunctions{
             return false;
         }
 
-        struct stat st;
-
-        if( stat( pathToFile.c_str(), &st ) != 0 )  //file doesn't exist
-            return false;
-        else    //exists
+        if( fs::exists( pathToFile ) )
             return true;
+        else
+            return false;
     }
 
 
-    bool dirCreate( std::string path )
+    bool createDir( std::string path )
     {
     #ifdef DB_MODE
         std::cout << "DIRCREATE " << path << std::endl;
     #endif
 
+        bool status = false;
         //check if the path is terminated, otherwise add slash
         if( path[path.size()] != '/' )
             path.append( "/" );
 
-        int end = path.find_last_of( '/' );
-        int pos = 0;
-        bool ok = true;
-
-        //check per la cartella
-        while( pos < end && ok )
-        {
-            pos = path.find( '/', pos + 1 );
-            std::string cartella = path.substr( 0, pos );
-
-            struct stat st;
-            if( stat( cartella.c_str(), &st ) != 0 )
-            {
-                if( mkdir( cartella.c_str(), 0777 ) != 0 )
-                {
-                    std::cout<<"\e[1;31m[EPIC FAIL] couldn't create directory '"<<cartella<<"'.Please check permissions! \e[0m \n";
-                    ok = false;
-                }
+        if( !fs::exists( path ) ) {
+            // create directories if more than one
+            try {
+                if( !fs::create_directories( path ) )
+                    std::cout << "[ERROR] can't create directory\n" << std::endl;
+                else
+                    status = true;
+            }
+            catch( const std::exception &exception ) {
+                std::cout << "\e[1;31m[ERROR]" << exception.what() << "\e[0m \n";
             }
         }
-        return ok;
+        return status;
     }
 
-    bool fileCreate( const std::string &file )
+
+    bool createFile( const std::string &file )
     {
 
     #ifdef DB_MODE
@@ -101,28 +93,26 @@ namespace handyFunctions{
         //check per il file
         if( !file.empty() )
         {
-            struct stat st;
-            if( stat( file.c_str(), &st ) != 0 )
-            {
+            if( !fs::exists( file ) ) {
                 std::cout << "\e[0;33m[!] " << file << " doesn't exist...Creating it...\e[0m \n";
-                //create logfile
                 std::ofstream OUT( file.c_str() );
 
                 if ( OUT.is_open() )
                     OUT.close();
                 else {
-                    std::cout << "\ee[1;31m[EPIC FAIL] couldn't create " << file << ". Please check permissions!\e[0m \n";
+                    std::cout << "\e[1;31m[EPIC FAIL] couldn't create " << file << ". Please check permissions!\e[0m \n";
                     return false;
                 }
                 return true;
             }
             else {
-                std::cout << "\e[0;33mfile " << file << " already exists.. \e[0m \n";
+                    std::cout << "\e[0;33mfile " << file << " already exists.. \e[0m \n";
                 return false;
             }
         }
         return ok;
     }
+
 
     std::string intToString( int number )
     {

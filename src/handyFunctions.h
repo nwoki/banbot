@@ -32,9 +32,9 @@
 
 namespace handyFunctions {
 
-    bool fileExistance( const std::string &pathToFile );            // checks if given path exists
-    bool dirCreate( std::string path );                             // checks if path exists otherwise tries to create it
-    bool fileCreate( const std::string &file );                     // checks for existance of given file otherwise tries to create it
+    bool fileOrDirExistance( const std::string &pathToFileOrDir );  // checks if given directory or file exists
+    bool createDir( std::string path );                             // creates given directory
+    bool createFile( const std::string &file );                     // checks for existance of given file otherwise tries to create it
     std::string intToString( int number );                          // converts int to string
     std::vector< std::string >split( std::string str, char ch );    // splits given string every occurance of "ch"
     int stringToInt( const std::string &str );                      // transforms given string to int -1 on error

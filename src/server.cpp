@@ -303,7 +303,7 @@ std::vector<std::string> Server::serverConfigs() const
     return m_configs;
 }
 
-void Server::setServerConfigs( std::vector<std::string> &list )
+void Server::setServerConfigs( std::vector<std::string> list )
 {
     m_configs = list;
 }
@@ -313,7 +313,7 @@ std::vector<std::string> Server::serverMaps() const
     return m_maps;
 }
 
-void Server::setServerMaps( std::vector<std::string> &list )
+void Server::setServerMaps( std::vector<std::string> list )
 {
     m_maps = list;
 }
