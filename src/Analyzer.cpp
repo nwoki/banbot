@@ -1593,7 +1593,7 @@ void Analyzer::status(char* line)
                 break;
         }
         #ifdef ITA
-            phrase.append("\n^1Numbero degli admin: ");
+            phrase.append("\n^1Numero degli admin: ");
             phrase.append(database->ops());
             phrase.append("\n^1Giocatori bannati: ");
             phrase.append(database->banned());
