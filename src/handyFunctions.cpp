@@ -26,7 +26,7 @@
 #ifndef HANDYFUNCTIONS_CPP
 #define HANDYFUNCTIONS_CPP
 
-#include "boost/filesystem.hpp"
+#include "boost_1_45/boost/filesystem.hpp"
 #include "handyFunctions.h"
 #include <iostream>
 #include <fstream>

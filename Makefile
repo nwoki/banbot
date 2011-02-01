@@ -167,7 +167,7 @@ src/.obj/Scheduler.o	: src/Scheduler.h src/Scheduler.cpp
 		$(CPP) $(CFLAGS) -o $(OBJECTS_PATH)Scheduler.o src/Scheduler.cpp
 
 src/.obj/handyFunctions.o	: src/handyFunctions.h src/handyFunctions.cpp
-		$(CPP) $(CFLAGS) -o $(OBJECTS_PATH)handyFunctions.o src/handyFunctions.cpp
+		$(CPP) $(CFLAGS) $(BOOST_INCPATH) -o $(OBJECTS_PATH)handyFunctions.o src/handyFunctions.cpp
 
 src/.obj/FileLister.o	: src/FileLister.h src/FileLister.cpp
 	$(CPP) $(CFLAGS) $(BOOST_INCPATH) -o $(OBJECTS_PATH)FileLister.o src/FileLister.cpp
