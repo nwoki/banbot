@@ -593,7 +593,8 @@ void Analyzer::ban(char* line)
     *(m_dati->log)<<"\n[!] Ban";
     //controllo se ho trovato il giocatore e i suoi permessi, se la persona non è autorizzata non faccio nulla.
     std::string numeroAdmin;
-    if (isAdminSay(line,numeroAdmin) <= (*m_dati)[(*m_dati).serverNumber].commandPermission(Server::BAN))
+    int adminLevel = isAdminSay(line,numeroAdmin);
+    if ( adminLevel <= (*m_dati)[(*m_dati).serverNumber].commandPermission(Server::BAN))
     {
         InstructionsBlock * block = new InstructionsBlock();
         #ifdef ITA
@@ -622,7 +623,7 @@ void Analyzer::ban(char* line)
         //per pignoleria controllo anche se per una rarissima combinazione non è già bannato).
         if (i>=0 && !database->checkBanGuid((*m_dati)[m_dati->serverNumber][i]->GUID))
         {
-            if (!database->checkAuthGuid((*m_dati)[m_dati->serverNumber][i]->GUID))
+            if ( adminLevel > database->checkAuthGuid((*m_dati)[m_dati->serverNumber][i]->GUID) )
             {
                 #ifdef ITA
                     std::cout<<"  [+]banno "<<(*m_dati)[m_dati->serverNumber][i]->nick<<" con guid "<<(*m_dati)[m_dati->serverNumber][i]->GUID<<"\n";
@@ -681,13 +682,13 @@ void Analyzer::ban(char* line)
             else
             {
                 #ifdef ITA
-                    std::cout<<"  [!]fail: il giocatore è un admin\n";
-                    *(m_dati->log)<<"  [!]fail: il giocatore è un admin\n";
-                    block->tell("^1Banning error: è un admin.",numeroAdmin);
+                    std::cout<<"  [!]fail: il giocatore è un admin.\n";
+                    *(m_dati->log)<<"  [!]fail: il giocatore è un admin.\n";
+                    block->tell("^1Banning error: è un admin come te.",numeroAdmin);
                 #else
                     std::cout<<"  [!]fail: player is an admin\n";
                     *(m_dati->log)<<"  [!]fail: player is an admin\n";
-                    block->tell("^1Banning error: (s)he's an admin.",numeroAdmin);
+                    block->tell("^1Banning error: (s)he's an admin like you.",numeroAdmin);
                 #endif
             }
         }

@@ -487,7 +487,7 @@ void Db::dumpDatabases()
 
             #ifdef DB_DEBUG
                 *(m_options->errors) << "Checking the file...";
-                if( handyFunctions::fileExistance( dest ) )
+                if( handyFunctions::fileOrDirExistance( dest ) )
                     *(m_options->errors) << "It exists!\n";
                 else
                     *(m_options->errors) << "Fail! Not found!\n";

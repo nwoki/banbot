@@ -78,6 +78,10 @@
 #define LEVEL6 6        //like level 5, automated ban for everything, no warnings.
 
 
+//TODO correct livello admin sul check ban
+//segmentation fault admins
+
+
 //TODO definire variabile per abilitare/disattivare il check sulla guid "UNKNOWN"
 //TODO comandi e opzioni per modificare timing, e i 2 warnings.
 
