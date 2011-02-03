@@ -139,29 +139,32 @@ void Analyzer::loadOptions()
                 temp->seekg ( 0, std::ios::end );
                 (*m_dati)[i].setRow( temp->tellg() );
                 #ifdef DEBUG_MODE
-                    #ifdef ITA
-                        std::cout << "Valore di partenza del file "<<i<<": "<<(*m_dati)[i].row()<<" : "<<temp->tellg()<<" \n";
-                    #else
-                        std::cout << "Starting value for file "<<i<<": "<<(*m_dati)[i].row()<<" : "<<temp->tellg()<<" \n";
-                    #endif
+                #ifdef ITA
+                std::cout << "Valore di partenza del file "<<i<<": "<<(*m_dati)[i].row()<<" : "<<temp->tellg()<<" \n";
+                #else
+                std::cout << "Starting value for file "<<i<<": "<<(*m_dati)[i].row()<<" : "<<temp->tellg()<<" \n";
+                #endif
                 #endif
             }
             else (*m_dati)[i].setRow( 0 );
             delete temp;
             (*m_dati)[i].setChanged(false);
         }
-  }
-  database->checkDatabases();
-
-  #ifdef ITA
-        std::cout<<"Nuove opzioni caricate.\n";
-        m_dati->errors->timestamp();
-        *(m_dati->errors)<<"\nNuove opzioni caricate.\n";
-  #else
-        std::cout<<"New options loaded.\n";
-        m_dati->errors->timestamp();
-        *(m_dati->errors)<<"\nNew options loaded.\n";
-  #endif
+    }
+    database->checkDatabases();
+    
+    std::cout<<m_dati->toString()<<"\n";
+    *(m_dati->errors)<<m_dati->toString()<<"\n";
+    
+    #ifdef ITA
+    std::cout<<"Nuove opzioni caricate.\n";
+    m_dati->errors->timestamp();
+    *(m_dati->errors)<<"\nNuove opzioni caricate.\n";
+    #else
+    std::cout<<"New options loaded.\n";
+    m_dati->errors->timestamp();
+    *(m_dati->errors)<<"\nNew options loaded.\n";
+    #endif
 }
 
 //testa l'array di caratteri passato col regex, torna true se la condizione imposta dal regex è soddisfatta.
