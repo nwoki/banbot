@@ -950,7 +950,7 @@ std::string Db::adminRegisteredNickViaGuid( const std::string& guid )
     query.append( "';" );
 
     if( execQuery( query ) ) {
-        if( !m_data[0].empty() )
+        if( !m_data.empty() )
             return m_data[0];
     }
 

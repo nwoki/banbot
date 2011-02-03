@@ -70,7 +70,8 @@ class Server
             PASS,
             CONFIG,
             STATUS,
-            WARNINGS
+            WARNINGS,
+            BANTIMEWARN
         };
 
         enum Timing {               //used to define the timing of nick and ip bans.

@@ -57,14 +57,15 @@
 #define _R_UNBAN_ID "^ *[0-9]+:[0-9]{2} +say: +[0-9]+ +[^ \t\n\r\f\v]+: +!unban [0-9]+$"
 #define _R_OP "^ *[0-9]+:[0-9]{2} +say: +[0-9]+ +[^ \t\n\r\f\v]+: +!op [^ \t\n\r\f\v]+"
 #define _R_OP_NUMBER "^ *[0-9]+:[0-9]{2} +say: +[0-9]+ +[^ \t\n\r\f\v]+: +!op [0-9]{1,2}"
-#define _R_DEOP "^ *[0-9]+:[0-9]{2} +say: +[0-9]+ +[^ \t\n\r\f\v]+: +!deop [0-9]+$"
+#define _R_DEOP "^ *[0-9]+:[0-9]{2} +say: +[0-9]+ +[^ \t\n\r\f\v]+: +!deop [^ \t\n\r\f\v]+$"
+#define _R_DEOP_ID "^ *[0-9]+:[0-9]{2} +say: +[0-9]+ +[^ \t\n\r\f\v]+: +!deop [0-9]+$"
 #define _R_GUID "[A-F0-9]{32}"
 #define _R_INITGAME "^ *[0-9]+:[0-9]{2} +InitGame:"
 #define _R_HELP "^ *[0-9]+:[0-9]{2} +say: +[0-9]+ +[^ \t\n\r\f\v]+: +!help$"
 #define _R_KICK "^ *[0-9]+:[0-9]{2} +say: +[0-9]+ +[^ \t\n\r\f\v]+: +!kick [^ \t\n\r\f\v]+$"
 #define _R_KICK_NUMBER "^ *[0-9]+:[0-9]{2} +say: +[0-9]+ +[^ \t\n\r\f\v]+: +!kick [0-9]{1,2}$"
 #define _R_MUTE " *[0-9]+:[0-9]{2} +say: +[0-9]+ +[^ \t\n\r\f\v]+: +!mute [^ \t\n\r\f\v]+$"
-#define _R_MUTE_ALL "^ *[0-9]+:[0-9]{2} +say: +[0-9]+ +[^ \t\n\r\f\v]+: +!mute (all)|(ALL)$"
+#define _R_MUTE_ALL "^ *[0-9]+:[0-9]{2} +say: +[0-9]+ +[^ \t\n\r\f\v]+: +!mute (all|ALL)$"
 #define _R_MUTE_NUMBER "^ *[0-9]+:[0-9]{2} +say: +[0-9]+ +[^ \t\n\r\f\v]+: +!mute [0-9]{1,2}$"
 #define _R_STRICT "^ *[0-9]+:[0-9]{2} +say: +[0-9]+ +[^ \t\n\r\f\v]+: +!strict (OFF|off|[0-6]{1})$"
 #define _R_VETO "^ *[0-9]+:[0-9]{2} +say: +[0-9]+ +[^ \t\n\r\f\v]+: +!veto$"
@@ -84,6 +85,7 @@
 #define _R_PASS "^ *[0-9]+:[0-9]{2} +say: +[0-9]+ +[^ \t\n\r\f\v]+: +!pass [^ \t\n\r\f\v]+$"
 #define _R_CONFIG "^ *[0-9]+:[0-9]{2} +say: +[0-9]+ +[^ \t\n\r\f\v]+: +!config [^ \t\n\r\f\v]+$"
 #define _R_WARNINGS "^ *[0-9]+:[0-9]{2} +say: +[0-9]+ +[^ \t\n\r\f\v]+: +!warnings (off|public|private)$"
+#define _R_BANTIMEWARN "^ *[0-9]+:[0-9]{2} +say: +[0-9]+ +[^ \t\n\r\f\v]+: +!bantimewarn (on|off)$"
 
 //costruttore
 Analyzer::Analyzer(Connection* conn, Db* db, ConfigLoader* configLoader )
@@ -210,11 +212,6 @@ int Analyzer::isAdminSay( char* line, std::string &numero )
         #endif
     }
     return 404;
-}
-
-//funzione da sovrascrivere nelle eventuali espansioni
-void Analyzer::expansion(char* line)
-{
 }
 
 void Analyzer::clientUserInfo(char* line)
@@ -591,7 +588,7 @@ void Analyzer::ban(char* line)
     std::cout<<"[!] Ban";
     (m_dati->log)->timestamp();
     *(m_dati->log)<<"\n[!] Ban";
-    //controllo se ho trovato il giocatore e i suoi permessi, se la persona non è autorizzata non faccio nulla.
+    //i check if i know the player and his permissions, if the player hasn't ban power, nothing to do.
     std::string numeroAdmin;
     int adminLevel = isAdminSay(line,numeroAdmin);
     if ( adminLevel <= (*m_dati)[(*m_dati).serverNumber].commandPermission(Server::BAN))
@@ -604,9 +601,9 @@ void Analyzer::ban(char* line)
             std::cout<<"  [OK] Is an admin. Applying ban.\n";
             *(m_dati->log)<<"  [OK] Is an admin. Applying ban.\n";
         #endif
-        //ok ha i permessi, eseguo.
+        //ok, do it.
         int i=0;
-        //prendo il numero del giocatore da bannare
+        //take the number or the nick of the player to ban
         std::string temp(line);
         unsigned int pos=temp.find("!ban");
         pos=temp.find_first_not_of(" \t\n\r\f\v",pos+4);
@@ -619,8 +616,7 @@ void Analyzer::ban(char* line)
             i = findPlayer( player );
         else
             i = translatePlayer( player );
-        //se ho il guid, banno il player (le operazioni non sono eseguite "in diretta",
-        //per pignoleria controllo anche se per una rarissima combinazione non è già bannato).
+        //if i have the guid, ban it. I'll check if he is already banned too.
         if (i>=0 && !database->checkBanGuid((*m_dati)[m_dati->serverNumber][i]->GUID))
         {
             if ( adminLevel > database->checkAuthGuid((*m_dati)[m_dati->serverNumber][i]->GUID) )
@@ -701,7 +697,7 @@ void Analyzer::ban(char* line)
             #else
                 std::cout<<"  [!]fail: player not in-game (or wrong nick) or already banned\n";
                 *(m_dati->log)<<"  [!]fail: player not in-game (or wrong nick) or already banned\n";
-                block->tell("^1Banning error: numbero of the player wrong or nick non unique.",numeroAdmin);
+                block->tell("^1Banning error: number of the player wrong or nick non unique.",numeroAdmin);
             #endif
         }
         m_scheduler->addInstructionBlock( block, Server::HIGH );
@@ -721,8 +717,8 @@ void Analyzer::unban(char* line)
         //take the argument
         std::string temp(line);
         int pos=temp.find("!unban");
-        pos=temp.find_first_of("0123456789",pos+6);
-        int end=temp.find_first_of(" ",pos);
+        pos=temp.find_first_not_of(" \t\n\r\f\v",pos+6);
+        int end=temp.find_first_of(" \t\n\r\f\v",pos);
         std::string player=temp.substr(pos,end-pos);
 
         if (!isA(line,_R_UNBAN_ID))
@@ -1009,7 +1005,7 @@ void Analyzer::findOp(char* line)
             phrase.append(risultato[0].id);
             phrase.append("^2:^1 ");
             phrase.append(risultato[0].nick);
-            phrase.append("^2 l^1");
+            phrase.append("^2 l^1 ");
             phrase.append(risultato[0].level);
             phrase.append(" ^2?");
         }
@@ -1021,7 +1017,7 @@ void Analyzer::findOp(char* line)
                 phrase.append(risultato[i].id);
                 phrase.append("^2:^1 ");
                 phrase.append(risultato[i].nick);
-                phrase.append("^2 l^1");
+                phrase.append("^2 l^1 ");
                 phrase.append(risultato[i].level);
                 if(i<risultato.size()-1) phrase.append(",\n^1");
                 else phrase.append(".");
@@ -1051,7 +1047,7 @@ void Analyzer::findOp(char* line)
             phrase.append(risultatoApprossimativo[1].id);
             phrase.append("^2:^1 ");
             phrase.append(risultatoApprossimativo[1].nick);
-            phrase.append("^2 l^1");
+            phrase.append("^2 l ^1");
             phrase.append(risultatoApprossimativo[1].level);
             phrase.append(" ^2?");
         }
@@ -1063,7 +1059,7 @@ void Analyzer::findOp(char* line)
                 phrase.append(risultatoApprossimativo[i].id);
                 phrase.append("^2:^1 ");
                 phrase.append(risultatoApprossimativo[i].nick);
-                phrase.append("^2 l^1");
+                phrase.append("^2 l^1 ");
                 phrase.append(risultatoApprossimativo[i].level);
                 if(i<risultatoApprossimativo.size()-1) phrase.append(",\n^1");
                 else phrase.append(".");
@@ -1079,7 +1075,7 @@ void Analyzer::op(char* line)
     std::cout<<"[!] Op";
     (m_dati->log)->timestamp();
     *(m_dati->log)<<"\n[!] Op";
-    //controllo se ho il giocatore e i suoi permessi, se la persona non è autorizzata non faccio nulla.
+
     std::string numeroAdmin;
     int level = isAdminSay(line,numeroAdmin);
     if (level <= (*m_dati)[(*m_dati).serverNumber].commandPermission(Server::OP))
@@ -1090,17 +1086,18 @@ void Analyzer::op(char* line)
         std::string temp(line);
         int pos=temp.find("!op");
         pos=temp.find_first_not_of(" \t\n\r\f\v",pos+3);
-        int end=temp.find_first_of(" \n",pos);
+        int end=temp.find_first_of(" \t\n\r\f\v",pos);
         std::string player=temp.substr(pos,end-pos);
         pos=temp.find_first_not_of(" \t\n\r\f\v",end);
-        end=temp.find_first_of(" \n",pos);
+        end=temp.find_first_of(" \t\n\r\f\v",pos);
         std::string newOpLevel=temp.substr(pos,end-pos);
+        
         if (isA(newOpLevel.c_str(),_R_NUMBER))
         {
             int opLevel = level;
             opLevel=atoi(newOpLevel.c_str());
             //i don't permit an highter level of the admin
-            if ( opLevel > level )
+            if ( opLevel < level )
                 opLevel = level;
             newOpLevel = handyFunctions::intToString(opLevel);
         }
@@ -1127,9 +1124,9 @@ void Analyzer::op(char* line)
                 #ifdef ITA
                     phrase.append(" aggiunto con successo agli admin, livello ");
                 #else
-                    phrase.append(" successifully added to admin list, level ");
+                    phrase.append(" successfully added to admin list, level ");
                 #endif
-                phrase.append ( handyFunctions::intToString(level) );
+                phrase.append ( newOpLevel );
                 block->tell( phrase, numeroAdmin );
             }
             else
@@ -1148,33 +1145,117 @@ void Analyzer::deop(char* line)
     std::cout<<"[!] Deop";
     (m_dati->log)->timestamp();
     *(m_dati->log)<<"\n[!] Deop";
-    //controllo se ho il giocatore e i suoi permessi, se la persona non è autorizzata non faccio nulla.
+    //check user's powa
     std::string numeroAdmin;
     if (isAdminSay(line,numeroAdmin) <= (*m_dati)[(*m_dati).serverNumber].commandPermission(Server::DEOP))
     {
         InstructionsBlock * block = new InstructionsBlock();
-        //prendo i dati dell'utente e lo tolgo dagli op
+        //take player's data
         std::string temp(line);
         int pos=temp.find("!deop");
-        pos=temp.find_first_of("0123456789",pos+5);
-        int end=temp.find_first_of(" ",pos);
-        std::string numero=temp.substr(pos,end-pos);
-
-        //ho il numero, elimino dal database tutti i record relativi.
-        std::string phrase;
-        if (database->deleteOp(numero))
-            #ifdef ITA
-                block->tell("^0BanBot: ^1utente tolto con successo dalla lista admin.",numeroAdmin);
-            #else
-                block->tell("^0BanBot: ^1user deleted sucessifully from admin list.",numeroAdmin);
-            #endif
+        pos=temp.find_first_not_of(" \t\n\r\f\v",pos+5);
+        int end=temp.find_first_of(" \t\n\r\f\v",pos);
+        std::string player=temp.substr(pos,end-pos);
+        
+        
+        if (!isA(line,_R_DEOP_ID))
+        {
+            //search the precise nick on the database
+            std::string phrase;
+            std::vector<Db::idNickStruct> risultatoEsatto=database->findPreciseIdNickViaNickOp(player);
+            if (risultatoEsatto.size() == 1)  //if i found an exact match, i'll unban it
+            {
+                #ifdef ITA
+                if (database->deleteBanned(risultatoEsatto[0].id))
+                {
+                    phrase.append("^0BanBot: ^2");
+                    phrase.append(risultatoEsatto[0].nick);
+                    phrase.append(" ^1 e' stato tolto dalla lista admin.");
+                }
+                else phrase.append("^0BanBot: ^1è stato riscontrato un errore, admin non eliminato.");
+                #else
+                if (database->deleteBanned(risultatoEsatto[0].id))
+                {
+                    phrase.append("^0BanBot: ^2");
+                    phrase.append(risultatoEsatto[0].nick);
+                    phrase.append(" ^1successfully removed from admin list.");
+                }
+                else phrase.append("^0BanBot: ^1error: admin not deleted.");
+                #endif
+            }
+            else if ( risultatoEsatto.size() == 0 )
+            {
+                //search the approx nick on db
+                std::vector<Db::idNickStruct> risultatoApprossimativo=database->findAproxIdNickViaNickOp(player);
+                if (risultatoApprossimativo.size() == 1)  //else, if i found an aprox match, i'll unban it
+                {
+                    #ifdef ITA
+                    if (database->deleteBanned(risultatoApprossimativo[0].id))
+                    {
+                        phrase.append("^0BanBot: ^2");
+                        phrase.append(risultatoApprossimativo[0].nick);
+                        phrase.append(" ^1 e' stato tolto dalla lista admin.");
+                    }
+                    else phrase.append("^0BanBot: ^1è stato riscontrato un errore, admin non eliminato.");
+                    #else
+                    if (database->deleteBanned(risultatoApprossimativo[0].id))
+                    {
+                        phrase.append("^0BanBot: ^2");
+                        phrase.append(risultatoApprossimativo[0].nick);
+                        phrase.append(" ^1successfully removed from admin list.");
+                    }
+                    else phrase.append("^0BanBot: ^1error: admin not deleted.");
+                    #endif
+                }
+                else
+                {
+                    if ( risultatoApprossimativo.size() > 1 )
+                    {
+                        #ifdef ITA
+                        phrase.append("^0BanBot: ^1troppi risultati: specifica meglio il nick o usa !findop");
+                        #else
+                        phrase.append("^0BanBot: ^1too results: use a complete nick or !findop");
+                        #endif
+                    }
+                    else
+                    {
+                        #ifdef ITA
+                        phrase.append("^0BanBot: ^1nessun admin trovato da eliminare.");
+                        #else
+                        phrase.append("^0BanBot: ^1player not found.");
+                        #endif
+                    }
+                }
+            }
+            else
+            {
+                //too players
+                #ifdef ITA
+                phrase.append("^0BanBot: ^1troppi risultati: usa !findop");
+                #else
+                phrase.append("^0BanBot: ^1too results: use !findop");
+                #endif
+            }
+            block->tell(phrase,numeroAdmin);
+        }
         else
-            #ifdef ITA
+        {
+            //i have the number, i'll delete it from database
+            std::string phrase;
+            if (database->deleteOp(player))
+                #ifdef ITA
+                block->tell("^0BanBot: ^1utente tolto con successo dalla lista admin.",numeroAdmin);
+                #else
+                block->tell("^0BanBot: ^1user deleted sucessifully from admin list.",numeroAdmin);
+                #endif
+            else
+                #ifdef ITA
                 block->tell("^1^0BanBot ^1fail: è stato riscontrato un errore.",numeroAdmin);
-            #else
+                #else
                 block->tell("^0BanBot ^1fail: player is still an admin.",numeroAdmin);
-            #endif
-
+                #endif
+            block->tell(phrase,numeroAdmin);
+        }
         m_scheduler->addInstructionBlock( block, Server::MEDIUM );
     }
 }
@@ -1358,6 +1439,8 @@ void Analyzer::help(char* line)
             phrase.append( H_STATUS );
         if ( level <= (*m_dati)[(*m_dati).serverNumber].commandPermission(Server::WARNINGS) )
             phrase.append( H_WARNINGS );
+        if ( level <= (*m_dati)[(*m_dati).serverNumber].commandPermission(Server::BANTIMEWARN) )
+            phrase.append( H_BANTIMEWARN );
 
         phrase.append( H_LEVEL );
         phrase.append( handyFunctions::intToString(level) );
@@ -1568,7 +1651,7 @@ void Analyzer::status(char* line)
         InstructionsBlock * block = new InstructionsBlock();
         std::string phrase( "^0BanBot ^1status: version " );
         phrase.append( _VERSION );
-        phrase.append( ", coded by [2s2h]n3m3s1s & [2s2h]Zamy.\n^1Strict level: " );
+        phrase.append( ", coded by [2s2h]n3m3s1s & [2s2h]Zamy.\n^1Strict level: ^2" );
         switch ((*m_dati)[m_dati->serverNumber].strict())
         {
             case 0:
@@ -1594,31 +1677,41 @@ void Analyzer::status(char* line)
                 break;
         }
         #ifdef ITA
-            phrase.append("\n^1Numero degli admin: ");
+            phrase.append("\n^1Numero degli admin: ^2");
             phrase.append(database->ops());
-            phrase.append("\n^1Giocatori bannati: ");
+            phrase.append("\n^1Giocatori bannati: ^2");
             phrase.append(database->banned());
-            phrase.append("\n^1Giocatori bannati automaticamente: ");
+            phrase.append("\n^1Giocatori bannati automaticamente: ^2");
             phrase.append(database->autoBanned());
-            phrase.append("\n^1Messaggi warning: ");
+            phrase.append("\n^1Messaggi warning: ^2");
             if ((*m_dati)[(*m_dati).serverNumber].warnings() == Server::DISABLED)
                 phrase.append("disattivati");
             else if ((*m_dati)[(*m_dati).serverNumber].warnings() == Server::PUBLIC)
                 phrase.append("pubblici");
             else phrase.append("privati");
+            phrase.append("\n^1Warning ban scaduti: ^2");
+            if ((*m_dati)[(*m_dati).serverNumber].banWarnings())
+                phrase.append("on");
+            else
+                phrase.append("off");
         #else
-            phrase.append("\n^1Number of admins: ");
+            phrase.append("\n^1Number of admins: ^2");
             phrase.append(database->ops());
-            phrase.append("\n^1Players currently banned: ");
+            phrase.append("\n^1Players currently banned: ^2");
             phrase.append(database->banned());
-            phrase.append("\n^1Players banned automatically: ");
+            phrase.append("\n^1Players banned automatically: ^2");
             phrase.append(database->autoBanned());
-            phrase.append("\n^1Warning messages: ");
+            phrase.append("\n^1Warning messages: ^2");
             if ((*m_dati)[(*m_dati).serverNumber].warnings() == Server::DISABLED)
                 phrase.append("disabled");
             else if ((*m_dati)[(*m_dati).serverNumber].warnings() == Server::PUBLIC)
                 phrase.append("public");
             else phrase.append("private");
+            phrase.append("\n^1Old bans warnings: ^2");
+            if ((*m_dati)[(*m_dati).serverNumber].banWarnings())
+                phrase.append("on");
+            else
+                phrase.append("off");
         #endif
         block->say(phrase);
         m_scheduler->addInstructionBlock( block, Server::MEDIUM );
@@ -1899,6 +1992,53 @@ void Analyzer::warnings(char* line)
         m_scheduler->addInstructionBlock(block, Server::MEDIUM);
     }
 }
+
+void Analyzer::bantimewarn(char* line)
+{
+    std::cout<<"[!] BanTimeWarn";
+    (m_dati->log)->timestamp();
+    *(m_dati->log)<<"\n[!] BanTimeWarn";
+    //i check the player and his permissions, if he isn't autorized to use this command, nothing to do.
+    std::string numeroAdmin;
+    if (isAdminSay(line,numeroAdmin) <= (*m_dati)[(*m_dati).serverNumber].commandPermission(Server::MAP))
+    {
+        InstructionsBlock * block = new InstructionsBlock();
+        std::string temp(line);
+        int pos=temp.find("!bantimewarn");
+        pos=temp.find_first_not_of(" \t\n\r\f\v",pos+12);
+        int end=temp.find_first_of(" \t\n\r\f\v",pos);
+        std::string option=temp.substr(pos,end-pos);
+        
+        std::string phrase;
+        #ifdef ITA
+        phrase.append("^0BanBot: ^1Gli avvisi per i vecchi ban ora sono ^2"); 
+        #else
+        phrase.append("^0BanBot: ^1Old bans warnings now are ^2"); 
+        #endif
+        if (option.compare("off")==0)
+        {
+            (*m_dati)[(*m_dati).serverNumber].setBanWarnings(false);
+            #ifdef ITA
+            phrase.append("disattivati^1."); 
+            #else
+            phrase.append("disabled^1.");
+            #endif
+        }
+        else
+        {
+            (*m_dati)[(*m_dati).serverNumber].setBanWarnings(true);
+            #ifdef ITA
+            phrase.append("attivati^1."); 
+            #else
+            phrase.append("enabled^1.");
+            #endif
+        }
+        
+        
+        block->tell(phrase,numeroAdmin);
+        m_scheduler->addInstructionBlock( block, Server::MEDIUM );
+    }
+}
 /*************************************************************************** UTILS **************************************/
 
 void Analyzer::getDateAndTime(std::string &data,std::string &ora)
@@ -2150,7 +2290,7 @@ std::vector<unsigned int> Analyzer::admins()
     std::vector<unsigned int> temp;
     for (unsigned int i=0;i<(*m_dati)[m_dati->serverNumber].size();i++)
     {
-        if (database->checkAuthGuid(correggi((*m_dati)[m_dati->serverNumber][i]->GUID)))
+        if (database->checkAuthGuid(correggi((*m_dati)[m_dati->serverNumber][i]->GUID))<100)
             temp.push_back(i);
     }
     return temp;
@@ -2182,7 +2322,7 @@ int Analyzer::translatePlayer(std::string player)
 {
     bool unique=true;
     int index=-1;
-    for (unsigned int i=0;i<(*m_dati)[m_dati->serverNumber].size();i++)
+    for (unsigned int i=0;(i<(*m_dati)[m_dati->serverNumber].size() && unique);i++)
     {
         if ((*m_dati)[m_dati->serverNumber][i]->nick.find(player)<(*m_dati)[m_dati->serverNumber][i]->nick.size())
         {
@@ -2526,7 +2666,6 @@ void Analyzer::main_loop()
                                                                                                                                 }
                                                                                                                                 else
                                                                                                                                 {
-                                                                                                                                    expansion(line);
                                                                                                                                 }
                                                                                                                             }
                                                                                                                         }

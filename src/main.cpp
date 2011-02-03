@@ -36,7 +36,7 @@
 #define BANLIST "cfg/Banlist"
 #define ADMINLIST "cfg/Adminlist"
 
-#define _VERSION "1.1"
+#define _VERSION "1.2"
 
 int main( int argc, char *argv[] )
 {

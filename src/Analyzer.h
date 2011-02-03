@@ -32,13 +32,7 @@
  *			Utilizza un'altra classe per accedere al database (per controllare gli utenti bannati) e per
  *			accedere al server (per kickare i giocatori).
  *
- *	Note:		Questa classe è progettata per essere facilmente espandibile nelle sue funzionalità.
- *			Per fare ciò, è sufficiente scrivere una classe che eredita da Analyzer, e ne sovrascrive
- *			il metodo virtuale "expansion(char* line)": infatti tutte le righe di comando (che cominciano con "!")
- *          che non vengono "catturate" da Analyzer, vengono passate a questo metodo.
- *			Per effettuare test sulle righe per cercarne di particolari (per esempio un say che contiene
- *			la stringa "!slap") consiglio caldamente l'utilizzo del metodo isA(char* line,std::string regex),
- *			scritto apposta per eseguire questi test utilizzando i regex.
+ *	Note:	
  *
  *	Description:	Parte principale del bot, si preoccupa di controllare
  *                 	gli utenti connessi ed i ban. Utilizza un'altra classe per accedere
@@ -60,7 +54,7 @@
 #include "Backup.h"
 #include "Scheduler.h"
 
-#define _VERSION "1.1"
+#define _VERSION "1.2"
 
 //tempi di attesa tra un giro e l'altro nell'analisi dei log (più è basso, più alto sarà il consumo (e spreco) di risorse,
 //d'altro canto più alto è, maggiore sarà il tempo di risposta del bot).
@@ -78,19 +72,18 @@
 #define LEVEL6 6        //like level 5, automated ban for everything, no warnings.
 
 
-//TODO correct livello admin sul check ban
-//segmentation fault admins
+//TODO check op.
+//!restart
 
 
 //TODO definire variabile per abilitare/disattivare il check sulla guid "UNKNOWN"
-//TODO comandi e opzioni per modificare timing, e i 2 warnings.
 
 // !help defines.
 #ifdef ITA
     #define COMMANDLIST "^1Comandi che puoi utilizzare:\n"
     #define H_LEVEL "^1Il tuo livello e' ^2"
     #define H_BAN "^2!ban <numero/nick> [<motivo>] ^1: banna un player, con o senza motivo\n"
-    #define H_UNBAN "^2!unban <id> ^1: sbanna un player (id dato da !find)\n"
+    #define H_UNBAN "^2!unban <id/nick> ^1: sbanna un player (id dato da !find)\n"
     #define H_KICK "^2!kick <numero/nick> ^1: butta fuori un player\n"
     #define H_MUTE "^2!mute <numero/nick/all> ^1: muta o smuta un singolo player, o tutti\n"
     #define H_FIND "^2!find <nick> ^1: cerca un player tra i bannati\n"
@@ -109,11 +102,12 @@
     #define H_PASS "^2!pass <pass> ^1: cambia la password al server\n"
     #define H_CONFIG "^2!config <file> ^1: carica un file di configurazione\n"
     #define H_WARNINGS "^2!warnings <off/public/private> ^1: imposta come inviare i warnings\n"
+    #define H_BANTIMEWARN "^2!bantimewarn <on/off> ^1: avvisi per vecchi ban su nick/ip\n"
 #else
-    #define COMMANDLIST "^1You can use this commands:\n"
+    #define COMMANDLIST "^1You can use these commands:\n"
     #define H_LEVEL "^1Your level is ^2"
     #define H_BAN "^2!ban <number/nick> [<reason>] ^1: ban a player, with or without a reason\n"
-    #define H_UNBAN "^2!unban <id> ^1: unban a player (id from !find)\n"
+    #define H_UNBAN "^2!unban <id/nick> ^1: unban a player (id from !find)\n"
     #define H_KICK "^2!kick <number/nick> ^1: kick a player\n"
     #define H_MUTE "^2!mute <number/nick/all> ^1: mute or unmute a player, or all\n"
     #define H_FIND "^2!find <nick> ^1: search a player from banned list\n"
@@ -132,6 +126,7 @@
     #define H_PASS "^2!pass <pass> ^1: change server's password\n"
     #define H_CONFIG "^2!config <file> ^1: load a configuration file\n"
     #define H_WARNINGS "^2!warnings <off/public/private> ^1: sets how to send warnings\n"
+    #define H_BANTIMEWARN "^2!bantimewarn <on/off> ^1: warnings for old nick/ip bans\n"
 #endif
 
 class Analyzer
@@ -145,13 +140,13 @@ private:
     
     Backup* backup;
     ConfigLoader * m_configLoader;
-    std::ifstream *log;             //stream di lettura sul log del server
-    int contatore;                  //conta i giri di esecuzione "a vuoto", server per cambiare fascia di tempi di attesa
-    int fascia;                     //fascia corrente
-    bool commandexecuted;           //indica se ho fatto un giro a vuoto o no
-    int giri;                       //conta i cicli fatti, usato per controllare ogni tot di giri se le configurazioni sono cambiate.:;;
+    std::ifstream *log;             //inputstream of servers's log.
+    int contatore;                  //counts "empty" loop, without commands executed, used to decide if we have to enter the "relax" or "sleeping" mode
+    int fascia;                     //actual operating mode (active/relax/sleeping)
+    bool commandexecuted;           //used to see if i have executed a command or not.
+    int giri;                       //it counts loops done: used to maintaining procedures, like to check if configuration files has changed.
 
-    void loadOptions();             //funzione per il caricamento delle opzioni (le controlla ed in caso corregge la riga del file di log)
+    void loadOptions();             //loads new options.
 
     // funzioni associate ai regex (comandi dal server/eventi)
     void clientUserInfo(char* line);
@@ -179,11 +174,11 @@ private:
     void pass(char* line);
     void config(char* line);
     void warnings(char* line);
+    void bantimewarn(char* line);
 
 protected:
     bool isA(const char* line,const std::string &regex);          //testa se la riga soddisfa il regex.
     int isAdminSay(char *line, std::string &numero);		//returns the player's op level, and save his number in @numero.
-    virtual void expansion(char* line);                     //slot per facilitare eventuali espansioni fatte da terze parti (basta ereditare da Analyzer e scrivere i metodi nuovi facendo un overloading di questo metodo)
     void getDateAndTime(std::string &date,std::string &time); //salva nelle stringhe data e ora.
     bool guidIsBanned(const std::string& guid, const std::string& nick, const std::string& numero, const std::string& ip);               //controlla se la guid è stata bannata.
     bool nickIsBanned(const std::string& nick, const std::string& numero, const std::string& ip, const std::string& guid);               //controlla se il nick è stato bannato.

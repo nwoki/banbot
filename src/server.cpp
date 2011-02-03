@@ -71,12 +71,16 @@ Server::Server()
     m_permissions.push_back( 1 );     //config level
     m_permissions.push_back( 100 );   //status level
     m_permissions.push_back( 2 );     //warnings level
+    m_permissions.push_back( 2 );     //bantimewarn level
 }
 
 Server::~Server()
 {
     for( unsigned int i = 0; i < m_giocatori.size(); i++ )
         delete m_giocatori[i];
+    if (m_lowPriorityInst!=NULL) m_lowPriorityInst->deleteAll();
+    if (m_mediumPriorityInst!=NULL) m_mediumPriorityInst->deleteAll();
+    if (m_highPriorityInst!=NULL) m_highPriorityInst->deleteAll();
 }
 
 

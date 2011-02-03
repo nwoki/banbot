@@ -217,6 +217,25 @@ void ConfigLoader::loadOptions()
                                         newServer->setCommandPermission( Server::STATUS, atoi(extract(temp).c_str()));
                                     else if ( isA (temp, (char *)"^[ \t]*LEVEL_WARNINGS[ \t]*=[ \t]*[0-9]{1,3}$" ) )
                                         newServer->setCommandPermission( Server::WARNINGS, atoi(extract(temp).c_str()));
+                                    else {
+                                        #ifdef ITA
+                                        std::cout << "Attenzione: \"" << temp << "\" non e' un'opzione valida!.\n";
+                                        if ( opzioni->errors )
+                                        {
+                                            opzioni->errors->timestamp();
+                                            *(opzioni->errors) << "\nAttenzione: \"" << temp << "\" non e' un'opzione valida!.\n";
+                                            opzioni->errors->close();
+                                        }
+                                        #else
+                                        std::cout << "Warning: \"" << temp << "\" isn't a valid option.\n";
+                                        if ( opzioni->errors )
+                                        {
+                                            opzioni->errors->timestamp();
+                                            *(opzioni->errors) << "\nWarning: \"" << temp << "\" isn't a valid option.\n";
+                                            opzioni->errors->close();
+                                        }
+                                        #endif
+                                    }
                                 }
                                 else if ( isA( temp, (char *)"^[ \t]*SERVER_NAME[ \t]*=[ \t]*[^ \t\n\r\f\v]+$" ) )
                                     newServer->setName( extract( temp ) );
