@@ -101,7 +101,7 @@ Analyzer::Analyzer(Connection* conn, Db* db, ConfigLoader* configLoader )
     , database( db )
     , m_dati( configLoader->getOptions() )
     , m_scheduler( new Scheduler( m_dati , server ) )
-    , m_fileLister( m_dati )
+    , m_fileLister( new FileLister(m_dati) )
 {
     loadOptions();
 

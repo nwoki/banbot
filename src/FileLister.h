@@ -29,6 +29,8 @@
  */
 
 //TODO map list: ignore zpack***.pk3, add default maps in the list (like ut4_casa)
+//      and so on: they give you the game path, but you need to list the sub-directory q3ut4/ :P
+//      checks of existance of the path? Catch of exceptions? See the example simple_ls.cpp of the library.
 
 #ifndef FILELISTER_H
 #define FILELISTER_H

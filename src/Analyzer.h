@@ -202,7 +202,7 @@ protected:
     Db * database;
     ConfigLoader::Options* m_dati;                      //it contains all options of each server (players included).
     Scheduler * m_scheduler;                            //instance of scheduler class, it decides what command have to be executed.
-    FileLister * m_fileLister;
+    FileLister * m_fileLister;                          //generate list of maps and configs.
 
 
 public:
