@@ -2389,6 +2389,24 @@ int Analyzer::translatePlayer(std::string player)
     return index;
 }
 
+int Analyzer::translateMap(std::string map, std::string map2)
+{
+    int index=-1;
+    std::string regex("[^ \t\n\r\f\v]*");
+    regex.append(map);
+    regex.append("[^ \t\n\r\f\v]*");
+    if (!map2.empty()){
+        regex.append(map2);
+        regex.append("[^ \t\n\r\f\v]*");
+    }
+    std::vector<std::string> maps=(m_dati->currentServer())->serverMaps();
+    for (unsigned int i=0;index<0 && i<maps.size();i++)
+    {
+        if( isA(maps.at(i).c_str(),regex) ) index=i;
+    }
+    return index;
+}
+
 int Analyzer::findPlayer( std::string number )
 {
     bool nonTrovato = true;
