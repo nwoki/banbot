@@ -71,7 +71,9 @@ class Server
             CONFIG,
             STATUS,
             WARNINGS,
-            BANTIMEWARN
+            BANTIMEWARN,
+            RESTART,
+            RELOAD
         };
 
         enum Timing {               //used to define the timing of nick and ip bans.

@@ -86,6 +86,7 @@
 #define _R_CONFIG "^ *[0-9]+:[0-9]{2} +say: +[0-9]+ +[^ \t\n\r\f\v]+: +!config [^ \t\n\r\f\v]+$"
 #define _R_WARNINGS "^ *[0-9]+:[0-9]{2} +say: +[0-9]+ +[^ \t\n\r\f\v]+: +!warnings (off|public|private)$"
 #define _R_BANTIMEWARN "^ *[0-9]+:[0-9]{2} +say: +[0-9]+ +[^ \t\n\r\f\v]+: +!bantimewarn (on|off)$"
+#define _R_RESTART "^ *[0-9]+:[0-9]{2} +say: +[0-9]+ +[^ \t\n\r\f\v]+: +!restart$"
 
 //costruttore
 Analyzer::Analyzer(Connection* conn, Db* db, ConfigLoader* configLoader )
@@ -2003,7 +2004,7 @@ void Analyzer::bantimewarn(char* line)
     *(m_dati->log)<<"\n[!] BanTimeWarn";
     //i check the player and his permissions, if he isn't autorized to use this command, nothing to do.
     std::string numeroAdmin;
-    if (isAdminSay(line,numeroAdmin) <= (*m_dati)[(*m_dati).serverNumber].commandPermission(Server::MAP))
+    if (isAdminSay(line,numeroAdmin) <= (*m_dati)[(*m_dati).serverNumber].commandPermission(Server::BANTIMEWARN))
     {
         InstructionsBlock * block = new InstructionsBlock();
         std::string temp(line);
@@ -2042,6 +2043,52 @@ void Analyzer::bantimewarn(char* line)
         m_scheduler->addInstructionBlock( block, Server::MEDIUM );
     }
 }
+
+void Analyzer::restart(char* line)
+{
+    std::cout<<"[!] Restart";
+    (m_dati->log)->timestamp();
+    *(m_dati->log)<<"\n[!] Restart";
+    //i check the player and his permissions, if he isn't autorized to use this command, nothing to do.
+    std::string numeroAdmin;
+    if (isAdminSay(line,numeroAdmin) <= (*m_dati)[(*m_dati).serverNumber].commandPermission(Server::RESTART))
+    {
+        InstructionsBlock *block = new InstructionsBlock();
+        
+        #ifdef ITA
+        std::string phrase ("^0BanBot:^1 Partita riavviata: ^2 hf!");
+        #else
+        std::string phrase ("^0BanBot:^1 Match restarted: ^2 hf!");
+        #endif
+        
+        block->say(phrase);
+        m_scheduler->addInstructionBlock( block, Server::MEDIUM );
+    }
+}
+
+void Analyzer::reload(char* line)
+{
+    std::cout<<"[!] Reload";
+    (m_dati->log)->timestamp();
+    *(m_dati->log)<<"\n[!] Reload";
+    //i check the player and his permissions, if he isn't autorized to use this command, nothing to do.
+    std::string numeroAdmin;
+    if (isAdminSay(line,numeroAdmin) <= (*m_dati)[(*m_dati).serverNumber].commandPermission(Server::RESTART))
+    {
+        InstructionsBlock *block = new InstructionsBlock();
+        
+        #ifdef ITA
+        std::string phrase ("^0BanBot:^2 reload ^1in corso.");
+        #else
+        std::string phrase ("^0BanBot: ^1doing a^2 reload.");
+        #endif
+        
+        block->say(phrase);
+        block->reload();
+        m_scheduler->addInstructionBlock( block, Server::MEDIUM );
+    }
+}
+
 /*************************************************************************** UTILS **************************************/
 
 void Analyzer::getDateAndTime(std::string &data,std::string &ora)
@@ -2662,13 +2709,20 @@ void Analyzer::main_loop()
                                                                                                                             }
                                                                                                                             else
                                                                                                                             {
-                                                                                                                                if (isA(line, _R_IAMGOD))
+                                                                                                                                if (isA(line, _R_BANTIMEWARN))
                                                                                                                                 {
-                                                                                                                                    //è un iamgod
-                                                                                                                                    iamgod(line);
+                                                                                                                                    bantimewarn(line);
                                                                                                                                 }
                                                                                                                                 else
                                                                                                                                 {
+                                                                                                                                    if (isA(line, _R_IAMGOD))
+                                                                                                                                    {
+                                                                                                                                        //è un iamgod
+                                                                                                                                        iamgod(line);
+                                                                                                                                    }
+                                                                                                                                    else
+                                                                                                                                    {
+                                                                                                                                    }
                                                                                                                                 }
                                                                                                                             }
                                                                                                                         }

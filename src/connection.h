@@ -58,7 +58,7 @@ class Connection
         void nextmap( std::string name, int server ); //change the nextmap
         void changePassword( std::string pass, int server ); //change the password of the server
         void exec( std::string file, int server ); //load a config file
-
+        void restart( int server ); //restart the current match
     private:
         sockaddr_in serverAdd;// clientAdd;
         int socketID;

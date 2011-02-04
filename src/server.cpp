@@ -72,6 +72,8 @@ Server::Server()
     m_permissions.push_back( 100 );   //status level
     m_permissions.push_back( 2 );     //warnings level
     m_permissions.push_back( 2 );     //bantimewarn level
+    m_permissions.push_back( 3 );     //restart level
+    m_permissions.push_back( 2 );     //reload level
 }
 
 Server::~Server()

@@ -351,4 +351,19 @@ void Connection::exec( std::string file, int server )
     usleep(SOCKET_PAUSE);
 }
 
+void Connection::restart( int server )
+{
+    prepareConnection( server );
+    
+    std::string comando( "rcon ");
+    comando.append( (*m_options)[server].rcon() );
+    comando.append( " restart" );
+    
+    std::vector< char > command = makeCmd( comando );
+    int bufferSize = command.size();
+    sendto( socketID, command.data(), bufferSize, 0, &(sockaddr &)serverAdd, recvSize );
+    close(socketID);
+    usleep(SOCKET_PAUSE);
+}
+
 #endif  // CONNECTION_CPP

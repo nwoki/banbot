@@ -217,6 +217,12 @@ void ConfigLoader::loadOptions()
                                         newServer->setCommandPermission( Server::STATUS, atoi(extract(temp).c_str()));
                                     else if ( isA (temp, (char *)"^[ \t]*LEVEL_WARNINGS[ \t]*=[ \t]*[0-9]{1,3}$" ) )
                                         newServer->setCommandPermission( Server::WARNINGS, atoi(extract(temp).c_str()));
+                                    else if ( isA (temp, (char *)"^[ \t]*LEVEL_BANTIMEWARN[ \t]*=[ \t]*[0-9]{1,3}$" ) )
+                                        newServer->setCommandPermission( Server::BANTIMEWARN, atoi(extract(temp).c_str()));
+                                    else if ( isA (temp, (char *)"^[ \t]*LEVEL_RESTART[ \t]*=[ \t]*[0-9]{1,3}$" ) )
+                                        newServer->setCommandPermission( Server::RESTART, atoi(extract(temp).c_str()));
+                                    else if ( isA (temp, (char *)"^[ \t]*LEVEL_RELOAD[ \t]*=[ \t]*[0-9]{1,3}$" ) )
+                                        newServer->setCommandPermission( Server::RELOAD, atoi(extract(temp).c_str()));
                                     else {
                                         #ifdef ITA
                                         std::cout << "Attenzione: \"" << temp << "\" non e' un'opzione valida!.\n";

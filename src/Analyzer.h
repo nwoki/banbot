@@ -72,7 +72,7 @@
 #define LEVEL6 6        //like level 5, automated ban for everything, no warnings.
 
 
-//TODO check op.
+//TODO 
 //!restart
 
 
@@ -103,6 +103,8 @@
     #define H_CONFIG "^2!config <file> ^1: carica un file di configurazione\n"
     #define H_WARNINGS "^2!warnings <off/public/private> ^1: imposta come inviare i warnings\n"
     #define H_BANTIMEWARN "^2!bantimewarn <on/off> ^1: avvisi per vecchi ban su nick/ip\n"
+    #define H_RESTART "^2!restart ^1: ricomincia la partita corrente.\n"
+    #define H_RELOAD "^2!reload ^1: ricarica la mappa corrente.\n"
 #else
     #define COMMANDLIST "^1You can use these commands:\n"
     #define H_LEVEL "^1Your level is ^2"
@@ -127,6 +129,8 @@
     #define H_CONFIG "^2!config <file> ^1: load a configuration file\n"
     #define H_WARNINGS "^2!warnings <off/public/private> ^1: sets how to send warnings\n"
     #define H_BANTIMEWARN "^2!bantimewarn <on/off> ^1: warnings for old nick/ip bans\n"
+    #define H_RESTART "^2!restart ^1: restart the current game.\n"
+    #define H_RELOAD "^2!reload ^1: reload the current map.\n"
 #endif
 
 class Analyzer
@@ -175,6 +179,8 @@ private:
     void config(char* line);
     void warnings(char* line);
     void bantimewarn(char* line);
+    void restart(char* line);
+    void reload(char* line);
 
 protected:
     bool isA(const char* line,const std::string &regex);          //testa se la riga soddisfa il regex.

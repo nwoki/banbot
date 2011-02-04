@@ -41,7 +41,7 @@ class InstructionsBlock
         void say( std::string phrase );    //phrase to print publically.
         void bigtext( std::string phrase );    //phrase to print publically (big).
         void tell( std::string phrase, std::string player ); //@phrase is the private message to send to @player.
-        void reload();            //does a reload of the current map. If @server is -1, it does a reload on all servers.
+        void reload();            //does a reload of the current map.
         void mute( std::string number ); //mute/unmute the player @number.
         void muteAll( std::string admin ); //mute/unmute all players except @admin (number).
         void veto();                  //does a veto.
@@ -52,6 +52,7 @@ class InstructionsBlock
         void nextmap( std::string name ); //change the nextmap
         void changePassword( std::string pass ); //change the private password of the server
         void exec( std::string file ); //load a config file for the game server
+        void restart(); //restart the current map.
 
         /// TODO ask zamy : "does this method automatically move the instruction block to the end? does it delete it?
         void execFirstCommand( Connection* conn, int server );  //execute the first command of the stack on a server using the given connection class.
@@ -69,6 +70,7 @@ class InstructionsBlock
         {
             public:
                 Common():next(0){};
+                virtual ~Common(){};
                 Common* next;
                 void addToTail( Common* command )                       //add a command at the end of the list
                 {
@@ -281,6 +283,17 @@ class InstructionsBlock
                 };
             private:
                 std::string n;
+        };
+        
+        //restart command node
+        class Restart : public Common
+        {
+            public:
+                Restart():Common(){};
+                virtual void exec ( Connection* conn, int server )
+                {
+                    conn->restart( server );
+                };
         };
         
         //pointers

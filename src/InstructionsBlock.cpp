@@ -229,4 +229,12 @@ void InstructionsBlock::exec( std::string file )
         m_list = new Exec(file);
 }
 
+void InstructionsBlock::restart()
+{
+    if ( m_list != NULL)
+        m_list->addToTail( new Restart() );
+    else
+        m_list = new Restart();
+}
+
 #endif // INSTRUCTIONSBLOCK_CPP
