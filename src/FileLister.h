@@ -28,6 +28,8 @@
  *
  */
 
+//TODO map list: ignore zpack***.pk3, add default maps in the list (like ut4_casa)
+
 #ifndef FILELISTER_H
 #define FILELISTER_H
 

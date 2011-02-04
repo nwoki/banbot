@@ -65,10 +65,10 @@ std::vector< std::string > FileLister::configOrMapFiles( std::vector< std::strin
         std::string auxStr = filesList.at( i );
         int strSize = auxStr.size();
 
-        if( auxStr.substr( ( strSize - 4 ), 4  ) == suffix ) {
+        if( auxStr.substr( strSize - 4 ).compare( suffix ) == 0 ) {
             #ifdef DEBUG_MODE
             std::cout << "File: " << auxStr << "\n";
-            std::cout << "ending is: " << auxStr.substr( ( strSize - 4 ), 4  ) << "\n";
+            std::cout << "ending is: " << auxStr.substr( strSize - 4 ) << "\n";
             #endif
             auxList.push_back( auxStr );        // add to list
         }

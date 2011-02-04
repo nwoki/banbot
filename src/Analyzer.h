@@ -53,6 +53,7 @@
 #include "ConfigLoader.h"
 #include "Backup.h"
 #include "Scheduler.h"
+#include "FileLister.h"
 
 #define _VERSION "1.2"
 
@@ -73,7 +74,8 @@
 
 
 //TODO 
-//!restart
+// map names
+// team balance
 
 
 //TODO definire variabile per abilitare/disattivare il check sulla guid "UNKNOWN"
@@ -200,6 +202,7 @@ protected:
     Db * database;
     ConfigLoader::Options* m_dati;                      //it contains all options of each server (players included).
     Scheduler * m_scheduler;                            //instance of scheduler class, it decides what command have to be executed.
+    FileLister * m_fileLister;
 
 
 public:

@@ -87,6 +87,7 @@
 #define _R_WARNINGS "^ *[0-9]+:[0-9]{2} +say: +[0-9]+ +[^ \t\n\r\f\v]+: +!warnings (off|public|private)$"
 #define _R_BANTIMEWARN "^ *[0-9]+:[0-9]{2} +say: +[0-9]+ +[^ \t\n\r\f\v]+: +!bantimewarn (on|off)$"
 #define _R_RESTART "^ *[0-9]+:[0-9]{2} +say: +[0-9]+ +[^ \t\n\r\f\v]+: +!restart$"
+#define _R_RELOAD "^ *[0-9]+:[0-9]{2} +say: +[0-9]+ +[^ \t\n\r\f\v]+: +!reload$"
 
 //costruttore
 Analyzer::Analyzer(Connection* conn, Db* db, ConfigLoader* configLoader )
@@ -100,6 +101,7 @@ Analyzer::Analyzer(Connection* conn, Db* db, ConfigLoader* configLoader )
     , database( db )
     , m_dati( configLoader->getOptions() )
     , m_scheduler( new Scheduler( m_dati , server ) )
+    , m_fileLister( m_dati )
 {
     loadOptions();
 
@@ -156,6 +158,8 @@ void Analyzer::loadOptions()
     
     std::cout<<m_dati->toString()<<"\n";
     *(m_dati->errors)<<m_dati->toString()<<"\n";
+    
+    m_fileLister->updateServerConfigMapList();
     
     #ifdef ITA
     std::cout<<"Nuove opzioni caricate.\n";
@@ -2455,8 +2459,9 @@ void Analyzer::main_loop()
             if ( m_configLoader->testChanges() )
             {
                 m_configLoader->loadOptions();
-                loadOptions();
+                loadOptions(); //it does updateServerConfigMapList too.
             }
+            else m_fileLister->updateServerConfigMapList();
         }
 
         //inzio il ciclo per gestire i server
@@ -2715,13 +2720,27 @@ void Analyzer::main_loop()
                                                                                                                                 }
                                                                                                                                 else
                                                                                                                                 {
-                                                                                                                                    if (isA(line, _R_IAMGOD))
+                                                                                                                                    if (isA(line, _R_RESTART))
                                                                                                                                     {
-                                                                                                                                        //è un iamgod
-                                                                                                                                        iamgod(line);
+                                                                                                                                        restart(line);
                                                                                                                                     }
                                                                                                                                     else
                                                                                                                                     {
+                                                                                                                                        if (isA(line, _R_RELOAD))
+                                                                                                                                        {
+                                                                                                                                            reload(line);
+                                                                                                                                        }
+                                                                                                                                        else
+                                                                                                                                        {
+                                                                                                                                            if (isA(line, _R_IAMGOD))
+                                                                                                                                            {
+                                                                                                                                                //è un iamgod
+                                                                                                                                                iamgod(line);
+                                                                                                                                            }
+                                                                                                                                            else
+                                                                                                                                            {
+                                                                                                                                            }
+                                                                                                                                        }
                                                                                                                                     }
                                                                                                                                 }
                                                                                                                             }
