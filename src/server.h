@@ -150,7 +150,7 @@ class Server
         std::string name() const;                                           // returns server name
         std::string backupDir() const;                                      // returns path to server backup directory
         std::string botLog() const;                                         // returns path to server bot log file
-        std::string configFile() const;                                     // returns path to server config file
+        std::string configFile() const;                                     // returns path to secondary bot config file
         std::string dbFolder() const;                                       // returns path to server database folder
         struct stat infos() const;                                          // returns server infos struct
         std::string ip() const;                                             // returns server ip
@@ -164,7 +164,9 @@ class Server
         InstructionsBlock* &priorityInstrBlock( Server::PriorityLevel lvl ); // returns pointer to InstructionBlock according to level specified
         InstructionCounter *instructionCounter() const;                     // returns pointer to server's InstructionCounter
         std::vector<std::string> serverConfigs() const;                     // returns game server's config file list
+        std::string config(int index) const;                                // returns game server's config with the right index, empty string if error.
         std::vector<std::string> serverMaps() const;                        // returns game server's map file list
+        std::string map(int index) const;                                   // returns game server's map with the right index, empty string if error.
         std::string gameDirectory() const;                                  // returns the directory where the game is installed
         int commandPermission ( Commands cmd ) const;                       // returns the minimum power level requested by a command.
         Warnings warnings () const;                                         // return the message type setted.

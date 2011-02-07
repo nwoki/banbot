@@ -309,14 +309,26 @@ std::vector<std::string> Server::serverConfigs() const
     return m_configs;
 }
 
+std::string Server::config(int index) const
+{
+    if (index<0 || index >= m_configs.size()) return "";
+    else return m_configs.at(index);
+    
+}
+
 void Server::setServerConfigs( std::vector<std::string> list )
 {
     m_configs = list;
 }
-
 std::vector<std::string> Server::serverMaps() const
 {
     return m_maps;
+}
+
+std::string Server::map(int index) const
+{
+    if (index<0 || index >= m_maps.size()) return "";
+    else return m_maps.at(index);
 }
 
 void Server::setServerMaps( std::vector<std::string> list )

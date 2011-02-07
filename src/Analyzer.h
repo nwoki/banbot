@@ -74,7 +74,6 @@
 
 
 //TODO 
-// map names
 // team balance
 
 
@@ -102,7 +101,7 @@
     #define H_NEXTMAP "^2!nextmap <nome> [nome2] ^1: imposta la mappa successiva (vedi !map)\n"
     #define H_ADMINS "^2!admins ^1: elenca gli admin attualmente in gioco\n"
     #define H_PASS "^2!pass <pass> ^1: cambia la password al server\n"
-    #define H_CONFIG "^2!config <file> ^1: carica un file di configurazione\n"
+    #define H_CONFIG "^2!config <nome> [nome2]  ^1: carica un file di configurazione\n"
     #define H_WARNINGS "^2!warnings <off/public/private> ^1: imposta come inviare i warnings\n"
     #define H_BANTIMEWARN "^2!bantimewarn <on/off> ^1: avvisi per vecchi ban su nick/ip\n"
     #define H_RESTART "^2!restart ^1: ricomincia la partita corrente.\n"
@@ -128,7 +127,7 @@
     #define H_NEXTMAP "^2!nextmap <name> [name2] ^1: set the next map (see !map)\n"
     #define H_ADMINS "^2!admins ^1: show admins actually in game\n"
     #define H_PASS "^2!pass <pass> ^1: change server's password\n"
-    #define H_CONFIG "^2!config <file> ^1: load a configuration file\n"
+    #define H_CONFIG "^2!config <name> [name2] ^1: load a configuration file\n"
     #define H_WARNINGS "^2!warnings <off/public/private> ^1: sets how to send warnings\n"
     #define H_BANTIMEWARN "^2!bantimewarn <on/off> ^1: warnings for old nick/ip bans\n"
     #define H_RESTART "^2!restart ^1: restart the current game.\n"
@@ -198,6 +197,7 @@ protected:
     int translatePlayer(std::string player);            //@player rappresenta un nick o una parte del nick di un player in game, la funzione restituisce l'indice nell'array dei giocatori indicato da @player, se non trovato o non univoco restituisce -1.
     int findPlayer(std::string number);                 //return the index of player with number @number if exists, or -1.
     int translateMap(std::string map, std::string map2); //returns the index of the server::serverMaps that contains the complete map name, or -1 if not found.
+    int translateConfig(std::string conf, std::string conf2); //returns the index of the server::serverConfigs that contain the complete config name or -1 if not found.
     CheckTimingEnum checkTiming (const std::vector<Db::idMotiveStruct> &records, const Server::Timing &option);  //it decides if nick or ip is to considered banned.
     Connection * server;
     Db * database;

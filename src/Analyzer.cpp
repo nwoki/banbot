@@ -79,11 +79,11 @@
 #define _R_FORCE "^ *[0-9]+:[0-9]{2} +say: +[0-9]+ +[^ \t\n\r\f\v]+: +!force (red|blue|spect) [^ \t\n\r\f\v]+$"
 #define _R_FORCE_NUMBER "^ *[0-9]+:[0-9]{2} +say: +[0-9]+ +[^ \t\n\r\f\v]+: +!force (red|blue|spect) [0-9]{1,2}$"
 #define _R_IAMGOD "^ *[0-9]+:[0-9]{2} +say: +[0-9]+ +[^ \t\n\r\f\v]+: +!iamgod$"
-#define _R_MAP "^ *[0-9]+:[0-9]{2} +say: +[0-9]+ +[^ \t\n\r\f\v]+: +!map [^ \t\n\r\f\v]+$"
-#define _R_NEXTMAP "^ *[0-9]+:[0-9]{2} +say: +[0-9]+ +[^ \t\n\r\f\v]+: +!nextmap [^ \t\n\r\f\v]+$"
+#define _R_MAP "^ *[0-9]+:[0-9]{2} +say: +[0-9]+ +[^ \t\n\r\f\v]+: +!map [^\t\n\r\f\v]+$"
+#define _R_NEXTMAP "^ *[0-9]+:[0-9]{2} +say: +[0-9]+ +[^ \t\n\r\f\v]+: +!nextmap [^\t\n\r\f\v]+$"
 #define _R_ADMINS "^ *[0-9]+:[0-9]{2} +say: +[0-9]+ +[^ \t\n\r\f\v]+: +!admins$"
 #define _R_PASS "^ *[0-9]+:[0-9]{2} +say: +[0-9]+ +[^ \t\n\r\f\v]+: +!pass [^ \t\n\r\f\v]+$"
-#define _R_CONFIG "^ *[0-9]+:[0-9]{2} +say: +[0-9]+ +[^ \t\n\r\f\v]+: +!config [^ \t\n\r\f\v]+$"
+#define _R_CONFIG "^ *[0-9]+:[0-9]{2} +say: +[0-9]+ +[^ \t\n\r\f\v]+: +!config [^\t\n\r\f\v]+$"
 #define _R_WARNINGS "^ *[0-9]+:[0-9]{2} +say: +[0-9]+ +[^ \t\n\r\f\v]+: +!warnings (off|public|private)$"
 #define _R_BANTIMEWARN "^ *[0-9]+:[0-9]{2} +say: +[0-9]+ +[^ \t\n\r\f\v]+: +!bantimewarn (on|off)$"
 #define _R_RESTART "^ *[0-9]+:[0-9]{2} +say: +[0-9]+ +[^ \t\n\r\f\v]+: +!restart$"
@@ -1839,9 +1839,25 @@ void Analyzer::map(char* line)
         std::string temp(line);
         int pos=temp.find("!map");
         pos=temp.find_first_not_of(" \t\n\r\f\v",pos+4);
-        int end=temp.find_first_of(" \n",pos);
-        std::string mappa=temp.substr(pos,end-pos);
-        block->map(mappa);
+        int end=temp.find_first_of(" \t\n\r\f\v",pos);
+        std::string map=temp.substr(pos,end-pos);
+        pos=temp.find_first_not_of(" \t\n\r\f\v",end);
+        end=temp.find_first_of(" \t\n\r\f\v",pos);
+        std::string map2=temp.substr(pos, end-pos);
+        
+        int listIndex=translateMap(map, map2);
+        if (listIndex>=0)
+        {
+            block->map(m_dati->currentServer()->map(listIndex));
+        }
+        else
+        {
+            #ifdef ITA
+            block->tell("^0BanBot: ^1Errore: mappa richiesta non trovata.",numeroAdmin);
+            #else
+            block->tell("^0BanBot: ^1Error: can't find the requested map.",numeroAdmin);
+            #endif
+        }
         m_scheduler->addInstructionBlock( block, Server::MEDIUM );
     }
 }
@@ -1860,9 +1876,25 @@ void Analyzer::nextmap(char* line)
         std::string temp(line);
         int pos=temp.find("!nextmap");
         pos=temp.find_first_not_of(" \t\n\r\f\v",pos+8);
-        int end=temp.find_first_of(" \n",pos);
-        std::string mappa=temp.substr(pos,end-pos);
-        block->nextmap(mappa);
+        int end=temp.find_first_of(" \t\n\r\f\v",pos);
+        std::string map=temp.substr(pos,end-pos);
+        pos=temp.find_first_not_of(" \t\n\r\f\v",end);
+        end=temp.find_first_of(" \t\n\r\f\v",pos);
+        std::string map2=temp.substr(pos, end-pos);
+        
+        int listIndex=translateMap(map, map2);
+        if (listIndex>=0)
+        {
+            block->nextmap(m_dati->currentServer()->map(listIndex));
+        }
+        else
+        {
+            #ifdef ITA
+            block->tell("^0BanBot: ^1Errore: mappa richiesta non trovata.",numeroAdmin);
+            #else
+            block->tell("^0BanBot: ^1Error: can't find the requested map.",numeroAdmin);
+            #endif
+        }
         m_scheduler->addInstructionBlock( block, Server::MEDIUM );
     }
 }
@@ -1940,19 +1972,36 @@ void Analyzer::config(char* line)
         InstructionsBlock *block = new InstructionsBlock();
         std::string temp = line;
         int pos = temp.find( "!config" );
-        pos = temp.find_first_not_of( " ", pos+7 );
-        int end = temp.find_first_of( " ", pos );
-        std::string file = temp.substr( pos, end-pos );
+        pos = temp.find_first_not_of( " \t\n\r\f\v", pos+7 );
+        int end = temp.find_first_of( " \t\n\r\f\v", pos );
+        std::string conf1 = temp.substr( pos, end-pos );
+        pos = temp.find_first_not_of( " \t\n\r\f\v", end );
+        end = temp.find_first_of( " \t\n\r\f\v", pos );
+        std::string conf2 = temp.substr( pos, end-pos );
+        
+        int listIndex = translateConfig(conf1,conf2);
+        
+        if (listIndex >= 0)
+        {
+            std::string file = m_dati->currentServer()->config(listIndex);
+            #ifdef ITA
+            std::string phrase ("^0BanBot:^1 carico il file di configurazione ^2");
+            #else
+            std::string phrase ("^0BanBot:^1 loading the configuration file ^2");
+            #endif
 
-        #ifdef ITA
-        std::string phrase ("^0BanBot:^1 carico il file di configurazione ^2");
-        #else
-        std::string phrase ("^0BanBot:^1 loading the configuration file ^2");
-        #endif
-
-        phrase.append( file );
-        block->say(phrase);
-        block->exec( file );
+            phrase.append( file );
+            block->say(phrase);
+            block->exec( file );
+        }
+        else
+        {
+            #ifdef ITA
+            block->tell("^0BanBot:^1 Errore: file di configurazione non trovato.",numeroAdmin);
+            #else
+            block->tell("^0BanBot:^1 Error: config file not found.",numeroAdmin);
+            #endif
+        }
         m_scheduler->addInstructionBlock( block, Server::MEDIUM );
     }
 }
@@ -2403,6 +2452,24 @@ int Analyzer::translateMap(std::string map, std::string map2)
     for (unsigned int i=0;index<0 && i<maps.size();i++)
     {
         if( isA(maps.at(i).c_str(),regex) ) index=i;
+    }
+    return index;
+}
+
+int Analyzer::translateConfig(std::string conf, std::string conf2)
+{
+    int index=-1;
+    std::string regex("[^ \t\n\r\f\v]*");
+    regex.append(conf);
+    regex.append("[^ \t\n\r\f\v]*");
+    if (!conf2.empty()){
+        regex.append(conf2);
+        regex.append("[^ \t\n\r\f\v]*");
+    }
+    std::vector<std::string> confs=(m_dati->currentServer())->serverConfigs();
+    for (unsigned int i=0;index<0 && i<confs.size();i++)
+    {
+        if( isA(confs.at(i).c_str(),regex) ) index=i;
     }
     return index;
 }
