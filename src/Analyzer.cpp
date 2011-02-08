@@ -2503,6 +2503,7 @@ void Analyzer::main_loop()
         std::cout<<"\e[0;32m[OK] BanBot launched. \e[0m \n\n";
         *(m_dati->errors)<<"[OK] BanBot launched.\n\n";
     #endif
+    server->teamBalance( 0 );
     while (true)
     {
         commandexecuted=false;
