@@ -52,10 +52,10 @@ class Db
 
         // checks
         int checkAuthGuid( const std::string &guid );   // checks for the existance of "guid" in the oplist table (returns the op level)
-        bool checkBanGuid( const std::string &guid );    // checks if "guid" is present amongst the banned users
-        bool checkBanNick( const std::string &nick );    // checks if "nick" is present amongst the banned users
-        void checkDatabases();                      // creates and checks if database files exist and flags them in m_options
-        bool isOpTableEmpty();                      //checks if oplist table is empty ( returns true ) else returns false
+        bool checkBanGuid( const std::string &guid );   // checks if "guid" is present amongst the banned users
+        bool checkBanNick( const std::string &nick );   // checks if "nick" is present amongst the banned users
+        void checkDatabases();                          // creates and checks if database files exist and flags them in m_options
+        bool isOpTableEmpty();                          //checks if oplist table is empty ( returns true ) else returns false
         //bool checkDirAndFile( const std::string &guid ); //passa url file compreso
 
         // dumps
@@ -148,12 +148,11 @@ class Db
 
         DbVersion checkDbVersion();                                         // checks current database version and returns version in use
         bool checkForDbVersion1_1();                                        // checks for database version 1
-//         bool checkForDbVersion1_2();                                        // checks for database version 2
+        bool checkForDbVersion1_2();                                        // checks for database version 2
 
         bool connect();                                                     // connects to the sqlite3 database
         bool copyFile( const std::string &source, const std::string &destination );   // copy a file to another one
         void createDb();                                                    // creates database
-        std::string errorCodeToString( int errorCode ) const;
         bool execQuery( const std::string &query );                              // executes query and returns status to tell if the operation went well or not
         std::string getAdminNick( const std::string &guid );                          // return's admin's nick from his guid
 //         void loadAdminlist( std::vector<ConfigLoader::AdminList> admins );
@@ -162,6 +161,7 @@ class Db
 
         sqlite3 *m_database;
         ConfigLoader::Options* m_options;                                   // where i get all my info from ( bot related )
+        DbVersion m_latestVersion;                                          // latest db version. Set by constructor and used for db checks
 
         char *m_zErrMsg;
         char **m_result;

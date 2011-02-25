@@ -23,9 +23,6 @@
     Software Foundation, Inc.
 */
 
-#ifndef DB_CPP
-#define DB_CPP
-
 #include <stdlib.h>
 #include "ConfigLoader.h"
 #include "db.h"
@@ -38,6 +35,11 @@
 #define GUIDS_1_1 "CREATE TABLE guids(id INTEGER PRIMARY KEY,guid TEXT,banId TEXT,FOREIGN KEY( banId ) REFERENCES banned( id ) )"
 #define OPLIST_1_1 "CREATE TABLE oplist(id INTEGER PRIMARY KEY,nick TEXT,guid TEXT)"
 
+// ver_1.2
+#define BANNED_1_2 "CREATE TABLE banned(id INTEGER PRIMARY KEY,nick TEXT,ip TEXT,date TEXT,time TEXT,motive TEXT,author TEXT)"
+#define GUIDS_1_2 "CREATE TABLE guids(id INTEGER PRIMARY KEY,guid TEXT,banId TEXT,FOREIGN KEY( banId ) REFERENCES banned( id ) )"
+#define OPLIST_1_2 "CREATE TABLE oplist(id INTEGER PRIMARY KEY,nick TEXT,guid TEXT,level TEXT)"
+
 /********************************
 *       PUBLIC  METHODS         *
 ********************************/
@@ -47,6 +49,9 @@ Db::Db( ConfigLoader::Options* conf )
     , m_zErrMsg( 0 )
     , m_result( 0 )
 {
+    // set db latest version
+    m_latestVersion = VER_1_2;
+
     std::cout << "[*]Starting up...\n";
     std::cout << "[-]checking for database directory..\n";
     *(m_options->log) << "\n**************************************************************************************\n";
@@ -176,7 +181,8 @@ bool Db::checkBanNick( const std::string& nick )
 
 void Db::checkDatabases()
 {
-    /* check all server objects to see if the dir of their database is valid and creates databases in case
+    /*
+     * check all server objects to see if the dir of their database is valid and creates databases in case
      * useful for when adding a new server to check "on the fly
      */
 
@@ -225,7 +231,7 @@ void Db::checkDatabases()
         else {
             std::cout << "\e[0;33m database file: " << pathWithFile << " already exists \e[0m \n";
             openDatabase();
-            if( checkDbVersion() == VER_1_2 )
+            if( checkDbVersion() == m_latestVersion )       // last valid database version used by BanBot
                 (*m_options)[i].setValid( true );   // set database validity
             else
             {
@@ -236,6 +242,7 @@ void Db::checkDatabases()
                 std::cout<< "\e[1;31m Wrong Db version: read the manual to see how to convert it.\e[0m \n";
                 *(m_options->errors) << "Wrong Db version: read the manual to see how to convert it.\n";
                 #endif
+                (*m_options)[i].setValid( false );  // server is invalid due to database inconsistency
             }
             closeDatabase();
         }
@@ -1115,8 +1122,8 @@ Db::DbVersion Db::checkDbVersion()
 {
     if( checkForDbVersion1_1() )
         return VER_1_1;
-//     if( checkForDbVersion1_2() )
-//         return VER_1_2;
+    else if( checkForDbVersion1_2() )
+        return VER_1_2;
     else
         return UNKOWN;
 }
@@ -1146,7 +1153,7 @@ bool Db::checkForDbVersion1_1()
     // banned table check
     if( execQuery( "select sql from sqlite_master where name='guids';" ) ) {
         if( !m_data.empty() ) {
-            if( m_data[0].compare( GUIDS_1_1 ) )
+            if( m_data[0].compare( GUIDS_1_1 ) == 0 )
                 guidsFlag = true;
         }
     }
@@ -1157,10 +1164,41 @@ bool Db::checkForDbVersion1_1()
         return true;
 }
 
-// bool Db::checkForDbVersion1_2()
-// {
-//
-// }
+bool Db::checkForDbVersion1_2()
+{
+    bool banFlag = false
+    , oplistFlag = false
+    , guidsFlag = false;
+
+    // banned table check
+    if( execQuery( "select sql from sqlite_master where name='banned';" ) ) {
+        if( !m_data.empty() ) {
+            if( m_data[0].compare( BANNED_1_2 ) == 0 )
+                banFlag = true;
+        }
+    }
+
+    // oplist table check
+    if( execQuery( "select sql from sqlite_master where name='oplist';" ) ) {
+        if( !m_data.empty() ) {
+            if( m_data[0].compare( OPLIST_1_2 ) == 0 )
+                oplistFlag = true;
+        }
+    }
+
+    // banned table check
+    if( execQuery( "select sql from sqlite_master where name='guids';" ) ) {
+        if( !m_data.empty() ) {
+            if( m_data[0].compare( GUIDS_1_2 ) == 0 )
+                guidsFlag = true;
+        }
+    }
+
+    if( !banFlag || !oplistFlag || !guidsFlag  )
+        return false;
+    else
+        return true;
+}
 
 bool Db::connect()  //called by Db::open ( public function )
 {
@@ -1171,7 +1209,7 @@ bool Db::connect()  //called by Db::open ( public function )
     if( database[database.size()-1] != '/' )  //CAREFUL, NEED THIS!!!
         database.append( "/" );
 
-    database.append( DB_NAME );
+    database.append( DB_NAME );             // and now i have database full path + name
 
     if( sqlite3_open( database.c_str(), &m_database ) ) {
         std::cout<<"\e[0;31m[EPIC FAIL] " << sqlite3_errmsg( m_database ) << "\e[0m \n";
@@ -1210,32 +1248,8 @@ bool Db::copyFile( const std::string &source, const std::string &destination )
 
 void Db::createDb()   //initial creation of database
 {
-    std::string createBannedTable(
-    "create table banned("
-    "id INTEGER PRIMARY KEY,"    // autoincrement
-    "nick TEXT,"
-    "ip TEXT,"
-    "date TEXT,"
-    "time TEXT,"
-    "motive TEXT,"
-    "author TEXT);" );
-
-    std::string createGuidTable(     // for banned users
-    "create table guids("
-    "id INTEGER PRIMARY KEY,"   // autoincrement
-    "guid TEXT,"
-    "banId TEXT,"
-    "FOREIGN KEY( banId ) REFERENCES banned( id ) );" );
-
-    std::string createOplistTable(
-    "create table oplist("
-    "id INTEGER PRIMARY KEY,"   //autoincrement
-    "nick TEXT,"
-    "guid TEXT,"
-    "level TEXT );" );
-
     //checks...
-    if( resultQuery( createBannedTable ) == 0 ) {
+    if( resultQuery( BANNED_1_2 ) == 0 ) {
         std::cout << "\e[0;32m    [*]created 'banned' table..\e[0m \n";
         *(m_options->log) << "    [*]created 'banned' table..\n";
     }
@@ -1245,7 +1259,7 @@ void Db::createDb()   //initial creation of database
         *(m_options->errors) << "[FAIL] On " << (*m_options)[m_options->serverNumber].name()  << " : error creating 'banned' table\n";
     }
 
-    if( resultQuery( createGuidTable ) == 0 ) {
+    if( resultQuery( GUIDS_1_2 ) == 0 ) {
         std::cout << "\e[0;32m     [*]created 'guid' table..\e[0m \n";
         *(m_options->log) << "    [*]created 'guid' table..\n";
     }
@@ -1255,7 +1269,7 @@ void Db::createDb()   //initial creation of database
         *(m_options->errors) << "[FAIL] On " << (*m_options)[m_options->serverNumber].name()  << " : error creating 'guid' table\n";
     }
 
-    if( resultQuery( createOplistTable ) == 0 ) {
+    if( resultQuery( OPLIST_1_2 ) == 0 ) {
         std::cout << "\e[0;32m     [*]created 'oplist' table..\e[0m \n";
         *(m_options->log) << "    [*]created 'oplist' table..\n";
     }
@@ -1265,74 +1279,6 @@ void Db::createDb()   //initial creation of database
         *(m_options->errors) << "[FAIL] On " << (*m_options)[m_options->serverNumber].name()  << " : error creating 'oplist' table\n";
     }
 }
-
-
-std::string Db::errorCodeToString( int errorCode ) const
-{
-    std::string errorMsg;
-    std::cout << "ERROR CODE RECIEVED -> " << errorCode << std::endl;
-
-    if( errorCode == 1 )
-        errorMsg = "SQL error or missing database";
-    else if( errorCode == 2 )
-        errorMsg = "Internal logic error in SQLite";
-    else if( errorCode == 3 )
-        errorMsg = "Access permission denied";
-    else if( errorCode == 4 )
-        errorMsg = "Callback routine requested an abort";
-    else if( errorCode == 5 )
-        errorMsg = "The database file is locked";
-    else if( errorCode == 6 )
-        errorMsg = "A table in the database is locked";
-    else if( errorCode == 7 )
-        errorMsg = "A malloc() failed";
-    else if( errorCode == 8 )
-        errorMsg = "Attempt to write a readonly database";
-    else if( errorCode == 9 )
-        errorMsg = "Operation terminated by sqlite3_interrupt()";
-    else if( errorCode == 10 )
-        errorMsg = "Some kind of disk I/O error occurred";
-    else if( errorCode == 11 )
-        errorMsg = "The database disk image is malformed";
-    else if( errorCode == 12 )
-        errorMsg = "NOT USED. Table or record not found";
-    else if( errorCode == 13 )
-        errorMsg = "Insertion failed because database is full";
-    else if( errorCode == 14 )
-        errorMsg = "Unable to open the database file";
-    else if( errorCode == 15 )
-        errorMsg = "NOT USED. Database lock protocol error";
-    else if( errorCode == 16 )
-        errorMsg = "Database is empty";
-    else if( errorCode == 17 )
-        errorMsg = "The database schema changed";
-    else if( errorCode == 18 )
-        errorMsg = "String or BLOB exceeds size limit";
-    else if( errorCode == 19 )
-        errorMsg = "Abort due to constraint violation";
-    else if( errorCode == 20 )
-        errorMsg = "Data type mismatch";
-    else if( errorCode == 21 )
-        errorMsg = "Library used incorrectly";
-    else if( errorCode == 22 )
-        errorMsg = "Uses OS features not supported on host";
-    else if( errorCode == 23 )
-        errorMsg = "Authorization denied";
-    else if( errorCode == 24 )
-        errorMsg = "Auxiliary database format error";
-    else if( errorCode == 25 )
-        errorMsg = "2nd parameter to sqlite3_bind out of range";
-    else if( errorCode == 26 )
-        errorMsg = "File opened that is not a database file";
-    else if( errorCode == 100 )
-        errorMsg = "sqlite3_step() has another row ready";
-    else if( errorCode == 101 )
-        errorMsg = "sqlite3_step() has finished executing";
-
-
-    return errorMsg;
-}
-
 
 
 bool Db::execQuery( const std::string &query )  //executes and returns status
@@ -1537,4 +1483,3 @@ int Db::resultQuery( const std::string &query ) //ritorna quante corrispondenze 
     return answer;
 }
 
-#endif // DB_CPP
