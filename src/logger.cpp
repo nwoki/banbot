@@ -30,7 +30,6 @@
 #include "logger.h"
 #include <time.h>
 #include <stdio.h>
-#include <sys/stat.h>
 #include <stdlib.h>
 
 Logger::Logger( std::string p ): path( p ),isOpen( false )
@@ -48,21 +47,26 @@ void Logger::checkFile()
     int end = path.find_last_of( "/" );
 
     // check existance of folder
-    if( !handyFunctions::fileOrDirExistance( path ) ) {
-        std::cout<<"\e[0;33m[!] Logfile doesn't exist... I'll create it. \e[0m \n";
+    if( !handyFunctions::fileOrDirExistance( path.substr( 0, end + 1 ) ) ) {
+        std::cout<<"\e[0;33m[!] Log dir doesn't exist... I'll create it. \e[0m \n";
 
         // create directory first
         if( !handyFunctions::createDir( path.substr( 0, end + 1 ) ) ) {     // had to use substr because path has file included
-            std::cout<<"\e[1;31m[EPIC FAIL] couldn't create directory '" << path << "'.Please check permissions! \e[0m \n";
+            std::cout<<"\e[1;31m[EPIC FAIL] couldn't create directory '" << path.substr( 0, end + 1 ) << "'.Please check permissions! \e[0m \n";
             ok = false;
         }
+    }
 
-        if( ok ) {
+    // check existance of file
+    if( ok ) {
+        // check for file existance
+        if( !handyFunctions::fileOrDirExistance( path ) ) {
             // create logfile
             if( !handyFunctions::createFile( path ) )
                 std::cout<<" \e[1;31m [EPIC FAIL] couldn't create the log file. Please check permissions! \e[0m \n";
         }
     }
+
 }
 
 Logger::~Logger()

@@ -67,6 +67,7 @@ namespace handyFunctions{
             path.append( "/" );
 
         if( !fs::exists( path ) ) {
+            std::cout << "path doesn't exist, try and create\n";
             // create directories if more than one
             try {
                 if( !fs::create_directories( path ) )
@@ -97,8 +98,10 @@ namespace handyFunctions{
                 std::cout << "\e[0;33m[!] " << file << " doesn't exist...Creating it...\e[0m \n";
                 std::ofstream OUT( file.c_str() );
 
-                if ( OUT.is_open() )
+                if ( OUT.is_open() ) {
+                    std::cout << "\e[0;32m[OK] Logfile " << file << " created!\e[0m \n";
                     OUT.close();
+                }
                 else {
                     std::cout << "\e[1;31m[EPIC FAIL] couldn't create " << file << ". Please check permissions!\e[0m \n";
                     return false;
@@ -106,7 +109,7 @@ namespace handyFunctions{
                 return true;
             }
             else {
-                    std::cout << "\e[0;33mfile " << file << " already exists.. \e[0m \n";
+                std::cout << "\e[0;33mfile " << file << " already exists.. \e[0m \n";
                 return false;
             }
         }
