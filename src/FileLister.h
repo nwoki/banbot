@@ -53,9 +53,11 @@ public:
 
 private:
     std::vector< std::string > configOrMapFiles( std::vector< std::string >filesList, fileType type );  // extracts ".cfg" or ".pk3" files from given list
-    std::vector< std::string > listFiles( const std::string &path );                                    // returns files in given path ( only files, all extensions! )
+    std::vector< std::string > listFiles( std::string path );                                           // returns files in given path ( only files, all extensions! )
+    void populateDefaultMaps();                                                                         // populates default maps vector( hardcoded )
 
     ConfigLoader::Options* m_options;
+    std::vector< std::string > m_defaultMaps;
 };
 
 #endif // FILELISTER_H
