@@ -60,7 +60,7 @@ class Connection
         void exec( std::string file, int server ); //load a config file
         void restart( int server ); //restart the current match
         
-        void teamBalance ( int server ); //balance teams.
+        std::string status ( int server ); //balance teams.
     private:
         sockaddr_in serverAdd;// clientAdd;
         int socketID;
@@ -71,11 +71,6 @@ class Connection
         std::vector<char> makeCmd( std::string );
 
         ConfigLoader::Options* m_options;
-        
-        struct Info{                    //used in team balance,
-            std::string number;
-            int score;
-        };
 
         /*vector<char *>ip;
         vector<int> port;

@@ -74,6 +74,7 @@ Server::Server()
     m_permissions.push_back( 2 );     //bantimewarn level
     m_permissions.push_back( 3 );     //restart level
     m_permissions.push_back( 2 );     //reload level
+    m_permissions.push_back( 3 );     //teambalance level
 }
 
 Server::~Server()

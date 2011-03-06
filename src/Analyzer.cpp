@@ -48,46 +48,46 @@
 \\headmodel\\[^ \t\n\r\f\v]+\\team_model\\[^ \t\n\r\f\v]+\\team_headmodel\\[^ \t\n\r\f\v]+\\color1\\[0-9]{1,2}\\color2\\[0-9]{1,2}\\handicap\\100\\sex\\[^ \t\n\r\f\v]+\\cl_anonymous\\[01]{1}\
 \\gear\\[^ \t\n\r\f\v]+\\teamtask\\[0-9]+\\cl_guid\\[A-F0-9]{32}\\weapmodes\\[0-2]{20}"
 
-#define _R_CLIENT_DISCONNECT "^ *[0-9]+:[0-9]{2} +ClientDisconnect:"
-#define _R_BAN "^ *[0-9]+:[0-9]{2} +say: +[0-9]+ +[^ \t\n\r\f\v]+: +!ban [^\t\n\r\f\v]+"
-#define _R_BAN_NUMBER "^ *[0-9]+:[0-9]{2} +say: +[0-9]+ +[^ \t\n\r\f\v]+: +!ban [0-9]{1,2}"
-#define _R_FIND "^ *[0-9]+:[0-9]{2} +say: +[0-9]+ +[^ \t\n\r\f\v]+: +!find [^ \t\n\r\f\v]+$"
-#define _R_FINDOP "^ *[0-9]+:[0-9]{2} +say: +[0-9]+ +[^ \t\n\r\f\v]+: +!findop [^ \t\n\r\f\v]+$"
-#define _R_UNBAN "^ *[0-9]+:[0-9]{2} +say: +[0-9]+ +[^ \t\n\r\f\v]+: +!unban [^ \t\n\r\f\v]+$"
-#define _R_UNBAN_ID "^ *[0-9]+:[0-9]{2} +say: +[0-9]+ +[^ \t\n\r\f\v]+: +!unban [0-9]+$"
-#define _R_OP "^ *[0-9]+:[0-9]{2} +say: +[0-9]+ +[^ \t\n\r\f\v]+: +!op [^ \t\n\r\f\v]+"
-#define _R_OP_NUMBER "^ *[0-9]+:[0-9]{2} +say: +[0-9]+ +[^ \t\n\r\f\v]+: +!op [0-9]{1,2}"
-#define _R_DEOP "^ *[0-9]+:[0-9]{2} +say: +[0-9]+ +[^ \t\n\r\f\v]+: +!deop [^ \t\n\r\f\v]+$"
-#define _R_DEOP_ID "^ *[0-9]+:[0-9]{2} +say: +[0-9]+ +[^ \t\n\r\f\v]+: +!deop [0-9]+$"
+#define _R_CLIENT_DISCONNECT "^ *[0-9]+:[0-9]{2} *ClientDisconnect:"
+#define _R_BAN "^ *[0-9]+:[0-9]{2} *say: +[0-9]+ +[^ \t\n\r\f\v]+: +!ban [^\t\n\r\f\v]+"
+#define _R_BAN_NUMBER "^ *[0-9]+:[0-9]{2} *say: +[0-9]+ +[^ \t\n\r\f\v]+: +!ban [0-9]{1,2}"
+#define _R_FIND "^ *[0-9]+:[0-9]{2} *say: +[0-9]+ +[^ \t\n\r\f\v]+: +!find [^ \t\n\r\f\v]+$"
+#define _R_FINDOP "^ *[0-9]+:[0-9]{2} *say: +[0-9]+ +[^ \t\n\r\f\v]+: +!findop [^ \t\n\r\f\v]+$"
+#define _R_UNBAN "^ *[0-9]+:[0-9]{2} *say: +[0-9]+ +[^ \t\n\r\f\v]+: +!unban [^ \t\n\r\f\v]+$"
+#define _R_UNBAN_ID "^ *[0-9]+:[0-9]{2} *say: +[0-9]+ +[^ \t\n\r\f\v]+: +!unban [0-9]+$"
+#define _R_OP "^ *[0-9]+:[0-9]{2} *say: +[0-9]+ +[^ \t\n\r\f\v]+: +!op [^ \t\n\r\f\v]+"
+#define _R_OP_NUMBER "^ *[0-9]+:[0-9]{2} *say: +[0-9]+ +[^ \t\n\r\f\v]+: +!op [0-9]{1,2}"
+#define _R_DEOP "^ *[0-9]+:[0-9]{2} *say: +[0-9]+ +[^ \t\n\r\f\v]+: +!deop [^ \t\n\r\f\v]+$"
+#define _R_DEOP_ID "^ *[0-9]+:[0-9]{2} *say: +[0-9]+ +[^ \t\n\r\f\v]+: +!deop [0-9]+$"
 #define _R_GUID "[A-F0-9]{32}"
-#define _R_INITGAME "^ *[0-9]+:[0-9]{2} +InitGame:"
-#define _R_HELP "^ *[0-9]+:[0-9]{2} +say: +[0-9]+ +[^ \t\n\r\f\v]+: +!help$"
-#define _R_KICK "^ *[0-9]+:[0-9]{2} +say: +[0-9]+ +[^ \t\n\r\f\v]+: +!kick [^ \t\n\r\f\v]+$"
-#define _R_KICK_NUMBER "^ *[0-9]+:[0-9]{2} +say: +[0-9]+ +[^ \t\n\r\f\v]+: +!kick [0-9]{1,2}$"
-#define _R_MUTE " *[0-9]+:[0-9]{2} +say: +[0-9]+ +[^ \t\n\r\f\v]+: +!mute [^ \t\n\r\f\v]+$"
-#define _R_MUTE_ALL "^ *[0-9]+:[0-9]{2} +say: +[0-9]+ +[^ \t\n\r\f\v]+: +!mute (all|ALL)$"
-#define _R_MUTE_NUMBER "^ *[0-9]+:[0-9]{2} +say: +[0-9]+ +[^ \t\n\r\f\v]+: +!mute [0-9]{1,2}$"
-#define _R_STRICT "^ *[0-9]+:[0-9]{2} +say: +[0-9]+ +[^ \t\n\r\f\v]+: +!strict (OFF|off|[0-6]{1})$"
-#define _R_VETO "^ *[0-9]+:[0-9]{2} +say: +[0-9]+ +[^ \t\n\r\f\v]+: +!veto$"
-#define _R_SLAP "^ *[0-9]+:[0-9]{2} +say: +[0-9]+ +[^ \t\n\r\f\v]+: +!slap [^\t\n\r\f\v]+$"
-#define _R_SLAP_NUMBER "^ *[0-9]+:[0-9]{2} +say: +[0-9]+ +[^ \t\n\r\f\v]+: +!slap [0-9]{1,2}"
-#define _R_SLAP_MORE "^ *[0-9]+:[0-9]{2} +say: +[0-9]+ +[^ \t\n\r\f\v]+: +!slap [^ \t\n\r\f\v]+ [2-9]{1}$"
-#define _R_NUKE "^ *[0-9]+:[0-9]{2} +say: +[0-9]+ +[^ \t\n\r\f\v]+: +!nuke [^ \t\n\r\f\v]+$"
-#define _R_NUKE_NUMBER "^ *[0-9]+:[0-9]{2} +say: +[0-9]+ +[^ \t\n\r\f\v]+: +!nuke [0-9]{1,2}$"
-#define _R_COMMAND "^ *[0-9]+:[0-9]{2} +say: +[0-9]+ +[^ \t\n\r\f\v]+: +![^\t\n\r\f\v]+$"
-#define _R_STATUS "^ *[0-9]+:[0-9]{2} +say: +[0-9]+ +[^ \t\n\r\f\v]+: +!status$"
-#define _R_FORCE "^ *[0-9]+:[0-9]{2} +say: +[0-9]+ +[^ \t\n\r\f\v]+: +!force (red|blue|spect) [^ \t\n\r\f\v]+$"
-#define _R_FORCE_NUMBER "^ *[0-9]+:[0-9]{2} +say: +[0-9]+ +[^ \t\n\r\f\v]+: +!force (red|blue|spect) [0-9]{1,2}$"
-#define _R_IAMGOD "^ *[0-9]+:[0-9]{2} +say: +[0-9]+ +[^ \t\n\r\f\v]+: +!iamgod$"
-#define _R_MAP "^ *[0-9]+:[0-9]{2} +say: +[0-9]+ +[^ \t\n\r\f\v]+: +!map [^\t\n\r\f\v]+$"
-#define _R_NEXTMAP "^ *[0-9]+:[0-9]{2} +say: +[0-9]+ +[^ \t\n\r\f\v]+: +!nextmap [^\t\n\r\f\v]+$"
-#define _R_ADMINS "^ *[0-9]+:[0-9]{2} +say: +[0-9]+ +[^ \t\n\r\f\v]+: +!admins$"
-#define _R_PASS "^ *[0-9]+:[0-9]{2} +say: +[0-9]+ +[^ \t\n\r\f\v]+: +!pass [^ \t\n\r\f\v]+$"
-#define _R_CONFIG "^ *[0-9]+:[0-9]{2} +say: +[0-9]+ +[^ \t\n\r\f\v]+: +!config [^\t\n\r\f\v]+$"
-#define _R_WARNINGS "^ *[0-9]+:[0-9]{2} +say: +[0-9]+ +[^ \t\n\r\f\v]+: +!warnings (off|public|private)$"
-#define _R_BANTIMEWARN "^ *[0-9]+:[0-9]{2} +say: +[0-9]+ +[^ \t\n\r\f\v]+: +!bantimewarn (on|off)$"
-#define _R_RESTART "^ *[0-9]+:[0-9]{2} +say: +[0-9]+ +[^ \t\n\r\f\v]+: +!restart$"
-#define _R_RELOAD "^ *[0-9]+:[0-9]{2} +say: +[0-9]+ +[^ \t\n\r\f\v]+: +!reload$"
+#define _R_INITGAME "^ *[0-9]+:[0-9]{2} *InitGame:"
+#define _R_HELP "^ *[0-9]+:[0-9]{2} *say: +[0-9]+ +[^ \t\n\r\f\v]+: +!help$"
+#define _R_KICK "^ *[0-9]+:[0-9]{2} *say: +[0-9]+ +[^ \t\n\r\f\v]+: +!kick [^ \t\n\r\f\v]+$"
+#define _R_KICK_NUMBER "^ *[0-9]+:[0-9]{2} *say: +[0-9]+ +[^ \t\n\r\f\v]+: +!kick [0-9]{1,2}$"
+#define _R_MUTE " *[0-9]+:[0-9]{2} *say: +[0-9]+ +[^ \t\n\r\f\v]+: +!mute [^ \t\n\r\f\v]+$"
+#define _R_MUTE_ALL "^ *[0-9]+:[0-9]{2} *say: +[0-9]+ +[^ \t\n\r\f\v]+: +!mute (all|ALL)$"
+#define _R_MUTE_NUMBER "^ *[0-9]+:[0-9]{2} *say: +[0-9]+ +[^ \t\n\r\f\v]+: +!mute [0-9]{1,2}$"
+#define _R_STRICT "^ *[0-9]+:[0-9]{2} *say: +[0-9]+ +[^ \t\n\r\f\v]+: +!strict (OFF|off|[0-6]{1})$"
+#define _R_VETO "^ *[0-9]+:[0-9]{2} *say: +[0-9]+ +[^ \t\n\r\f\v]+: +!veto$"
+#define _R_SLAP "^ *[0-9]+:[0-9]{2} *say: +[0-9]+ +[^ \t\n\r\f\v]+: +!slap [^\t\n\r\f\v]+$"
+#define _R_SLAP_NUMBER "^ *[0-9]+:[0-9]{2} *say: +[0-9]+ +[^ \t\n\r\f\v]+: +!slap [0-9]{1,2}"
+#define _R_SLAP_MORE "^ *[0-9]+:[0-9]{2} *say: +[0-9]+ +[^ \t\n\r\f\v]+: +!slap [^ \t\n\r\f\v]+ [2-9]{1}$"
+#define _R_NUKE "^ *[0-9]+:[0-9]{2} *say: +[0-9]+ +[^ \t\n\r\f\v]+: +!nuke [^ \t\n\r\f\v]+$"
+#define _R_NUKE_NUMBER "^ *[0-9]+:[0-9]{2} *say: +[0-9]+ +[^ \t\n\r\f\v]+: +!nuke [0-9]{1,2}$"
+#define _R_COMMAND "^ *[0-9]+:[0-9]{2} *say: +[0-9]+ +[^ \t\n\r\f\v]+: +![^\t\n\r\f\v]+$"
+#define _R_STATUS "^ *[0-9]+:[0-9]{2} *say: +[0-9]+ +[^ \t\n\r\f\v]+: +!status$"
+#define _R_FORCE "^ *[0-9]+:[0-9]{2} *say: +[0-9]+ +[^ \t\n\r\f\v]+: +!force (red|blue|spect) [^ \t\n\r\f\v]+$"
+#define _R_FORCE_NUMBER "^ *[0-9]+:[0-9]{2} *say: +[0-9]+ +[^ \t\n\r\f\v]+: +!force (red|blue|spect) [0-9]{1,2}$"
+#define _R_IAMGOD "^ *[0-9]+:[0-9]{2} *say: +[0-9]+ +[^ \t\n\r\f\v]+: +!iamgod$"
+#define _R_MAP "^ *[0-9]+:[0-9]{2} *say: +[0-9]+ +[^ \t\n\r\f\v]+: +!map [^\t\n\r\f\v]+$"
+#define _R_NEXTMAP "^ *[0-9]+:[0-9]{2} *say: +[0-9]+ +[^ \t\n\r\f\v]+: +!nextmap [^\t\n\r\f\v]+$"
+#define _R_ADMINS "^ *[0-9]+:[0-9]{2} *say: +[0-9]+ +[^ \t\n\r\f\v]+: +!admins$"
+#define _R_PASS "^ *[0-9]+:[0-9]{2} *say: +[0-9]+ +[^ \t\n\r\f\v]+: +!pass [^ \t\n\r\f\v]+$"
+#define _R_CONFIG "^ *[0-9]+:[0-9]{2} *say: +[0-9]+ +[^ \t\n\r\f\v]+: +!config [^\t\n\r\f\v]+$"
+#define _R_WARNINGS "^ *[0-9]+:[0-9]{2} *say: +[0-9]+ +[^ \t\n\r\f\v]+: +!warnings (off|public|private)$"
+#define _R_BANTIMEWARN "^ *[0-9]+:[0-9]{2} *say: +[0-9]+ +[^ \t\n\r\f\v]+: +!bantimewarn (on|off)$"
+#define _R_RESTART "^ *[0-9]+:[0-9]{2} *say: +[0-9]+ +[^ \t\n\r\f\v]+: +!restart$"
+#define _R_RELOAD "^ *[0-9]+:[0-9]{2} *say: +[0-9]+ +[^ \t\n\r\f\v]+: +!reload$"
 
 //costruttore
 Analyzer::Analyzer(Connection* conn, Db* db, ConfigLoader* configLoader )
@@ -1098,7 +1098,8 @@ void Analyzer::op(char* line)
         std::string player=temp.substr(pos,end-pos);
         pos=temp.find_first_not_of(" \t\n\r\f\v",end);
         end=temp.find_first_of(" \t\n\r\f\v",pos);
-        std::string newOpLevel=temp.substr(pos,end-pos);
+        std::string newOpLevel;
+        if (end != pos) newOpLevel=temp.substr(pos, end-pos);
         
         if (isA(newOpLevel.c_str(),_R_NUMBER))
         {
@@ -1174,7 +1175,7 @@ void Analyzer::deop(char* line)
             if (risultatoEsatto.size() == 1)  //if i found an exact match, i'll unban it
             {
                 #ifdef ITA
-                if (database->deleteBanned(risultatoEsatto[0].id))
+                if (database->deleteOp(risultatoEsatto[0].id))
                 {
                     phrase.append("^0BanBot: ^2");
                     phrase.append(risultatoEsatto[0].nick);
@@ -1182,7 +1183,7 @@ void Analyzer::deop(char* line)
                 }
                 else phrase.append("^0BanBot: ^1è stato riscontrato un errore, admin non eliminato.");
                 #else
-                if (database->deleteBanned(risultatoEsatto[0].id))
+                if (database->deleteOp(risultatoEsatto[0].id))
                 {
                     phrase.append("^0BanBot: ^2");
                     phrase.append(risultatoEsatto[0].nick);
@@ -1198,7 +1199,7 @@ void Analyzer::deop(char* line)
                 if (risultatoApprossimativo.size() == 1)  //else, if i found an aprox match, i'll unban it
                 {
                     #ifdef ITA
-                    if (database->deleteBanned(risultatoApprossimativo[0].id))
+                    if (database->deleteOp(risultatoApprossimativo[0].id))
                     {
                         phrase.append("^0BanBot: ^2");
                         phrase.append(risultatoApprossimativo[0].nick);
@@ -1206,7 +1207,7 @@ void Analyzer::deop(char* line)
                     }
                     else phrase.append("^0BanBot: ^1è stato riscontrato un errore, admin non eliminato.");
                     #else
-                    if (database->deleteBanned(risultatoApprossimativo[0].id))
+                    if (database->deleteOp(risultatoApprossimativo[0].id))
                     {
                         phrase.append("^0BanBot: ^2");
                         phrase.append(risultatoApprossimativo[0].nick);
@@ -1843,7 +1844,8 @@ void Analyzer::map(char* line)
         std::string map=temp.substr(pos,end-pos);
         pos=temp.find_first_not_of(" \t\n\r\f\v",end);
         end=temp.find_first_of(" \t\n\r\f\v",pos);
-        std::string map2=temp.substr(pos, end-pos);
+        std::string map2;
+        if (end != pos) map2=temp.substr(pos, end-pos);
         
         int listIndex=translateMap(map, map2);
         if (listIndex>=0)
@@ -1880,7 +1882,8 @@ void Analyzer::nextmap(char* line)
         std::string map=temp.substr(pos,end-pos);
         pos=temp.find_first_not_of(" \t\n\r\f\v",end);
         end=temp.find_first_of(" \t\n\r\f\v",pos);
-        std::string map2=temp.substr(pos, end-pos);
+        std::string map2;
+        if (end != pos) map2=temp.substr(pos, end-pos);
         
         int listIndex=translateMap(map, map2);
         if (listIndex>=0)
@@ -1921,6 +1924,8 @@ void Analyzer::admins(char* line)
                 mex.append( "^2 is " );
             #endif
             mex.append( database->adminRegisteredNickViaGuid( (*m_dati)[m_dati->serverNumber][t[i]]->GUID ) );
+            mex.append( " l " );
+            mex.append(database->checkAuthGuid((*m_dati)[m_dati->serverNumber][t[i]]->nick));
             if (i>0 && i%2!=0)
                 mex.append("\n");
             else
@@ -1948,9 +1953,9 @@ void Analyzer::pass(char* line)
         std::string password = temp.substr( pos, end-pos );
 
         #ifdef ITA
-            std::string phrase ("^0BanBot:^1 password cambiata in ^2");
+            std::string phrase ("^0BanBot:^1 password del server cambiata in ^2");
         #else
-            std::string phrase ("^0BanBot:^1 password changed to ^2");
+            std::string phrase ("^0BanBot:^1 server's password changed to ^2");
         #endif
         phrase.append( password );
         block->changePassword( password );
@@ -1977,7 +1982,8 @@ void Analyzer::config(char* line)
         std::string conf1 = temp.substr( pos, end-pos );
         pos = temp.find_first_not_of( " \t\n\r\f\v", end );
         end = temp.find_first_of( " \t\n\r\f\v", pos );
-        std::string conf2 = temp.substr( pos, end-pos );
+        std::string conf2;
+        if (end != pos) conf2=temp.substr(pos, end-pos);
         
         int listIndex = translateConfig(conf1,conf2);
         
@@ -2114,6 +2120,7 @@ void Analyzer::restart(char* line)
         std::string phrase ("^0BanBot:^1 Match restarted: ^2 hf!");
         #endif
         
+        block->restart();
         block->say(phrase);
         m_scheduler->addInstructionBlock( block, Server::MEDIUM );
     }
@@ -2503,7 +2510,7 @@ void Analyzer::main_loop()
         std::cout<<"\e[0;32m[OK] BanBot launched. \e[0m \n\n";
         *(m_dati->errors)<<"[OK] BanBot launched.\n\n";
     #endif
-    server->teamBalance( 0 );
+    //server->teamBalance( 0 );
     while (true)
     {
         commandexecuted=false;

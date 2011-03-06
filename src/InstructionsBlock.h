@@ -53,11 +53,10 @@ class InstructionsBlock
         void changePassword( std::string pass ); //change the private password of the server
         void exec( std::string file ); //load a config file for the game server
         void restart(); //restart the current map.
+        void teamBalace(); //balance teams
 
-        /// TODO ask zamy : "does this method automatically move the instruction block to the end? does it delete it?
         void execFirstCommand( Connection* conn, int server );  //execute the first command of the stack on a server using the given connection class.
 
-        /// TODO zamy: ci serve che torni un puntatore?? sinceramente lo farei "void" questo metodo
         InstructionsBlock* setNext ( InstructionsBlock* next ); //changes the next InstructionsBlock, and returns the old next.
         InstructionsBlock* getNext ();                          //get the next InstructionsBlock.
         InstructionsBlock* moveToTail ();                       //move this InstructionsBlock on the tail, and returns the new head.
@@ -65,6 +64,11 @@ class InstructionsBlock
         bool isEmpty ();                                        //returns true if all instructions are done.
 
     private:
+        struct Info{                    //used in team balance,
+        std::string number;
+        int score;
+        };
+        
         // general command node
         class Common
         {
@@ -293,6 +297,57 @@ class InstructionsBlock
                 virtual void exec ( Connection* conn, int server )
                 {
                     conn->restart( server );
+                };
+        };
+        
+        //teamBalance command node
+        class TeamBalance : public Common
+        {
+            public:
+                TeamBalance():Common(){};
+                virtual void exec ( Connection* conn, int server )
+                {
+                    std::string temp = conn->status( server );
+                    
+                    int pos = temp.find("rate");
+                    
+                    //i'll catch every player's number and score.
+                    pos = temp.find_first_of("0123456789",pos);
+                    
+                    std::vector<Info> players;
+                    while (pos < temp.size() && pos > 0 )
+                    {
+                        int end = temp.find_first_not_of("0123456789",pos);
+                        Info t;
+                        t.number = temp.substr(pos,end-pos);
+                        pos = temp.find_first_of("0123456789",end);
+                        end = temp.find_first_not_of("0123456789",pos);
+                        t.score = atoi(temp.substr(pos,end-pos).c_str());
+                        players.push_back(t);
+                        pos = temp.find_first_of("\n",end);
+                    }
+                    
+                    //order them
+                    unsigned int indexes [players.size()];
+                    for (unsigned int i=0; i<players.size(); i++) indexes[i] = i;
+                    for (unsigned int i=0; i<players.size()-2; i++)
+                        for (unsigned int j=i+1; j<players.size()-1; j++)
+                        {
+                            if (players.at(i).score < players.at(j).score)
+                            {
+                                unsigned int t = indexes[i];
+                                indexes[i] = indexes[j];
+                                indexes[j] = t;
+                            }
+                        }
+                        
+                        for (unsigned int i=0; i<players.size(); i++)
+                        {
+                            if (i%2 == 0)
+                                addToTail( new Force(players.at(indexes[i]).number,"red") );
+                            else
+                                addToTail( new Force(players.at(indexes[i]).number,"blue") );
+                        }
                 };
         };
         

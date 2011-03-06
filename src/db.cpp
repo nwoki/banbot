@@ -767,7 +767,7 @@ bool Db::deleteGuid( const std::string &id )
 ********************************/
 bool Db::addOp( const std::string& nick, const std::string& guid, const std::string &opLvl )
 {
-    if ( checkAuthGuid( guid ) > 100 ) {
+    if ( checkAuthGuid( guid ) < 100 ) {
         std::cout << "\e[0;33m[!]Admin: " << nick << " : " << guid << " already exists on Database\e[0m \n";
         *(m_options->log) << "[!]Admin: " << nick << " : " << guid << " already exists on Database\n";
         return false;

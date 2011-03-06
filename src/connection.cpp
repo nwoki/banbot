@@ -349,7 +349,7 @@ void Connection::restart( int server )
     close(socketID);
 }
 
-void Connection::teamBalance( int server )
+std::string Connection::status( int server )
 {
     prepareConnection( server );
     std::string comando( "rcon " );
@@ -363,49 +363,9 @@ void Connection::teamBalance( int server )
     char buf [2048];
     socklen_t fromlen = sizeof serverAdd;
     recvfrom( socketID, buf, sizeof buf, 0, &(sockaddr &)serverAdd, &fromlen );
-    std::cout<< buf <<"\n";
     close(socketID);
     
     std::string temp(buf);
-    int pos = temp.find("rate");
-    
-    //i'll catch every player's number and score.
-    pos = temp.find_first_of("0123456789",pos);
-
-    std::vector<Info> players;
-    while (pos < temp.size())
-    {
-        int end = temp.find_first_not_of("0123456789",pos);
-        Info t;
-        t.number = temp.substr(pos,end-pos);
-        pos = temp.find_first_of("0123456789",end);
-        end = temp.find_first_not_of("0123456789",pos);
-        t.score = atoi(temp.substr(pos,end-pos).c_str());
-        players.push_back(t);
-        pos = temp.find_first_of("\n",end);
-    }
-    
-    //order them
-    unsigned int indexes [players.size()];
-    for (unsigned int i=0; i<players.size(); i++) indexes[i] = i;
-    for (unsigned int i=0; i<players.size()-2; i++)
-        for (unsigned int j=i+1; j<players.size()-1; j++)
-        {
-            if (players.at(i).score < players.at(j).score)
-            {
-                unsigned int t = indexes[i];
-                indexes[i] = indexes[j];
-                indexes[j] = t;
-            }
-        }
-        
-    for (unsigned int i=0; i<players.size(); i++)
-    {
-        usleep(SOCKET_PAUSE);
-        if (i%2 == 0)
-            force (players.at(indexes[i]).number,"red",server);
-        else
-            force (players.at(indexes[i]).number,"blue",server);
-    }
+    return temp;
 }
 #endif  // CONNECTION_CPP

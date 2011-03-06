@@ -237,4 +237,12 @@ void InstructionsBlock::restart()
         m_list = new Restart();
 }
 
+void InstructionsBlock::teamBalance()
+{
+    if ( m_list != NULL)
+        m_list->addToTail( new TeamBalance() );
+    else
+        m_list = new TeamBalance();
+}
+
 #endif // INSTRUCTIONSBLOCK_CPP
