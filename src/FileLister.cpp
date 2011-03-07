@@ -50,7 +50,7 @@ void FileLister::updateServerConfigMapList()
             completeMapList.push_back( customMapList.at( j ) );
 
         #ifdef DEBUG_MODE
-        for( int a = 0; a < completeMapList.size(); a++ )
+        for( unsigned int a = 0; a < completeMapList.size(); a++ )
             std::cout << "map: " << completeMapList.at( a ) << "\n";
         #endif
 

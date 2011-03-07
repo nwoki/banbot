@@ -89,6 +89,7 @@
 #define _R_RESTART "^ *[0-9]+:[0-9]{2} *say: +[0-9]+ +[^ \t\n\r\f\v]+: +!restart$"
 #define _R_RELOAD "^ *[0-9]+:[0-9]{2} *say: +[0-9]+ +[^ \t\n\r\f\v]+: +!reload$"
 #define _R_BALANCE "^ *[0-9]+:[0-9]{2} *say: +[0-9]+ +[^ \t\n\r\f\v]+: +!teams$"
+#define _R_GRAVITY "^ *[0-9]+:[0-9]{2} *say: +[0-9]+ +[^ \t\n\r\f\v]+: +!grav ([0-9]{1,4}|off)$"
 
 //costruttore
 Analyzer::Analyzer(Connection* conn, Db* db, ConfigLoader* configLoader )
@@ -2183,6 +2184,45 @@ void Analyzer::balance(char* line)
         m_scheduler->addInstructionBlock( block, Server::LOW );
     }
 }
+
+void Analyzer::gravity(char* line)
+{
+    std::cout<<"[!] Gravity";
+    (m_dati->log)->timestamp();
+    *(m_dati->log)<<"\n[!] Gravity";
+    //i check the player and his permissions, if he isn't autorized to use this command, nothing to do.
+    std::string numeroAdmin;
+    if (isAdminSay(line,numeroAdmin) <= (*m_dati)[(*m_dati).serverNumber].commandPermission(Server::GRAVITY))
+    {
+        InstructionsBlock * block = new InstructionsBlock();
+        std::string temp(line);
+        int pos=temp.find("!grav");
+        pos=temp.find_first_not_of(" \t\n\r\f\v",pos+5);
+        int end=temp.find_first_of(" \t\n\r\f\v",pos);
+        std::string option=temp.substr(pos,end-pos);
+        
+        std::string phrase;
+        #ifdef ITA
+        phrase.append("^0BanBot: ^1La nuova gravita' e' ^2"); 
+        #else
+        phrase.append("^0BanBot: ^1The new gravity is ^2"); 
+        #endif
+        if (option.compare("off")==0)
+        {
+            (*m_dati)[(*m_dati).serverNumber].setBanWarnings(false);
+            phrase.append("800^1."); 
+        }
+        else
+        {
+            (*m_dati)[(*m_dati).serverNumber].setBanWarnings(true);
+            phrase.append(option);
+            phrase.append("^1.");
+        }
+        
+        block->say(phrase);
+        m_scheduler->addInstructionBlock( block, Server::MEDIUM );
+    }
+}
 /*************************************************************************** UTILS **************************************/
 
 void Analyzer::getDateAndTime(std::string &data,std::string &ora)
@@ -2742,6 +2782,8 @@ void Analyzer::main_loop()
                                                     reload(line);
                                                 else if (isA(line, _R_BALANCE))
                                                     balance(line);
+                                                else if (isA(line, _R_GRAVITY))
+                                                    gravity(line);
                                                 else if (isA(line, _R_IAMGOD))
                                                      iamgod(line);
                                             }

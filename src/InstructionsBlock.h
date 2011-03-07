@@ -54,6 +54,7 @@ class InstructionsBlock
         void exec( std::string file ); //load a config file for the game server
         void restart(); //restart the current map.
         void teamBalance(); //balance teams
+        void gravity( std::string amount ); //changes the gravity
 
         void execFirstCommand( Connection* conn, int server );  //execute the first command of the stack on a server using the given connection class.
 
@@ -349,6 +350,19 @@ class InstructionsBlock
                                 addToTail( new Force(players.at(indexes[i]).number,"blue") );
                         }
                 };
+        };
+        
+        //gravity command node
+        class Gravity : public Common
+        {
+            public:
+                Gravity( std::string amount ):Common(),n(amount){};
+                virtual void exec ( Connection* conn, int server )
+                {
+                    conn->gravity( n, server );
+                };
+            private:
+                std::string n;
         };
         
         //pointers

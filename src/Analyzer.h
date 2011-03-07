@@ -107,6 +107,7 @@
     #define H_RESTART "^2!restart ^1: ricomincia la partita corrente.\n"
     #define H_RELOAD "^2!reload ^1: ricarica la mappa corrente.\n"
     #define H_BALANCE "^2!teams ^1: riequilibra le squadre.\n"
+    #define H_GRAVITY "^2!grav <livello/off> ^1: cambia la gravita'.\n"
 #else
     #define COMMANDLIST "^1You can use these commands:\n"
     #define H_LEVEL "^1Your level is ^2"
@@ -134,6 +135,7 @@
     #define H_RESTART "^2!restart ^1: restart the current game.\n"
     #define H_RELOAD "^2!reload ^1: reload the current map.\n"
     #define H_BALANCE "^2!teams ^1: balance teams.\n"
+    #define H_GRAVITY "^2!grav <level/off> ^1: change gravity.\n"
 #endif
 
 class Analyzer
@@ -185,6 +187,7 @@ private:
     void restart(char* line);
     void reload(char* line);
     void balance(char* line);
+    void gravity(char* line);
 
 protected:
     bool isA(const char* line,const std::string &regex);          //testa se la riga soddisfa il regex.

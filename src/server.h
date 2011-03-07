@@ -74,7 +74,8 @@ class Server
             BANTIMEWARN,
             RESTART,
             RELOAD,
-            TEAMS
+            TEAMS,
+            GRAVITY
         };
 
         enum Timing {               //used to define the timing of nick and ip bans.

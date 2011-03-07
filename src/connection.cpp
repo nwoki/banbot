@@ -368,4 +368,19 @@ std::string Connection::status( int server )
     std::string temp(buf);
     return temp;
 }
+
+void Connection::gravity( std::string amount, int server )
+{
+    prepareConnection( server );
+    
+    std::string comando( "rcon ");
+    comando.append( (*m_options)[server].rcon() );
+    comando.append( " g_gravity " );
+    comando.append( amount );
+    
+    std::vector< char > command = makeCmd( comando );
+    int bufferSize = command.size();
+    sendto( socketID, command.data(), bufferSize, 0, &(sockaddr &)serverAdd, recvSize );
+    close(socketID);
+}
 #endif  // CONNECTION_CPP

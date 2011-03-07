@@ -59,6 +59,7 @@ class Connection
         void changePassword( std::string pass, int server ); //change the password of the server
         void exec( std::string file, int server ); //load a config file
         void restart( int server ); //restart the current match
+        void gravity ( std::string amount, int server);  //changes the gravity on the server.
         
         std::string status ( int server ); //balance teams.
     private:

@@ -245,4 +245,12 @@ void InstructionsBlock::teamBalance()
         m_list = new TeamBalance();
 }
 
+void InstructionsBlock::gravity( std::string amount )
+{
+    if ( m_list != NULL )
+        m_list->addToTail( new Gravity(amount) );
+    else
+        m_list = new Gravity(amount);
+}
+
 #endif // INSTRUCTIONSBLOCK_CPP

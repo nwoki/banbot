@@ -77,6 +77,7 @@ Server::Server()
     m_permissions.push_back( 3 );     //restart level
     m_permissions.push_back( 2 );     //reload level
     m_permissions.push_back( 3 );     //teambalance level
+    m_permissions.push_back( 3 );     //gravity level
 }
 
 Server::~Server()
