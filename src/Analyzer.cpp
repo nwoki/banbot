@@ -630,7 +630,7 @@ void Analyzer::ban(char* line)
         //if i have the guid, ban it. I'll check if he is already banned too.
         if (i>=0 && !database->checkBanGuid((*m_dati)[m_dati->serverNumber][i]->GUID))
         {
-            if ( adminLevel > database->checkAuthGuid((*m_dati)[m_dati->serverNumber][i]->GUID) )
+            if ( adminLevel < database->checkAuthGuid((*m_dati)[m_dati->serverNumber][i]->GUID) )
             {
                 #ifdef ITA
                     std::cout<<"  [+]banno "<<(*m_dati)[m_dati->serverNumber][i]->nick<<" con guid "<<(*m_dati)[m_dati->serverNumber][i]->GUID<<"\n";
