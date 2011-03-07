@@ -38,7 +38,7 @@
 // ver_1.2
 #define BANNED_1_2 "CREATE TABLE banned(id INTEGER PRIMARY KEY,nick TEXT,ip TEXT,date TEXT,time TEXT,motive TEXT,author TEXT)"
 #define GUIDS_1_2 "CREATE TABLE guids(id INTEGER PRIMARY KEY,guid TEXT,banId TEXT,FOREIGN KEY( banId ) REFERENCES banned( id ) )"
-#define OPLIST_1_2 "CREATE TABLE oplist(id INTEGER PRIMARY KEY,nick TEXT,guid TEXT,level TEXT)"
+#define OPLIST_1_2 "CREATE TABLE oplist(id INTEGER PRIMARY KEY,nick TEXT,guid TEXT, level TEXT DEFAULT '0')"
 
 /********************************
 *       PUBLIC  METHODS         *
@@ -1094,7 +1094,7 @@ bool Db::sequentialDbUpgrade()
         {
             std::cout<<"converting it to "<<VER_1_2<<"\n";
             *(m_options->errors)<<"converting it to "<<VER_1_2<<"\n";
-            if (execQuery("ALTER TABLE oplist ADD COLUMN level INT DEFAULT 0;"))
+            if (execQuery("ALTER TABLE oplist ADD COLUMN level TEXT DEFAULT '0';"))
             {
                 *(m_options->errors)<<"Ok, converted. ";
                 std::cout<<"Ok, converted. ";
