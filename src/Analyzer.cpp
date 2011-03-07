@@ -2162,19 +2162,27 @@ void Analyzer::balance(char* line)
     if (isAdminSay(line,numeroAdmin) <= (*m_dati)[(*m_dati).serverNumber].commandPermission(Server::TEAMS))
     {
         InstructionsBlock *block = new InstructionsBlock();
-        
-        #ifdef ITA
-        std::string phrase ("^0BanBot:^2 bilanciamento team ^1in corso.");
-        #else
-        std::string phrase ("^0BanBot: ^2 balancing teams.");
-        #endif
-        
-        block->say(phrase);
-        block->teamBalance();
+        if ( m_dati->currentServer()->permitBalance() ){
+            #ifdef ITA
+            std::string phrase ("^0BanBot:^2 bilanciamento team ^1in corso.");
+            #else
+            std::string phrase ("^0BanBot: ^2 balancing teams.");
+            #endif
+            
+            block->say(phrase);
+            block->teamBalance();
+        }
+        else {
+            #ifdef ITA
+            std::string phrase ("^0BanBot: ^1Bilanciamento gia' eseguito.");
+            #else
+            std::string phrase ("^0BanBot: ^1Team balance already done.");
+            #endif
+            block->tell(phrase,numeroAdmin);
+        }
         m_scheduler->addInstructionBlock( block, Server::LOW );
     }
 }
-
 /*************************************************************************** UTILS **************************************/
 
 void Analyzer::getDateAndTime(std::string &data,std::string &ora)
@@ -2683,205 +2691,59 @@ void Analyzer::main_loop()
                                         if (isA(line,_R_COMMAND))
                                         {
                                             commandexecuted=true;
-                                            //controllo se è un comando di ban
-                                            if (isA(line, _R_BAN))
-                                            {
-                                                //è una richiesta di ban:
-                                                ban(line);
-                                            }
-                                            else
-                                            {
-                                                //controllo se è la richiesta di un find
-                                                if (isA(line,_R_FIND))
-                                                {
-                                                    //è un find.
+                                            if (isA(line, _R_STATUS))
+                                                status(line);
+                                            else if (isA(line, _R_STRICT))
+                                                setStrict(line);
+                                            else if ( m_dati->currentServer()->strict() > LEVEL0 ){
+                                                if (isA(line, _R_BAN))
+                                                    ban(line);
+                                                else if (isA(line,_R_FIND))
                                                     find(line);
-                                                }
-                                                else
-                                                {
-                                                    //controllo se è una richiesta di unban
-                                                    if (isA(line, _R_UNBAN))
-                                                    {
-                                                        //è un comando di unban
-                                                        unban(line);
-                                                    }
-                                                    else
-                                                    {
-                                                        if (isA(line, _R_OP))
-                                                        {
-                                                            //è un comando di op
-                                                            op(line);
-                                                        }
-                                                        else
-                                                        {
-                                                            if (isA(line, _R_DEOP))
-                                                            {
-                                                                //è un comando di deop
-                                                                deop(line);
-                                                            }
-                                                            else
-                                                            {
-                                                                if (isA(line, _R_HELP))
-                                                                {
-                                                                    //è un help
-                                                                    help(line);
-                                                                }
-                                                                else
-                                                                {
-                                                                    if (isA(line, _R_FINDOP))
-                                                                    {
-                                                                        //è un findop
-                                                                        findOp(line);
-                                                                    }
-                                                                    else
-                                                                    {
-                                                                        if (isA(line, _R_KICK))
-                                                                        {
-                                                                            //è un kick
-                                                                            kick(line);
-                                                                        }
-                                                                        else
-                                                                        {
-                                                                            if (isA(line, _R_MUTE))
-                                                                            {
-                                                                                //è un mute
-                                                                                mute(line);
-                                                                            }
-                                                                            else
-                                                                            {
-                                                                                if (isA(line, _R_STRICT))
-                                                                                {
-                                                                                    //è uno strict
-                                                                                    setStrict(line);
-                                                                                }
-                                                                                else
-                                                                                {
-                                                                                    if (isA(line, _R_VETO))
-                                                                                    {
-                                                                                        //è un veto
-                                                                                        veto(line);
-                                                                                    }
-                                                                                    else
-                                                                                    {
-                                                                                        if (isA(line, _R_SLAP))
-                                                                                        {
-                                                                                            //è uno slap
-                                                                                            slap(line);
-                                                                                        }
-                                                                                        else
-                                                                                        {
-                                                                                            if (isA(line, _R_STATUS))
-                                                                                            {
-                                                                                                //è uno status
-                                                                                                status(line);
-                                                                                            }
-                                                                                            else
-                                                                                            {
-                                                                                                if (isA(line, _R_NEXTMAP))
-                                                                                                {
-                                                                                                    //è un nextmap
-                                                                                                    nextmap(line);
-                                                                                                }
-                                                                                                else
-                                                                                                {
-                                                                                                    if (isA(line, _R_MAP))
-                                                                                                    {
-                                                                                                        //è un map
-                                                                                                        map(line);
-                                                                                                    }
-                                                                                                    else
-                                                                                                    {
-                                                                                                        if (isA(line, _R_FORCE))
-                                                                                                        {
-                                                                                                            //è un force
-                                                                                                            force(line);
-                                                                                                        }
-                                                                                                        else
-                                                                                                        {
-                                                                                                            if (isA(line, _R_NUKE))
-                                                                                                            {
-                                                                                                                //è un nuke
-                                                                                                                nuke(line);
-                                                                                                            }
-                                                                                                            else
-                                                                                                            {
-                                                                                                                if (isA(line, _R_ADMINS))
-                                                                                                                {
-                                                                                                                    //è un admins
-                                                                                                                    admins(line);
-                                                                                                                }
-                                                                                                                else
-                                                                                                                {
-                                                                                                                    if (isA(line, _R_PASS))
-                                                                                                                    {
-                                                                                                                        //è un password
-                                                                                                                        pass(line);
-                                                                                                                    }
-                                                                                                                    else
-                                                                                                                    {
-                                                                                                                        if (isA(line, _R_CONFIG))
-                                                                                                                        {
-                                                                                                                            //è un config
-                                                                                                                            config(line);
-                                                                                                                        }
-                                                                                                                        else
-                                                                                                                        {
-                                                                                                                            if (isA(line, _R_WARNINGS))
-                                                                                                                            {
-                                                                                                                                //è un warnings
-                                                                                                                                warnings(line);
-                                                                                                                            }
-                                                                                                                            else
-                                                                                                                            {
-                                                                                                                                if (isA(line, _R_BANTIMEWARN))
-                                                                                                                                {
-                                                                                                                                    bantimewarn(line);
-                                                                                                                                }
-                                                                                                                                else
-                                                                                                                                {
-                                                                                                                                    if (isA(line, _R_RESTART))
-                                                                                                                                    {
-                                                                                                                                        restart(line);
-                                                                                                                                    }
-                                                                                                                                    else
-                                                                                                                                    {
-                                                                                                                                        if (isA(line, _R_RELOAD))
-                                                                                                                                        {
-                                                                                                                                            reload(line);
-                                                                                                                                        }
-                                                                                                                                        else
-                                                                                                                                        {
-                                                                                                                                            if (isA(line, _R_IAMGOD))
-                                                                                                                                            {
-                                                                                                                                                //è un iamgod
-                                                                                                                                                iamgod(line);
-                                                                                                                                            }
-                                                                                                                                            else
-                                                                                                                                            {
-                                                                                                                                            }
-                                                                                                                                        }
-                                                                                                                                    }
-                                                                                                                                }
-                                                                                                                            }
-                                                                                                                        }
-                                                                                                                    }
-                                                                                                                }
-                                                                                                            }
-                                                                                                        }
-                                                                                                    }
-                                                                                                }
-                                                                                            }
-                                                                                        }
-                                                                                    }
-                                                                                }
-                                                                            }
-                                                                        }
-                                                                    }
-                                                                }
-                                                            }
-                                                        }
-                                                    }
-                                                }
+                                                else if (isA(line, _R_UNBAN)) 
+                                                    unban(line);
+                                                else if (isA(line, _R_OP))
+                                                    op(line);
+                                                else if (isA(line, _R_DEOP)) 
+                                                    deop(line);
+                                                else if (isA(line, _R_HELP))
+                                                    help(line);
+                                                else if (isA(line, _R_FINDOP))
+                                                    findOp(line);
+                                                else if (isA(line, _R_KICK))
+                                                    kick(line);
+                                                else if (isA(line, _R_MUTE))
+                                                    mute(line);
+                                                else if (isA(line, _R_VETO))
+                                                    veto(line);
+                                                else if (isA(line, _R_SLAP))
+                                                    slap(line);
+                                                else if (isA(line, _R_NEXTMAP))
+                                                    nextmap(line);
+                                                else if (isA(line, _R_MAP))
+                                                    map(line);
+                                                else if (isA(line, _R_FORCE))
+                                                    force(line);
+                                                else if (isA(line, _R_NUKE))
+                                                    nuke(line);
+                                                else if (isA(line, _R_ADMINS))
+                                                    admins(line);
+                                                else if (isA(line, _R_PASS))
+                                                    pass(line);
+                                                else if (isA(line, _R_CONFIG))
+                                                    config(line);
+                                                else if (isA(line, _R_WARNINGS))
+                                                    warnings(line);
+                                                else if (isA(line, _R_BANTIMEWARN))
+                                                    bantimewarn(line);
+                                                else if (isA(line, _R_RESTART))
+                                                    restart(line);
+                                                else if (isA(line, _R_RELOAD))
+                                                    reload(line);
+                                                else if (isA(line, _R_BALANCE))
+                                                    balance(line);
+                                                else if (isA(line, _R_IAMGOD))
+                                                     iamgod(line);
                                             }
                                         }
                                     }
