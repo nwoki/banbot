@@ -49,10 +49,10 @@ void FileLister::updateServerConfigMapList()
         for( unsigned int j = 0; j < customMapList.size(); j++ )
             completeMapList.push_back( customMapList.at( j ) );
 
-        #ifdef DEBUG_MODE
+        /*#ifdef DEBUG_MODE
         for( unsigned int a = 0; a < completeMapList.size(); a++ )
             std::cout << "map: " << completeMapList.at( a ) << "\n";
-        #endif
+        #endif*/
 
         // and finally set complete list of maps
         (*m_options)[i].setServerMaps( completeMapList );
@@ -133,11 +133,11 @@ std::vector< std::string > FileLister::listFiles( std::string path )
         }
     }
 
-#ifdef DEBUG_MODE
+    /*#ifdef DEBUG_MODE
     std::cout << "FileLister::listFiles files are: \n";
     for( unsigned int i = 0; i < fileList.size(); i++ )
         std::cout << fileList.at( i ) << "\n";
-#endif
+    #endif*/
 
     return fileList;
 }
