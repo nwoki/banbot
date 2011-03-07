@@ -31,7 +31,7 @@
 
 // database versions
 // ver_1.1
-#define BANNED_1_1 "CREATE TABLE banned(id INTEGER PRIMARY KEY,nick TEXT,ip TEXT,date TEXT,time TEXT,motive TEXT)"
+#define BANNED_1_1 "CREATE TABLE banned(id INTEGER PRIMARY KEY,nick TEXT,ip TEXT,date TEXT,time TEXT,motive TEXT,author TEXT)"
 #define GUIDS_1_1 "CREATE TABLE guids(id INTEGER PRIMARY KEY,guid TEXT,banId TEXT,FOREIGN KEY( banId ) REFERENCES banned( id ) )"
 #define OPLIST_1_1 "CREATE TABLE oplist(id INTEGER PRIMARY KEY,nick TEXT,guid TEXT)"
 
