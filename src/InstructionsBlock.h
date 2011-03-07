@@ -53,7 +53,7 @@ class InstructionsBlock
         void changePassword( std::string pass ); //change the private password of the server
         void exec( std::string file ); //load a config file for the game server
         void restart(); //restart the current map.
-        void teamBalace(); //balance teams
+        void teamBalance(); //balance teams
 
         void execFirstCommand( Connection* conn, int server );  //execute the first command of the stack on a server using the given connection class.
 
@@ -309,7 +309,7 @@ class InstructionsBlock
                 {
                     std::string temp = conn->status( server );
                     
-                    int pos = temp.find("rate");
+                    unsigned int pos = temp.find("rate");
                     
                     //i'll catch every player's number and score.
                     pos = temp.find_first_of("0123456789",pos);

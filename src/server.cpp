@@ -26,6 +26,7 @@
 #ifndef _server_cpp_
 #define _server_cpp_
 
+#include <time.h>
 #include "InstructionsBlock.h"
 #include "server.h"
 
@@ -38,6 +39,7 @@ Server::Server()
     , m_banNick( NEVER )
     , m_banIp( NEVER )
     , m_banWarnings( true )
+    , m_lastBalance( "" )
     , m_instructionCounter( new InstructionCounter() )
     , m_lowPriorityInst( NULL )
     , m_mediumPriorityInst( NULL )
@@ -476,6 +478,32 @@ bool Server::test_for_options()
       return true;
   }
   return false;
+}
+
+bool Server::permitBalance(){
+    time_t t;
+    t = time( NULL );
+    struct tm* timeInfo;
+    timeInfo = localtime( &t );
+    char buffer[80];    //to keep result of the time
+    strftime( buffer, sizeof( buffer ), "%H:%M", timeInfo );
+    std::string time( buffer );
+    
+    if (m_lastBalance.empty()){
+        m_lastBalance = time;
+        return true;
+    }
+    
+    int hour = atoi(time.substr(0,time.find(':')).c_str());
+    int minute = atoi(time.substr(time.find(':')+1).c_str());
+    int l_hour = atoi(m_lastBalance.substr(0,m_lastBalance.find(':')).c_str());
+    int l_minute = atoi(m_lastBalance.substr(m_lastBalance.find(':')+1).c_str());
+    
+    if ( (hour*60 + minute) - (l_hour*60 + l_minute) > 5 ){
+        return true;
+        m_lastBalance = time;
+    }
+    return false;
 }
 
 std::string Server::toString()

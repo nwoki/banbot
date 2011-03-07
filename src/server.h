@@ -200,7 +200,9 @@ class Server
         void setBanWarnings( bool option );                                 // enable or disable ban warnings (see m_banWarnings).
 
 
-
+        // returns true and updates m_lastBalance
+        bool permitBalance();                                               // updates m_lastBalance, and returns true if the teambalance is permitted
+        
         // put these into scheduler and add server number to specify server to operate on
         void addPriorityInstrBlock( Server::PriorityLevel lvl, InstructionsBlock *inst );   // ADDS TO TAIL given InstructionsBlock
         void setPriorityInstrBlock( Server::PriorityLevel lvl, InstructionsBlock *inst );   // SUBSTITUTES current InstructionsBlock with the given one
@@ -226,7 +228,7 @@ class Server
         bool m_valid;                               // flag that indicates wether the server is valid or not
         std::string m_name;                         // server name
         std::string m_configFile;                   // bot config file( relative to the single server with rcon and file )
-        struct stat m_infos;                        // contains config file infotra cui la data dell'ultima modifica
+        struct stat m_infos;                        // contains config file info, as last modify time.
         std::string m_rconpass;                     // server rcon password
         std::string m_ip;                           // server ip
         int m_port;                                 // server port
@@ -240,6 +242,7 @@ class Server
         Timing m_banNick;                           // timing of nick ban.
         Timing m_banIp;                             // timing of ip ban.
         bool m_banWarnings;                         // define if BanBot has to advice in case of ip or nick ban over the timing limit.
+        std::string m_lastBalance;                  // keeps track of last teambalance done.
 
         std::vector<Player*> m_giocatori;           // vector with the info of the players currently in the server
         InstructionCounter *m_instructionCounter;   // instruction counter for server's various InstructionsBlock

@@ -184,6 +184,7 @@ private:
     void bantimewarn(char* line);
     void restart(char* line);
     void reload(char* line);
+    void balance(char* line);
 
 protected:
     bool isA(const char* line,const std::string &regex);          //testa se la riga soddisfa il regex.

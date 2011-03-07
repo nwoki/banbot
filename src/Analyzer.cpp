@@ -88,6 +88,7 @@
 #define _R_BANTIMEWARN "^ *[0-9]+:[0-9]{2} *say: +[0-9]+ +[^ \t\n\r\f\v]+: +!bantimewarn (on|off)$"
 #define _R_RESTART "^ *[0-9]+:[0-9]{2} *say: +[0-9]+ +[^ \t\n\r\f\v]+: +!restart$"
 #define _R_RELOAD "^ *[0-9]+:[0-9]{2} *say: +[0-9]+ +[^ \t\n\r\f\v]+: +!reload$"
+#define _R_BALANCE "^ *[0-9]+:[0-9]{2} *say: +[0-9]+ +[^ \t\n\r\f\v]+: +!teams$"
 
 //costruttore
 Analyzer::Analyzer(Connection* conn, Db* db, ConfigLoader* configLoader )
@@ -1450,6 +1451,8 @@ void Analyzer::help(char* line)
             phrase.append( H_WARNINGS );
         if ( level <= (*m_dati)[(*m_dati).serverNumber].commandPermission(Server::BANTIMEWARN) )
             phrase.append( H_BANTIMEWARN );
+        if ( level <= (*m_dati)[(*m_dati).serverNumber].commandPermission(Server::TEAMS) )
+            phrase.append( H_BALANCE );
 
         phrase.append( H_LEVEL );
         phrase.append( handyFunctions::intToString(level) );
@@ -1925,7 +1928,7 @@ void Analyzer::admins(char* line)
             #endif
             mex.append( database->adminRegisteredNickViaGuid( (*m_dati)[m_dati->serverNumber][t[i]]->GUID ) );
             mex.append( " l " );
-            mex.append(database->checkAuthGuid((*m_dati)[m_dati->serverNumber][t[i]]->nick));
+            mex.append( handyFunctions::intToString(database->checkAuthGuid((*m_dati)[m_dati->serverNumber][t[i]]->GUID)) );
             if (i>0 && i%2!=0)
                 mex.append("\n");
             else
@@ -2146,6 +2149,29 @@ void Analyzer::reload(char* line)
         block->say(phrase);
         block->reload();
         m_scheduler->addInstructionBlock( block, Server::MEDIUM );
+    }
+}
+
+void Analyzer::balance(char* line)
+{
+    std::cout<<"[!] Team balance";
+    (m_dati->log)->timestamp();
+    *(m_dati->log)<<"\n[!] Team balance";
+    //i check the player and his permissions, if he isn't autorized to use this command, nothing to do.
+    std::string numeroAdmin;
+    if (isAdminSay(line,numeroAdmin) <= (*m_dati)[(*m_dati).serverNumber].commandPermission(Server::TEAMS))
+    {
+        InstructionsBlock *block = new InstructionsBlock();
+        
+        #ifdef ITA
+        std::string phrase ("^0BanBot:^2 bilanciamento team ^1in corso.");
+        #else
+        std::string phrase ("^0BanBot: ^2 balancing teams.");
+        #endif
+        
+        block->say(phrase);
+        block->teamBalance();
+        m_scheduler->addInstructionBlock( block, Server::LOW );
     }
 }
 
