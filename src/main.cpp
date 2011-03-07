@@ -44,11 +44,11 @@ int main( int argc, char *argv[] )
     //pass -c to convert databases
 
     #ifdef ITA
-        std::cout<<"BanBot versione"<<_VERSION<<", un progetto open-source di [2s2h]n3m3s1s and [2s2h]Zamy,\n   Copyright © 2010\n";
+        std::cout<<"BanBot versione"<<_VERSION<<", un progetto open-source di [2s2h]n3m3s1s and [2s2h]Zamy,\n   Copyright © 2010, 2011\n";
         std::cout<<"per scopi legali, guarda la GNU General Public License:  <http://www.gnu.org/licenses/>\n\n";
         std::cout<<"Attendere, inizio a caricare questa merda...\n";
     #else
-        std::cout<<"BanBot version"<<_VERSION<<", an open-source project by [2s2h]n3m3s1s and [2s2h]Zamy,\n   Copyright © 2010\n";
+        std::cout<<"BanBot version"<<_VERSION<<", an open-source project by [2s2h]n3m3s1s and [2s2h]Zamy,\n   Copyright © 2010, 2011\n";
         std::cout<<"look at GNU General Public License for legal purposes:  <http://www.gnu.org/licenses/>\n\n";
         std::cout<<"Wait, pushing up this shit...\n";
     #endif

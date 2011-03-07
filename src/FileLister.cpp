@@ -80,10 +80,10 @@ std::vector< std::string > FileLister::configOrMapFiles( std::vector< std::strin
         int strSize = auxStr.size();
 
         if( auxStr.substr( strSize - 4 ).compare( suffix ) == 0 ) {
-            #ifdef DEBUG_MODE
+            /*#ifdef DEBUG_MODE
             std::cout << "File: " << auxStr << "\n";
             std::cout << "ending is: " << auxStr.substr( strSize - 4 ) << "\n";
-            #endif
+            #endif*/
             if( type == MAP ) {
                 if( auxStr.find( "zpak" ) == std::string::npos )
                     auxList.push_back( auxStr.substr( 0, auxStr.length()-4 ) );         // add map to list eliminating extension
@@ -92,12 +92,12 @@ std::vector< std::string > FileLister::configOrMapFiles( std::vector< std::strin
                 auxList.push_back( auxStr );                                            // add config file to list
         }
     }
-
-#ifdef DEBUG_MODE
+//TODO export to file for debug
+/*#ifdef DEBUG_MODE
     std::cout << "FileLister::configMapFiles files are: \n";
     for( unsigned int j = 0; j < auxList.size(); j++ )
         std::cout << auxList.at( j ) << "\n";
-#endif
+#endif*/
     return auxList;
 }
 

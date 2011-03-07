@@ -1454,6 +1454,8 @@ void Analyzer::help(char* line)
             phrase.append( H_BANTIMEWARN );
         if ( level <= (*m_dati)[(*m_dati).serverNumber].commandPermission(Server::TEAMS) )
             phrase.append( H_BALANCE );
+        if ( level <= (*m_dati)[(*m_dati).serverNumber].commandPermission(Server::GRAVITY) )
+            phrase.append( H_GRAVITY );
 
         phrase.append( H_LEVEL );
         phrase.append( handyFunctions::intToString(level) );
@@ -2211,12 +2213,14 @@ void Analyzer::gravity(char* line)
         {
             (*m_dati)[(*m_dati).serverNumber].setBanWarnings(false);
             phrase.append("800^1."); 
+            block->gravity("800");
         }
         else
         {
             (*m_dati)[(*m_dati).serverNumber].setBanWarnings(true);
             phrase.append(option);
             phrase.append("^1.");
+            block->gravity(option);
         }
         
         block->say(phrase);

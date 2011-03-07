@@ -326,6 +326,7 @@ class InstructionsBlock
                         t.score = atoi(temp.substr(pos,end-pos).c_str());
                         players.push_back(t);
                         pos = temp.find_first_of("\n",end);
+                        pos = temp.find_first_of("0123456789",pos);
                     }
                     
                     //order them
