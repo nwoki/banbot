@@ -332,7 +332,7 @@ void ConfigLoader::loadOptions()
                                     newServer->setDbFolder( t );
                                 }
 
-                                else if ( isA( temp, (char*)"^[ \t]*STRICT_LEVEL[ \t]*=[ \t]*[0-2]{1}$" ) )
+                                else if ( isA( temp, (char*)"^[ \t]*STRICT_LEVEL[ \t]*=[ \t]*[0-5]{1}$" ) )
                                     newServer->setStrict( atoi( extract( temp ).c_str() ) );
 
                                 else if ( temp.compare("EXTERNAL_OPTIONS = YES") == 0 )

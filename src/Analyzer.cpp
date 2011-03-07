@@ -458,9 +458,10 @@ void Analyzer::clientUserInfo(char* line)
             else
             {
                 //advanced checks:
-                if ( (*m_dati)[m_dati->serverNumber].strict() >= LEVEL3 && !isA( line,_R_COMPLETE_CLIENT_USER_INFO ) )
+                //TODO implement and activate
+                if ( (*m_dati)[m_dati->serverNumber].strict() >= LEVEL6 && !isA( line,_R_COMPLETE_CLIENT_USER_INFO ) )
                 {
-                    if ( (*m_dati)[m_dati->serverNumber].strict() >= LEVEL4 )
+                    if ( (*m_dati)[m_dati->serverNumber].strict() >= LEVEL5 )
                     {
                         //automated action
                         #ifdef ITA
