@@ -67,7 +67,7 @@
 #define _R_MUTE " *[0-9]+:[0-9]{2} *say: +[0-9]+ +[^ \t\n\r\f\v]+: +!mute [^ \t\n\r\f\v]+$"
 #define _R_MUTE_ALL "^ *[0-9]+:[0-9]{2} *say: +[0-9]+ +[^ \t\n\r\f\v]+: +!mute (all|ALL)$"
 #define _R_MUTE_NUMBER "^ *[0-9]+:[0-9]{2} *say: +[0-9]+ +[^ \t\n\r\f\v]+: +!mute [0-9]{1,2}$"
-#define _R_STRICT "^ *[0-9]+:[0-9]{2} *say: +[0-9]+ +[^ \t\n\r\f\v]+: +!strict (OFF|off|[0-6]{1})$"
+#define _R_STRICT "^ *[0-9]+:[0-9]{2} *say: +[0-9]+ +[^ \t\n\r\f\v]+: +!strict (OFF|off|[0-5]{1})$"
 #define _R_VETO "^ *[0-9]+:[0-9]{2} *say: +[0-9]+ +[^ \t\n\r\f\v]+: +!veto$"
 #define _R_SLAP "^ *[0-9]+:[0-9]{2} *say: +[0-9]+ +[^ \t\n\r\f\v]+: +!slap [^\t\n\r\f\v]+$"
 #define _R_SLAP_NUMBER "^ *[0-9]+:[0-9]{2} *say: +[0-9]+ +[^ \t\n\r\f\v]+: +!slap [0-9]{1,2}"
@@ -90,6 +90,8 @@
 #define _R_RELOAD "^ *[0-9]+:[0-9]{2} *say: +[0-9]+ +[^ \t\n\r\f\v]+: +!reload$"
 #define _R_BALANCE "^ *[0-9]+:[0-9]{2} *say: +[0-9]+ +[^ \t\n\r\f\v]+: +!balance$"
 #define _R_GRAVITY "^ *[0-9]+:[0-9]{2} *say: +[0-9]+ +[^ \t\n\r\f\v]+: +!grav ([0-9]{1,4}|off)$"
+#define _R_CHANGELEVEL "^ *[0-9]+:[0-9]{2} *say: +[0-9]+ +[^ \t\n\r\f\v]+: +!level [^ \t\n\r\f\v]+ [0-9]{1,2}$"
+#define _R_CHANGELEVEL_NUMBER "^ *[0-9]+:[0-9]{2} *say: +[0-9]+ +[^ \t\n\r\f\v]+: +!level [0-9]+ [0-9]{1,2}$"
 
 //costruttore
 Analyzer::Analyzer(Connection* conn, Db* db, ConfigLoader* configLoader )
@@ -2228,6 +2230,83 @@ void Analyzer::gravity(char* line)
         m_scheduler->addInstructionBlock( block, Server::MEDIUM );
     }
 }
+
+void Analyzer::changeLevel(char* line)
+{
+    std::cout<<"[!] Change admin level";
+    (m_dati->log)->timestamp();
+    *(m_dati->log)<<"\n[!] Change admin level";
+    
+    std::string numeroAdmin;
+    int level = isAdminSay(line,numeroAdmin);
+    if (level <= (*m_dati)[(*m_dati).serverNumber].commandPermission(Server::CHANGELEVEL))
+    {
+        InstructionsBlock * block = new InstructionsBlock();
+        std::string id=0;
+        //take the id or the number of the admin that i have to modify.
+        std::string temp(line);
+        int pos=temp.find("!level");
+        pos=temp.find_first_not_of(" \t\n\r\f\v",pos+6);
+        int end=temp.find_first_of(" \t\n\r\f\v",pos);
+        std::string player=temp.substr(pos,end-pos);
+        pos=temp.find_first_of("0123456789",end);
+        end=temp.find_first_of(" \t\n\r\f\v",pos);
+        std::string newOpLevel=temp.substr(pos, end-pos);
+        //check the level
+        int opLevel=atoi(newOpLevel.c_str());
+        //TODO sbagliato, devo guardare più avanti il livello
+        if ( level <= opLevel )
+        {
+            //i don't permit an highter level of the admin
+            if ( opLevel < level ){ 
+                opLevel = level;
+                newOpLevel = handyFunctions::intToString(opLevel);
+            }
+            
+            if (isA(line,_R_CHANGELEVEL_NUMBER)) //i already have the id if the admin's record
+                id = player;
+            else{ //try to find the player
+                i = translatePlayer( player );
+            }
+            if (i<0)
+                #ifdef ITA
+                block->tell("^1Errore: nick non univoco o giocatore non trovato.",numeroAdmin);
+            #else
+            block->tell("^1Error: nick not unique or player not found.",numeroAdmin);
+            #endif
+            else
+            {
+                if( database->addOp((*m_dati)[m_dati->serverNumber][i]->nick,(*m_dati)[m_dati->serverNumber][i]->GUID, newOpLevel) )
+                {
+                    std::string phrase ( "^0BanBot: ^1" );
+                    phrase.append( (*m_dati)[m_dati->serverNumber][i]->nick );
+                    #ifdef ITA
+                    phrase.append(" aggiunto con successo agli admin, livello ");
+                    #else
+                    phrase.append(" successfully added to admin list, level ");
+                    #endif
+                    phrase.append ( newOpLevel );
+                    block->tell( phrase, numeroAdmin );
+                }
+                else
+                    #ifdef ITA
+                    block->tell("^1Fail: player non aggiunto alla lista admin.",numeroAdmin);
+                #else
+                block->tell("^1Fail: player not added to admin list.",numeroAdmin);
+                #endif
+            }
+        }
+        else
+        {
+            #ifdef ITA
+            block->tell("^0BanBot: ^1permessi insufficienti per modificare questo admin.",numeroAdmin);
+            #else
+            block->tell("^0BanBot: ^1insufficient permissions to modify this admin.",numeroAdmin);
+            #endif
+        }
+        m_scheduler->addInstructionBlock( block, Server::MEDIUM );
+    }
+}
 /*************************************************************************** UTILS **************************************/
 
 void Analyzer::getDateAndTime(std::string &data,std::string &ora)
@@ -2581,7 +2660,6 @@ int Analyzer::findPlayer( std::string number )
 //main loop
 void Analyzer::main_loop()
 {
-    InstructionsBlock * block = new InstructionsBlock();
     #ifdef ITA
         std::cout<<"\e[0;32m[OK] BanBot avviato. \e[0m \n\n";
         *(m_dati->errors)<<"[OK] BanBot avviato.\n\n";
@@ -2596,30 +2674,46 @@ void Analyzer::main_loop()
         //vedo è il caso di fare il backup
         if(backup->doJobs())
         {
-            //eseguito il backup. Reload dei server
-            block->reload();//block->reload(true);
-            m_scheduler->addInstructionBlock( block, Server::MEDIUM );
-            sleep(4);
-            //e azzero anche la linea dove ero arrivato, se ha fatto il backup del file
+            //backup done, reload of servers,
+            for (m_dati->serverNumber = 0; m_dati->serverNumber < m_dati->size(); m_dati->serverNumber++)
+            {
+                InstructionsBlock * block = new InstructionsBlock();
+                #ifdef ITA
+                block->say("^0BanBot: ^2ATTENZIONE: ^1inizio backup, il server verra' riavviato a breve.");
+                #else
+                block->say("^0BanBot: ^2WARNING: ^1starting backup, this server will be restarted shortly.");
+                #endif
+                m_scheduler->addInstructionBlock( block, Server::HIGH );
+            }
+            while (m_scheduler->executeInstructions()){}
+            sleep(2);
+            for (m_dati->serverNumber = 0; m_dati->serverNumber < m_dati->size(); m_dati->serverNumber++)
+            {
+                InstructionsBlock * block = new InstructionsBlock();
+                block->reload();
+                m_scheduler->addInstructionBlock( block, Server::HIGH );
+            }
+            //if the backup gone successfully, i'll reset the log line pointer.
             for (unsigned int i=0;i<m_dati->size();i++)
             {
                 log=new std::ifstream();
                 log->open((*m_dati)[i].botLog().c_str());
                 if (log->is_open())
                 {
-                    //se il file è aperto, controllo la dimensione
+                    //if the file is open i'll check his dimension
                     log->seekg (0, std::ios::end);
-                    if (log->tellg ()<(*m_dati)[i].row()) (*m_dati)[i].setRow(0);
+                    if (log->tellg()<(*m_dati)[i].row()) (*m_dati)[i].setRow(0);
                 }
-                //altrimenti se non c'è il file, sono già sicuro che il backup è stato fatto.
+                //if the file is not found, just reset the counter.
                 else (*m_dati)[i].setRow(0);
                 log->close();
                 delete log;
+                //log was interrupted: i'll reset player, eventually re-catched when i'll start to analyze the log again.
                 for (unsigned int j=0;j<(*m_dati)[i].size();j++) delete (*m_dati)[i][j];
                 //resetto il vector:
                 (*m_dati)[i].clear();
-                m_dati->serverNumber=0;
             }
+            m_dati->serverNumber=0;
             sleep(2);
         }
 
