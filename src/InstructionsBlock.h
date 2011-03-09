@@ -321,11 +321,11 @@ class InstructionsBlock
                         int end = temp.find_first_not_of("0123456789",pos);
                         Info t;
                         t.number = temp.substr(pos,end-pos);
-                        pos = temp.find_first_of("0123456789",end);
-                        end = temp.find_first_not_of("0123456789",pos);
+                        pos = temp.find_first_of("-0123456789",end);
+                        end = temp.find_first_not_of("-0123456789",pos);
                         t.score = atoi(temp.substr(pos,end-pos).c_str());
                         players.push_back(t);
-                        pos = temp.find_first_of("\n",end);
+                        pos = temp.find_first_of("\n\0",end);
                         pos = temp.find_first_of("0123456789",pos);
                     }
                     

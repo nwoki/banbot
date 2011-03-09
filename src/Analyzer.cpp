@@ -88,7 +88,7 @@
 #define _R_BANTIMEWARN "^ *[0-9]+:[0-9]{2} *say: +[0-9]+ +[^ \t\n\r\f\v]+: +!bantimewarn (on|off)$"
 #define _R_RESTART "^ *[0-9]+:[0-9]{2} *say: +[0-9]+ +[^ \t\n\r\f\v]+: +!restart$"
 #define _R_RELOAD "^ *[0-9]+:[0-9]{2} *say: +[0-9]+ +[^ \t\n\r\f\v]+: +!reload$"
-#define _R_BALANCE "^ *[0-9]+:[0-9]{2} *say: +[0-9]+ +[^ \t\n\r\f\v]+: +!teams$"
+#define _R_BALANCE "^ *[0-9]+:[0-9]{2} *say: +[0-9]+ +[^ \t\n\r\f\v]+: +!balance$"
 #define _R_GRAVITY "^ *[0-9]+:[0-9]{2} *say: +[0-9]+ +[^ \t\n\r\f\v]+: +!grav ([0-9]{1,4}|off)$"
 
 //costruttore
@@ -2163,7 +2163,7 @@ void Analyzer::balance(char* line)
     *(m_dati->log)<<"\n[!] Team balance";
     //i check the player and his permissions, if he isn't autorized to use this command, nothing to do.
     std::string numeroAdmin;
-    if (isAdminSay(line,numeroAdmin) <= (*m_dati)[(*m_dati).serverNumber].commandPermission(Server::TEAMS))
+    if (isAdminSay(line,numeroAdmin) <= (*m_dati)[(*m_dati).serverNumber].commandPermission(Server::TEAMBALANCE))
     {
         InstructionsBlock *block = new InstructionsBlock();
         if ( m_dati->currentServer()->permitBalance() ){

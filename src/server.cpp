@@ -500,9 +500,9 @@ bool Server::permitBalance(){
     int l_hour = atoi(m_lastBalance.substr(0,m_lastBalance.find(':')).c_str());
     int l_minute = atoi(m_lastBalance.substr(m_lastBalance.find(':')+1).c_str());
     
-    if ( (hour*60 + minute) - (l_hour*60 + l_minute) > 5 ){
-        return true;
+    if ( (hour*60 + minute) - (l_hour*60 + l_minute) > 5 || (hour*60 + minute) - (l_hour*60 + l_minute) < 0 ){
         m_lastBalance = time;
+        return true;
     }
     return false;
 }

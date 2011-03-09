@@ -106,8 +106,9 @@
     #define H_BANTIMEWARN "^2!bantimewarn <on/off> ^1: avvisi per vecchi ban su nick/ip\n"
     #define H_RESTART "^2!restart ^1: ricomincia la partita corrente.\n"
     #define H_RELOAD "^2!reload ^1: ricarica la mappa corrente.\n"
-    #define H_BALANCE "^2!teams ^1: riequilibra le squadre.\n"
+    #define H_BALANCE "^2!balance ^1: riequilibra le squadre.\n"
     #define H_GRAVITY "^2!grav <livello/off> ^1: cambia la gravita'.\n"
+    #define H_CHANGELEVEL "^2!level <nome/id> <livello> ^1: cambia il livello di un admin.\n"
 #else
     #define COMMANDLIST "^1You can use these commands:\n"
     #define H_LEVEL "^1Your level is ^2"
@@ -134,8 +135,9 @@
     #define H_BANTIMEWARN "^2!bantimewarn <on/off> ^1: warnings for old nick/ip bans\n"
     #define H_RESTART "^2!restart ^1: restart the current game.\n"
     #define H_RELOAD "^2!reload ^1: reload the current map.\n"
-    #define H_BALANCE "^2!teams ^1: balance teams.\n"
+    #define H_BALANCE "^2!balance ^1: balance teams.\n"
     #define H_GRAVITY "^2!grav <level/off> ^1: change gravity.\n"
+    #define H_CHANGELEVEL "^2!level <nick/id> <level> ^1: change the admin's level.\n"
 #endif
 
 class Analyzer

@@ -74,7 +74,7 @@ class Server
             BANTIMEWARN,
             RESTART,
             RELOAD,
-            TEAMS,
+            TEAMBALANCE,
             GRAVITY
         };
 
