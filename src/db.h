@@ -43,6 +43,56 @@ class Logger;
 class Db
 {
     public:
+
+        //  structs for ANALYZER'S custom queries
+        struct idNickStruct
+        {
+            std::string id, nick, level;
+
+            idNickStruct( const std::string &id = std::string()
+                        , const std::string &nick = std::string()
+                        , const std::string &lvl = std::string() )
+            : id( id )
+            , nick( nick )
+            , level( lvl )
+            {}
+
+            bool isValid() const
+            {
+                if( id.empty() || nick.empty() || level.empty() )
+                    return false;
+                else
+                    return true;
+            }
+        };
+
+        struct idMotiveStruct
+        {
+            std::string id, motive, date, time;
+
+            idMotiveStruct( const std::string &id, const std::string &motive
+            , const std::string &date, const std::string &time )
+            : id( id )
+            , motive( motive )
+            , date( date )
+            , time( time )
+            {}
+        };
+
+        struct idNickMotiveAuthorStruct
+        {
+            std::string id, nick, motive, author;
+
+            idNickMotiveAuthorStruct( const std::string &id, const std::string &nick
+            , const std::string &motive, const std::string &author )
+            : id( id )
+            , nick( nick )
+            , motive( motive )
+            , author( author )
+            {}
+        };
+
+
         Db( ConfigLoader::Options* conf );
         ~Db();
 
@@ -79,44 +129,6 @@ class Db
         bool modifyOp( const std::string &id, const std::string &nick, const std::string &guid, const std::string &opLvl );  // modifies op's "nick" and/or "guid" and/or "op level" where "id" finds a match
         bool deleteOp( const std::string &id );                                                               // deletes records for op with given "id"
 
-        //  structs for ANALYZER'S custom queries
-        struct idNickStruct
-        {
-            std::string id, nick, level;
-
-            idNickStruct( const std::string &id, const std::string &nick, const std::string &lvl )
-                : id( id )
-                , nick( nick )
-                , level( lvl )
-            {}
-        };
-
-        struct idMotiveStruct
-        {
-            std::string id, motive, date, time;
-
-            idMotiveStruct( const std::string &id, const std::string &motive
-                          , const std::string &date, const std::string &time )
-                : id( id )
-                , motive( motive )
-                , date( date )
-                , time( time )
-            {}
-        };
-
-        struct idNickMotiveAuthorStruct
-        {
-            std::string id, nick, motive, author;
-
-            idNickMotiveAuthorStruct( const std::string &id, const std::string &nick
-                                    , const std::string &motive, const std::string &author )
-                : id( id )
-                , nick( nick )
-                , motive( motive )
-                , author( author )
-            {}
-        };
-
         // id motive
         std::vector< idMotiveStruct > idMotiveViaGuid( const std::string &guid ); // returns id, motive, date and time of a ban by looking up the guid
         std::vector< idMotiveStruct > idMotiveViaIp( const std::string &ip );     // returns id, motive, date and time of a ban by looking up the ip
@@ -124,9 +136,10 @@ class Db
 
         /* custom queries for analyzer */
         //"how many?" queries
-        std::string autoBanned();                                        // returns how many users have been autobanned by the bot
-        std::string banned();                                            // returns how many have been banned
-        std::string ops();                                               // returns how many ops are registered to the bot
+        std::string autoBanned();                           /** returns how many users have been autobanned by the bot */
+        std::string banned();                               /** returns how many have been banned */
+        std::string ops();                                  /** returns how many ops are registered to the bot */
+        idNickStruct opStruct( const std::string &id );     /** get op's idNickStruct from his id */
 
         std::string adminRegisteredNickViaGuid( const std::string &guid );    // returns the nick which with the admin is registered to the bot
 
