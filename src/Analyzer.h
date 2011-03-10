@@ -55,7 +55,7 @@
 #include "Scheduler.h"
 #include "FileLister.h"
 
-#define _VERSION "1.2"
+#define _VERSION "1.2b1"
 
 //tempi di attesa tra un giro e l'altro nell'analisi dei log (più è basso, più alto sarà il consumo (e spreco) di risorse,
 //d'altro canto più alto è, maggiore sarà il tempo di risposta del bot).
@@ -190,6 +190,7 @@ private:
     void reload(char* line);
     void balance(char* line);
     void gravity(char* line);
+    void changeLevel(char* line);
 
 protected:
     bool isA(const char* line,const std::string &regex);          //testa se la riga soddisfa il regex.

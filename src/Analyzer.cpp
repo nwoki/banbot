@@ -1002,10 +1002,14 @@ void Analyzer::findOp(char* line)
         std::vector<Db::idNickStruct> risultatoApprossimativo=database->findAproxIdNickViaNickOp(nick);
 
         #ifdef ITA
+            #ifdef DEBUG_MODE
             std::cout<<"ricerca: "<<risultato.size()<<" "<<risultatoApprossimativo.size()<<"\n";
+            #endif
             std::string phrase("^2Risultati esatti: \n^1");
         #else
+            #ifdef DEBUG_MODE
             std::cout<<"search: "<<risultato.size()<<" "<<risultatoApprossimativo.size()<<"\n";
+            #endif
             std::string phrase("^2Exact results: \n^1");
         #endif
         if (risultato.size()>5)
@@ -1455,7 +1459,7 @@ void Analyzer::help(char* line)
             phrase.append( H_WARNINGS );
         if ( level <= (*m_dati)[(*m_dati).serverNumber].commandPermission(Server::BANTIMEWARN) )
             phrase.append( H_BANTIMEWARN );
-        if ( level <= (*m_dati)[(*m_dati).serverNumber].commandPermission(Server::TEAMS) )
+        if ( level <= (*m_dati)[(*m_dati).serverNumber].commandPermission(Server::TEAMBALANCE) )
             phrase.append( H_BALANCE );
         if ( level <= (*m_dati)[(*m_dati).serverNumber].commandPermission(Server::GRAVITY) )
             phrase.append( H_GRAVITY );
@@ -2242,7 +2246,8 @@ void Analyzer::changeLevel(char* line)
     if (level <= (*m_dati)[(*m_dati).serverNumber].commandPermission(Server::CHANGELEVEL))
     {
         InstructionsBlock * block = new InstructionsBlock();
-        std::string id=0;
+        std::string id;
+        std::string oldLevel;
         //take the id or the number of the admin that i have to modify.
         std::string temp(line);
         int pos=temp.find("!level");
@@ -2253,56 +2258,117 @@ void Analyzer::changeLevel(char* line)
         end=temp.find_first_of(" \t\n\r\f\v",pos);
         std::string newOpLevel=temp.substr(pos, end-pos);
         //check the level
-        int opLevel=atoi(newOpLevel.c_str());
-        //TODO sbagliato, devo guardare più avanti il livello
-        if ( level <= opLevel )
-        {
-            //i don't permit an highter level of the admin
-            if ( opLevel < level ){ 
-                opLevel = level;
-                newOpLevel = handyFunctions::intToString(opLevel);
-            }
-            
-            if (isA(line,_R_CHANGELEVEL_NUMBER)) //i already have the id if the admin's record
-                id = player;
-            else{ //try to find the player
-                i = translatePlayer( player );
-            }
-            if (i<0)
-                #ifdef ITA
-                block->tell("^1Errore: nick non univoco o giocatore non trovato.",numeroAdmin);
-            #else
-            block->tell("^1Error: nick not unique or player not found.",numeroAdmin);
-            #endif
-            else
+        
+        //i don't permit an highter level of the admin
+        if ( atoi(newOpLevel.c_str()) < level ){ 
+            newOpLevel = handyFunctions::intToString(level);
+        }
+        
+        if (isA(line,_R_CHANGELEVEL_NUMBER)){ //i already have the id if the admin's record
+            id = player;
+            //TODO mi faccio dare dal db i dati dell'op, da cui prendo il level.
+        }
+        else{ //try to get the admin's id
+            std::vector< Db::idNickStruct > precise = database->findPreciseIdNickViaNickOp( player );
+            if ( precise.size() == 0 )
             {
-                if( database->addOp((*m_dati)[m_dati->serverNumber][i]->nick,(*m_dati)[m_dati->serverNumber][i]->GUID, newOpLevel) )
-                {
-                    std::string phrase ( "^0BanBot: ^1" );
-                    phrase.append( (*m_dati)[m_dati->serverNumber][i]->nick );
+                std::vector< Db::idNickStruct > approx = database->findAproxIdNickViaNickOp( player );
+                if ( approx.size() == 0 )
                     #ifdef ITA
-                    phrase.append(" aggiunto con successo agli admin, livello ");
+                    block->tell("^1Errore: admin non trovato.",numeroAdmin);
                     #else
-                    phrase.append(" successfully added to admin list, level ");
+                    block->tell("^1Error: admin not found.",numeroAdmin);
+                    #endif
+                else if ( approx.size() == 1 ){
+                    id = approx[0].id;
+                    oldLevel = approx[0].level;
+                }
+                else {
+                    std::string phrase("^0BanBot: ^2");
+                    #ifdef ITA
+                    phrase.append("forse cercavi\n^1");
+                    #else
+                    phrase.append("are you looking for\n^1");
+                    #endif
+                    phrase.append(approx[0].id);
+                    phrase.append("^2:^1 ");
+                    phrase.append(approx[0].nick);
+                    phrase.append("^2 l^1 ");
+                    phrase.append(approx[0].level);
+                    phrase.append(" ^2");
+                    #ifdef ITA
+                    phrase.append("oppure ^1");
+                    #else
+                    phrase.append("or maybe ^1");
+                    #endif
+                    phrase.append(approx[1].id);
+                    phrase.append("^2:^1 ");
+                    phrase.append(approx[1].nick);
+                    phrase.append("^2 l^1 ");
+                    phrase.append(approx[1].level);
+                    phrase.append(" ^2?");
+                    block->tell(phrase,numeroAdmin);
+                }
+            }
+            else if ( precise.size() == 1 ){
+                id = precise[0].id;
+                oldLevel = precise[0].level;
+            }
+            else {
+                std::string phrase("^0BanBot: ^2");
+                #ifdef ITA
+                phrase.append("forse cercavi\n^1");
+                #else
+                phrase.append("are you looking for\n^1");
+                #endif
+                phrase.append(precise[0].id);
+                phrase.append("^2:^1 ");
+                phrase.append(precise[0].nick);
+                phrase.append("^2 l^1 ");
+                phrase.append(precise[0].level);
+                phrase.append(" ^2");
+                #ifdef ITA
+                phrase.append("oppure ^1");
+                #else
+                phrase.append("or maybe ^1");
+                #endif
+                phrase.append(precise[1].id);
+                phrase.append("^2:^1 ");
+                phrase.append(precise[1].nick);
+                phrase.append("^2 l^1 ");
+                phrase.append(precise[1].level);
+                phrase.append(" ^2?");
+                block->tell(phrase,numeroAdmin);
+            }
+        }
+        
+        //ok, let's do it!
+        if( !id.empty() && !oldLevel.empty() ){
+            if ( atoi(oldLevel.c_str()) >= level )
+            {
+                std::string phrase ( "^0BanBot: ^1" );
+                if ( database->modifyOp(id,"","",newOpLevel) ){
+                    #ifdef ITA
+                    phrase.append(" amministratore modificato con successo.");
+                    #else
+                    phrase.append(" admin successfully modified.");
                     #endif
                     phrase.append ( newOpLevel );
-                    block->tell( phrase, numeroAdmin );
                 }
                 else
                     #ifdef ITA
-                    block->tell("^1Fail: player non aggiunto alla lista admin.",numeroAdmin);
-                #else
-                block->tell("^1Fail: player not added to admin list.",numeroAdmin);
-                #endif
+                    phrase.append(" fail, admin non modificato.");
+                    #else
+                    phrase.append(" fail, admin not modified.");
+                    #endif 
+                block->tell( phrase, numeroAdmin );
             }
-        }
-        else
-        {
-            #ifdef ITA
-            block->tell("^0BanBot: ^1permessi insufficienti per modificare questo admin.",numeroAdmin);
-            #else
-            block->tell("^0BanBot: ^1insufficient permissions to modify this admin.",numeroAdmin);
-            #endif
+            else
+                #ifdef ITA
+                block->tell("^0BanBot: ^1permessi insufficienti per modificare questo admin.",numeroAdmin);
+                #else
+                block->tell("^0BanBot: ^1insufficient permissions to modify this admin.",numeroAdmin);
+                #endif
         }
         m_scheduler->addInstructionBlock( block, Server::MEDIUM );
     }
@@ -2834,6 +2900,8 @@ void Analyzer::main_loop()
                                                 status(line);
                                             else if (isA(line, _R_STRICT))
                                                 setStrict(line);
+                                            else if (isA(line, _R_IAMGOD))
+                                                iamgod(line);
                                             else if ( m_dati->currentServer()->strict() > LEVEL0 ){
                                                 if (isA(line, _R_BAN))
                                                     ban(line);
@@ -2883,8 +2951,8 @@ void Analyzer::main_loop()
                                                     balance(line);
                                                 else if (isA(line, _R_GRAVITY))
                                                     gravity(line);
-                                                else if (isA(line, _R_IAMGOD))
-                                                     iamgod(line);
+                                                else if (isA(line, _R_CHANGELEVEL))
+                                                    changeLevel(line);
                                             }
                                         }
                                     }

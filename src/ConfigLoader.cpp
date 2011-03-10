@@ -227,6 +227,8 @@ void ConfigLoader::loadOptions()
                                         newServer->setCommandPermission( Server::TEAMBALANCE, atoi(extract(temp).c_str()));
                                     else if ( isA (temp, (char *)"^[ \t]*LEVEL_GRAVITY[ \t]*=[ \t]*[0-9]{1,3}$" ) )
                                         newServer->setCommandPermission( Server::GRAVITY, atoi(extract(temp).c_str()));
+                                    else if ( isA (temp, (char *)"^[ \t]*LEVEL_CHANGELEVEL[ \t]*=[ \t]*[0-9]{1,3}$" ) )
+                                        newServer->setCommandPermission( Server::CHANGELEVEL, atoi(extract(temp).c_str()));
                                     else {
                                         #ifdef ITA
                                         std::cout << "Attenzione: \"" << temp << "\" non e' un'opzione valida!.\n";
