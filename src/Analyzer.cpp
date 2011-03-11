@@ -704,12 +704,12 @@ void Analyzer::ban(char* line)
         else
         {
             #ifdef ITA
-                std::cout<<"  [!]fail: giocatore non in gioco (o nick sbagliato) o già bannato\n";
-                *(m_dati->log)<<"  [!]fail: giocatore non in gioco (o nick sbagliato) o già bannato\n";
+                std::cout<<"  [!]fail: giocatore sconosciuto o già bannato\n";
+                *(m_dati->log)<<"  [!]fail: giocatore sconosciuto o già bannato\n";
                 block->tell("^1Banning error: numero del giocatore sbagliato o nick non univoco.",numeroAdmin);
             #else
-                std::cout<<"  [!]fail: player not in-game (or wrong nick) or already banned\n";
-                *(m_dati->log)<<"  [!]fail: player not in-game (or wrong nick) or already banned\n";
+                std::cout<<"  [!]fail: unknown user or already banned\n";
+                *(m_dati->log)<<"  [!]fail: unknown user or already banned\n";
                 block->tell("^1Banning error: number of the player wrong or nick non unique.",numeroAdmin);
             #endif
         }
@@ -2257,7 +2257,6 @@ void Analyzer::changeLevel(char* line)
         pos=temp.find_first_of("0123456789",end);
         end=temp.find_first_of(" \t\n\r\f\v",pos);
         std::string newOpLevel=temp.substr(pos, end-pos);
-        //check the level
         
         //i don't permit an highter level of the admin
         if ( atoi(newOpLevel.c_str()) < level ){ 
@@ -2710,9 +2709,9 @@ int Analyzer::findPlayer( std::string number )
     bool nonTrovato = true;
     int index = -1;
 
-    for (unsigned int i=0; nonTrovato &&  (i<(*m_dati)[m_dati->serverNumber].size()); i++)
+    for (unsigned int i=0; nonTrovato && ( i<(*m_dati)[m_dati->serverNumber].size() ); i++)
     {
-        if ((*m_dati)[m_dati->serverNumber][i]->number.compare(number)==0)
+        if ((*m_dati)[m_dati->serverNumber][i]->number.compare(number) == 0)
         {
             index=i;
             nonTrovato=false;
