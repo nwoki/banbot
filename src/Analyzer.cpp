@@ -2265,7 +2265,7 @@ void Analyzer::changeLevel(char* line)
         
         if (isA(line,_R_CHANGELEVEL_NUMBER)){ //i already have the id if the admin's record
             id = player;
-            //TODO mi faccio dare dal db i dati dell'op, da cui prendo il level.
+            oldLevel = database->opStruct(id).level;
         }
         else{ //try to get the admin's id
             std::vector< Db::idNickStruct > precise = database->findPreciseIdNickViaNickOp( player );
