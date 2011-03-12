@@ -950,6 +950,18 @@ std::string Db::ops()
     return handyFunctions::intToString( resultQuery( query ) );
 }
 
+Db::idNickStruct Db::opStruct( const std::string &id )
+{
+    std::string query( "select nick, level from oplist where id='" + id + "';" );
+
+    if( execQuery( query ) ) {
+        if( !m_data.empty() )
+            return idNickStruct( id, m_data[0], m_data[1] );
+    }
+    else    // return empty admin
+        return idNickStruct();
+}
+
 std::string Db::adminRegisteredNickViaGuid( const std::string& guid )
 {
     std::string query( "select nick from oplist where guid='" );
