@@ -32,6 +32,7 @@
 #include <netdb.h>
 #include <string.h>
 #include <sys/socket.h>
+#include <arpa/inet.h>
 #include "ConfigLoader.h"
 #include <stdlib.h>
 
