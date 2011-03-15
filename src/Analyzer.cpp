@@ -41,9 +41,9 @@
 //regex defines:
 #define _R_NUMBER "^[0-9]+$"
 
-#define _R_CLIENT_CONNECT " *[0-9]+:[0-9]{2} +ClientConnect:"
-#define _R_CLIENT_USER_INFO " *[0-9]+:[0-9]{2} +ClientUserinfo:"
-#define _R_COMPLETE_CLIENT_USER_INFO " *[0-9]+:[0-9]{2} +ClientUserinfo: +[0-9]+ +\\ip\\[0-9]{1,3}.[0-9]{1,3}.[0-9]{1,3}.[0-9]{1,3}:[0-9]{1,6}\\name\\[^ \t\n\r\f\v]+\\racered\
+#define _R_CLIENT_CONNECT " *[0-9]+:[0-9]{2} *ClientConnect:"
+#define _R_CLIENT_USER_INFO " *[0-9]+:[0-9]{2} *ClientUserinfo:"
+#define _R_COMPLETE_CLIENT_USER_INFO " *[0-9]+:[0-9]{2} *ClientUserinfo: +[0-9]+ +\\ip\\[0-9]{1,3}.[0-9]{1,3}.[0-9]{1,3}.[0-9]{1,3}:[0-9]{1,6}\\name\\[^ \t\n\r\f\v]+\\racered\
 \\[0-9]{1}\\raceblue\\[0-9]{1}\\rate\\[0-9]+\\ut_timenudge\\[0-9]+\\cg_rgb\\[0-9]{1,3} [0-9]{1,3} [0-9]{1,3}\\cg_predictitems\\[01]{1}\\cg_physics\\[01]{1}\\snaps\\[0-9]{1,2}\\model\\[^ \t\n\r\f\v]+\
 \\headmodel\\[^ \t\n\r\f\v]+\\team_model\\[^ \t\n\r\f\v]+\\team_headmodel\\[^ \t\n\r\f\v]+\\color1\\[0-9]{1,2}\\color2\\[0-9]{1,2}\\handicap\\100\\sex\\[^ \t\n\r\f\v]+\\cl_anonymous\\[01]{1}\
 \\gear\\[^ \t\n\r\f\v]+\\teamtask\\[0-9]+\\cl_guid\\[A-F0-9]{32}\\weapmodes\\[0-2]{20}"

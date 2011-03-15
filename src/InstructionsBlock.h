@@ -310,15 +310,19 @@ class InstructionsBlock
                 {
                     std::string temp = conn->status( server );
                     
+                    #ifdef DEBUG_MODE
+                    std::cout<<temp;
+                    #endif
+                    
                     unsigned int pos = temp.find("rate");
                     
                     //i'll catch every player's number and score.
-                    pos = temp.find_first_of("0123456789",pos);
+                    pos = temp.find_first_of("-0123456789\0",pos);
                     
                     std::vector<Info> players;
                     while (pos < temp.size() && pos > 0 )
                     {
-                        int end = temp.find_first_not_of("0123456789",pos);
+                        int end = temp.find_first_not_of("0123456789\0",pos);
                         Info t;
                         t.number = temp.substr(pos,end-pos);
                         pos = temp.find_first_of("-0123456789",end);
@@ -326,14 +330,14 @@ class InstructionsBlock
                         t.score = atoi(temp.substr(pos,end-pos).c_str());
                         players.push_back(t);
                         pos = temp.find_first_of("\n\0",end);
-                        pos = temp.find_first_of("0123456789",pos);
+                        pos = temp.find_first_of("0123456789\0",pos);
                     }
                     
                     //order them
                     unsigned int indexes [players.size()];
                     for (unsigned int i=0; i<players.size(); i++) indexes[i] = i;
-                    for (unsigned int i=0; i<players.size()-2; i++)
-                        for (unsigned int j=i+1; j<players.size()-1; j++)
+                    for (unsigned int i=0; i<players.size()-1; i++)
+                        for (unsigned int j=i+1; j<players.size(); j++)
                         {
                             if (players.at(i).score < players.at(j).score)
                             {
@@ -343,13 +347,13 @@ class InstructionsBlock
                             }
                         }
                         
-                        for (unsigned int i=0; i<players.size(); i++)
-                        {
-                            if (i%2 == 0)
-                                addToTail( new Force(players.at(indexes[i]).number,"red") );
-                            else
-                                addToTail( new Force(players.at(indexes[i]).number,"blue") );
-                        }
+                    for (unsigned int i=0; i<players.size(); i++)
+                    {
+                        if (i%2 == 0)
+                            addToTail( new Force(players.at(indexes[i]).number,"red") );
+                        else
+                            addToTail( new Force(players.at(indexes[i]).number,"blue") );
+                    }
                 };
         };
         
