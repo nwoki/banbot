@@ -125,6 +125,13 @@ void ConfigLoader::loadOptions()
                         std::cout << "General_Backup_path catturato: " << newOptions->generalBackup << "\n";
                         #endif
                     }
+                    else if ( isA( temp, (char*)"^[ \t]*GENERAL_PORT[ \t]*=[ \t]*[0-9]{1,5}$" ) )
+                    {
+                        newOptions->generalPort = atoi( extract ( temp ).c_str() );
+                        #ifdef DEBUG_MODE
+                        std::cout << "General_port catturato: " << newOptions->generalPort << "\n";
+                        #endif
+                    }
                     else
                     {
                         #ifdef ITA

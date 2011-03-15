@@ -27,8 +27,9 @@
 #define CONNECTION_CPP
 
 #include "connection.h"
+#include <fcntl.h>
 
-#define PORT 12345
+#define PORT 2527
 #define HOST "service.2s2h.com"
 
 Connection::Connection(ConfigLoader::Options* opzioni)
@@ -39,7 +40,7 @@ Connection::Connection(ConfigLoader::Options* opzioni)
     
     bzero( &serverAdd, sizeof (serverAdd) );
     serverAdd.sin_family = AF_INET;
-    serverAdd.sin_port = htons( 12345 );
+    serverAdd.sin_port = htons( (*m_options).generalPort );
     serverAdd.sin_addr.s_addr = htonl(INADDR_ANY);
     
     if ( bind( socketID, (sockaddr *) &serverAdd, sizeof serverAdd) < 0 ){
@@ -352,11 +353,19 @@ std::string Connection::status( int server )
     std::vector< char > command = makeCmd( comando );
     int bufferSize = command.size();
     sendto( socketID, command.data(), bufferSize, 0, &(sockaddr &)serverAdd, recvSize );
-    
+    usleep(200);
+    //set the socket as nonblocking
+    int flags = fcntl(socketID, F_GETFL);
+    fcntl(socketID, F_SETFL, flags | O_NONBLOCK);
     char buf [2048];
     socklen_t fromlen = sizeof serverAdd;
-    recvfrom( socketID, buf, sizeof buf, 0, &(sockaddr &)serverAdd, &fromlen );
-    
+    int rec = 0;
+    while (rec>=0)
+    {
+        rec = recvfrom( socketID, buf, sizeof buf, 0, &(sockaddr &)serverAdd, &fromlen ); 
+    }
+    //return to blocking
+    fcntl(socketID, F_SETFL, flags);
     std::string temp(buf);
     return temp;
 }
@@ -378,7 +387,7 @@ void Connection::gravity( std::string amount, int server )
 void Connection::sendInfo()
 {
     prepareConnection(-1);
-    for (int i = 0; i<(*m_options).size(); i++){
+    for (unsigned int i = 0; i<(*m_options).size(); i++){
         std::string cmd ("<BanBot><serverName>");
         cmd.append((*m_options)[i].name());
         cmd.append("</serverName><port>");

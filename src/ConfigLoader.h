@@ -48,6 +48,7 @@ class ConfigLoader
                 struct stat infos;                              // has info about configuration file plus date of last modification
                 std::string generalLog;
                 std::string generalBackup;
+                int generalPort;
                 std::vector<Server*> servers;
                 Logger* errors;                                 // pointer to log object used for notifications and errors
                 Logger* log;                                    // pointer to log object dedicated to a server ( changes file )
@@ -58,6 +59,7 @@ class ConfigLoader
 
                 //costruttore
                 Options()
+                : generalPort( 51337 )    
                 {
                     errors=new Logger();
                     log=new Logger();

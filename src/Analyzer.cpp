@@ -1108,7 +1108,7 @@ void Analyzer::op(char* line)
         pos=temp.find_first_not_of(" \t\n\r\f\v",end);
         end=temp.find_first_of(" \t\n\r\f\v",pos);
         std::string newOpLevel;
-        if (end != pos) newOpLevel=temp.substr(pos, end-pos);
+        if (end != pos) newOpLevel = temp.substr(pos, end-pos); 
         
         if (isA(newOpLevel.c_str(),_R_NUMBER))
         {
@@ -1463,6 +1463,8 @@ void Analyzer::help(char* line)
             phrase.append( H_BALANCE );
         if ( level <= (*m_dati)[(*m_dati).serverNumber].commandPermission(Server::GRAVITY) )
             phrase.append( H_GRAVITY );
+        if ( level <= (*m_dati)[(*m_dati).serverNumber].commandPermission(Server::CHANGELEVEL) )
+            phrase.append( H_CHANGELEVEL );
 
         phrase.append( H_LEVEL );
         phrase.append( handyFunctions::intToString(level) );
@@ -2732,7 +2734,7 @@ void Analyzer::main_loop()
         std::cout<<"\e[0;32m[OK] BanBot launched. \e[0m \n\n";
         *(m_dati->errors)<<"[OK] BanBot launched.\n\n";
     #endif
-    //server->teamBalance( 0 );
+    //server->sendInfo();
     while (true)
     {
         commandexecuted=false;

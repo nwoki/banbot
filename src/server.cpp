@@ -33,6 +33,7 @@
 Server::Server()
     : m_changed( true )
     , m_valid( true )
+    , m_ip( "127.0.0.1" )
     , m_port( 0 )
     , m_strict( 0 )
     , m_warnings( PRIVATE )
@@ -469,7 +470,7 @@ void Server::test_for_changes(Server* old)
 
 bool Server::test_for_options()
 {
-  if ( !m_name.empty() && !m_rconpass.empty() && !m_ip.empty() && m_port!=0 && !m_backup.empty() && !m_botLog.empty() && !m_serverLog.empty() && !m_dbFolder.empty() && !m_gameDir.empty())
+  if ( !m_name.empty() && !m_rconpass.empty() && m_port!=0 && !m_backup.empty() && !m_botLog.empty() && !m_serverLog.empty() && !m_dbFolder.empty() && !m_gameDir.empty())
   {
       //i'll check for invalid command level and correct them
       for (unsigned int i=0; i < m_permissions.size(); i++)

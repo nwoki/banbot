@@ -311,48 +311,56 @@ class InstructionsBlock
                     std::string temp = conn->status( server );
                     
                     #ifdef DEBUG_MODE
-                    std::cout<<temp;
+                    std::cout<<temp<<"\n";
                     #endif
-                    
                     unsigned int pos = temp.find("rate");
                     
                     //i'll catch every player's number and score.
-                    pos = temp.find_first_of("-0123456789\0",pos);
+                    pos = temp.find_first_of("\n",pos);
+                    pos = temp.find_first_of("\n",pos+1);
                     
                     std::vector<Info> players;
                     while (pos < temp.size() && pos > 0 )
                     {
-                        int end = temp.find_first_not_of("0123456789\0",pos);
-                        Info t;
-                        t.number = temp.substr(pos,end-pos);
-                        pos = temp.find_first_of("-0123456789",end);
-                        end = temp.find_first_not_of("-0123456789",pos);
-                        t.score = atoi(temp.substr(pos,end-pos).c_str());
-                        players.push_back(t);
-                        pos = temp.find_first_of("\n\0",end);
-                        pos = temp.find_first_of("0123456789\0",pos);
+                        pos = temp.find_first_of("-0123456789\n\0",pos+1);
+                        if (temp.at(pos) != '\n'){
+                            int end = temp.find_first_not_of("-0123456789",pos);
+                            Info t;
+                            t.number = temp.substr(pos,end-pos);
+                            pos = temp.find_first_of("-0123456789",end);
+                            end = temp.find_first_not_of("-0123456789",pos);
+                            t.score = atoi(temp.substr(pos,end-pos).c_str());
+                            players.push_back(t);
+                            pos = temp.find_first_of("\n\0",end);
+                        }
+                        else pos = -1;
                     }
                     
-                    //order them
-                    unsigned int indexes [players.size()];
-                    for (unsigned int i=0; i<players.size(); i++) indexes[i] = i;
-                    for (unsigned int i=0; i<players.size()-1; i++)
-                        for (unsigned int j=i+1; j<players.size(); j++)
+                    if (players.size() > 0){
+                        
+                        //order them
+                        unsigned int indexes [players.size()];
+                        for (unsigned int i=0; i<players.size(); i++) indexes[i] = i;
+                        for (unsigned int i=0; i<players.size()-1; i++)
                         {
-                            if (players.at(i).score < players.at(j).score)
+                            for (unsigned int j=i+1; j<players.size(); j++)
                             {
-                                unsigned int t = indexes[i];
-                                indexes[i] = indexes[j];
-                                indexes[j] = t;
+                                if (players.at(i).score < players.at(j).score)
+                                {
+                                    unsigned int t = indexes[i];
+                                    indexes[i] = indexes[j];
+                                    indexes[j] = t;
+                                }
                             }
                         }
                         
-                    for (unsigned int i=0; i<players.size(); i++)
-                    {
-                        if (i%2 == 0)
-                            addToTail( new Force(players.at(indexes[i]).number,"red") );
-                        else
-                            addToTail( new Force(players.at(indexes[i]).number,"blue") );
+                        for (unsigned int i=0; i<players.size(); i++)
+                        {
+                            if (i%2 == 0)
+                                addToTail( new Force(players.at(indexes[i]).number,"red") );
+                            else
+                                addToTail( new Force(players.at(indexes[i]).number,"blue") );
+                        }
                     }
                 };
         };
