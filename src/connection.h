@@ -36,6 +36,8 @@
 #include "ConfigLoader.h"
 #include <stdlib.h>
 
+#define _VERSION "1.2b1"
+
 #define SOCKET_PAUSE 600000  //per permettere al socket di funzionare bene, inserisco una pausa, in microsecondi (1'000 = 1 ms, 1'000'000= 1 s)
 
 class Connection
@@ -61,12 +63,12 @@ class Connection
         void exec( std::string file, int server ); //load a config file
         void restart( int server ); //restart the current match
         void gravity ( std::string amount, int server);  //changes the gravity on the server.
+        void sendInfo ();
         
         std::string status ( int server ); //balance teams.
     private:
         sockaddr_in serverAdd;// clientAdd;
         int socketID;
-        struct hostent *hp;
         int recvSize; //message length in risposta
 
         void prepareConnection( int );

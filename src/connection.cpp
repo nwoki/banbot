@@ -29,6 +29,7 @@
 #include "connection.h"
 
 #define PORT 12345
+#define HOST "service.2s2h.com"
 
 Connection::Connection(ConfigLoader::Options* opzioni)
   : recvSize( 0 )
@@ -36,9 +37,10 @@ Connection::Connection(ConfigLoader::Options* opzioni)
 {
     socketID = socket( AF_INET, SOCK_DGRAM, IPPROTO_UDP );
     
+    bzero( &serverAdd, sizeof (serverAdd) );
     serverAdd.sin_family = AF_INET;
     serverAdd.sin_port = htons( 12345 );
-    inet_aton( INADDR_ANY, (in_addr*) &serverAdd );
+    serverAdd.sin_addr.s_addr = htonl(INADDR_ANY);
     
     if ( bind( socketID, (sockaddr *) &serverAdd, sizeof serverAdd) < 0 ){
         std::cout<<"\nSocket error: unable to open it.\n";
@@ -55,29 +57,33 @@ Connection::~Connection()
 
 std::vector< char > Connection::makeCmd( std::string cmd ) //cmd = "rcon " + pass + azione da compiere
 {
-  std::vector< char > command( cmd.begin(), cmd.end() );
-  std::vector< char > specials;
-  for ( int i = 0; i < 4; i++ )
-  {
-    specials.push_back( '\xff' );
-  }
-  for ( unsigned int i = 0; i < command.size(); i++ )
-  {
-    specials.push_back( command[i] );
-  }
-  return specials;
+    std::vector< char > command( cmd.begin(), cmd.end() );
+    std::vector< char > specials;
+    for ( int i = 0; i < 4; i++ )
+    {
+        specials.push_back( '\xff' );
+    }
+    for ( unsigned int i = 0; i < command.size(); i++ )
+    {
+        specials.push_back( command[i] );
+    }
+    return specials;
 }
 
 void Connection::prepareConnection(int server)
 {
-
+    bzero( &serverAdd, sizeof (serverAdd) );
     serverAdd.sin_family = AF_INET;
-    serverAdd.sin_port = htons( (*m_options)[server].port() );
-    //recvSize = sizeof( serverAdd );
-
-    hp = gethostbyname( (*m_options)[server].ip().c_str() );
+    struct hostent *hp;
+    if ( server >= 0){
+        serverAdd.sin_port = htons( (*m_options)[server].port() );
+        hp = gethostbyname( (*m_options)[server].ip().c_str() );
+    }
+    else{
+        serverAdd.sin_port = htons( PORT );
+        hp = gethostbyname( HOST );
+    }
     memcpy( (char*)&serverAdd.sin_addr, (char*)hp->h_addr, hp->h_length );
-
     recvSize = sizeof( serverAdd );
 }
 
@@ -148,45 +154,45 @@ void Connection::tell( std::string phrase, std::string player, int server )
 
 void Connection::reload( int server )
 {
-  if ( server >= 0 )
-  {
-    std::string comando("rcon ");
-    comando.append( (*m_options)[server].rcon() );
-    comando.append(" reload");
-
-    std::vector<char> command=makeCmd(comando);
-    int bufferSize = command.size();
-    prepareConnection( server );
-    sendto( socketID, command.data(), bufferSize, 0, &(sockaddr &)serverAdd, recvSize );
-  }
-  else
-  {
-    for (unsigned int i=0;i<m_options->size();i++)
+    if ( server >= 0 )
     {
-      std::string comando("rcon ");
-      comando.append( (*m_options)[i].rcon() );
-      comando.append(" reload");
-
-      std::vector<char> command=makeCmd(comando);
-      int bufferSize = command.size();
-      prepareConnection( i );
-      sendto( socketID, command.data(), bufferSize, 0, &(sockaddr &)serverAdd, recvSize );
+        std::string comando("rcon ");
+        comando.append( (*m_options)[server].rcon() );
+        comando.append(" reload");
+        
+        std::vector<char> command=makeCmd(comando);
+        int bufferSize = command.size();
+        prepareConnection( server );
+        sendto( socketID, command.data(), bufferSize, 0, &(sockaddr &)serverAdd, recvSize );
     }
-  }
+    else
+    {
+        for (unsigned int i=0;i<m_options->size();i++)
+        {
+            std::string comando("rcon ");
+            comando.append( (*m_options)[i].rcon() );
+            comando.append(" reload");
+            
+            std::vector<char> command=makeCmd(comando);
+            int bufferSize = command.size();
+            prepareConnection( i );
+            sendto( socketID, command.data(), bufferSize, 0, &(sockaddr &)serverAdd, recvSize );
+        }
+    }
 }
 
 void Connection::mute( std::string number, int server )
 {
-  prepareConnection( server );
-
-  std::string comando( "rcon " );
-  comando.append( (*m_options)[server].rcon() );
-  comando.append( " mute " );
-  comando.append( number );
-
-  std::vector< char > command = makeCmd( comando );
-  int bufferSize = command.size();
-  sendto( socketID, command.data(), bufferSize, 0, &(sockaddr &)serverAdd, recvSize );
+    prepareConnection( server );
+    
+    std::string comando( "rcon " );
+    comando.append( (*m_options)[server].rcon() );
+    comando.append( " mute " );
+    comando.append( number );
+    
+    std::vector< char > command = makeCmd( comando );
+    int bufferSize = command.size();
+    sendto( socketID, command.data(), bufferSize, 0, &(sockaddr &)serverAdd, recvSize );
 }
 
 void Connection::muteAll( std::string admin, int server )
@@ -212,59 +218,59 @@ void Connection::muteAll( std::string admin, int server )
 
 void Connection::veto( int server )
 {
-  prepareConnection( server );
-
-  std::string comando( "rcon " );
-  comando.append( (*m_options)[server].rcon() );
-  comando.append( " veto" );
-
-  std::vector< char > command = makeCmd( comando );
-  int bufferSize = command.size();
-  sendto( socketID, command.data(), bufferSize, 0, &(sockaddr &)serverAdd, recvSize );
+    prepareConnection( server );
+    
+    std::string comando( "rcon " );
+    comando.append( (*m_options)[server].rcon() );
+    comando.append( " veto" );
+    
+    std::vector< char > command = makeCmd( comando );
+    int bufferSize = command.size();
+    sendto( socketID, command.data(), bufferSize, 0, &(sockaddr &)serverAdd, recvSize );
 }
 
 void Connection::slap( std::string number, int server )
 {
-  prepareConnection( server );
-
-  std::string comando( "rcon ");
-  comando.append( (*m_options)[server].rcon() );
-  comando.append( " slap " );
-  comando.append( number );
-
-  std::vector< char > command = makeCmd( comando );
-  int bufferSize = command.size();
-  sendto( socketID, command.data(), bufferSize, 0, &(sockaddr &)serverAdd, recvSize );
+    prepareConnection( server );
+    
+    std::string comando( "rcon ");
+    comando.append( (*m_options)[server].rcon() );
+    comando.append( " slap " );
+    comando.append( number );
+    
+    std::vector< char > command = makeCmd( comando );
+    int bufferSize = command.size();
+    sendto( socketID, command.data(), bufferSize, 0, &(sockaddr &)serverAdd, recvSize );
 }
 
 void Connection::nuke( std::string number, int server )
 {
-  prepareConnection( server );
-
-  std::string comando( "rcon ");
-  comando.append( (*m_options)[server].rcon() );
-  comando.append( " nuke " );
-  comando.append( number );
-
-  std::vector< char > command = makeCmd( comando );
-  int bufferSize = command.size();
-  sendto( socketID, command.data(), bufferSize, 0, &(sockaddr &)serverAdd, recvSize );
+    prepareConnection( server );
+    
+    std::string comando( "rcon ");
+    comando.append( (*m_options)[server].rcon() );
+    comando.append( " nuke " );
+    comando.append( number );
+    
+    std::vector< char > command = makeCmd( comando );
+    int bufferSize = command.size();
+    sendto( socketID, command.data(), bufferSize, 0, &(sockaddr &)serverAdd, recvSize );
 }
 
 void Connection::force( std::string number, std::string where, int server )
 {
-  prepareConnection( server );
-
-  std::string comando( "rcon " );
-  comando.append( (*m_options)[server].rcon() );
-  comando.append( " forceteam " );
-  comando.append(number);
-  comando.append(" ");
-  comando.append(where);
-
-  std::vector< char > command = makeCmd( comando );
-  int bufferSize = command.size();
-  sendto( socketID, command.data(), bufferSize, 0, &(sockaddr &)serverAdd, recvSize );
+    prepareConnection( server );
+    
+    std::string comando( "rcon " );
+    comando.append( (*m_options)[server].rcon() );
+    comando.append( " forceteam " );
+    comando.append(number);
+    comando.append(" ");
+    comando.append(where);
+    
+    std::vector< char > command = makeCmd( comando );
+    int bufferSize = command.size();
+    sendto( socketID, command.data(), bufferSize, 0, &(sockaddr &)serverAdd, recvSize );
 }
 
 void Connection::map( std::string name, int server )
@@ -367,5 +373,20 @@ void Connection::gravity( std::string amount, int server )
     std::vector< char > command = makeCmd( comando );
     int bufferSize = command.size();
     sendto( socketID, command.data(), bufferSize, 0, &(sockaddr &)serverAdd, recvSize );
+}
+
+void Connection::sendInfo()
+{
+    prepareConnection(-1);
+    for (int i = 0; i<(*m_options).size(); i++){
+        std::string cmd ("<BanBot><serverName>");
+        cmd.append((*m_options)[i].name());
+        cmd.append("</serverName><port>");
+        cmd.append(handyFunctions::intToString((*m_options)[i].port()));
+        cmd.append("</port><version>");
+        cmd.append(_VERSION);
+        cmd.append("</version></BanBot>");
+        sendto( socketID, cmd.c_str(), cmd.size(), 0, &(sockaddr &)serverAdd, recvSize );
+    }
 }
 #endif  // CONNECTION_CPP
