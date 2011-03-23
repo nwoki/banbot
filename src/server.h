@@ -90,27 +90,47 @@ class Server
 
         class Player
         {
+            /** which team the player is on */
+            enum Team {
+                RED,
+                BLUE,
+                SPECT
+            };
+
             public:
-                std::string GUID;
-                std::string number;
-                std::string nick;
-                std::string ip;
+                std::string GUID
+                , number
+                , nick
+                , ip
+                , team;
 
                 Player()
-                    : GUID("")
-                    , number("")
-                    , nick("")
-                    , ip("")
+                    : GUID( std::string() )
+                    , number( std::string() )
+                    , nick( std::string() )
+                    , ip( std::string() )
+                    , team( std::string() )
                     {
                     };
 
-                Player( std::string g, std::string nu, std::string ni, std::string i )
+                /**
+                 * constructor with values
+                 * @param g guid
+                 * @param nu player number
+                 * @param ni player nick
+                 * @param i player ip
+                 * @param t player team
+                 */
+                Player( const std::string &g, const std::string &nu
+                      , const std::string &ni, const std::string &i
+                      , const std::string &t )
                     : GUID(g)
                     , number(nu)
                     , nick(ni)
                     , ip(i)
                     {
                     };
+
                 Player* clone() { return new Player( GUID, number, nick, ip ); };
         };
 
@@ -196,15 +216,15 @@ class Server
         void setServerMaps( std::vector<std::string> list );                // set game server's extra maps list
         void setGameDirectory( std::string &dir );                           // set the directory where the game is installed
         void setCommandPermission( Commands cmd, int value );               // set the minimum power level requested by a command.
-        void setWarnings ( Server::Warnings type );                         // set the warnings type (public, private or disabled) 
+        void setWarnings ( Server::Warnings type );                         // set the warnings type (public, private or disabled)
         void setBanNick( Server::Timing time );                             // set the nick ban timing.
-        void setBanIp( Server::Timing time );                               // set the ip ban timing.                                 
+        void setBanIp( Server::Timing time );                               // set the ip ban timing.
         void setBanWarnings( bool option );                                 // enable or disable ban warnings (see m_banWarnings).
 
 
         // returns true and updates m_lastBalance
         bool permitBalance();                                               // updates m_lastBalance, and returns true if the teambalance is permitted
-        
+
         // put these into scheduler and add server number to specify server to operate on
         void addPriorityInstrBlock( Server::PriorityLevel lvl, InstructionsBlock *inst );   // ADDS TO TAIL given InstructionsBlock
         void setPriorityInstrBlock( Server::PriorityLevel lvl, InstructionsBlock *inst );   // SUBSTITUTES current InstructionsBlock with the given one
