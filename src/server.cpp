@@ -64,7 +64,7 @@ Server::Server()
     m_permissions.push_back( 1 );     //deop level
     m_permissions.push_back( 0 );     //strict level
     m_permissions.push_back( 3 );     //nuke level
-    m_permissions.push_back( 3 );     //slap level
+    m_permissions.push_back( 2 );     //slap level
     m_permissions.push_back( 3 );     //veto level
     m_permissions.push_back( 3 );     //force level
     m_permissions.push_back( 2 );     //map level
@@ -75,11 +75,12 @@ Server::Server()
     m_permissions.push_back( 100 );   //status level
     m_permissions.push_back( 2 );     //warnings level
     m_permissions.push_back( 2 );     //bantimewarn level
-    m_permissions.push_back( 3 );     //restart level
+    m_permissions.push_back( 2 );     //restart level
     m_permissions.push_back( 2 );     //reload level
     m_permissions.push_back( 3 );     //teambalance level
     m_permissions.push_back( 2 );     //gravity level
     m_permissions.push_back( 1 );     //changelevel level
+    m_permissions.push_back( 3 );     //bigtext level
 }
 
 Server::~Server()

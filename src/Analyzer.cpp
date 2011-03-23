@@ -1466,6 +1466,8 @@ void Analyzer::help(char* line)
             phrase.append( H_GRAVITY );
         if ( level <= (*m_dati)[(*m_dati).serverNumber].commandPermission(Server::CHANGELEVEL) )
             phrase.append( H_CHANGELEVEL );
+        if ( level <= (*m_dati)[(*m_dati).serverNumber].commandPermission(Server::BIGTEXT) )
+            phrase.append( H_BIGTEXT );
 
         phrase.append( H_LEVEL );
         phrase.append( handyFunctions::intToString(level) );
@@ -2378,41 +2380,20 @@ void Analyzer::changeLevel(char* line)
 
 void Analyzer::bigtext(char* line)
 {
-    std::cout<<"[!] Gravity";
+    std::cout<<"[!] Bigtext";
     (m_dati->log)->timestamp();
-    *(m_dati->log)<<"\n[!] Gravity";
+    *(m_dati->log)<<"\n[!] Bigtext";
     //i check the player and his permissions, if he isn't autorized to use this command, nothing to do.
     std::string numeroAdmin;
-    if (isAdminSay(line,numeroAdmin) <= (*m_dati)[(*m_dati).serverNumber].commandPermission(Server::GRAVITY))
+    if (isAdminSay(line,numeroAdmin) <= (*m_dati)[(*m_dati).serverNumber].commandPermission(Server::BIGTEXT))
     {
         InstructionsBlock * block = new InstructionsBlock();
         std::string temp(line);
-        int pos=temp.find("!grav");
-        pos=temp.find_first_not_of(" \t\n\r\f\v",pos+5);
-        int end=temp.find_first_of(" \t\n\r\f\v",pos);
-        std::string option=temp.substr(pos,end-pos);
+        int pos=temp.find("!bigtext");
+        pos=temp.find_first_not_of(" \t\n\r\f\v",pos+8);
+        std::string option=temp.substr(pos);
         
-        std::string phrase;
-        #ifdef ITA
-        phrase.append("^0BanBot: ^1La nuova gravita' e' ^2"); 
-        #else
-        phrase.append("^0BanBot: ^1The new gravity is ^2"); 
-        #endif
-        if (option.compare("off")==0)
-        {
-            (*m_dati)[(*m_dati).serverNumber].setBanWarnings(false);
-            phrase.append("800^1."); 
-            block->gravity("800");
-        }
-        else
-        {
-            (*m_dati)[(*m_dati).serverNumber].setBanWarnings(true);
-            phrase.append(option);
-            phrase.append("^1.");
-            block->gravity(option);
-        }
-        
-        block->say(phrase);
+        block->bigtext(option);
         m_scheduler->addInstructionBlock( block, Server::MEDIUM );
     }
 }
@@ -2997,6 +2978,8 @@ void Analyzer::main_loop()
                                                     gravity(line);
                                                 else if (isA(line, _R_CHANGELEVEL))
                                                     changeLevel(line);
+                                                else if (isA(line, _R_BIGTEXT))
+                                                    bigtext(line);
                                             }
                                         }
                                     }

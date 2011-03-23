@@ -76,7 +76,8 @@ class Server
             RELOAD,
             TEAMBALANCE,
             GRAVITY,
-            CHANGELEVEL
+            CHANGELEVEL,
+            BIGTEXT
         };
 
         enum Timing {               //used to define the timing of nick and ip bans.
@@ -101,15 +102,15 @@ class Server
                 std::string GUID
                 , number
                 , nick
-                , ip
-                , team;
+                , ip;
+                Team team;
 
                 Player()
                     : GUID( std::string() )
                     , number( std::string() )
                     , nick( std::string() )
                     , ip( std::string() )
-                    , team( std::string() )
+                    , team( SPECT )
                     {
                     };
 
@@ -123,15 +124,16 @@ class Server
                  */
                 Player( const std::string &g, const std::string &nu
                       , const std::string &ni, const std::string &i
-                      , const std::string &t )
+                      , Team t )
                     : GUID(g)
                     , number(nu)
                     , nick(ni)
                     , ip(i)
+                    , team(t)
                     {
                     };
 
-                Player* clone() { return new Player( GUID, number, nick, ip ); };
+                Player* clone() { return new Player( GUID, number, nick, ip, team ); };
         };
 
         class InstructionCounter
