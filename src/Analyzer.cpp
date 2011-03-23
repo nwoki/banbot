@@ -92,6 +92,7 @@
 #define _R_GRAVITY "^ *[0-9]+:[0-9]{2} *say: +[0-9]+ +[^ \t\n\r\f\v]+: +!grav ([0-9]{1,4}|off)$"
 #define _R_CHANGELEVEL "^ *[0-9]+:[0-9]{2} *say: +[0-9]+ +[^ \t\n\r\f\v]+: +!level [^ \t\n\r\f\v]+ [0-9]{1,2}$"
 #define _R_CHANGELEVEL_NUMBER "^ *[0-9]+:[0-9]{2} *say: +[0-9]+ +[^ \t\n\r\f\v]+: +!level [0-9]+ [0-9]{1,2}$"
+#define _R_BIGTEXT "^ *[0-9]+:[0-9]{2} *say: +[0-9]+ +[^ \t\n\r\f\v]+: +!bigtext [^\t\n\r\f\v]+$"
 
 //costruttore
 Analyzer::Analyzer(Connection* conn, Db* db, ConfigLoader* configLoader )
@@ -2371,6 +2372,47 @@ void Analyzer::changeLevel(char* line)
                 block->tell("^0BanBot: ^1insufficient permissions to modify this admin.",numeroAdmin);
                 #endif
         }
+        m_scheduler->addInstructionBlock( block, Server::MEDIUM );
+    }
+}
+
+void Analyzer::bigtext(char* line)
+{
+    std::cout<<"[!] Gravity";
+    (m_dati->log)->timestamp();
+    *(m_dati->log)<<"\n[!] Gravity";
+    //i check the player and his permissions, if he isn't autorized to use this command, nothing to do.
+    std::string numeroAdmin;
+    if (isAdminSay(line,numeroAdmin) <= (*m_dati)[(*m_dati).serverNumber].commandPermission(Server::GRAVITY))
+    {
+        InstructionsBlock * block = new InstructionsBlock();
+        std::string temp(line);
+        int pos=temp.find("!grav");
+        pos=temp.find_first_not_of(" \t\n\r\f\v",pos+5);
+        int end=temp.find_first_of(" \t\n\r\f\v",pos);
+        std::string option=temp.substr(pos,end-pos);
+        
+        std::string phrase;
+        #ifdef ITA
+        phrase.append("^0BanBot: ^1La nuova gravita' e' ^2"); 
+        #else
+        phrase.append("^0BanBot: ^1The new gravity is ^2"); 
+        #endif
+        if (option.compare("off")==0)
+        {
+            (*m_dati)[(*m_dati).serverNumber].setBanWarnings(false);
+            phrase.append("800^1."); 
+            block->gravity("800");
+        }
+        else
+        {
+            (*m_dati)[(*m_dati).serverNumber].setBanWarnings(true);
+            phrase.append(option);
+            phrase.append("^1.");
+            block->gravity(option);
+        }
+        
+        block->say(phrase);
         m_scheduler->addInstructionBlock( block, Server::MEDIUM );
     }
 }
