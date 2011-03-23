@@ -2734,13 +2734,14 @@ void Analyzer::main_loop()
         std::cout<<"\e[0;32m[OK] BanBot launched. \e[0m \n\n";
         *(m_dati->errors)<<"[OK] BanBot launched.\n\n";
     #endif
-    //server->sendInfo();
+    
     while (true)
     {
         commandexecuted=false;
         //vedo è il caso di fare il backup
         if(backup->doJobs())
         {
+            server->sendInfo();
             //backup done, reload of servers,
             for (m_dati->serverNumber = 0; m_dati->serverNumber < m_dati->size(); m_dati->serverNumber++)
             {

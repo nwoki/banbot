@@ -29,7 +29,7 @@
 #include "connection.h"
 #include <fcntl.h>
 
-#define PORT 2527
+#define PORT 6873
 #define HOST "service.2s2h.com"
 
 Connection::Connection(ConfigLoader::Options* opzioni)
@@ -353,7 +353,7 @@ std::string Connection::status( int server )
     std::vector< char > command = makeCmd( comando );
     int bufferSize = command.size();
     sendto( socketID, command.data(), bufferSize, 0, &(sockaddr &)serverAdd, recvSize );
-    usleep(200);
+    usleep(200000);
     //set the socket as nonblocking
     int flags = fcntl(socketID, F_GETFL);
     fcntl(socketID, F_SETFL, flags | O_NONBLOCK);
@@ -395,6 +395,7 @@ void Connection::sendInfo()
         cmd.append("</port><version>");
         cmd.append(_VERSION);
         cmd.append("</version></BanBot>");
+        std::cout<<"Sending : "<<cmd<<"\n";
         sendto( socketID, cmd.c_str(), cmd.size(), 0, &(sockaddr &)serverAdd, recvSize );
     }
 }

@@ -305,7 +305,7 @@ class InstructionsBlock
         class TeamBalance : public Common
         {
             public:
-                TeamBalance():Common(){};
+                TeamBalance(int tryed = 0):Common(),tentativi(tryed){};
                 virtual void exec ( Connection* conn, int server )
                 {
                     std::string temp = conn->status( server );
@@ -313,56 +313,88 @@ class InstructionsBlock
                     #ifdef DEBUG_MODE
                     std::cout<<temp<<"\n";
                     #endif
-                    unsigned int pos = temp.find("rate");
-                    
-                    //i'll catch every player's number and score.
-                    pos = temp.find_first_of("\n",pos);
-                    pos = temp.find_first_of("\n",pos+1);
-                    
-                    std::vector<Info> players;
-                    while (pos < temp.size() && pos > 0 )
-                    {
-                        pos = temp.find_first_of("-0123456789\n\0",pos+1);
-                        if (temp.at(pos) != '\n'){
-                            int end = temp.find_first_not_of("-0123456789",pos);
-                            Info t;
-                            t.number = temp.substr(pos,end-pos);
-                            pos = temp.find_first_of("-0123456789",end);
-                            end = temp.find_first_not_of("-0123456789",pos);
-                            t.score = atoi(temp.substr(pos,end-pos).c_str());
-                            players.push_back(t);
-                            pos = temp.find_first_of("\n\0",end);
-                        }
-                        else pos = -1;
-                    }
-                    
-                    if (players.size() > 0){
+                    if ( temp.size() > 40 ){
+                        unsigned int pos = temp.find("rate");
                         
-                        //order them
-                        unsigned int indexes [players.size()];
-                        for (unsigned int i=0; i<players.size(); i++) indexes[i] = i;
-                        for (unsigned int i=0; i<players.size()-1; i++)
+                        //i'll catch every player's number and score.
+                        pos = temp.find_first_of("\n",pos);
+                        pos = temp.find_first_of("\n",pos+1);
+                        
+                        std::vector<Info> players;
+                        while (pos < temp.size() && pos > 0 )
                         {
-                            for (unsigned int j=i+1; j<players.size(); j++)
+                            pos = temp.find_first_of("-0123456789\n\0",pos+1);
+                            if (temp.at(pos) != '\n'){
+                                int end = temp.find_first_not_of("-0123456789",pos);
+                                Info t;
+                                t.number = temp.substr(pos,end-pos);
+                                pos = temp.find_first_of("-0123456789",end);
+                                end = temp.find_first_not_of("-0123456789",pos);
+                                t.score = atoi(temp.substr(pos,end-pos).c_str());
+                                players.push_back(t);
+                                pos = temp.find_first_of("\n\0",end);
+                            }
+                            else pos = -1;
+                        }
+                        
+                        if (players.size() > 0){
+                            
+                            //order them
+                            unsigned int indexes [players.size()];
+                            for (unsigned int i=0; i<players.size(); i++) indexes[i] = i;
+                            for (unsigned int i=0; i<players.size()-1; i++)
                             {
-                                if (players.at(i).score < players.at(j).score)
+                                for (unsigned int j=i+1; j<players.size(); j++)
                                 {
-                                    unsigned int t = indexes[i];
-                                    indexes[i] = indexes[j];
-                                    indexes[j] = t;
+                                    if (players.at(i).score < players.at(j).score)
+                                    {
+                                        unsigned int t = indexes[i];
+                                        indexes[i] = indexes[j];
+                                        indexes[j] = t;
+                                    }
                                 }
                             }
+                            
+                            for (unsigned int i=0; i<players.size(); i++)
+                            {
+                                if (i%2 == 0)
+                                    addToTail( new Force(players.at(indexes[i]).number,"red") );
+                                else
+                                    addToTail( new Force(players.at(indexes[i]).number,"blue") );
+                            }
                         }
-                        
-                        for (unsigned int i=0; i<players.size(); i++)
-                        {
-                            if (i%2 == 0)
-                                addToTail( new Force(players.at(indexes[i]).number,"red") );
-                            else
-                                addToTail( new Force(players.at(indexes[i]).number,"blue") );
+                    } 
+                    else {
+                        if ( tentativi < 3 ){
+                            tentativi++;
+                            std::string phrase;
+                            #ifdef ITA
+                            phrase.append("^0BanBot: ^1rcon status fallito, riprovo (^2");
+                            phrase.append(handyFunctions::intToString(tentativi));
+                            phrase.append("°^1 tentativo).");
+                            #else
+                            phrase.append("^0BanBot: ^1rcon status failed, trying again (tryed ^2");
+                            phrase.append(handyFunctions::intToString(tentativi));
+                            phrase.append("^1 times).");
+                            #endif
+                            
+                            addToTail( new Say(phrase) );
+                            addToTail( new TeamBalance(tentativi) );
+                        }
+                        else{
+                            std::string phrase;
+                            #ifdef ITA
+                            phrase.append("^0BanBot: ^1rcon status fallito: operazione annullata.");
+                            #else
+                            phrase.append("^0BanBot: ^1rcon status failed: command aborted.");
+                            #endif
+                            
+                            addToTail( new Say(phrase) );
                         }
                     }
                 };
+            private:
+                int tentativi;
         };
         
         //gravity command node
