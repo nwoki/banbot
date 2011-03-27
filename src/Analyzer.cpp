@@ -259,10 +259,14 @@ void Analyzer::clientUserInfoChanged(char* line)
     int i = findPlayer( numero );
     if( i > 0 ){
         (*m_dati->currentServer())[i]->nick = nick;
-        if( team.compare("1") == 0 )
+        if( team.compare("1") == 0 ){
             (*m_dati->currentServer())[i]->team = Server::Player::RED;
-        else if( team.compare("2") == 0 )
+            std::cout<<"Rosso dio can\n";
+        }
+        else if( team.compare("2") == 0 ){
             (*m_dati->currentServer())[i]->team = Server::Player::BLUE;
+            std::cout<<"Blu dio porco\n";
+        }
         else
             (*m_dati->currentServer())[i]->team = Server::Player::SPECT;
     }
