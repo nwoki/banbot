@@ -2457,14 +2457,14 @@ void Analyzer::teams(char* line)
         InstructionsBlock *block = new InstructionsBlock();
         if ( m_dati->currentServer()->permitTeams() ){
             //counting player for each team
-            int red;
-            int blue;
+            int red = 0;
+            int blue = 0;
             for( unsigned int i = 0; i < m_dati->currentServer()->size(); i++ ){
                 if( (*m_dati->currentServer())[i]->team == Server::Player::RED ) red++;
                 else if( (*m_dati->currentServer())[i]->team == Server::Player::BLUE ) blue++;
             }
             #ifdef DEBUG_MODE
-            std::cout<<"Red founded: "<<red<<" Blue founded: "<<blue<<" Total: "<<m_dati->currentServer()->size()<<"\n";
+            std::cout<<"Red found: "<<red<<" Blue found: "<<blue<<" Total: "<<m_dati->currentServer()->size()<<"\n";
             #endif
             
             if (red != blue)
