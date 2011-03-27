@@ -238,11 +238,11 @@ void Analyzer::clientUserInfoChanged(char* line)
     int end=temp.find_first_of(' ',pos);
     std::string numero=temp.substr(pos,end-pos);
     pos=temp.find(" n");
-    pos=temp.find_first_not_of("\\",pos+1);
+    pos=temp.find_first_not_of("\\",pos+2);
     end=temp.find_first_of("\\ ",pos);
     std::string nick=temp.substr(pos,end-pos);
     pos=temp.find("\\t\\");
-    pos=temp.find_first_not_of("\\",pos+4);
+    pos=temp.find_first_not_of("\\",pos+2);
     end=temp.find_first_of("\\",pos);        //permetto anche spazi all'interno del nome, tutti i caratteri permessi tranne lo slash
     std::string team=temp.substr(pos,end-pos);
     
