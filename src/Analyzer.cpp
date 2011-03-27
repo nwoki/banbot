@@ -2460,8 +2460,21 @@ void Analyzer::teams(char* line)
             int red = 0;
             int blue = 0;
             for( unsigned int i = 0; i < m_dati->currentServer()->size(); i++ ){
-                if( (*m_dati->currentServer())[i]->team == Server::Player::RED ) red++;
-                else if( (*m_dati->currentServer())[i]->team == Server::Player::BLUE ) blue++;
+                #ifdef DEBUG_MODE
+                std::cout<<"Player number "<<(*m_dati->currentServer())[i]->number<<" "<<(*m_dati->currentServer())[i]->nick<<" is "<<(*m_dati->currentServer())[i]->team<<"\n";
+                #endif
+                if( (*m_dati->currentServer())[i]->team == Server::Player::RED ) {
+                    red++; 
+                    #ifdef DEBUG_MODE
+                    std::cout<<"He is red\n";
+                    #endif
+                }
+                else if( (*m_dati->currentServer())[i]->team == Server::Player::BLUE ) {
+                    blue++;
+                    #ifdef DEBUG_MODE
+                    std::cout<<"He is blue\n";
+                    #endif
+                }
             }
             #ifdef DEBUG_MODE
             std::cout<<"Red found: "<<red<<" Blue found: "<<blue<<" Total: "<<m_dati->currentServer()->size()<<"\n";
