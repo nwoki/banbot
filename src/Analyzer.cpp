@@ -270,6 +270,7 @@ void Analyzer::clientUserInfoChanged(char* line)
         else
             (*m_dati->currentServer())[i]->team = Server::Player::SPECT;
     }
+    else std::cout<<"NON trovato: madonna puttana\n";
 }
 
 void Analyzer::clientUserInfo(char* line)
