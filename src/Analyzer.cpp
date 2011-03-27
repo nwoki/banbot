@@ -234,7 +234,7 @@ void Analyzer::clientUserInfoChanged(char* line)
     // prendo il numero giocatore e la guid, utilizzando le funzioni delle stringhe
     std::string temp=line;
     int pos=temp.find("ClientUserinfoChanged:");
-    pos=temp.find_first_not_of(' ',pos+21);
+    pos=temp.find_first_not_of(' ',pos+22);
     int end=temp.find_first_of(' ',pos);
     std::string numero=temp.substr(pos,end-pos);
     pos=temp.find(" n");
