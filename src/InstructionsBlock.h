@@ -53,7 +53,7 @@ class InstructionsBlock
         void changePassword( std::string pass ); //change the private password of the server
         void exec( std::string file ); //load a config file for the game server
         void restart(); //restart the current map.
-        void teamBalance(); //balance teams
+        void teamBalance( std::vector<std::string> excludelist ); //balance teams
         void gravity( std::string amount ); //changes the gravity
 
         void execFirstCommand( Connection* conn, int server );  //execute the first command of the stack on a server using the given connection class.
@@ -305,7 +305,7 @@ class InstructionsBlock
         class TeamBalance : public Common
         {
             public:
-                TeamBalance(int tryed = 0):Common(),tentativi(tryed){};
+                TeamBalance(const std::vector<std::string> &exclude, int tryed = 0):Common(),tentativi(tryed),exclude(exclude){};
                 virtual void exec ( Connection* conn, int server )
                 {
                     std::string temp = conn->status( server );
@@ -331,7 +331,10 @@ class InstructionsBlock
                                 pos = temp.find_first_of("-0123456789",end);
                                 end = temp.find_first_not_of("-0123456789",pos);
                                 t.score = atoi(temp.substr(pos,end-pos).c_str());
-                                players.push_back(t);
+                                bool insert = true;
+                                for (unsigned int i = 0; insert && i < exclude.size(); i++)
+                                    if ( t.number.compare(exclude[i]) == 0 ) insert = false;
+                                if ( insert ) players.push_back(t);
                                 pos = temp.find_first_of("\n\0",end);
                             }
                             else pos = -1;
@@ -379,7 +382,7 @@ class InstructionsBlock
                             #endif
                             
                             addToTail( new Say(phrase) );
-                            addToTail( new TeamBalance(tentativi) );
+                            addToTail( new TeamBalance(exclude, tentativi) );
                         }
                         else{
                             std::string phrase;
@@ -395,6 +398,7 @@ class InstructionsBlock
                 };
             private:
                 int tentativi;
+                std::vector<std::string> exclude;
         };
         
         //gravity command node

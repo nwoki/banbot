@@ -110,6 +110,7 @@
     #define H_GRAVITY "^2!grav <livello/off> ^1: cambia la gravita'.\n"
     #define H_CHANGELEVEL "^2!level <nome/id> <livello> ^1: cambia il livello di un admin.\n"
     #define H_BIGTEXT "^2!bigtext <message> ^1: stampa un testo in grande.\n"
+    #define H_TEAMS "^2!teams ^1: sistema il numero di giocatori per squadra.\n"
 #else
     #define COMMANDLIST "^1You can use these commands:\n"
     #define H_LEVEL "^1Your level is ^2"
@@ -140,6 +141,7 @@
     #define H_GRAVITY "^2!grav <level/off> ^1: change gravity.\n"
     #define H_CHANGELEVEL "^2!level <nick/id> <level> ^1: change the admin's level.\n"
     #define H_BIGTEXT "^2!bigtext <message> ^1: write the message using a big font.\n"
+    #define H_TEAMS "^2!teams ^1: fixes the number of players per team.\n"
 #endif
 
 class Analyzer
@@ -162,6 +164,7 @@ private:
     void loadOptions();             //loads new options.
 
     // funzioni associate ai regex (comandi dal server/eventi)
+    void clientUserInfoChanged(char* line);
     void clientUserInfo(char* line);
     void clientConnect(char* line);
     void clientDisconnect(char* line);
@@ -194,6 +197,7 @@ private:
     void gravity(char* line);
     void changeLevel(char* line);
     void bigtext(char* line);
+    void teams(char* line);
 
 protected:
     bool isA(const char* line,const std::string &regex);          //testa se la riga soddisfa il regex.

@@ -43,6 +43,7 @@
 
 #define _R_CLIENT_CONNECT " *[0-9]+:[0-9]{2} *ClientConnect:"
 #define _R_CLIENT_USER_INFO " *[0-9]+:[0-9]{2} *ClientUserinfo:"
+#define _R_CLIENT_USER_INFO_CHANGED " *[0-9]+:[0-9]{2} *ClientUserinfoChanged:"
 #define _R_COMPLETE_CLIENT_USER_INFO " *[0-9]+:[0-9]{2} *ClientUserinfo: +[0-9]+ +\\ip\\[0-9]{1,3}.[0-9]{1,3}.[0-9]{1,3}.[0-9]{1,3}:[0-9]{1,6}\\name\\[^ \t\n\r\f\v]+\\racered\
 \\[0-9]{1}\\raceblue\\[0-9]{1}\\rate\\[0-9]+\\ut_timenudge\\[0-9]+\\cg_rgb\\[0-9]{1,3} [0-9]{1,3} [0-9]{1,3}\\cg_predictitems\\[01]{1}\\cg_physics\\[01]{1}\\snaps\\[0-9]{1,2}\\model\\[^ \t\n\r\f\v]+\
 \\headmodel\\[^ \t\n\r\f\v]+\\team_model\\[^ \t\n\r\f\v]+\\team_headmodel\\[^ \t\n\r\f\v]+\\color1\\[0-9]{1,2}\\color2\\[0-9]{1,2}\\handicap\\100\\sex\\[^ \t\n\r\f\v]+\\cl_anonymous\\[01]{1}\
@@ -93,6 +94,7 @@
 #define _R_CHANGELEVEL "^ *[0-9]+:[0-9]{2} *say: +[0-9]+ +[^ \t\n\r\f\v]+: +!level [^ \t\n\r\f\v]+ [0-9]{1,2}$"
 #define _R_CHANGELEVEL_NUMBER "^ *[0-9]+:[0-9]{2} *say: +[0-9]+ +[^ \t\n\r\f\v]+: +!level [0-9]+ [0-9]{1,2}$"
 #define _R_BIGTEXT "^ *[0-9]+:[0-9]{2} *say: +[0-9]+ +[^ \t\n\r\f\v]+: +!bigtext [^\t\n\r\f\v]+$"
+#define _R_TEAMS "^ *[0-9]+:[0-9]{2} *say: +[0-9]+ +[^ \t\n\r\f\v]+: +!teams$"
 
 //costruttore
 Analyzer::Analyzer(Connection* conn, Db* db, ConfigLoader* configLoader )
@@ -227,10 +229,49 @@ int Analyzer::isAdminSay( char* line, std::string &numero )
     return 404;
 }
 
+void Analyzer::clientUserInfoChanged(char* line)
+{
+    // prendo il numero giocatore e la guid, utilizzando le funzioni delle stringhe
+    std::string temp=line;
+    int pos=temp.find("ClientUserinfoChanged:");
+    pos=temp.find_first_not_of(' ',pos+21);
+    int end=temp.find_first_of(' ',pos);
+    std::string numero=temp.substr(pos,end-pos);
+    pos=temp.find(" n");
+    pos=temp.find_first_not_of("\\",pos+1);
+    end=temp.find_first_of("\\ ",pos);
+    std::string nick=temp.substr(pos,end-pos);
+    pos=temp.find("\\t\\");
+    pos=temp.find_first_not_of("\\",pos+4);
+    end=temp.find_first_of("\\",pos);        //permetto anche spazi all'interno del nome, tutti i caratteri permessi tranne lo slash
+    std::string team=temp.substr(pos,end-pos);
+    
+    #ifdef ITA
+    std::cout<<"[-]Estrapolati i dati: numero="<<numero<<" nick="<<nick<<" team="<<team<<"\n";
+    (m_dati->log)->timestamp();
+    *(m_dati->log)<<"\n[-]Estrapolati i dati: numero="<<numero<<" nick="<<nick<<" team="<<team<<"\n";
+    #else
+    std::cout<<"[-]Extracted data: number="<<numero<<" nick="<<nick<<" team="<<team<<"\n";
+    (m_dati->log)->timestamp();
+    *(m_dati->log)<<"\n[-]Extracted data: number="<<numero<<" nick="<<nick<<" team="<<team<<"\n";
+    #endif
+    
+    int i = findPlayer( numero );
+    if( i > 0 ){
+        (*m_dati->currentServer())[i]->nick = nick;
+        if( team.compare("1") == 0 )
+            (*m_dati->currentServer())[i]->team = Server::Player::RED;
+        else if( team.compare("2") == 0 )
+            (*m_dati->currentServer())[i]->team = Server::Player::BLUE;
+        else
+            (*m_dati->currentServer())[i]->team = Server::Player::SPECT;
+    }
+}
+
 void Analyzer::clientUserInfo(char* line)
 {
     InstructionsBlock * block = new InstructionsBlock();    // create block for instructions
-    // prendo il numero giocatore e la guid, utilizzando le funzioni delle stringhe
+    // take player's info
     std::string temp=line;
     int pos=temp.find("ClientUserinfo:");
     pos=temp.find_first_not_of(' ',pos+15);
@@ -1314,16 +1355,20 @@ void Analyzer::kick(char* line)
             {
                 #ifdef ITA
                     block->tell("^1Errore: nick non trovato o non univoco.",numeroAdmin);
+                    *(m_dati->log)<<"\n[ERROR] player non trovato.\n";
                 #else
                     block->tell("^1Error: nick not unique or not found.",numeroAdmin);
+                    *(m_dati->log)<<"\n[ERROR] player not found.\n";
                 #endif
             }
             else
             {
                 #ifdef ITA
                     std::string phrase("^0BanBot: ^1butto fuori ");
+                    *(m_dati->log)<<"\n[OK] butto fuori il giocatore.\n";
                 #else
                     std::string phrase("^0BanBot: ^1kicking ");
+                    *(m_dati->log)<<"\n[OK] kicking player.\n";
                 #endif
                 phrase.append((*m_dati)[m_dati->serverNumber][i]->nick);
                 phrase.append("...");
@@ -1460,6 +1505,8 @@ void Analyzer::help(char* line)
             phrase.append( H_WARNINGS );
         if ( level <= (*m_dati)[(*m_dati).serverNumber].commandPermission(Server::BANTIMEWARN) )
             phrase.append( H_BANTIMEWARN );
+        if ( level <= (*m_dati)[(*m_dati).serverNumber].commandPermission(Server::TEAMS) )
+            phrase.append( H_TEAMS );
         if ( level <= (*m_dati)[(*m_dati).serverNumber].commandPermission(Server::TEAMBALANCE) )
             phrase.append( H_BALANCE );
         if ( level <= (*m_dati)[(*m_dati).serverNumber].commandPermission(Server::GRAVITY) )
@@ -2185,7 +2232,7 @@ void Analyzer::balance(char* line)
             #endif
             
             block->say(phrase);
-            block->teamBalance();
+            block->teamBalance( m_dati->currentServer()->getSpectNumbers() );
         }
         else {
             #ifdef ITA
@@ -2353,9 +2400,9 @@ void Analyzer::changeLevel(char* line)
                 std::string phrase ( "^0BanBot: ^1" );
                 if ( database->modifyOp(id,"","",newOpLevel) ){
                     #ifdef ITA
-                    phrase.append(" amministratore modificato con successo.");
+                    phrase.append(" amministratore modificato con successo al l. ");
                     #else
-                    phrase.append(" admin successfully modified.");
+                    phrase.append(" admin successfully modified at l. ");
                     #endif
                     phrase.append ( newOpLevel );
                 }
@@ -2395,6 +2442,80 @@ void Analyzer::bigtext(char* line)
         
         block->bigtext(option);
         m_scheduler->addInstructionBlock( block, Server::MEDIUM );
+    }
+}
+
+void Analyzer::teams(char* line)
+{
+    std::cout<<"[!] Teams";
+    (m_dati->log)->timestamp();
+    *(m_dati->log)<<"\n[!] Teams";
+    //i check the player and his permissions, if he isn't autorized to use this command, nothing to do.
+    std::string numeroAdmin;
+    if (isAdminSay(line,numeroAdmin) <= (*m_dati)[(*m_dati).serverNumber].commandPermission(Server::TEAMS))
+    {
+        InstructionsBlock *block = new InstructionsBlock();
+        if ( m_dati->currentServer()->permitTeams() ){
+            //counting player for each team
+            int red;
+            int blue;
+            for( unsigned int i = 0; i < m_dati->currentServer()->size(); i++ ){
+                if( (*m_dati->currentServer())[i]->team == Server::Player::RED ) red++;
+                else if( (*m_dati->currentServer())[i]->team == Server::Player::BLUE ) blue++;
+            }
+            
+            if (red != blue)
+            {
+                #ifdef ITA
+                std::string phrase ("^0BanBot:^2 correzione team ^1in corso.");
+                #else
+                std::string phrase ("^0BanBot: ^2 fixing teams.");
+                #endif
+                block->say(phrase);
+                
+                if ( red > blue ){
+                    for( unsigned int i = 0; i < m_dati->currentServer()->size() && red > blue; i++)
+                        if ( (*m_dati->currentServer())[i]->team == Server::Player::RED ) {
+                            block->force((*m_dati->currentServer())[i]->number,"blue");
+                            red--;
+                            blue++;
+                        }
+                }
+                else {
+                    for( unsigned int i = 0; i < m_dati->currentServer()->size() && red < blue; i++)
+                        if ( (*m_dati->currentServer())[i]->team == Server::Player::BLUE ) {
+                            block->force((*m_dati->currentServer())[i]->number,"red");
+                            red++;
+                            blue--;
+                        }
+                }
+            } else {
+                //teams not required: wtf?!?
+                #ifdef ITA
+                std::string phrase ("^0BanBot:^1 i team sono ^2");
+                phrase.append(red);
+                phrase.append(" ^1vs ^2");
+                phrase.append(blue);
+                phrase.append(" ^1: stfu!");
+                #else
+                std::string phrase ("^0BanBot:^1 teams are ^2");
+                phrase.append(handyFunctions::intToString((red)));
+                phrase.append(" ^1vs ^2");
+                phrase.append(handyFunctions::intToString((blue)));
+                phrase.append(" ^1: stfu!");
+                #endif
+                block->tell(phrase,numeroAdmin);
+            }
+        }
+        else {
+            #ifdef ITA
+            std::string phrase ("^0BanBot: ^1Correzione teams gia' eseguita.");
+            #else
+            std::string phrase ("^0BanBot: ^1Teams already done.");
+            #endif
+            block->tell(phrase,numeroAdmin);
+        }
+        m_scheduler->addInstructionBlock( block, Server::LOW );
     }
 }
 /*************************************************************************** UTILS **************************************/
@@ -2878,108 +2999,114 @@ void Analyzer::main_loop()
                             *(m_dati->log)<< "  At: "<< (*m_dati)[m_dati->serverNumber].row()<<" contains: "<<line<<"\n";
                         #endif
 
-                        //comincio coi test
                         if (isA(line, _R_CLIENT_USER_INFO))
                         {
-                            //ha passato il regex, è una clientUserinfo
+                            //it is a clientUserinfo line
                             clientUserInfo(line);
                             commandexecuted=true;
                         }
                         else
                         {
-                            //non ha passato il test, non è un clientUserinfo: provo con gli altri regex
-                            //controllo se è la connessione di un utente
-                            if (isA(line, _R_CLIENT_CONNECT))
+                            if (isA(line, _R_CLIENT_USER_INFO_CHANGED))
                             {
-                                //è un clientconnect:
-                                clientConnect(line);
-                                commandexecuted=true;
+                                clientUserInfoChanged(line);
                             }
                             else
                             {
-                                //non è un clientConnect, provo con gli altri regex_t
-                                //controllo se è una disconnessione
-                                if (isA(line, _R_CLIENT_DISCONNECT))
+                                if (isA(line, _R_CLIENT_CONNECT))
                                 {
-                                    //è un clientDisconnect
-                                    clientDisconnect(line);
+                                    //è un clientconnect:
+                                    clientConnect(line);
+                                    commandexecuted=true;
                                 }
                                 else
                                 {
-                                    //non è neanche un clientDisconnect
-                                    if (isA(line, _R_INITGAME))
+                                    //non è un clientConnect, provo con gli altri regex_t
+                                    //controllo se è una disconnessione
+                                    if (isA(line, _R_CLIENT_DISCONNECT))
                                     {
-                                        //ok, è l'inizio di una nuova partita, resetto i player:
-                                        //elimino gli oggetti Player:
-                                        for (unsigned int i=0;i<(*m_dati)[m_dati->serverNumber].size();i++) delete (*m_dati)[m_dati->serverNumber][i];
-                                        //resetto il vector:
-                                        (*m_dati)[m_dati->serverNumber].clear();
-                                        commandexecuted=true;
+                                        //è un clientDisconnect
+                                        clientDisconnect(line);
                                     }
                                     else
                                     {
-                                        if (isA(line,_R_COMMAND))
+                                        //non è neanche un clientDisconnect
+                                        if (isA(line, _R_INITGAME))
                                         {
+                                            //ok, è l'inizio di una nuova partita, resetto i player:
+                                            //elimino gli oggetti Player:
+                                            for (unsigned int i=0;i<(*m_dati)[m_dati->serverNumber].size();i++) delete (*m_dati)[m_dati->serverNumber][i];
+                                            //resetto il vector:
+                                            (*m_dati)[m_dati->serverNumber].clear();
                                             commandexecuted=true;
-                                            if (isA(line, _R_STATUS))
-                                                status(line);
-                                            else if (isA(line, _R_STRICT))
-                                                setStrict(line);
-                                            else if (isA(line, _R_IAMGOD))
-                                                iamgod(line);
-                                            else if ( m_dati->currentServer()->strict() > LEVEL0 ){
-                                                if (isA(line, _R_BAN))
-                                                    ban(line);
-                                                else if (isA(line,_R_FIND))
-                                                    find(line);
-                                                else if (isA(line, _R_UNBAN)) 
-                                                    unban(line);
-                                                else if (isA(line, _R_OP))
-                                                    op(line);
-                                                else if (isA(line, _R_DEOP)) 
-                                                    deop(line);
-                                                else if (isA(line, _R_HELP))
-                                                    help(line);
-                                                else if (isA(line, _R_FINDOP))
-                                                    findOp(line);
-                                                else if (isA(line, _R_KICK))
-                                                    kick(line);
-                                                else if (isA(line, _R_MUTE))
-                                                    mute(line);
-                                                else if (isA(line, _R_VETO))
-                                                    veto(line);
-                                                else if (isA(line, _R_SLAP))
-                                                    slap(line);
-                                                else if (isA(line, _R_NEXTMAP))
-                                                    nextmap(line);
-                                                else if (isA(line, _R_MAP))
-                                                    map(line);
-                                                else if (isA(line, _R_FORCE))
-                                                    force(line);
-                                                else if (isA(line, _R_NUKE))
-                                                    nuke(line);
-                                                else if (isA(line, _R_ADMINS))
-                                                    admins(line);
-                                                else if (isA(line, _R_PASS))
-                                                    pass(line);
-                                                else if (isA(line, _R_CONFIG))
-                                                    config(line);
-                                                else if (isA(line, _R_WARNINGS))
-                                                    warnings(line);
-                                                else if (isA(line, _R_BANTIMEWARN))
-                                                    bantimewarn(line);
-                                                else if (isA(line, _R_RESTART))
-                                                    restart(line);
-                                                else if (isA(line, _R_RELOAD))
-                                                    reload(line);
-                                                else if (isA(line, _R_BALANCE))
-                                                    balance(line);
-                                                else if (isA(line, _R_GRAVITY))
-                                                    gravity(line);
-                                                else if (isA(line, _R_CHANGELEVEL))
-                                                    changeLevel(line);
-                                                else if (isA(line, _R_BIGTEXT))
-                                                    bigtext(line);
+                                        }
+                                        else
+                                        {
+                                            if (isA(line,_R_COMMAND))
+                                            {
+                                                commandexecuted=true;
+                                                if (isA(line, _R_STATUS))
+                                                    status(line);
+                                                else if (isA(line, _R_STRICT))
+                                                    setStrict(line);
+                                                else if (isA(line, _R_IAMGOD))
+                                                    iamgod(line);
+                                                else if ( m_dati->currentServer()->strict() > LEVEL0 ){
+                                                    if (isA(line, _R_BAN))
+                                                        ban(line);
+                                                    else if (isA(line,_R_FIND))
+                                                        find(line);
+                                                    else if (isA(line, _R_UNBAN)) 
+                                                        unban(line);
+                                                    else if (isA(line, _R_OP))
+                                                        op(line);
+                                                    else if (isA(line, _R_DEOP)) 
+                                                        deop(line);
+                                                    else if (isA(line, _R_HELP))
+                                                        help(line);
+                                                    else if (isA(line, _R_FINDOP))
+                                                        findOp(line);
+                                                    else if (isA(line, _R_KICK))
+                                                        kick(line);
+                                                    else if (isA(line, _R_MUTE))
+                                                        mute(line);
+                                                    else if (isA(line, _R_VETO))
+                                                        veto(line);
+                                                    else if (isA(line, _R_SLAP))
+                                                        slap(line);
+                                                    else if (isA(line, _R_NEXTMAP))
+                                                        nextmap(line);
+                                                    else if (isA(line, _R_MAP))
+                                                        map(line);
+                                                    else if (isA(line, _R_FORCE))
+                                                        force(line);
+                                                    else if (isA(line, _R_NUKE))
+                                                        nuke(line);
+                                                    else if (isA(line, _R_ADMINS))
+                                                        admins(line);
+                                                    else if (isA(line, _R_PASS))
+                                                        pass(line);
+                                                    else if (isA(line, _R_CONFIG))
+                                                        config(line);
+                                                    else if (isA(line, _R_WARNINGS))
+                                                        warnings(line);
+                                                    else if (isA(line, _R_BANTIMEWARN))
+                                                        bantimewarn(line);
+                                                    else if (isA(line, _R_RESTART))
+                                                        restart(line);
+                                                    else if (isA(line, _R_RELOAD))
+                                                        reload(line);
+                                                    else if (isA(line, _R_BALANCE))
+                                                        balance(line);
+                                                    else if (isA(line, _R_GRAVITY))
+                                                        gravity(line);
+                                                    else if (isA(line, _R_CHANGELEVEL))
+                                                        changeLevel(line);
+                                                    else if (isA(line, _R_BIGTEXT))
+                                                        bigtext(line);
+                                                    else if (isA(line, _R_TEAMS))
+                                                        teams(line);
+                                                }
                                             }
                                         }
                                     }

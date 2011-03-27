@@ -237,12 +237,12 @@ void InstructionsBlock::restart()
         m_list = new Restart();
 }
 
-void InstructionsBlock::teamBalance()
+void InstructionsBlock::teamBalance( std::vector<std::string> excludelist )
 {
     if ( m_list != NULL)
-        m_list->addToTail( new TeamBalance() );
+        m_list->addToTail( new TeamBalance(excludelist) );
     else
-        m_list = new TeamBalance();
+        m_list = new TeamBalance(excludelist);
 }
 
 void InstructionsBlock::gravity( std::string amount )

@@ -77,7 +77,8 @@ class Server
             TEAMBALANCE,
             GRAVITY,
             CHANGELEVEL,
-            BIGTEXT
+            BIGTEXT,
+            TEAMS
         };
 
         enum Timing {               //used to define the timing of nick and ip bans.
@@ -91,14 +92,14 @@ class Server
 
         class Player
         {
-            /** which team the player is on */
-            enum Team {
-                RED,
-                BLUE,
-                SPECT
-            };
-
             public:
+                /** which team the player is on */
+                enum Team {
+                    RED,
+                    BLUE,
+                    SPECT
+                };
+                
                 std::string GUID
                 , number
                 , nick
@@ -111,8 +112,7 @@ class Server
                     , nick( std::string() )
                     , ip( std::string() )
                     , team( SPECT )
-                    {
-                    };
+                    {};
 
                 /**
                  * constructor with values
@@ -130,8 +130,7 @@ class Server
                     , nick(ni)
                     , ip(i)
                     , team(t)
-                    {
-                    };
+                    {};
 
                 Player* clone() { return new Player( GUID, number, nick, ip, team ); };
         };
@@ -226,6 +225,7 @@ class Server
 
         // returns true and updates m_lastBalance
         bool permitBalance();                                               // updates m_lastBalance, and returns true if the teambalance is permitted
+        bool permitTeams();                                                 // updates m_lasTeams and returns true if the teams is permitted
 
         // put these into scheduler and add server number to specify server to operate on
         void addPriorityInstrBlock( Server::PriorityLevel lvl, InstructionsBlock *inst );   // ADDS TO TAIL given InstructionsBlock
@@ -238,7 +238,8 @@ class Server
         std::vector<Server::Player*>::iterator begin();
         void erase( std::vector<Server::Player*>::iterator iteratore ); // erases given player from container
         void clear();                       // clears players container
-
+        std::vector<std::string> getSpectNumbers(); //returns slot numbers of spects
+        
         //confronto con le vecchie opzioni, ed in caso di modifiche critiche lo resetta, altrimenti ripristina i dati dinamici.
         void test_for_changes(Server* old);
         //controlla se sono state date impostate tutte le opzioni, true=ok.
@@ -266,7 +267,8 @@ class Server
         Timing m_banNick;                           // timing of nick ban.
         Timing m_banIp;                             // timing of ip ban.
         bool m_banWarnings;                         // define if BanBot has to advice in case of ip or nick ban over the timing limit.
-        std::string m_lastBalance;                  // keeps track of last teambalance done.
+        std::string m_lastBalance;                  // keeps track of last balance done.
+        std::string m_lastTeams;                    // keeps track of last teams done.
 
         std::vector<Player*> m_giocatori;           // vector with the info of the players currently in the server
         InstructionCounter *m_instructionCounter;   // instruction counter for server's various InstructionsBlock

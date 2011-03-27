@@ -180,7 +180,7 @@ void ConfigLoader::loadOptions()
                             #endif
                             pos=end+1;
 
-                            if ( !isA( temp,(char*) "[ \t]*#") && isA( temp, (char*)"^[ \t]*[^ \t\n\r\f\v]+[ \t]*=[ \t]*[^ \t\n\r\f\v]+$" ) )
+                            if ( !isA( temp,(char*) "[ \t]*#") && isA( temp, (char*)"^[ \t]*[^ \t\n\r\f\v]+[ \t]*=[ \t]*[^\t\n\r\f\v]+[^ \t\n\r\f\v]$" ) )
                             {
                                 //if it isn't a comment or shit....
                                 if ( isA (temp, (char *)"^[ \t]*LEVEL_" ) )
@@ -238,6 +238,8 @@ void ConfigLoader::loadOptions()
                                         newServer->setCommandPermission( Server::CHANGELEVEL, atoi(extract(temp).c_str()));
                                     else if ( isA (temp, (char *)"^[ \t]*LEVEL_BIGTEXT[ \t]*=[ \t]*[0-9]{1,3}$" ) )
                                         newServer->setCommandPermission( Server::BIGTEXT, atoi(extract(temp).c_str()));
+                                    else if ( isA (temp, (char *)"^[ \t]*LEVEL_TEAMS[ \t]*=[ \t]*[0-9]{1,3}$" ) )
+                                        newServer->setCommandPermission( Server::TEAMS, atoi(extract(temp).c_str()));
                                     else {
                                         #ifdef ITA
                                         std::cout << "Attenzione: \"" << temp << "\" non e' un'opzione valida!.\n";
@@ -298,7 +300,7 @@ void ConfigLoader::loadOptions()
                                 else if ( isA( temp, (char*)"^[ \t]*RCON_PASSWORD[ \t]*=[ \t]*[^ \t\n\r\f\v]+$" ) )
                                     newServer->setRcon( extract( temp ) );
 
-                                else if ( isA( temp, (char*)"^[ \t]*GAME_LOGFILE[ \t]*=[ \t]*[^ \t\n\r\f\v]+$" ) )
+                                else if ( isA( temp, (char*)"^[ \t]*GAME_LOGFILE[ \t]*=[ \t]*[^\t\n\r\f\v]+[^ \t\n\r\f\v]$" ) )
                                 {
                                     std::string t = extract( temp );
                                     if ( t.at(0) != '/' && secondary )
@@ -307,7 +309,7 @@ void ConfigLoader::loadOptions()
                                     newServer->setServerLog( t );
                                 }
 
-                                else if ( isA( temp, (char*)"^[ \t]*BOT_LOGFILE[ \t]*=[ \t]*[^ \t\n\r\f\v]+$" ) )
+                                else if ( isA( temp, (char*)"^[ \t]*BOT_LOGFILE[ \t]*=[ \t]*[^\t\n\r\f\v]+[^ \t\n\r\f\v]$" ) )
                                 {
                                     std::string t = extract( temp );
                                     if ( t.at(0) != '/' && secondary )
@@ -316,7 +318,7 @@ void ConfigLoader::loadOptions()
                                     newServer->setBotLog( t );
                                 }
 
-                                else if ( isA( temp, (char*)"^[ \t]*BACKUP_DIR[ \t]*=[ \t]*[^ \t\n\r\f\v]+$" ) )
+                                else if ( isA( temp, (char*)"^[ \t]*BACKUP_DIR[ \t]*=[ \t]*[^\t\n\r\f\v]+[^ \t\n\r\f\v]$" ) )
                                 {
                                     std::string t=extract( temp );
                                     if ( t.at(0) != '/' && secondary )
@@ -325,7 +327,7 @@ void ConfigLoader::loadOptions()
                                     newServer->setBackupDir( t );
                                 }
 
-                                else if ( isA( temp, (char*)"^[ \t]*GAME_DIR[ \t]*=[ \t]*[^ \t\n\r\f\v]+$" ) )
+                                else if ( isA( temp, (char*)"^[ \t]*GAME_DIR[ \t]*=[ \t]*[^\t\n\r\f\v]+[^ \t\n\r\f\v]$" ) )
                                 {
                                     std::string t=extract( temp );
                                     if ( t.at(0) != '/' && secondary )
@@ -334,7 +336,7 @@ void ConfigLoader::loadOptions()
                                     newServer->setGameDirectory( t );
                                 }
 
-                                else if ( isA( temp, (char*)"^[ \t]*DATABASE_DIR[ \t]*=[ \t]*[^ \t\n\r\f\v]+$" ) )
+                                else if ( isA( temp, (char*)"^[ \t]*DATABASE_DIR[ \t]*=[ \t]*[^\t\n\r\f\v]+[^ \t\n\r\f\v]$" ) )
                                 {
                                     std::string t=extract( temp );
                                     if ( t.at(0) != '/' && secondary )
@@ -349,7 +351,7 @@ void ConfigLoader::loadOptions()
                                 else if ( temp.compare("EXTERNAL_OPTIONS = YES") == 0 )
                                     secondary = true;
 
-                                else if ( isA( temp, (char*)"^[ \t]*CONFIG_FILE[ \t]*=[ \t]*[^ \t\n\r\f\v]+$" ) && !secondary )
+                                else if ( isA( temp, (char*)"^[ \t]*CONFIG_FILE[ \t]*=[ \t]*[^\t\n\r\f\v]+[^ \t\n\r\f\v]$" ) && !secondary )
                                 {
                                     newServer->setConfigFile( extract(temp) );
                                     struct stat info;
@@ -479,7 +481,7 @@ void ConfigLoader::loadOptions()
 std::string ConfigLoader::extract(const std::string &line)
 {
     int pos = line.find( '=' );
-    pos = line.find_first_not_of( ' ', pos+1 );
+    pos = line.find_first_not_of( " \t", pos+1 );
     return line.substr( pos );
 }
 

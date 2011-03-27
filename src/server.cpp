@@ -77,10 +77,11 @@ Server::Server()
     m_permissions.push_back( 2 );     //bantimewarn level
     m_permissions.push_back( 2 );     //restart level
     m_permissions.push_back( 2 );     //reload level
-    m_permissions.push_back( 3 );     //teambalance level
+    m_permissions.push_back( 3 );     //balance level
     m_permissions.push_back( 2 );     //gravity level
     m_permissions.push_back( 1 );     //changelevel level
     m_permissions.push_back( 3 );     //bigtext level
+    m_permissions.push_back( 3 );     //teams level
 }
 
 Server::~Server()
@@ -508,6 +509,39 @@ bool Server::permitBalance(){
         return true;
     }
     return false;
+}
+
+bool Server::permitTeams(){
+    time_t t;
+    t = time( NULL );
+    struct tm* timeInfo;
+    timeInfo = localtime( &t );
+    char buffer[80];    //to keep result of the time
+    strftime( buffer, sizeof( buffer ), "%H:%M", timeInfo );
+    std::string time( buffer );
+    
+    if (m_lastTeams.empty()){
+        m_lastTeams = time;
+        return true;
+    }
+    
+    int hour = atoi(time.substr(0,time.find(':')).c_str());
+    int minute = atoi(time.substr(time.find(':')+1).c_str());
+    int l_hour = atoi(m_lastTeams.substr(0,m_lastTeams.find(':')).c_str());
+    int l_minute = atoi(m_lastTeams.substr(m_lastTeams.find(':')+1).c_str());
+    
+    if ( (hour*60 + minute) - (l_hour*60 + l_minute) > 1 || (hour*60 + minute) - (l_hour*60 + l_minute) < 0 ){
+        m_lastTeams = time;
+        return true;
+    }
+    return false;
+}
+
+std::vector<std::string> Server::getSpectNumbers() {
+    std::vector<std::string> t;
+    for( unsigned int i = 0; i < m_giocatori.size(); i++ )
+        if( m_giocatori[i]->team == Player::SPECT ) t.push_back( m_giocatori[i]->number );
+        return t;
 }
 
 std::string Server::toString()
