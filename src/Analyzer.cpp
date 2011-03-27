@@ -2463,6 +2463,9 @@ void Analyzer::teams(char* line)
                 if( (*m_dati->currentServer())[i]->team == Server::Player::RED ) red++;
                 else if( (*m_dati->currentServer())[i]->team == Server::Player::BLUE ) blue++;
             }
+            #ifdef DEBUG_MODE
+            std::cout<<"Red founded: "<<red<<" Blue founded: "<<blue<<" Total: "<<m_dati->currentServer()->size()<<"\n";
+            #endif
             
             if (red != blue)
             {
@@ -2477,6 +2480,9 @@ void Analyzer::teams(char* line)
                     for( unsigned int i = 0; i < m_dati->currentServer()->size() && red > blue; i++)
                         if ( (*m_dati->currentServer())[i]->team == Server::Player::RED ) {
                             block->force((*m_dati->currentServer())[i]->number,"blue");
+                            #ifdef DEBUG_MODE
+                            std::cout<<"Forcing player number "<<(*m_dati->currentServer())[i]->number<<" "<<(*m_dati->currentServer())[i]->nick<<" to blue.\n";
+                            #endif
                             red--;
                             blue++;
                         }
@@ -2485,6 +2491,7 @@ void Analyzer::teams(char* line)
                     for( unsigned int i = 0; i < m_dati->currentServer()->size() && red < blue; i++)
                         if ( (*m_dati->currentServer())[i]->team == Server::Player::BLUE ) {
                             block->force((*m_dati->currentServer())[i]->number,"red");
+                            std::cout<<"Forcing player number "<<(*m_dati->currentServer())[i]->number<<" "<<(*m_dati->currentServer())[i]->nick<<" to red.\n";
                             red++;
                             blue--;
                         }
