@@ -261,16 +261,13 @@ void Analyzer::clientUserInfoChanged(char* line)
         (*m_dati->currentServer())[i]->nick = nick;
         if( team.compare("1") == 0 ){
             (*m_dati->currentServer())[i]->team = Server::Player::RED;
-            std::cout<<"Rosso dio can\n";
         }
         else if( team.compare("2") == 0 ){
             (*m_dati->currentServer())[i]->team = Server::Player::BLUE;
-            std::cout<<"Blu dio porco\n";
         }
         else
             (*m_dati->currentServer())[i]->team = Server::Player::SPECT;
     }
-    else std::cout<<"NON trovato: madonna puttana\n";
 }
 
 void Analyzer::clientUserInfo(char* line)
@@ -2465,21 +2462,8 @@ void Analyzer::teams(char* line)
             int red = 0;
             int blue = 0;
             for( unsigned int i = 0; i < m_dati->currentServer()->size(); i++ ){
-                #ifdef DEBUG_MODE
-                std::cout<<"Player number "<<(*m_dati->currentServer())[i]->number<<" "<<(*m_dati->currentServer())[i]->nick<<" is "<<(*m_dati->currentServer())[i]->team<<"\n";
-                #endif
-                if( (*m_dati->currentServer())[i]->team == Server::Player::RED ) {
-                    red++; 
-                    #ifdef DEBUG_MODE
-                    std::cout<<"He is red\n";
-                    #endif
-                }
-                else if( (*m_dati->currentServer())[i]->team == Server::Player::BLUE ) {
-                    blue++;
-                    #ifdef DEBUG_MODE
-                    std::cout<<"He is blue\n";
-                    #endif
-                }
+                if( (*m_dati->currentServer())[i]->team == Server::Player::RED ) red++; 
+                else if( (*m_dati->currentServer())[i]->team == Server::Player::BLUE ) blue++;
             }
             #ifdef DEBUG_MODE
             std::cout<<"Red found: "<<red<<" Blue found: "<<blue<<" Total: "<<m_dati->currentServer()->size()<<"\n";
