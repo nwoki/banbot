@@ -257,7 +257,7 @@ void Analyzer::clientUserInfoChanged(char* line)
     #endif
     
     int i = findPlayer( numero );
-    if( i > 0 ){
+    if( i >= 0 ){
         (*m_dati->currentServer())[i]->nick = nick;
         if( team.compare("1") == 0 ){
             (*m_dati->currentServer())[i]->team = Server::Player::RED;
