@@ -180,7 +180,7 @@ void Analyzer::loadOptions()
     #endif
 }
 
-//testa l'array di caratteri passato col regex, torna true se la condizione imposta dal regex è soddisfatta.
+//check a line with a regex (regular expression): if the line respect the rule, returns true
 bool Analyzer::isA(const char* line, const std::string& regex )
 {
     regex_t r;

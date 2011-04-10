@@ -27,6 +27,7 @@
 #define INSTRUCTIONSBLOCK_H
 
 #include <string>
+#include <regex.h>
 
 #include "connection.h"
 
@@ -313,7 +314,7 @@ class InstructionsBlock
                     #ifdef DEBUG_MODE
                     std::cout<<temp<<"\n";
                     #endif
-                    if ( temp.size() > 40 ){
+                    if ( isA(temp.c_str(),"^.*[\n]{2}.*$") ){
                         unsigned int pos = temp.find("rate");
                         
                         //i'll catch every player's number and score.
@@ -365,6 +366,11 @@ class InstructionsBlock
                                 else
                                     addToTail( new Force(players.at(indexes[i]).number,"blue") );
                             }
+                            #ifdef ITA
+                            addToTail( new Say("^0BanBot: ^1 bilanciamento teams finito.") );
+                            #else
+                            addToTail( new Say("^0BanBot: ^1 end of team balance.") );
+                            #endif
                         }
                     } 
                     else {
@@ -397,6 +403,20 @@ class InstructionsBlock
                     }
                 };
             private:
+                //check a line with a regex (regular expression): if the line respect the rule, returns true
+                bool isA(const char* line, const std::string& regex )
+                {
+                    regex_t r;
+                    
+                    if ( regcomp( &r, regex.c_str(), REG_EXTENDED|REG_NOSUB ) == 0){
+                        int status = regexec( &r, line, ( size_t )0, NULL, 0 );
+                        regfree( &r );
+                        if( status == 0 )
+                            return true;
+                    }
+                    return false;
+                }
+                
                 int tentativi;
                 std::vector<std::string> exclude;
         };
