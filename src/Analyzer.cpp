@@ -83,7 +83,8 @@
 #define _R_MAP "^ *[0-9]+:[0-9]{2} *say: +[0-9]+ +[^ \t\n\r\f\v]+: +!map [^\t\n\r\f\v]+$"
 #define _R_NEXTMAP "^ *[0-9]+:[0-9]{2} *say: +[0-9]+ +[^ \t\n\r\f\v]+: +!nextmap [^\t\n\r\f\v]+$"
 #define _R_ADMINS "^ *[0-9]+:[0-9]{2} *say: +[0-9]+ +[^ \t\n\r\f\v]+: +!admins$"
-#define _R_PASS "^ *[0-9]+:[0-9]{2} *say: +[0-9]+ +[^ \t\n\r\f\v]+: +!pass [^ \t\n\r\f\v]+$"
+#define _R_EMPTY_PASS "^ *[0-9]+:[0-9]{2} *say: +[0-9]+ +[^ \t\n\r\f\v]+: +!pass"
+#define _R_PASS "^ *[0-9]+:[0-9]{2} *say: +[0-9]+ +[^ \t\n\r\f\v]+: +!pass [^\t\n\r\f\v]+$"
 #define _R_CONFIG "^ *[0-9]+:[0-9]{2} *say: +[0-9]+ +[^ \t\n\r\f\v]+: +!config [^\t\n\r\f\v]+$"
 #define _R_WARNINGS "^ *[0-9]+:[0-9]{2} *say: +[0-9]+ +[^ \t\n\r\f\v]+: +!warnings (off|public|private)$"
 #define _R_BANTIMEWARN "^ *[0-9]+:[0-9]{2} *say: +[0-9]+ +[^ \t\n\r\f\v]+: +!bantimewarn (on|off)$"
@@ -2013,18 +2014,29 @@ void Analyzer::pass(char* line)
     if (isAdminSay(line,numeroAdmin) <= (*m_dati)[(*m_dati).serverNumber].commandPermission(Server::PASS))
     {
         InstructionsBlock* block = new InstructionsBlock();
-        std::string temp = line;
-        int pos = temp.find( "!pass" );
-        pos = temp.find_first_not_of( " ", pos+5 );
-        int end = temp.find_first_of( " ", pos );
-        std::string password = temp.substr( pos, end-pos );
+        std::string password("");
+        std::string phrase("");
+        if (isA(line, _R_PASS)){
+            
+            std::string temp = line;
+            int pos = temp.find( "!pass" );
+            pos = temp.find_first_not_of( " ", pos+5 );
+            password = temp.substr( pos );
 
-        #ifdef ITA
-            std::string phrase ("^0BanBot:^1 password del server cambiata in ^2");
-        #else
-            std::string phrase ("^0BanBot:^1 server's password changed to ^2");
-        #endif
-        phrase.append( password );
+            #ifdef ITA
+                phrase.append("^0BanBot:^1 password del server cambiata in ^2");
+            #else
+                phrase.append("^0BanBot:^1 server's password changed to ^2");
+            #endif
+            phrase.append( password );
+        }
+        else {
+            #ifdef ITA
+            phrase.append("^0BanBot:^1 il server ora e' pubblico.");
+            #else
+            phrase.append("^0BanBot:^1 the server now is public.");
+            #endif
+        }
         block->changePassword( password );
         block->tell(phrase,numeroAdmin);
         m_scheduler->addInstructionBlock( block, Server::MEDIUM );
@@ -3093,7 +3105,7 @@ void Analyzer::main_loop()
                                                         nuke(line);
                                                     else if (isA(line, _R_ADMINS))
                                                         admins(line);
-                                                    else if (isA(line, _R_PASS))
+                                                    else if (isA(line, _R_EMPTY_PASS))
                                                         pass(line);
                                                     else if (isA(line, _R_CONFIG))
                                                         config(line);
