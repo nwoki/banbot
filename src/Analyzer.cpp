@@ -330,7 +330,7 @@ void Analyzer::clientUserInfo(char* line)
                     phrase.append(numero);
                     phrase.append(", ");
                     phrase.append(nick);
-                    phrase.append(" for cheats.");
+                    phrase.append("^1 for cheats.");
                     block->say(phrase);
                     std::string ora;
                     std::string data;
@@ -347,13 +347,13 @@ void Analyzer::clientUserInfo(char* line)
                     phrase.append(numero);
                     phrase.append(", ");
                     phrase.append(nick);
-                    phrase.append(" sta usando cheats (la guid e' cambiata).");
+                    phrase.append("^1 sta usando cheats (la guid e' cambiata).");
                     #else
                     std::string phrase("^0BanBot warning: ^1player number ");
                     phrase.append(numero);
                     phrase.append(", ");
                     phrase.append(nick);
-                    phrase.append(" is using cheats (guid changed).");
+                    phrase.append("^1 is using cheats (guid changed).");
                     #endif
                     tellToAdmins(phrase);
                 }
@@ -404,9 +404,9 @@ void Analyzer::clientUserInfo(char* line)
             phrase.append(", ");
             phrase.append(nick);
             #ifdef ITA
-                phrase.append(" per QKey corrotta.");
+                phrase.append("^1 per QKey corrotta.");
             #else
-                phrase.append(" for corrupted QKey.");
+                phrase.append("^1 for corrupted QKey.");
             #endif
 
             block->say(phrase);
@@ -433,9 +433,9 @@ void Analyzer::clientUserInfo(char* line)
             phrase.append(", ");
             phrase.append(nick);
             #ifdef ITA
-                phrase.append(" ha la QKey corrotta:\n^1probabilmente sta usando dei cheats.");
+                phrase.append("^1 ha la QKey corrotta:\n^1probabilmente sta usando dei cheats.");
             #else
-                phrase.append(" has a corrupted QKey:\n^1probably he's using cheats.");
+                phrase.append("^1 has a corrupted QKey:\n^1probably he's using cheats.");
             #endif
             tellToAdmins(phrase);
         }
@@ -467,9 +467,9 @@ void Analyzer::clientUserInfo(char* line)
                     phrase.append(", ");
                     phrase.append(nick);
                     #ifdef ITA
-                        phrase.append(" per cheats.");
+                        phrase.append("^1 per cheats.");
                     #else
-                        phrase.append(" for cheats.");
+                        phrase.append("^1 for cheats.");
                     #endif
                     block->say(phrase);
                     std::string ora;
@@ -495,9 +495,9 @@ void Analyzer::clientUserInfo(char* line)
                     phrase.append(", ");
                     phrase.append(nick);
                     #ifdef ITA
-                    phrase.append(" ha dei cheat attivi.");
+                    phrase.append("^1 ha dei cheat attivi.");
                     #else
-                    phrase.append(" has cheats activated.");
+                    phrase.append("^1 has cheats activated.");
                     #endif
                     tellToAdmins(phrase);
                 }
@@ -524,9 +524,9 @@ void Analyzer::clientUserInfo(char* line)
                         phrase.append(", ");
                         phrase.append(nick);
                         #ifdef ITA
-                            phrase.append(" per client non pulito.");
+                            phrase.append("^1 per client non pulito.");
                         #else
-                            phrase.append(" for illegal client.");
+                            phrase.append("^1 for illegal client.");
                         #endif
                         block->say(phrase);
                         block->kick(numero);
@@ -543,9 +543,9 @@ void Analyzer::clientUserInfo(char* line)
                         phrase.append(", ");
                         phrase.append(nick);
                         #ifdef ITA
-                            phrase.append(" ha un client non pulito.");
+                            phrase.append("^1 ha un client non pulito.");
                         #else
-                            phrase.append(" has an illegal client.");
+                            phrase.append("^1 has an illegal client.");
                         #endif
                         tellToAdmins(phrase);
                     }
@@ -694,9 +694,9 @@ void Analyzer::ban(char* line)
                 if (!motivo.empty())
                 {
                     #ifdef ITA
-                        phrase.append(" per ");
+                        phrase.append("^1 per ");
                     #else
-                        phrase.append(" for ");
+                        phrase.append("^1 for ");
                     #endif
                     phrase.append(motivo);
                 }
@@ -791,7 +791,7 @@ void Analyzer::unban(char* line)
                 {
                     phrase.append("^0BanBot: ^1");
                     phrase.append(risultatoEsatto[0].nick);
-                    phrase.append(" sbannato con successo.");
+                    phrase.append("^1 sbannato con successo.");
                 }
                 else phrase.append("^0BanBot: ^1è stato riscontrato un errore, utente non sbannato.");
                 #else
@@ -799,7 +799,7 @@ void Analyzer::unban(char* line)
                 {
                     phrase.append("^0BanBot: ^1");
                     phrase.append(risultatoEsatto[0].nick);
-                    phrase.append(" successfully unbanned.");
+                    phrase.append("^1 successfully unbanned.");
                 }
                 else phrase.append("^0BanBot: ^1error: player not unbanned.");
                 #endif
@@ -815,7 +815,7 @@ void Analyzer::unban(char* line)
                     {
                         phrase.append("^0BanBot: ^1");
                         phrase.append(risultatoApprossimativo[0].nick);
-                        phrase.append(" sbannato con successo.");
+                        phrase.append("^1 sbannato con successo.");
                     }
                     else phrase.append("^0BanBot: ^1è stato riscontrato un errore, utente non sbannato.");
                     #else
@@ -823,7 +823,7 @@ void Analyzer::unban(char* line)
                     {
                         phrase.append("^0BanBot: ^1");
                         phrase.append(risultatoApprossimativo[0].nick);
-                        phrase.append(" successfully unbanned.");
+                        phrase.append("^1 successfully unbanned.");
                     }
                     else phrase.append("^0BanBot: ^1error: player not unbanned.");
                     #endif
@@ -930,7 +930,7 @@ void Analyzer::find(char* line)
             phrase.append(risultato[0].id);
             phrase.append("^2:^1 ");
             phrase.append(risultato[0].nick);
-            phrase.append(" ");
+            phrase.append("^1 ");
             phrase.append(risultato[0].motive);
             phrase.append(" ^2by^1 ");
             phrase.append(risultato[0].author);
@@ -944,7 +944,7 @@ void Analyzer::find(char* line)
                 phrase.append(risultato[i].id);
                 phrase.append("^2:^1 ");
                 phrase.append(risultato[i].nick);
-                phrase.append(" ");
+                phrase.append("^1 ");
                 phrase.append(risultato[i].motive);
                 phrase.append(" ^2by^1 ");
                 phrase.append(risultato[i].author);
@@ -970,7 +970,7 @@ void Analyzer::find(char* line)
             phrase.append(risultatoApprossimativo[0].id);
             phrase.append("^2:^1 ");
             phrase.append(risultatoApprossimativo[0].nick);
-            phrase.append(" ");
+            phrase.append("^1 ");
             phrase.append(risultatoApprossimativo[0].motive);
             phrase.append(" ^2by^1 ");
             phrase.append(risultatoApprossimativo[0].author);
@@ -982,7 +982,7 @@ void Analyzer::find(char* line)
             phrase.append(risultatoApprossimativo[1].id);
             phrase.append("^2:^1 ");
             phrase.append(risultatoApprossimativo[1].nick);
-            phrase.append(" ");
+            phrase.append("^1 ");
             phrase.append(risultatoApprossimativo[1].motive);
             phrase.append(" ^2by^1 ");
             phrase.append(risultatoApprossimativo[1].author);
@@ -996,7 +996,7 @@ void Analyzer::find(char* line)
                 phrase.append(risultatoApprossimativo[i].id);
                 phrase.append("^2:^1 ");
                 phrase.append(risultatoApprossimativo[i].nick);
-                phrase.append(" ");
+                phrase.append("^1 ");
                 phrase.append(risultatoApprossimativo[i].motive);
                 phrase.append(" ^2by^1 ");
                 phrase.append(risultatoApprossimativo[i].author);
@@ -1185,9 +1185,9 @@ void Analyzer::op(char* line)
                 std::string phrase ( "^0BanBot: ^1" );
                 phrase.append( (*m_dati)[m_dati->serverNumber][i]->nick );
                 #ifdef ITA
-                    phrase.append(" aggiunto con successo agli admin, livello ");
+                    phrase.append("^1 aggiunto con successo agli admin, livello ");
                 #else
-                    phrase.append(" successfully added to admin list, level ");
+                    phrase.append("^1 successfully added to admin list, level ");
                 #endif
                 phrase.append ( newOpLevel );
                 block->tell( phrase, numeroAdmin );
@@ -1374,7 +1374,7 @@ void Analyzer::kick(char* line)
                     *(m_dati->log)<<"\n[OK] kicking player.\n";
                 #endif
                 phrase.append((*m_dati)[m_dati->serverNumber][i]->nick);
-                phrase.append("...");
+                phrase.append("^1...");
                 block->say(phrase);
                 block->kick((*m_dati)[m_dati->serverNumber][i]->number);
             }
@@ -1442,7 +1442,7 @@ void Analyzer::mute(char* line)
                         std::string phrase("^0BanBot: ^1muting/unmuting ");
                     #endif
                     phrase.append((*m_dati)[m_dati->serverNumber][i]->nick);
-                    phrase.append("...");
+                    phrase.append("^1...");
                     block->say(phrase);
                     block->mute((*m_dati)[m_dati->serverNumber][i]->number);
                 }
@@ -1641,7 +1641,7 @@ void Analyzer::slap(char* line)
                     std::string phrase("^0BanBot: ^1slapping ");
                 #endif
                 phrase.append((*m_dati)[m_dati->serverNumber][number]->nick);
-                phrase.append(" ");
+                phrase.append("^1 ");
                 phrase.append(mul_string);
                 #ifdef ITA
                     phrase.append(" volta(e)...");
@@ -1706,7 +1706,7 @@ void Analyzer::nuke(char* line)
                     std::string phrase("^0BanBot: ^1nuking ");
                 #endif
                 phrase.append((*m_dati)[m_dati->serverNumber][number]->nick);
-                phrase.append(".");
+                phrase.append("^1.");
                 block->say(phrase);
                 block->nuke((*m_dati)[m_dati->serverNumber][number]->number);
             }
@@ -1846,11 +1846,11 @@ void Analyzer::force(char* line)
                 #ifdef ITA
                     phrase.append("^0BanBot: ^1sposto ");
                     phrase.append((*m_dati)[m_dati->serverNumber][i]->nick);
-                    phrase.append(" in ");
+                    phrase.append("^1 in ");
                 #else
                     phrase.append("^0BanBot: ^1forcing ");
                     phrase.append((*m_dati)[m_dati->serverNumber][i]->nick);
-                    phrase.append(" to ");
+                    phrase.append("^1 to ");
                 #endif
                 phrase.append(action);
                 phrase.append(".");
@@ -2505,7 +2505,9 @@ void Analyzer::teams(char* line)
                     for( unsigned int i = 0; i < m_dati->currentServer()->size() && red < blue; i++)
                         if ( (*m_dati->currentServer())[i]->team == Server::Player::BLUE ) {
                             block->force((*m_dati->currentServer())[i]->number,"red");
+                            #ifdef DEBUG_MODE
                             std::cout<<"Forcing player number "<<(*m_dati->currentServer())[i]->number<<" "<<(*m_dati->currentServer())[i]->nick<<" to red.\n";
+                            #endif
                             red++;
                             blue--;
                         }
@@ -2568,7 +2570,7 @@ void Analyzer::buttaFuori(const std::string &reason, const std::string numero, c
         phrase.append( nick );
         if ( !reason.empty() )
         {
-            phrase.append( " bannato per " );
+            phrase.append( "^1 bannato per " );
             phrase.append( reason );
         }
     #else
@@ -2580,7 +2582,7 @@ void Analyzer::buttaFuori(const std::string &reason, const std::string numero, c
         phrase.append( nick );
         if ( !reason.empty() )
         {
-            phrase.append( " banned for " );
+            phrase.append( "^1 banned for " );
             phrase.append( reason );
         }
     #endif
