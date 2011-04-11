@@ -30,6 +30,7 @@
 #include <regex.h>
 
 #include "connection.h"
+#define _R_STATUS "^.*\nmap:.*\n.*\n.*-{5}\n([ \t]+[0-9]+[ \t]+[0-9]+[ \t]+[0-9]+[ \t]+[^\t\n\r\f\v]+7[ \t]+[0-9]+[ \t]+[0-9]{1,3}.[0-9]{1,3}.[0-9]{1,3}.[0-9]{1,3}:[0-9]+[ \t]+[0-9]+[ \t]+[0-9]+.*\n)+\n.*$"
 
 class InstructionsBlock
 {
@@ -314,7 +315,7 @@ class InstructionsBlock
                     #ifdef DEBUG_MODE
                     std::cout<<temp<<"\n";
                     #endif
-                    if ( isA(temp.c_str(),"^.*[\n]{2}.*$") ){
+                    if ( isA(temp.c_str(),_R_STATUS) ){
                         unsigned int pos = temp.find("rate");
                         
                         //i'll catch every player's number and score.
