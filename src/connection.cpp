@@ -357,7 +357,7 @@ std::string Connection::status( int server )
     //set the socket as nonblocking
     int flags = fcntl(socketID, F_GETFL);
     fcntl(socketID, F_SETFL, flags | O_NONBLOCK);
-    char buf [2048];
+    char buf [50000];
     socklen_t fromlen = sizeof serverAdd;
     int rec = 0;
     while (rec>=0)
@@ -369,7 +369,6 @@ std::string Connection::status( int server )
     std::string temp(buf);
     return temp;
 }
-
 void Connection::gravity( std::string amount, int server )
 {
     prepareConnection( server );
