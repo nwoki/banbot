@@ -371,12 +371,12 @@ std::string Connection::status( int server )
     socklen_t fromlen = sizeof serverAdd;
     int rec = 0;
     int tryes = 0;
-    while (tryes < 20)
+    while (tryes < 50)
     {
         rec = recvfrom( socketID, buf, sizeof buf, 0, &(sockaddr &)serverAdd, &fromlen ); 
         if (rec <= 0){
             tryes++;
-            usleep(10000);
+            usleep(20000);
         }
         else tryes = 0;
     }
