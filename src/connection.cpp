@@ -43,6 +43,16 @@ Connection::Connection(ConfigLoader::Options* opzioni)
     serverAdd.sin_port = htons( (*m_options).generalPort );
     serverAdd.sin_addr.s_addr = htonl(INADDR_ANY);
     
+    //force the receive buffer size
+    int n = 1024 * 1024;
+    if (setsockopt(socketID, SOL_SOCKET, SO_RCVBUF, &n, sizeof(n)) == -1) {
+        // deal with failure, or ignore if you can live with the default size
+        std::cout<<"\nSocket warning: unable to change the buffer size.\n";
+        perror("");
+        std::cout<<"\n";
+    }
+    
+    
     if ( bind( socketID, (sockaddr *) &serverAdd, sizeof serverAdd) < 0 ){
         std::cout<<"\nSocket error: unable to open it.\n";
         perror("");
@@ -353,7 +363,7 @@ std::string Connection::status( int server )
     std::vector< char > command = makeCmd( comando );
     int bufferSize = command.size();
     sendto( socketID, command.data(), bufferSize, 0, &(sockaddr &)serverAdd, recvSize );
-    usleep(200000);
+    usleep(1000);
     //set the socket as nonblocking
     int flags = fcntl(socketID, F_GETFL);
     fcntl(socketID, F_SETFL, flags | O_NONBLOCK);
@@ -361,11 +371,14 @@ std::string Connection::status( int server )
     socklen_t fromlen = sizeof serverAdd;
     int rec = 0;
     int tryes = 0;
-    while (tryes < 3)
+    while (tryes < 20)
     {
         rec = recvfrom( socketID, buf, sizeof buf, 0, &(sockaddr &)serverAdd, &fromlen ); 
-        if (rec <= 0) tryes++;
-        usleep(100000);
+        if (rec <= 0){
+            tryes++;
+            usleep(10000);
+        }
+        else tryes = 0;
     }
     //return to blocking
     fcntl(socketID, F_SETFL, flags);
