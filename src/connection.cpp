@@ -44,7 +44,7 @@ Connection::Connection(ConfigLoader::Options* opzioni)
     serverAdd.sin_addr.s_addr = htonl(INADDR_ANY);
     
     //force the receive buffer size
-    int n = 1024 * 64;
+    int n = 1024 * 1024;
     if (setsockopt(socketID, SOL_SOCKET, SO_RCVBUF, &n, sizeof(n)) == -1) {
         // deal with failure, or ignore if you can live with the default size
         std::cout<<"\nSocket warning: unable to change the buffer size.\n";
@@ -363,7 +363,7 @@ std::string Connection::status( int server )
     std::vector< char > command = makeCmd( comando );
     int bufferSize = command.size();
     sendto( socketID, command.data(), bufferSize, 0, &(sockaddr &)serverAdd, recvSize );
-    usleep(1000);
+    usleep(100000);
     //set the socket as nonblocking
     int flags = fcntl(socketID, F_GETFL);
     fcntl(socketID, F_SETFL, flags | O_NONBLOCK);
