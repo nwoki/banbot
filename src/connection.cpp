@@ -360,9 +360,12 @@ std::string Connection::status( int server )
     char buf [50000];
     socklen_t fromlen = sizeof serverAdd;
     int rec = 0;
-    while (rec>=0)
+    int tryes = 0;
+    while (tryes < 3)
     {
         rec = recvfrom( socketID, buf, sizeof buf, 0, &(sockaddr &)serverAdd, &fromlen ); 
+        if (rec == 0) tryes++;
+        usleep(200000);
     }
     //return to blocking
     fcntl(socketID, F_SETFL, flags);
