@@ -364,8 +364,8 @@ std::string Connection::status( int server )
     while (tryes < 3)
     {
         rec = recvfrom( socketID, buf, sizeof buf, 0, &(sockaddr &)serverAdd, &fromlen ); 
-        if (rec == 0) tryes++;
-        usleep(200000);
+        if (rec <= 0) tryes++;
+        usleep(100000);
     }
     //return to blocking
     fcntl(socketID, F_SETFL, flags);
