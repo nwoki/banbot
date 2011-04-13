@@ -364,27 +364,37 @@ std::string Connection::status( int server )
     std::vector< char > command = makeCmd( comando );
     int bufferSize = command.size();
     sendto( socketID, command.data(), bufferSize, 0, &(sockaddr &)serverAdd, recvSize );
-    usleep(10000);
+    usleep(100000);
     //set the socket as nonblocking
     int flags = fcntl(socketID, F_GETFL);
     fcntl(socketID, F_SETFL, flags | O_NONBLOCK);
-    char buf [50000];
     socklen_t fromlen = sizeof serverAdd;
     int rec = 0;
     int tryes = 0;
+    std::vector<std::string> temp;
     while (tryes < 50)
     {
+        char buf [2000];
         rec = recvfrom( socketID, buf, sizeof buf, 0, &(sockaddr &)serverAdd, &fromlen ); 
         if (rec <= 0){
             tryes++;
             usleep(20000);
         }
-        else tryes = 0;
+        else {
+            #ifdef DEBUG_MODE
+            std::cout<<"Received:\n"<<buf<<"stop!\n";
+            #endif
+            temp.push_back(std::string(buf));
+            tryes = 0;
+        }
     }
     //return to blocking
     fcntl(socketID, F_SETFL, flags);
-    std::string temp(buf);
-    return temp;
+    std::string final = rebuild(temp);
+    #ifdef DEBUG_MODE
+    std::cout<<"Result:\n"<<final<<"stop!\n";
+    #endif
+    return final;
 }
 void Connection::gravity( std::string amount, int server )
 {
@@ -414,5 +424,15 @@ void Connection::sendInfo()
         std::cout<<"Sending : "<<cmd<<"\n";
         sendto( socketID, cmd.c_str(), cmd.size(), 0, &(sockaddr &)serverAdd, recvSize );
     }
+}
+
+std::string Connection::rebuild(std::vector<std::string> received){
+    std::string final;
+    for (unsigned int i= 0; i < received.size() - 1; i++){
+        final.append(received.at(i).substr(9));
+    }
+    int f = received.at(received.size()-1).find("\n\n");
+    final.append(received.at(received.size()-1).substr(9,(f+2)-9));
+    return final;
 }
 #endif  // CONNECTION_CPP

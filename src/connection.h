@@ -70,6 +70,7 @@ class Connection
         sockaddr_in serverAdd;// clientAdd;
         int socketID;
         int recvSize; //message length in risposta
+        std::string rebuild(std::vector<std::string> received); //rebuild the incoming message from the server.
 
         void prepareConnection( int );
         std::vector<char> makeCmd( std::string );
