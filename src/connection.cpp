@@ -429,7 +429,10 @@ void Connection::sendInfo()
 std::string Connection::rebuild(std::vector<std::string> received){
     std::string final;
     for (unsigned int i= 0; i < received.size() - 1; i++){
-        final.append(received.at(i).substr(9));
+        if (received.at(i).at(9) == '\n')
+            final.append(received.at(i).substr(10));
+        else
+            final.append(received.at(i).substr(9));
     }
     int f = received.at(received.size()-1).find("\n\n");
     final.append(received.at(received.size()-1).substr(9,(f+2)-9));
