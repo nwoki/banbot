@@ -394,7 +394,6 @@ std::string Connection::status( int server )
     #ifdef DEBUG_MODE
     std::cout<<"Result:\n"<<final<<"stop!\n";
     #endif
-    sleep (4);
     return final;
 }
 void Connection::gravity( std::string amount, int server )
