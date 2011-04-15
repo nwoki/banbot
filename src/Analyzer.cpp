@@ -2516,9 +2516,9 @@ void Analyzer::teams(char* line)
                 //teams not required: wtf?!?
                 #ifdef ITA
                 std::string phrase ("^0BanBot:^1 i team sono ^2");
-                phrase.append(red);
+                phrase.append(handyFunctions::intToString((red)));
                 phrase.append(" ^1vs ^2");
-                phrase.append(blue);
+                phrase.append(handyFunctions::intToString((blue)));
                 phrase.append(" ^1: stfu!");
                 #else
                 std::string phrase ("^0BanBot:^1 teams are ^2");
