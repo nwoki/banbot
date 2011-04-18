@@ -109,16 +109,16 @@ void ConfigLoader::loadOptions()
                 #ifdef DEBUG_MODE
                 std::cout << temp << "\n";
                 #endif
-                if ( !isA( temp, (char*)" *#") && isA( temp, (char*)"^[ \t]*GENERAL_[^ \t\n\r\f\v]+[ \t]*=[ \t]*[^ \t\n\r\f\v]+$" ) )
+                if ( !isA( temp, (char*)" *#") && isA( temp, (char*)"^[ \t]*GENERAL_[^ \t\n\r\f\v]+[ \t]*=[ \t]*[^\t\n\r\f\v]+[^ \t\n\r\f\v]$" ) )
                 {
-                    if ( isA( temp, (char*)"^[ \t]*GENERAL_BOTLOG[ \t]*=[ \t]*[^ \t\n\r\f\v]+$" ) )
+                    if ( isA( temp, (char*)"^[ \t]*GENERAL_BOTLOG[ \t]*=[ \t]*[^\t\n\r\f\v]+[^ \t\n\r\f\v]$" ) )
                     {
                         newOptions->generalLog = extract ( temp );
                         #ifdef DEBUG_MODE
                         std::cout << "General_Botlog catturato: " << newOptions->generalLog << "\n";
                         #endif
                     }
-                    else if ( isA( temp, (char*)"^[ \t]*GENERAL_BACKUP_PATH[ \t]*=[ \t]*[^ \t\n\r\f\v]+$" ) )
+                    else if ( isA( temp, (char*)"^[ \t]*GENERAL_BACKUP_PATH[ \t]*=[ \t]*[^\t\n\r\f\v]+[^ \t\n\r\f\v]$" ) )
                     {
                         newOptions->generalBackup = extract ( temp );
                         #ifdef DEBUG_MODE
