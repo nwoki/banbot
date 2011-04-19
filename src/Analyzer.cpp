@@ -1180,7 +1180,7 @@ void Analyzer::op(char* line)
             #endif
         else
         {
-            if( database->addOp((*m_dati)[m_dati->serverNumber][i]->nick,(*m_dati)[m_dati->serverNumber][i]->GUID, newOpLevel) )
+            if( database->addOp(correggi((*m_dati)[m_dati->serverNumber][i]->nick),(*m_dati)[m_dati->serverNumber][i]->GUID, newOpLevel) )
             {
                 std::string phrase ( "^0BanBot: ^1" );
                 phrase.append( (*m_dati)[m_dati->serverNumber][i]->nick );
