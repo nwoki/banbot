@@ -393,6 +393,7 @@ std::string Connection::status( int server )
     std::string final = rebuild(temp);
     #ifdef DEBUG_MODE
     std::cout<<"Result:\n"<<final<<"stop!\n";
+    (*m_options->errors)<<"Result:\n"<<final<<"stop!\n";
     #endif
     return final;
 }
