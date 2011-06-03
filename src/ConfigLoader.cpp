@@ -92,8 +92,8 @@ void ConfigLoader::loadOptions()
         {
             Options* newOptions = new Options;
             //Prendo tutto fino al primo server (o fine file)
-            char line [3000];
-            cfg->getline( line, 3000, '{' );
+            char line [1000];
+            cfg->getline( line, 1000, '{' );
 
             //prendo i parametri generali
             std::string all( line );
@@ -137,7 +137,7 @@ void ConfigLoader::loadOptions()
                         #ifdef ITA
                             std::cout << "Opzione non valida: " << temp << "\n";
                         #else
-                            std::cout << "Opzion not valid: " << temp << "\n";
+                            std::cout << "Option not valid: " << temp << "\n";
                         #endif
                     }
                 }
@@ -153,6 +153,7 @@ void ConfigLoader::loadOptions()
                 //vado a prendere tutto il resto
                 while( !cfg->eof() )
                 {
+                    char line [3000];
                     cfg->getline( line, 3000, '}' );
 
                     if( !cfg->eof() )
