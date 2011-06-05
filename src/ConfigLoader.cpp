@@ -92,8 +92,8 @@ void ConfigLoader::loadOptions()
         {
             Options* newOptions = new Options;
             //Prendo tutto fino al primo server (o fine file)
-            char line [1000];
-            cfg->getline( line, 1000, '{' );
+            char line [3000]; //used for the main config file
+            cfg->getline( line, 3000, '{' );
 
             //prendo i parametri generali
             std::string all( line );
@@ -153,7 +153,6 @@ void ConfigLoader::loadOptions()
                 //vado a prendere tutto il resto
                 while( !cfg->eof() )
                 {
-                    char line [3000];
                     cfg->getline( line, 3000, '}' );
 
                     if( !cfg->eof() )
@@ -161,8 +160,8 @@ void ConfigLoader::loadOptions()
                         //dentro a line ho tutte le opzioni di un singolo server, uso i regex per riconoscere le opzioni.
 
                         Server* newServer = new Server();
-
-                        all = line;
+                        all.clear();
+                        all = std::string(line);
                         pos = 0;
                         end = 0;
                         bool secondary = false;
@@ -358,11 +357,11 @@ void ConfigLoader::loadOptions()
                                     struct stat info;
                                     if( stat( newServer->configFile().c_str(), &info ) == 0 )
                                     {
+                                        char extra [2000]; //used for secondary config files.
                                         newServer->setInfos( info );
                                         std::ifstream* secondary=new std::ifstream();
                                         secondary->open( newServer->configFile().c_str() );
-                                        char extra [2000];
-                                        secondary->read( extra, 2000 );
+                                        secondary->getline( extra, 2000, '}' );
                                         //appendo il "segnale" per indicare le opzioni sul file secondario
                                         all.append( "EXTERNAL_OPTIONS = YES\n" );
                                         //appendo le opzioni del file secondario
