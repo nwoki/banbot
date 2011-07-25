@@ -66,20 +66,47 @@ class Connection
         void sendInfo ();
         
         std::string status ( int server ); //balance teams.
+        
     private:
+        //class packets, used to receive the rcon message and rebuild it.
+        class Packets {
+            private:
+                std::vector<std::string> p;
+                std::string clean (std::string &message){
+                    int i = message.find('\n');
+                    return message.substr(i+1);
+                }
+            public:
+                Packets(){}
+                void addPacket(std::string packet){p.push_back(packet);}
+                std::string rebuild(){
+                    if (p.size() == 0) return "";
+                    if (p.size() == 1) return clean( p[0] );
+                    //check if the last packet has arrived in the wrong order.
+                    for (unsigned int i=0; i < p.size()-1; i++){
+                        if ( p[i].find("\n\n") < p[i].size() ) {
+                            p.push_back(p[i]);
+                            p.erase(p.begin()+i);
+                        }
+                    }
+                    //rebuild the message
+                    std::string result;
+                    for (unsigned int i=0; i<p.size(); i++)
+                        result.append(clean(p[i]));
+                    return result;
+                }
+        };
+        
+        
         sockaddr_in serverAdd;// clientAdd;
         int socketID;
-        int recvSize; //message length in risposta
-        std::string rebuild(std::vector<std::string> received); //rebuild the incoming message from the server.
+        int wait_packets(long sec,long usec); //wait for the response
+        void receive(Packets *);
 
         void prepareConnection( int );
         std::vector<char> makeCmd( std::string );
 
         ConfigLoader::Options* m_options;
-
-        /*vector<char *>ip;
-        vector<int> port;
-        vector<std::string>rconPass;*/
 };
 
 

@@ -33,8 +33,7 @@
 #define HOST "service.2s2h.com"
 
 Connection::Connection(ConfigLoader::Options* opzioni)
-  : recvSize( 0 )
-  , m_options(opzioni)
+  : m_options(opzioni)
 {
     socketID = socket( AF_INET, SOCK_DGRAM, IPPROTO_UDP );
     
@@ -96,7 +95,6 @@ void Connection::prepareConnection(int server)
         hp = gethostbyname( HOST );
     }
     memcpy( (char*)&serverAdd.sin_addr, (char*)hp->h_addr, hp->h_length );
-    recvSize = sizeof( serverAdd );
 }
 
 void Connection::kick( std::string number, int server )
@@ -110,7 +108,7 @@ void Connection::kick( std::string number, int server )
 
     std::vector< char > command = makeCmd( comando );
     int bufferSize = command.size();
-    sendto( socketID, command.data(), bufferSize, 0, &(sockaddr &)serverAdd, recvSize );
+    sendto( socketID, command.data(), bufferSize, 0, &(sockaddr &)serverAdd, sizeof( serverAdd ) );
 }
 
 void Connection::say( std::string phrase, int server )
@@ -127,7 +125,7 @@ void Connection::say( std::string phrase, int server )
     #endif
     std::vector< char > command = makeCmd( comando );
     int bufferSize = command.size();
-    sendto( socketID, command.data(), bufferSize, 0, &(sockaddr &)serverAdd, recvSize );
+    sendto( socketID, command.data(), bufferSize, 0, &(sockaddr &)serverAdd, sizeof( serverAdd ) );
 }
 
 void Connection::bigtext( std::string phrase, int server )
@@ -142,7 +140,7 @@ void Connection::bigtext( std::string phrase, int server )
 
     std::vector< char > command = makeCmd( comando );
     int bufferSize = command.size();
-    sendto( socketID, command.data(), bufferSize, 0, &(sockaddr &)serverAdd, recvSize );
+    sendto( socketID, command.data(), bufferSize, 0, &(sockaddr &)serverAdd, sizeof( serverAdd ) );
 }
 
 void Connection::tell( std::string phrase, std::string player, int server )
@@ -161,7 +159,7 @@ void Connection::tell( std::string phrase, std::string player, int server )
     #endif
     std::vector< char > command = makeCmd( comando );
     int bufferSize = command.size();
-    sendto( socketID, command.data(), bufferSize, 0, &(sockaddr &)serverAdd, recvSize );
+    sendto( socketID, command.data(), bufferSize, 0, &(sockaddr &)serverAdd, sizeof( serverAdd ) );
 }
 
 void Connection::reload( int server )
@@ -175,7 +173,7 @@ void Connection::reload( int server )
         std::vector<char> command=makeCmd(comando);
         int bufferSize = command.size();
         prepareConnection( server );
-        sendto( socketID, command.data(), bufferSize, 0, &(sockaddr &)serverAdd, recvSize );
+        sendto( socketID, command.data(), bufferSize, 0, &(sockaddr &)serverAdd, sizeof( serverAdd ) );
     }
     else
     {
@@ -188,7 +186,7 @@ void Connection::reload( int server )
             std::vector<char> command=makeCmd(comando);
             int bufferSize = command.size();
             prepareConnection( i );
-            sendto( socketID, command.data(), bufferSize, 0, &(sockaddr &)serverAdd, recvSize );
+            sendto( socketID, command.data(), bufferSize, 0, &(sockaddr &)serverAdd, sizeof( serverAdd ) );
         }
     }
 }
@@ -204,7 +202,7 @@ void Connection::mute( std::string number, int server )
     
     std::vector< char > command = makeCmd( comando );
     int bufferSize = command.size();
-    sendto( socketID, command.data(), bufferSize, 0, &(sockaddr &)serverAdd, recvSize );
+    sendto( socketID, command.data(), bufferSize, 0, &(sockaddr &)serverAdd, sizeof( serverAdd ) );
 }
 
 void Connection::muteAll( std::string admin, int server )
@@ -222,7 +220,7 @@ void Connection::muteAll( std::string admin, int server )
 
             std::vector< char > command = makeCmd( comando );
             int bufferSize = command.size();
-            sendto( socketID, command.data(), bufferSize, 0, &(sockaddr &)serverAdd, recvSize );
+            sendto( socketID, command.data(), bufferSize, 0, &(sockaddr &)serverAdd, sizeof( serverAdd ) );
             usleep(SOCKET_PAUSE);
         }
     }
@@ -238,7 +236,7 @@ void Connection::veto( int server )
     
     std::vector< char > command = makeCmd( comando );
     int bufferSize = command.size();
-    sendto( socketID, command.data(), bufferSize, 0, &(sockaddr &)serverAdd, recvSize );
+    sendto( socketID, command.data(), bufferSize, 0, &(sockaddr &)serverAdd, sizeof( serverAdd ) );
 }
 
 void Connection::slap( std::string number, int server )
@@ -252,7 +250,7 @@ void Connection::slap( std::string number, int server )
     
     std::vector< char > command = makeCmd( comando );
     int bufferSize = command.size();
-    sendto( socketID, command.data(), bufferSize, 0, &(sockaddr &)serverAdd, recvSize );
+    sendto( socketID, command.data(), bufferSize, 0, &(sockaddr &)serverAdd, sizeof( serverAdd ) );
 }
 
 void Connection::nuke( std::string number, int server )
@@ -266,7 +264,7 @@ void Connection::nuke( std::string number, int server )
     
     std::vector< char > command = makeCmd( comando );
     int bufferSize = command.size();
-    sendto( socketID, command.data(), bufferSize, 0, &(sockaddr &)serverAdd, recvSize );
+    sendto( socketID, command.data(), bufferSize, 0, &(sockaddr &)serverAdd, sizeof( serverAdd ) );
 }
 
 void Connection::force( std::string number, std::string where, int server )
@@ -282,7 +280,7 @@ void Connection::force( std::string number, std::string where, int server )
     
     std::vector< char > command = makeCmd( comando );
     int bufferSize = command.size();
-    sendto( socketID, command.data(), bufferSize, 0, &(sockaddr &)serverAdd, recvSize );
+    sendto( socketID, command.data(), bufferSize, 0, &(sockaddr &)serverAdd, sizeof( serverAdd ) );
 }
 
 void Connection::map( std::string name, int server )
@@ -296,7 +294,7 @@ void Connection::map( std::string name, int server )
 
     std::vector< char > command = makeCmd( comando );
     int bufferSize = command.size();
-    sendto( socketID, command.data(), bufferSize, 0, &(sockaddr &)serverAdd, recvSize );
+    sendto( socketID, command.data(), bufferSize, 0, &(sockaddr &)serverAdd, sizeof( serverAdd ) );
 }
 
 void Connection::nextmap( std::string name, int server )
@@ -310,7 +308,7 @@ void Connection::nextmap( std::string name, int server )
 
     std::vector< char > command = makeCmd( comando );
     int bufferSize = command.size();
-    sendto( socketID, command.data(), bufferSize, 0, &(sockaddr &)serverAdd, recvSize );
+    sendto( socketID, command.data(), bufferSize, 0, &(sockaddr &)serverAdd, sizeof( serverAdd ) );
 }
 
 void Connection::changePassword( std::string pass, int server )
@@ -324,7 +322,7 @@ void Connection::changePassword( std::string pass, int server )
 
     std::vector< char > command = makeCmd( comando );
     int bufferSize = command.size();
-    sendto( socketID, command.data(), bufferSize, 0, &(sockaddr &)serverAdd, recvSize );
+    sendto( socketID, command.data(), bufferSize, 0, &(sockaddr &)serverAdd, sizeof( serverAdd ) );
 }
 
 void Connection::exec( std::string file, int server )
@@ -338,7 +336,7 @@ void Connection::exec( std::string file, int server )
 
     std::vector< char > command = makeCmd( comando );
     int bufferSize = command.size();
-    sendto( socketID, command.data(), bufferSize, 0, &(sockaddr &)serverAdd, recvSize );
+    sendto( socketID, command.data(), bufferSize, 0, &(sockaddr &)serverAdd, sizeof( serverAdd ) );
 }
 
 void Connection::restart( int server )
@@ -351,7 +349,7 @@ void Connection::restart( int server )
     
     std::vector< char > command = makeCmd( comando );
     int bufferSize = command.size();
-    sendto( socketID, command.data(), bufferSize, 0, &(sockaddr &)serverAdd, recvSize );
+    sendto( socketID, command.data(), bufferSize, 0, &(sockaddr &)serverAdd, sizeof( serverAdd ) );
 }
 
 std::string Connection::status( int server )
@@ -362,39 +360,17 @@ std::string Connection::status( int server )
     comando.append( " status" );
     
     std::vector< char > command = makeCmd( comando );
-    int bufferSize = command.size();
-    sendto( socketID, command.data(), bufferSize, 0, &(sockaddr &)serverAdd, recvSize );
-    usleep(100000);
-    //set the socket as nonblocking
-    int flags = fcntl(socketID, F_GETFL);
-    fcntl(socketID, F_SETFL, flags | O_NONBLOCK);
-    socklen_t fromlen = sizeof serverAdd;
-    int rec = 0;
-    int tryes = 0;
-    std::vector<std::string> temp;
-    while (tryes < 50)
-    {
-        char buf [2000];
-        rec = recvfrom( socketID, buf, sizeof buf, 0, &(sockaddr &)serverAdd, &fromlen ); 
-        if (rec <= 0){
-            tryes++;
-            usleep(20000);
-        }
-        else {
-            #ifdef DEBUG_MODE
-            std::cout<<"Received:\n"<<buf<<"stop!\n";
-            #endif
-            temp.push_back(std::string(buf));
-            tryes = 0;
-        }
-    }
-    //return to blocking
-    fcntl(socketID, F_SETFL, flags);
-    std::string final = rebuild(temp);
+    
     #ifdef DEBUG_MODE
-    std::cout<<"Result:\n"<<final<<"stop!\n";
-    (*m_options->errors)<<"Result:\n"<<final<<"stop!\n";
+    std::cout<<">>"<<comando<<"\n";
     #endif
+    
+    int bufferSize = command.size();
+    sendto( socketID, command.data(), bufferSize, 0, &(sockaddr &)serverAdd, sizeof( serverAdd ) );
+    Packets * container = new Packets();
+    receive(container);
+    std::string final = container->rebuild();
+    delete container;
     return final;
 }
 void Connection::gravity( std::string amount, int server )
@@ -408,7 +384,7 @@ void Connection::gravity( std::string amount, int server )
     
     std::vector< char > command = makeCmd( comando );
     int bufferSize = command.size();
-    sendto( socketID, command.data(), bufferSize, 0, &(sockaddr &)serverAdd, recvSize );
+    sendto( socketID, command.data(), bufferSize, 0, &(sockaddr &)serverAdd, sizeof( serverAdd ) );
 }
 
 void Connection::sendInfo()
@@ -423,21 +399,51 @@ void Connection::sendInfo()
         cmd.append(_VERSION);
         cmd.append("</version></BanBot>");
         std::cout<<"Sending : "<<cmd<<"\n";
-        sendto( socketID, cmd.c_str(), cmd.size(), 0, &(sockaddr &)serverAdd, recvSize );
+        sendto( socketID, cmd.c_str(), cmd.size(), 0, &(sockaddr &)serverAdd, sizeof( serverAdd ) );
     }
 }
 
-std::string Connection::rebuild(std::vector<std::string> received){
-    std::string final;
-    for (unsigned int i= 0; i < received.size() - 1; i++){
-        int end = received.at(i).find_last_of(" \t");
-        if (received.at(i).at(9) == '\n')
-            final.append(received.at(i).substr(10,end-10));
-        else
-            final.append(received.at(i).substr(9,end-9));
+int Connection::wait_packets(long sec, long usec)
+{
+    fd_set mask;
+    struct timeval tv;
+    
+    FD_ZERO(&mask);
+    FD_SET(socketID, &mask);
+    
+    tv.tv_sec = sec;
+    tv.tv_usec = usec;
+    
+    return select(socketID+1, &mask, NULL, NULL, &tv);
+}
+
+void Connection::receive(Packets * container){
+    //set the socket as nonblocking
+    //int flags = fcntl(socketID, F_GETFL);
+    //fcntl(socketID, F_SETFL, flags | O_NONBLOCK);
+    int t1 = 1;
+    int t2 = 0;
+    while ( wait_packets(t1,t2) > 0 ){
+        #ifdef DEBUG_MODE
+        std::cout<<"Receiving a packet!\n";
+        #endif
+        t1=0;
+        t2=100000;
+        char buf [2000];
+        socklen_t adrSize = sizeof(serverAdd);
+        int rec = recvfrom( socketID, buf, sizeof buf, 0, &(sockaddr &)serverAdd, &adrSize );
+        if (rec > 0){
+            container->addPacket(std::string (buf).substr(0,rec));
+            #ifdef DEBUG_MODE
+            std::cout<<"Received:\n"<<buf<<"stop!\n";
+            #endif
+        }
     }
-    int f = received.at(received.size()-1).find("\n\n");
-    final.append(received.at(received.size()-1).substr(10,(f+2)-10));
-    return final;
+    //return to blocking
+    //fcntl(socketID, F_SETFL, flags);
+    #ifdef DEBUG_MODE
+        std::cout<<"Result:\n"<<container->rebuild()<<"stop!\n";
+        (*m_options->errors)<<"Result:\n"<<container->rebuild()<<"stop!\n";
+    #endif
 }
 #endif  // CONNECTION_CPP
