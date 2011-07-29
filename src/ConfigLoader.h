@@ -60,6 +60,7 @@ class ConfigLoader
                 //costruttore
                 Options()
                 : generalPort( 51337 )    
+                , serverNumber( 0 )
                 {
                     errors=new Logger();
                     log=new Logger();

@@ -104,6 +104,7 @@ Analyzer::Analyzer(Connection* conn, Db* db, ConfigLoader* configLoader )
     , log(new std::ifstream())
     , contatore(0)
     , fascia(0)
+    , commandexecuted(0)
     , giri(0)
     , server( conn )
     , database( db )
@@ -629,14 +630,10 @@ void Analyzer::clientDisconnect(char* line)
     int i = findPlayer( numero );
     if ( i >= 0 )
     {
-        //trovato. elimino prima l'oggetto puntato
+        //found. I'll delete the pointed object first
         delete (*m_dati)[m_dati->serverNumber][i];
-        //elimino l'elemento in vector: prendo l'iteratore
-        std::vector<Server::Player*>::iterator iteratore=(*m_dati)[m_dati->serverNumber].begin();
-        //scorro fino all'elemento corretto
-        for (int j=0; j<i;j++) iteratore++;
-        //elimino l'elemento
-        (*m_dati)[m_dati->serverNumber].erase(iteratore);
+        //and then the pointer
+        (*m_dati)[m_dati->serverNumber].erase( (*m_dati)[m_dati->serverNumber].begin() + i );
     }
     //finite le azioni in caso di disconnect
 }
@@ -2901,7 +2898,6 @@ void Analyzer::main_loop()
         std::cout<<"\e[0;32m[OK] BanBot launched. \e[0m \n\n";
         *(m_dati->errors)<<"[OK] BanBot launched.\n\n";
     #endif
-    
     while (true)
     {
         commandexecuted=false;

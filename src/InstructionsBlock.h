@@ -30,13 +30,13 @@
 #include <regex.h>
 
 #include "connection.h"
-#define _R_STATUS_RESPONSE "^.*\nmap:.*\n.*\n.*-{5}\n([ \t]+[0-9]+[ \t]+[0-9]+[ \t]+[0-9]+[ \t]+[^\t\n\r\f\v]+[ \t]+[0-9]+[ \t]+[0-9]{1,3}.[0-9]{1,3}.[0-9]{1,3}.[0-9]{1,3}:[0-9]+[ \t]+[0-9]+[ \t]+[0-9]+.*\n)+\n.*$"
+#define _R_STATUS_RESPONSE "^map:.*\n.*\n.*-{5}\n([ \t]*[0-9]+[ \t]+-{0,1}[0-9]+[ \t]+[0-9]+[ \t]+[^\n]+\\^7[ \t]+[0-9]+[ \t]+[0-9]{1,3}.[0-9]{1,3}.[0-9]{1,3}.[0-9]{1,3}:[0-9]+[ \t]+[0-9]+[ \t]+[0-9]+.*\n)+\n.*$"
 
 class InstructionsBlock
 {
     public:
         InstructionsBlock();
-        virtual ~InstructionsBlock();
+        ~InstructionsBlock();
         void deleteAll();           //delete the entire list of InstrutionsBlocks.
 
         void kick( std::string number );  //number of the player to kick.
@@ -312,9 +312,6 @@ class InstructionsBlock
                 {
                     std::string temp = conn->status( server );
                     
-                    #ifdef DEBUG_MODE
-                    std::cout<<temp<<"\n";
-                    #endif
                     if ( isA(temp.c_str(),_R_STATUS_RESPONSE) ){
                         unsigned int pos = temp.find("rate");
                         
@@ -325,19 +322,19 @@ class InstructionsBlock
                         std::vector<Info> players;
                         while (pos < temp.size() && pos > 0 )
                         {
-                            pos = temp.find_first_of("-0123456789\n\0",pos+1);
+                            pos = temp.find_first_of("-0123456789\n",pos+1);
                             if (temp.at(pos) != '\n'){
                                 int end = temp.find_first_not_of("-0123456789",pos);
                                 Info t;
                                 t.number = temp.substr(pos,end-pos);
-                                pos = temp.find_first_of("-0123456789",end);
-                                end = temp.find_first_not_of("-0123456789",pos);
+                                pos = temp.find_first_of("-0123456789",end+1);
+                                end = temp.find_first_not_of("-0123456789",pos+1);
                                 t.score = atoi(temp.substr(pos,end-pos).c_str());
                                 bool insert = true;
                                 for (unsigned int i = 0; insert && i < exclude.size(); i++)
                                     if ( t.number.compare(exclude[i]) == 0 ) insert = false;
                                 if ( insert ) players.push_back(t);
-                                pos = temp.find_first_of("\n\0",end);
+                                pos = temp.find_first_of("\n",end+1);
                             }
                             else pos = -1;
                         }
@@ -351,7 +348,7 @@ class InstructionsBlock
                             {
                                 for (unsigned int j=i+1; j<players.size(); j++)
                                 {
-                                    if (players.at(i).score < players.at(j).score)
+                                    if (players.at(indexes[i]).score < players.at(indexes[j]).score)
                                     {
                                         unsigned int t = indexes[i];
                                         indexes[i] = indexes[j];
@@ -363,10 +360,21 @@ class InstructionsBlock
                             for (unsigned int i=0; i<players.size(); i++)
                             {
                                 if (i%2 == 0)
+                                {
                                     addToTail( new Force(players.at(indexes[i]).number,"red") );
+                                    #ifdef DEBUG_MODE
+                                    std::cout<<players.at(indexes[i]).number<<" to red.\n";
+                                    #endif
+                                }
                                 else
+                                {
                                     addToTail( new Force(players.at(indexes[i]).number,"blue") );
+                                    #ifdef DEBUG_MODE
+                                    std::cout<<players.at(indexes[i]).number<<" to blue.\n";
+                                    #endif
+                                }
                             }
+                            
                             #ifdef ITA
                             addToTail( new Say("^0BanBot: ^1 bilanciamento teams finito.") );
                             #else
@@ -378,6 +386,7 @@ class InstructionsBlock
                         if ( tentativi < 3 ){
                             tentativi++;
                             std::string phrase;
+                            
                             #ifdef ITA
                             phrase.append("^0BanBot: ^1rcon status fallito, riprovo (^2");
                             phrase.append(handyFunctions::intToString(tentativi));
@@ -386,6 +395,10 @@ class InstructionsBlock
                             phrase.append("^0BanBot: ^1rcon status failed, trying again (tryed ^2");
                             phrase.append(handyFunctions::intToString(tentativi));
                             phrase.append("^1 times).");
+                            #endif
+                            
+                            #ifdef DEBUG_MODE
+                            std::cout<<"status failed, trying again.\n";
                             #endif
                             
                             addToTail( new Say(phrase) );
