@@ -435,7 +435,7 @@ void Connection::receive(Packets * container){
         if (rec > 0){
             container->addPacket(std::string (buf).substr(0,rec));
             #ifdef DEBUG_MODE
-            std::cout<<"Received:\n"<<buf<<"stop!\n";
+            std::cout<<"Received:\n"<<std::string (buf).substr(0,rec)<<"stop!\n";
             #endif
         }
     }
