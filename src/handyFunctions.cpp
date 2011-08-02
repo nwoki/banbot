@@ -185,7 +185,7 @@ namespace handyFunctions{
             if ( (pos-i) > ROW )
             {
                 rows->push_back( phrase.substr(i,ROW) );
-                i+=ROW+1;
+                i+=ROW;
             }
             else
             {
