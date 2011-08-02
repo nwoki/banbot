@@ -2011,8 +2011,8 @@ void Analyzer::pass(char* line)
     if (isAdminSay(line,numeroAdmin) <= (*m_dati)[(*m_dati).serverNumber].commandPermission(Server::PASS))
     {
         InstructionsBlock* block = new InstructionsBlock();
-        std::string password("");
-        std::string phrase("");
+        std::string password;
+        std::string phrase;
         if (isA(line, _R_PASS)){
             
             std::string temp = line;
@@ -2028,6 +2028,7 @@ void Analyzer::pass(char* line)
             phrase.append( password );
         }
         else {
+            password = "\"\"";
             #ifdef ITA
             phrase.append("^0BanBot:^1 il server ora e' pubblico.");
             #else
