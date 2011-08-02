@@ -311,7 +311,7 @@ class InstructionsBlock
                 {
                     std::string temp = conn->status( server );
                     std::vector<handyFunctions::stats> players;
-                    if (handyFunctions::extractFromStatus(temp,&players)){
+                    if ( handyFunctions::extractFromStatus(temp,&players) ){
 
                         if (players.size() > 0){
                             
@@ -335,14 +335,14 @@ class InstructionsBlock
                             {
                                 if (i%2 == 0)
                                 {
-                                    //addToTail( new Force(players.at(indexes[i]).slot,"red") );
+                                    addToTail( new Force(players.at(indexes[i]).slot,"red") );
                                     #ifdef DEBUG_MODE
                                     std::cout<<players.at(indexes[i]).slot<<" to red.\n";
                                     #endif
                                 }
                                 else
                                 {
-                                    //addToTail( new Force(players.at(indexes[i]).slot,"blue") );
+                                    addToTail( new Force(players.at(indexes[i]).slot,"blue") );
                                     #ifdef DEBUG_MODE
                                     std::cout<<players.at(indexes[i]).slot<<" to blue.\n";
                                     #endif
@@ -350,9 +350,9 @@ class InstructionsBlock
                             }
                             
                             #ifdef ITA
-                            //addToTail( new Say("^0BanBot: ^1 bilanciamento teams finito.") );
+                            addToTail( new Say("^0BanBot: ^1 bilanciamento teams finito.") );
                             #else
-                            //addToTail( new Say("^0BanBot: ^1 end of team balance.") );
+                            addToTail( new Say("^0BanBot: ^1 end of team balance.") );
                             #endif
                         }
                     } 
@@ -360,7 +360,6 @@ class InstructionsBlock
                         if ( tentativi < 3 ){
                             tentativi++;
                             std::string phrase;
-                            /*
                             #ifdef ITA
                             phrase.append("^0BanBot: ^1rcon status fallito, riprovo (^2");
                             phrase.append(handyFunctions::intToString(tentativi));
@@ -369,13 +368,13 @@ class InstructionsBlock
                             phrase.append("^0BanBot: ^1rcon status failed, trying again (tryed ^2");
                             phrase.append(handyFunctions::intToString(tentativi));
                             phrase.append("^1 times).");
-                            #endif*/
+                            #endif
                             
                             #ifdef DEBUG_MODE
                             std::cout<<"status failed, trying again.\n";
                             #endif
                             
-                            //addToTail( new Say(phrase) );
+                            addToTail( new Say(phrase) );
                             addToTail( new TeamBalance(exclude, tentativi) );
                         }
                         else{
