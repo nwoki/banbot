@@ -2949,7 +2949,7 @@ void Analyzer::main_loop()
             sleep(2);
         }
 
-        //ogni tot di giri controllo se sono cambiate le impostazioni
+        // every n cycles, check for options changes, and other stuffs
         if ( giri > 10 )
         {
             giri = 0;
@@ -2960,9 +2960,19 @@ void Analyzer::main_loop()
                 loadOptions(); //it does updateServerConfigMapList too.
             }
             else m_fileLister->updateServerConfigMapList();
+            
+            //spam messages
+            for (m_dati->serverNumber=0;m_dati->serverNumber<m_dati->size();m_dati->serverNumber++){
+                std::string t = (m_dati->currentServer())->nextSpamMessage();
+                if ( !t.empty() ){
+                    InstructionsBlock * block = new InstructionsBlock();
+                    block->say( t );
+                    m_scheduler->addInstructionBlock( block, Server::LOW );
+                }
+            }
         }
 
-        //inzio il ciclo per gestire i server
+        // manage servers
         for (m_dati->serverNumber=0;m_dati->serverNumber<m_dati->size();m_dati->serverNumber++)
         {
             if ( (*m_dati)[m_dati->serverNumber].isValid() )

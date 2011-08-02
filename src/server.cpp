@@ -48,6 +48,8 @@ Server::Server()
     , m_configs( std::vector<std::string>() )
     , m_maps( std::vector<std::string>() )
     , m_permissions( std::vector<int>() )
+    , m_messages( std::vector<std::string>() )
+    , m_nextMessage( 0 )
 {
     //initializing command permissions' vector (default power levels needed)
     //group 0 = full admin
@@ -403,6 +405,21 @@ void Server::setBanWarnings( bool option )
 {
     m_banWarnings = option;
 }
+
+std::string Server::nextSpamMessage() {
+    std::string t;
+    if ( m_messages.size() > 0 ) {
+        t = m_messages[m_nextMessage];
+        m_nextMessage++;
+        if ( !(m_nextMessage < m_messages.size()) )
+            m_nextMessage = 0;
+    }
+    return t;
+}
+
+void Server::addSpamMessage( std::string message) {
+    m_messages.push_back(message);
+}
 //**************************************** Functions for direct access to player vector ************************
 unsigned int Server::size()
 {
@@ -462,6 +479,8 @@ void Server::test_for_changes(Server* old)
       m_lowPriorityInst = old->m_lowPriorityInst;
       m_maps = old->m_maps;
       m_configs = old->m_configs;
+      m_warnings = old->m_warnings;
+      m_banWarnings = old->m_banWarnings;
     }
   }
   else
@@ -504,7 +523,7 @@ bool Server::permitBalance(){
     int l_hour = atoi(m_lastBalance.substr(0,m_lastBalance.find(':')).c_str());
     int l_minute = atoi(m_lastBalance.substr(m_lastBalance.find(':')+1).c_str());
     
-    if ( (hour*60 + minute) - (l_hour*60 + l_minute) > 5 || (hour*60 + minute) - (l_hour*60 + l_minute) < 0 ){
+    if ( (hour*60 + minute) - (l_hour*60 + l_minute) > 2 || (hour*60 + minute) - (l_hour*60 + l_minute) < 0 ){
         m_lastBalance = time;
         return true;
     }

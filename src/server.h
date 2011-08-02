@@ -197,6 +197,7 @@ class Server
         Timing banNick () const;                                            // return the nick ban timing setted.
         Timing banIp () const;                                              // like banNick
         bool banWarnings () const;                                          // return ban warnings option (see m_banWarnings).
+        std::string nextSpamMessage();                                      // return the next message.
 
         // setters
         void setName( std::string name );                                   // set server name
@@ -215,12 +216,13 @@ class Server
         void setValid( bool valid = true );                                 // set server validity flag
         void setServerConfigs( std::vector<std::string> list );             // set game server's config file list
         void setServerMaps( std::vector<std::string> list );                // set game server's extra maps list
-        void setGameDirectory( std::string &dir );                           // set the directory where the game is installed
+        void setGameDirectory( std::string &dir );                          // set the directory where the game is installed
         void setCommandPermission( Commands cmd, int value );               // set the minimum power level requested by a command.
         void setWarnings ( Server::Warnings type );                         // set the warnings type (public, private or disabled)
         void setBanNick( Server::Timing time );                             // set the nick ban timing.
         void setBanIp( Server::Timing time );                               // set the ip ban timing.
         void setBanWarnings( bool option );                                 // enable or disable ban warnings (see m_banWarnings).
+        void addSpamMessage( std::string );                                 // add a message to the list.
 
 
         // returns true and updates m_lastBalance
@@ -278,6 +280,9 @@ class Server
         std::vector<std::string> m_maps;            // list of maps founded on this server
         std::string m_gameDir;                      // directory where the game in installed
         std::vector<int> m_permissions;             // minimum power level requested for each command.
+        
+        std::vector<std::string> m_messages;        //broadcast messages
+        unsigned int m_nextMessage;                 //index of the next message to send.
 };
 
 #endif

@@ -347,6 +347,9 @@ void ConfigLoader::loadOptions()
 
                                 else if ( isA( temp, (char*)"^[ \t]*STRICT_LEVEL[ \t]*=[ \t]*[0-5]{1}$" ) )
                                     newServer->setStrict( atoi( extract( temp ).c_str() ) );
+                                    
+                                else if ( isA( temp, (char*)"^[ \t]*MESSAGE[ \t]*=[ \t]*[^\t\n\r\f\v]+$" ) )
+                                    newServer->addSpamMessage( extract( temp ) );
 
                                 else if ( temp.compare("EXTERNAL_OPTIONS = YES") == 0 )
                                     secondary = true;
