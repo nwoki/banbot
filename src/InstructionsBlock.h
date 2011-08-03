@@ -312,6 +312,22 @@ class InstructionsBlock
                     std::string temp = conn->status( server );
                     std::vector<handyFunctions::stats> players;
                     if ( handyFunctions::extractFromStatus(temp,&players) ){
+                        
+                        //delete all spects, to leave them untouched,
+                        for (unsigned int i=0; i<players.size(); i++){
+                            bool found = false;
+                            for (unsigned int j = 0; !found && j<exclude.size(); j++){
+                                if ( exclude[j].compare(players[i].slot) == 0 ){
+                                    found = true;
+                                    #ifdef DEBUG_MODE
+                                    std::cout<<"Excluding "<<players[i].nick<<"\n";
+                                    #endif
+                                    players.erase(players.begin()+i);
+                                    exclude.erase(exclude.begin()+j);
+                                    i--;
+                                }
+                            }
+                        }
 
                         if (players.size() > 0){
                             
@@ -348,7 +364,6 @@ class InstructionsBlock
                                     #endif
                                 }
                             }
-                            
                             #ifdef ITA
                             addToTail( new Say("^0BanBot: ^1 bilanciamento teams finito.") );
                             #else
@@ -385,7 +400,7 @@ class InstructionsBlock
                             phrase.append("^0BanBot: ^1rcon status failed: command aborted.");
                             #endif
                             
-                            //addToTail( new Say(phrase) );
+                            addToTail( new Say(phrase) );
                         }
                     }
                 };
