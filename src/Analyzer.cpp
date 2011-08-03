@@ -1207,7 +1207,8 @@ void Analyzer::deop(char* line)
     *(m_dati->log)<<"\n[!] Deop";
     //check user's powa
     std::string numeroAdmin;
-    if (isAdminSay(line,numeroAdmin) <= (*m_dati)[(*m_dati).serverNumber].commandPermission(Server::DEOP))
+    int adminlevel = isAdminSay(line,numeroAdmin);
+    if ( adminlevel <= (*m_dati)[(*m_dati).serverNumber].commandPermission(Server::DEOP))
     {
         InstructionsBlock * block = new InstructionsBlock();
         //take player's data
@@ -1225,23 +1226,37 @@ void Analyzer::deop(char* line)
             std::vector<Db::idNickStruct> risultatoEsatto=database->findPreciseIdNickViaNickOp(player);
             if (risultatoEsatto.size() == 1)  //if i found an exact match, i'll unban it
             {
-                #ifdef ITA
-                if (database->deleteOp(risultatoEsatto[0].id))
-                {
-                    phrase.append("^0BanBot: ^2");
-                    phrase.append(risultatoEsatto[0].nick);
-                    phrase.append(" ^1 e' stato tolto dalla lista admin.");
+                if ( !adminlevel || adminlevel<atoi(risultatoEsatto[0].level.c_str()) ) {
+                    #ifdef ITA
+                    if (database->deleteOp(risultatoEsatto[0].id))
+                    {
+                        phrase.append("^0BanBot: ^2");
+                        phrase.append(risultatoEsatto[0].nick);
+                        phrase.append(" ^1 e' stato tolto dalla lista admin.");
+                    }
+                    else phrase.append("^0BanBot: ^1è stato riscontrato un errore, admin non eliminato.");
+                    #else
+                    if (database->deleteOp(risultatoEsatto[0].id))
+                    {
+                        phrase.append("^0BanBot: ^2");
+                        phrase.append(risultatoEsatto[0].nick);
+                        phrase.append(" ^1successfully removed from admin list.");
+                    }
+                    else phrase.append("^0BanBot: ^1error: admin not deleted.");
+                    #endif
                 }
-                else phrase.append("^0BanBot: ^1è stato riscontrato un errore, admin non eliminato.");
-                #else
-                if (database->deleteOp(risultatoEsatto[0].id))
-                {
+                else {
                     phrase.append("^0BanBot: ^2");
-                    phrase.append(risultatoEsatto[0].nick);
-                    phrase.append(" ^1successfully removed from admin list.");
+                    #ifdef ITA 
+                        phrase.append("non hai permessi sufficienti per togliere l'op a ^1");
+                        phrase.append(risultatoEsatto[0].nick);
+                        phrase.append("^2.");
+                    #else
+                        phrase.append("you don't have sufficient permissions to deop ^1");
+                        phrase.append(risultatoEsatto[0].nick);
+                        phrase.append("^2.");
+                    #endif
                 }
-                else phrase.append("^0BanBot: ^1error: admin not deleted.");
-                #endif
             }
             else if ( risultatoEsatto.size() == 0 )
             {
@@ -1249,23 +1264,37 @@ void Analyzer::deop(char* line)
                 std::vector<Db::idNickStruct> risultatoApprossimativo=database->findAproxIdNickViaNickOp(player);
                 if (risultatoApprossimativo.size() == 1)  //else, if i found an aprox match, i'll unban it
                 {
-                    #ifdef ITA
-                    if (database->deleteOp(risultatoApprossimativo[0].id))
-                    {
-                        phrase.append("^0BanBot: ^2");
-                        phrase.append(risultatoApprossimativo[0].nick);
-                        phrase.append(" ^1 e' stato tolto dalla lista admin.");
+                    if ( !adminlevel || adminlevel<atoi(risultatoApprossimativo[0].level.c_str()) ) {
+                        #ifdef ITA
+                        if (database->deleteOp(risultatoApprossimativo[0].id))
+                        {
+                            phrase.append("^0BanBot: ^2");
+                            phrase.append(risultatoApprossimativo[0].nick);
+                            phrase.append(" ^1 e' stato tolto dalla lista admin.");
+                        }
+                        else phrase.append("^0BanBot: ^1è stato riscontrato un errore, admin non eliminato.");
+                        #else
+                        if (database->deleteOp(risultatoApprossimativo[0].id))
+                        {
+                            phrase.append("^0BanBot: ^2");
+                            phrase.append(risultatoApprossimativo[0].nick);
+                            phrase.append(" ^1successfully removed from admin list.");
+                        }
+                        else phrase.append("^0BanBot: ^1error: admin not deleted.");
+                        #endif
                     }
-                    else phrase.append("^0BanBot: ^1è stato riscontrato un errore, admin non eliminato.");
-                    #else
-                    if (database->deleteOp(risultatoApprossimativo[0].id))
-                    {
+                    else {
                         phrase.append("^0BanBot: ^2");
+                        #ifdef ITA 
+                        phrase.append("non hai permessi sufficienti per togliere l'op a ^1");
                         phrase.append(risultatoApprossimativo[0].nick);
-                        phrase.append(" ^1successfully removed from admin list.");
+                        phrase.append("^2.");
+                        #else
+                        phrase.append("you don't have sufficient permissions to deop ^1");
+                        phrase.append(risultatoApprossimativo[0].nick);
+                        phrase.append("^2.");
+                        #endif
                     }
-                    else phrase.append("^0BanBot: ^1error: admin not deleted.");
-                    #endif
                 }
                 else
                 {
@@ -1302,18 +1331,37 @@ void Analyzer::deop(char* line)
         {
             //i have the number, i'll delete it from database
             std::string phrase;
-            if (database->deleteOp(player))
-                #ifdef ITA
-                block->tell("^0BanBot: ^1utente tolto con successo dalla lista admin.",numeroAdmin);
+            Db::idNickStruct other = database->opStruct(player);
+            if ( !adminlevel || (other.isValid() && adminlevel < atoi(other.level.c_str())) ){
+                if (database->deleteOp(player)) {
+                    phrase.append("^0BanBot: ^2");
+                    phrase.append(other.nick);
+                    #ifdef ITA
+                    phrase.append(" ^1tolto con successo dalla lista admin.");
+                    #else
+                    phrase.append(" ^1deleted sucessifully from admin list.");
+                    #endif
+                }
+                else {
+                    #ifdef ITA
+                    phrase.append("^1^0BanBot ^1fail: è stato riscontrato un errore.");
+                    #else
+                    phrase.append("^0BanBot ^1fail: an error occurred.");
+                    #endif
+                }
+            }
+            else {
+                phrase.append("^0BanBot: ^2");
+                #ifdef ITA 
+                phrase.append("non hai permessi sufficienti per togliere l'op a ^1");
+                phrase.append(other.nick);
+                phrase.append("^2.");
                 #else
-                block->tell("^0BanBot: ^1user deleted sucessifully from admin list.",numeroAdmin);
+                phrase.append("you don't have sufficient permissions to deop ^1");
+                phrase.append(other.nick);
+                phrase.append("^2.");
                 #endif
-            else
-                #ifdef ITA
-                block->tell("^1^0BanBot ^1fail: è stato riscontrato un errore.",numeroAdmin);
-                #else
-                block->tell("^0BanBot ^1fail: player is still an admin.",numeroAdmin);
-                #endif
+            }
             block->tell(phrase,numeroAdmin);
         }
         m_scheduler->addInstructionBlock( block, Server::MEDIUM );
