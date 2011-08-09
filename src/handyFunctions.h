@@ -73,6 +73,7 @@ namespace handyFunctions {
     bool extractFromStatus( std::string, std::vector< stats >* );   // extract all the info of the status command, dividing it into a struct. Returns true if success, else return false.
     bool isA(const char* line, const std::string& regex );          // exec a regex and check if the @line respect the rule of @regex
     void stringExplode(std::string str, std::string separator, std::vector<std::string>* results); // explode the string in a vector, basing on separator.
+    std::string correggi(std::string stringa);                      // correct a string to be compatible with the database
 };
 
 #endif  //HANDYFUNCTIONS_H

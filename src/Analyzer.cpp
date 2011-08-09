@@ -216,7 +216,7 @@ int Analyzer::isAdminSay( char* line, std::string &numero )
             std::cout<<" requested by "<<(*m_dati)[m_dati->serverNumber][i]->nick<<", "<<(*m_dati)[m_dati->serverNumber][i]->GUID<<"\n";
             *(m_dati->log)<<" requested by "<<(*m_dati)[m_dati->serverNumber][i]->nick<<", "<<(*m_dati)[m_dati->serverNumber][i]->GUID<<"\n";
         #endif
-        return database->checkAuthGuid( correggi((*m_dati)[m_dati->serverNumber][i]->GUID) );
+        return database->checkAuthGuid( handyFunctions::correggi((*m_dati)[m_dati->serverNumber][i]->GUID) );
     }
     else
     {
@@ -338,7 +338,7 @@ void Analyzer::clientUserInfo(char* line)
                     std::string motivo("auto-ban 4 cheats.");
                     getDateAndTime(data,ora);
                     //non prendo la guid attuale, ma quella precedente (che spesso è quella vera e propria dell'utente prima che attivi i cheat)
-                    database->ban(correggi(nick),ip,data,ora,correggi((*m_dati)[m_dati->serverNumber][i]->GUID),correggi(motivo),std::string());
+                    database->ban(handyFunctions::correggi(nick),ip,data,ora,handyFunctions::correggi((*m_dati)[m_dati->serverNumber][i]->GUID),handyFunctions::correggi(motivo),std::string());
                     block->kick(numero);
                 }
                 else
@@ -417,9 +417,9 @@ void Analyzer::clientUserInfo(char* line)
             getDateAndTime(data,ora);
             //guardo se aveva una guid impostata precedentemente, in caso la banno.
             if (!(*m_dati)[m_dati->serverNumber][i]->GUID.empty())
-                database->ban(correggi(nick),ip,data,ora,correggi((*m_dati)[m_dati->serverNumber][i]->GUID),correggi(motivo),std::string());
+                database->ban(handyFunctions::correggi(nick),ip,data,ora,handyFunctions::correggi((*m_dati)[m_dati->serverNumber][i]->GUID),handyFunctions::correggi(motivo),std::string());
             //altrimenti banno solo in nickIsBanned
-            else database->insertNewBanned(correggi(nick),ip,data,ora,correggi(motivo),std::string());
+            else database->insertNewBanned(handyFunctions::correggi(nick),ip,data,ora,handyFunctions::correggi(motivo),std::string());
             block->kick(numero);
         }
         else
@@ -477,7 +477,7 @@ void Analyzer::clientUserInfo(char* line)
                     std::string data;
                     std::string motivo("auto-ban 4 cheats.");
                     getDateAndTime(data,ora);
-                    database->ban(correggi(nick),ip,data,ora,correggi(guid),correggi(motivo),std::string());
+                    database->ban(handyFunctions::correggi(nick),ip,data,ora,handyFunctions::correggi(guid),handyFunctions::correggi(motivo),std::string());
                     block->kick(numero);
                 }
                 else
@@ -672,9 +672,9 @@ void Analyzer::ban(char* line)
         else
             i = translatePlayer( player );
         //if i have the guid, ban it. I'll check if he is already banned too.
-        if (i>=0 && !database->checkBanGuid((*m_dati)[m_dati->serverNumber][i]->GUID))
+        if (i>=0 && !database->checkBanGuid(handyFunctions::correggi((*m_dati)[m_dati->serverNumber][i]->GUID)))
         {
-            if ( adminLevel < database->checkAuthGuid((*m_dati)[m_dati->serverNumber][i]->GUID) )
+            if ( adminLevel < database->checkAuthGuid(handyFunctions::correggi((*m_dati)[m_dati->serverNumber][i]->GUID)) )
             {
                 #ifdef ITA
                     std::cout<<"  [+]banno "<<(*m_dati)[m_dati->serverNumber][i]->nick<<" con guid "<<(*m_dati)[m_dati->serverNumber][i]->GUID<<"\n";
@@ -704,7 +704,7 @@ void Analyzer::ban(char* line)
                 getDateAndTime(data,ora);
                 unsigned int j=0;
                 while (j<(*m_dati)[m_dati->serverNumber].size() && (*m_dati)[m_dati->serverNumber][j]->number.compare(numeroAdmin)!=0) j++;
-                if (database->ban(correggi((*m_dati)[m_dati->serverNumber][i]->nick),(*m_dati)[m_dati->serverNumber][i]->ip,data,ora,correggi((*m_dati)[m_dati->serverNumber][i]->GUID),correggi(motivo),correggi((*m_dati)[m_dati->serverNumber][j]->GUID)))
+                if (database->ban(handyFunctions::correggi((*m_dati)[m_dati->serverNumber][i]->nick),(*m_dati)[m_dati->serverNumber][i]->ip,data,ora,handyFunctions::correggi((*m_dati)[m_dati->serverNumber][i]->GUID),handyFunctions::correggi(motivo),handyFunctions::correggi((*m_dati)[m_dati->serverNumber][j]->GUID)))
                 {
                     #ifdef ITA
                         std::cout<<"  [OK] giocatore bannato\n";
@@ -1177,7 +1177,7 @@ void Analyzer::op(char* line)
             #endif
         else
         {
-            if( database->addOp(correggi((*m_dati)[m_dati->serverNumber][i]->nick),(*m_dati)[m_dati->serverNumber][i]->GUID, newOpLevel) )
+            if( database->addOp(handyFunctions::correggi((*m_dati)[m_dati->serverNumber][i]->nick),handyFunctions::correggi((*m_dati)[m_dati->serverNumber][i]->GUID), newOpLevel) )
             {
                 std::string phrase ( "^0BanBot: ^1" );
                 phrase.append( (*m_dati)[m_dati->serverNumber][i]->nick );
@@ -1223,7 +1223,7 @@ void Analyzer::deop(char* line)
         {
             //search the precise nick on the database
             std::string phrase;
-            std::vector<Db::idNickStruct> risultatoEsatto=database->findPreciseIdNickViaNickOp(player);
+            std::vector<Db::idNickStruct> risultatoEsatto=database->findPreciseIdNickViaNickOp(handyFunctions::correggi(player));
             if (risultatoEsatto.size() == 1)  //if i found an exact match, i'll unban it
             {
                 if ( !adminlevel || adminlevel<atoi(risultatoEsatto[0].level.c_str()) ) {
@@ -1261,7 +1261,7 @@ void Analyzer::deop(char* line)
             else if ( risultatoEsatto.size() == 0 )
             {
                 //search the approx nick on db
-                std::vector<Db::idNickStruct> risultatoApprossimativo=database->findAproxIdNickViaNickOp(player);
+                std::vector<Db::idNickStruct> risultatoApprossimativo=database->findAproxIdNickViaNickOp(handyFunctions::correggi(player));
                 if (risultatoApprossimativo.size() == 1)  //else, if i found an aprox match, i'll unban it
                 {
                     if ( !adminlevel || adminlevel<atoi(risultatoApprossimativo[0].level.c_str()) ) {
@@ -1331,7 +1331,7 @@ void Analyzer::deop(char* line)
         {
             //i have the number, i'll delete it from database
             std::string phrase;
-            Db::idNickStruct other = database->opStruct(player);
+            Db::idNickStruct other = database->opStruct(handyFunctions::correggi(player));
             if ( !adminlevel || (other.isValid() && adminlevel < atoi(other.level.c_str())) ){
                 if (database->deleteOp(player)) {
                     phrase.append("^0BanBot: ^2");
@@ -1924,7 +1924,7 @@ void Analyzer::iamgod(char* line)
         std::string numero = temp.substr( pos, end-pos );
         //i take player infos, and then add him in op list with level 0 (hightest admin level).
         int i = findPlayer( numero );
-        if( i>=0 && database->addOp( correggi((*m_dati)[m_dati->serverNumber][i]->nick), correggi((*m_dati)[m_dati->serverNumber][i]->GUID), "0") )
+        if( i>=0 && database->addOp( handyFunctions::correggi((*m_dati)[m_dati->serverNumber][i]->nick), handyFunctions::correggi((*m_dati)[m_dati->serverNumber][i]->GUID), "0") )
             block->bigtext("^1Welcome, my Master!");
         else
             #ifdef ITA
@@ -2677,7 +2677,7 @@ bool Analyzer::guidIsBanned(const std::string &guid, const std::string &nick, co
 {
     if ( (*m_dati)[m_dati->serverNumber].strict() > LEVEL0 )
     {
-        std::vector<Db::idMotiveStruct> risultato = database->idMotiveViaGuid(correggi(guid));
+        std::vector<Db::idMotiveStruct> risultato = database->idMotiveViaGuid(handyFunctions::correggi(guid));
 
         if ( risultato.size() )
         {
@@ -2695,7 +2695,7 @@ bool Analyzer::guidIsBanned(const std::string &guid, const std::string &nick, co
             std::string ora;
             std::string data;
             getDateAndTime(data,ora);
-            database->modifyBanned(correggi(nick),ip,data,ora,std::string(),risultato[0].id);
+            database->modifyBanned(handyFunctions::correggi(nick),ip,data,ora,std::string(),risultato[0].id);
             return true;
         }
     }
@@ -2707,7 +2707,7 @@ bool Analyzer::nickIsBanned(const std::string &nick, const std::string &numero, 
 
     if ( (*m_dati)[m_dati->serverNumber].strict() > LEVEL0 )
     {
-        std::vector<Db::idMotiveStruct> risultato = database->idMotiveViaNick(correggi(nick));
+        std::vector<Db::idMotiveStruct> risultato = database->idMotiveViaNick(handyFunctions::correggi(nick));
         std::string ora;
         std::string data;
         getDateAndTime(data,ora);
@@ -2732,7 +2732,7 @@ bool Analyzer::nickIsBanned(const std::string &nick, const std::string &numero, 
             std::string data;
             getDateAndTime(data,ora);
             database->modifyBanned(std::string(),ip,data,ora,std::string(),risultato[0].id);
-            database->insertNewGuid(correggi(guid),risultato[0].id);
+            database->insertNewGuid(handyFunctions::correggi(guid),risultato[0].id);
             return true;
         }
         else if ( ris == Analyzer::WARNING )
@@ -2787,7 +2787,7 @@ bool Analyzer::ipIsBanned(const std::string &ip, const std::string &numero, cons
             std::string data;
             getDateAndTime(data,ora);
             database->modifyBanned(std::string(),ip,data,ora,std::string(),risultato[0].id);
-            database->insertNewGuid(correggi(guid),risultato[0].id);
+            database->insertNewGuid(handyFunctions::correggi(guid),risultato[0].id);
             return true;
         }
         else if ( ris == Analyzer::WARNING )
@@ -2815,30 +2815,12 @@ bool Analyzer::ipIsBanned(const std::string &ip, const std::string &numero, cons
     return false;
 }
 
-std::string Analyzer::correggi(std::string stringa)
-{
-    unsigned int pos=0;
-    bool nonFinito=true;
-    while (nonFinito)
-    {
-        nonFinito=false;
-        pos=stringa.find("'",pos);
-        if (pos<stringa.size())
-        {
-            stringa=stringa.replace(pos,1,"''");
-            pos+=2;
-            nonFinito=true;
-        }
-    }
-    return stringa;
-}
-
 std::vector<unsigned int> Analyzer::admins()
 {
     std::vector<unsigned int> temp;
     for (unsigned int i=0;i<(*m_dati)[m_dati->serverNumber].size();i++)
     {
-        if (database->checkAuthGuid(correggi((*m_dati)[m_dati->serverNumber][i]->GUID))<100)
+        if (database->checkAuthGuid(handyFunctions::correggi((*m_dati)[m_dati->serverNumber][i]->GUID))<100)
             temp.push_back(i);
     }
     return temp;

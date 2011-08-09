@@ -515,7 +515,10 @@ bool Db::ban( const std::string &nick, const std::string &ip, const std::string 
         return false;
     }
 
-    std::string adminNick = getAdminNick( adminGuid );
+    std::string adminNick = handyFunctions::correggi( getAdminNick( adminGuid ) );
+    
+/***** IF THIS CALL FAILS, THE FUNCTION RETURN TRUE ****/
+/* in pratica, falliva per un nick sbagliato (Freya' non è valido, per il singolo apice), ma la funzione mi tornava comunque true, continuando con lo svolgimento normale. Per il problema dei dati correggo io, per i check vedi te plz*/
     std::string banId = insertNewBanned( nick, ip, date, time, motive, adminNick );    //get the autoincrement id
 
     if( banId.empty() )    // empty std::string is ERROR

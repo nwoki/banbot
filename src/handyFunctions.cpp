@@ -263,6 +263,24 @@ namespace handyFunctions{
             results->push_back(str);
         }
     }
+    
+    std::string correggi(std::string stringa)
+    {
+        unsigned int pos=0;
+        bool nonFinito=true;
+        while (nonFinito)
+        {
+            nonFinito=false;
+            pos=stringa.find("'",pos);
+            if (pos<stringa.size())
+            {
+                stringa=stringa.replace(pos,1,"''");
+                pos+=2;
+                nonFinito=true;
+            }
+        }
+        return stringa;
+    }
 };
 
 #endif  // HANDYFUNCTIONS_CPP
