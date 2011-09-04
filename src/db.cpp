@@ -44,10 +44,12 @@
 *       PUBLIC  METHODS         *
 ********************************/
 
-Db::Db( ConfigLoader::Options* conf )
-    : m_options( conf )
-    , m_zErrMsg( 0 )
-    , m_result( 0 )
+Db::Db(ConfigLoader::Options* conf)
+    : m_database(0)
+    , m_options(conf)
+    , m_zErrMsg(0)
+    , m_result(0)
+    , m_resultOccurrences(0)
 {
     // set db latest version
     m_latestVersion = VER_1_2;
@@ -507,80 +509,85 @@ void Db::dumpDatabases()
 /********************************
 *         BAN  METHODS          *
 ********************************/
-bool Db::ban( const std::string &nick, const std::string &ip, const std::string &date, const std::string &time, const std::string &guid, const std::string &motive, const std::string &adminGuid ) //adds banned guid to database
+bool Db::ban(const std::string &nick, const std::string &ip, const std::string &date, const std::string &time, const std::string &guid, const std::string &motive, const std::string &adminGuid)
 {
-    if ( checkBanGuid( guid ) ) {
+    if (checkBanGuid(guid)) {
         std::cout << "\e[0;33m[!]guid: " << guid << " already banned\e[0m \n";
         *(m_options->log) << "[!]guid: " << guid << " already banned\n";
         return false;
     }
 
-    std::string adminNick = handyFunctions::correggi( getAdminNick( adminGuid ) );
-    
+    std::string adminNick = handyFunctions::correggi(getAdminNick(adminGuid));
+
 /***** IF THIS CALL FAILS, THE FUNCTION RETURN TRUE ****/
-/* in pratica, falliva per un nick sbagliato (Freya' non è valido, per il singolo apice), ma la funzione mi tornava comunque true, continuando con lo svolgimento normale. Per il problema dei dati correggo io, per i check vedi te plz*/
-    std::string banId = insertNewBanned( nick, ip, date, time, motive, adminNick );    //get the autoincrement id
+/* in pratica, falliva per un nick sbagliato (Freya' non è valido, per il singolo apice),
+ * ma la funzione mi tornava comunque true, continuando con lo svolgimento normale.
+ * Per il problema dei dati correggo io, per i check vedi te plz
+ */
+    std::string banId = insertNewBanned(nick, ip, date, time, motive, adminNick);    //get the autoincrement id
 
-    if( banId.empty() )    // empty std::string is ERROR
-        return false;    //didn't write to database
-
-    if( insertNewGuid( guid, banId ).empty() )    // empty std::string is ERROR
+    if (banId.empty()) {                                // empty std::string is ERROR, didn't write to database
+        std::cout << "\e[0;33m[!]RETURNING FALSE \e[0m \n";
         return false;
-
-    //all went well, add admin to AUTHOR
-    return true;
+    } else if (insertNewGuid(guid, banId).empty()) {    // empty std::string is ERROR
+        std::cout << "\e[0;33m[!]RETURNING FALSE \e[0m \n";
+        return false;
+    } else {                                            //all went well, add admin to AUTHOR
+        std::cout << "\e[0;33m[!]RETURNING TRUE \e[0m \n";
+        return true;
+    }
 }
 
 
-std::string Db::insertNewBanned( const std::string& nick, const std::string& ip, const std::string& date, const std::string &time, const std::string &motive, std::string adminNick )
+std::string Db::insertNewBanned(const std::string& nick, const std::string& ip, const std::string& date, const std::string &time, const std::string &motive, std::string adminNick)
 {
-    std::string newBanQuery( "insert into banned( nick, ip, date, time, motive, author ) values('" );
+    std::string newBanQuery("insert into banned( nick, ip, date, time, motive, author ) values('");
 
-    if( adminNick.empty() ) {   //if no author, set it to BanBot
+    if (adminNick.empty()) {   //if no author, set it to BanBot
         adminNick.clear();
         adminNick = "BanBot";
     }
 
-    newBanQuery.append( nick );
-    newBanQuery.append( "','" );
-    newBanQuery.append( ip );
-    newBanQuery.append( "','" );
-    newBanQuery.append( date );
-    newBanQuery.append( "','" );
-    newBanQuery.append( time );
-    newBanQuery.append( "','" );
-    newBanQuery.append( motive );
-    newBanQuery.append( "','" );
-    newBanQuery.append( adminNick );
-    newBanQuery.append( "');" );
+    newBanQuery.append(nick);
+    newBanQuery.append("','");
+    newBanQuery.append(ip);
+    newBanQuery.append("','");
+    newBanQuery.append(date);
+    newBanQuery.append("','");
+    newBanQuery.append(time);
+    newBanQuery.append("','");
+    newBanQuery.append(motive);
+    newBanQuery.append("','");
+    newBanQuery.append(adminNick);
+    newBanQuery.append("');");
 
-    if( !execQuery( newBanQuery ) )
+    if (!execQuery(newBanQuery)) {
         return std::string();  //FAIL return empty std::string
+    }
 
     //else return last banId
-    std::string selectLastInserted( "select id from banned where nick='" );
-    selectLastInserted.append( nick );
-    selectLastInserted.append( "' and ip='" );
-    selectLastInserted.append( ip );
-    selectLastInserted.append( "';" );
+    std::string selectLastInserted("select id from banned where nick='");
+    selectLastInserted.append(nick);
+    selectLastInserted.append("' and ip='");
+    selectLastInserted.append(ip);
+    selectLastInserted.append("';");
 
 #ifdef DB_DEBUG
     std::cout << "Db::insertNewBanned : selectLastInserted query ->  " << selectLastInserted << std::endl;
 #endif
 
     /* get max */
-    execQuery( selectLastInserted );
-
+    if (execQuery(selectLastInserted)) {
 #ifdef DB_DEBUG
-    std::cout << "SHOWING VDATA\n";
-    for( unsigned int i = 0; i < m_data.size(); i++ )
-        std::cout << m_data[i] << "\n";
+        std::cout << "SHOWING VDATA\n";
+        for (unsigned int i = 0; i < m_data.size(); ++i) {
+            std::cout << m_data[i] << "\n";
+        }
 #endif
-
-    if( m_data.empty() )
+        return m_data[0];   // @ 0 we have the id
+    } else {
         return std::string();
-    else
-        return m_data[0];
+    }
 }
 
 
@@ -697,21 +704,25 @@ bool Db::deleteBanned( const std::string &id )
 /********************************
 *      GUID TABLE METHODS       *
 ********************************/
-std::string Db::insertNewGuid( const std::string& guid, const std::string &banId )
+std::string Db::insertNewGuid(const std::string& guid, const std::string &banId)
 {
-    std::string newGuidQuery( "insert into guids( guid, banId ) values('" );
+    std::string newGuidQuery("insert into guids( guid, banId ) values('");
 
-    newGuidQuery.append( guid );
-    newGuidQuery.append( "','" );
-    newGuidQuery.append( banId );
-    newGuidQuery.append( "');" );
+    newGuidQuery.append(guid);
+    newGuidQuery.append("','");
+    newGuidQuery.append(banId);
+    newGuidQuery.append("');");
 
-    if( !execQuery( newGuidQuery ) )
+    if(!execQuery(newGuidQuery)) {
         return std::string();  /* FAIL return empty std::string */
+    }
 
     // else return last banId
-    execQuery( "select max( id ) from guids" );
-    return m_data[0];
+    if (execQuery("select max( id ) from guids")) {
+        return m_data[0];
+    } else {
+        return std::string();
+    }
 }
 
 
@@ -1295,7 +1306,7 @@ void Db::createDb()   //initial creation of database
 }
 
 
-bool Db::execQuery( const std::string &query )  //executes and returns status
+bool Db::execQuery(const std::string &query)
 {
 
 #ifdef DB_DEBUG
@@ -1304,54 +1315,63 @@ bool Db::execQuery( const std::string &query )  //executes and returns status
 #endif
 
     //clean old m_data... MUST clear otherwise i keep old values
-    if( !m_data.empty() )
+    if (!m_data.empty()) {
         m_data.clear();
+    }
 
     //..and old m_vcolHead just to be shure i don't get unwanted info
-    if( !m_vcolHead.empty() )
+    if (!m_vcolHead.empty()) {
         m_vcolHead.clear();
+    }
 
     //and also check that database connection is open!
-    if( !m_database )
+    if (!m_database) {
         connect();
+    }
 
-    m_resultCode = sqlite3_get_table( m_database, query.c_str(), &m_result, &m_nrow, &m_ncol, &m_zErrMsg );
+    m_resultCode = sqlite3_get_table(m_database, query.c_str(), &m_result, &m_nrow, &m_ncol, &m_zErrMsg);
     bool success;
 
-    if( m_vcolHead.size() < 0 )
+    if (m_vcolHead.size() < 0) {
         m_vcolHead.clear();
+    }
 
-    if( m_data.size() < 0 )
+    if (m_data.size() < 0) {
         m_data.clear();
+    }
 
-    if( m_resultCode == SQLITE_OK ) {   // went well and got data
-        for( int i = 0; i < m_ncol; ++i )
-            m_vcolHead.push_back( m_result[i] );   /* First row heading */
-            for( int i = 0; i < m_ncol * m_nrow; ++i )
-                m_data.push_back( m_result[m_ncol+i] );
-
+    if (m_resultCode == SQLITE_OK) {   // went well and got data
         success = true;
 
+        for (int i = 0; i < m_ncol; ++i) {
+            m_vcolHead.push_back(m_result[i]);   // First row heading
+            for (int i = 0; i < m_ncol * m_nrow; ++i) {
+                m_data.push_back( m_result[m_ncol+i] );
+            }
+        }
+
     #ifdef DB_DEBUG
-        for( unsigned int i = 0; i < m_data.size(); i++ ) {
-            std::cout << "VDATA INFO\n";
+        for (unsigned int i = 0; i < m_data.size(); ++i) {
+            std::cout << "M_DATA INFO\n";
             std::cout << m_data[i] << "\n";
         }
     #endif
 
-    }
-    else {
-        std::cout << "\e[1;31m[EPIC FAIL] Db::execQuery " << sqlite3_errmsg( m_database ) << "\e[0m \n";
-        *(m_options->log) << "[EPIC FAIL] Db::execQuery '" << m_zErrMsg << "'\n";
-        *(m_options->log) << "[ERROR MSG]" << sqlite3_errmsg( m_database ) << "\n";
-        *(m_options->errors) << "[EPIC FAIL] On " << (*m_options)[m_options->serverNumber].name()  << " : Db::execQuery '" << m_zErrMsg << "'\n";
-        *(m_options->errors) << sqlite3_errmsg( m_database );
+        // set result occurences
+        m_resultOccurrences = (int)m_data.size();
+
+    } else {
         success = false;
+        std::cout << "\e[1;31m[EPIC FAIL] Db::execQuery " << sqlite3_errmsg(m_database) << "\e[0m \n";
+        *(m_options->log) << "[EPIC FAIL] Db::execQuery '" << m_zErrMsg << "'\n";
+        *(m_options->log) << "[ERROR MSG]" << sqlite3_errmsg(m_database) << "\n";
+        *(m_options->errors) << "[EPIC FAIL] On " << (*m_options)[m_options->serverNumber].name()  << " : Db::execQuery '" << m_zErrMsg << "'\n";
+        *(m_options->errors) << sqlite3_errmsg(m_database);
     }
-    sqlite3_free_table( m_result );
+    sqlite3_free_table(m_result);
 
 #ifdef DB_DEBUG
-    std::cout << "\e[1;37m Db::execQuery result code is > " << m_resultCode << " sending value " << success << "\e[0m \n";
+    std::cout << "\e[1;37m Db::execQuery result code is: " << m_resultCode << " sending value: " << success << "\e[0m \n";
 #endif
     return success;
 }
@@ -1472,7 +1492,7 @@ std::string Db::getAdminNick( const std::string& guid )
 // }
 
 
-int Db::resultQuery( const std::string &query ) //ritorna quante corrispondenze ci sono all'interno del DB
+int Db::resultQuery(const std::string &query) //ritorna quante corrispondenze ci sono all'interno del DB
 {
 
 #ifdef DB_DEBUG
@@ -1482,16 +1502,16 @@ int Db::resultQuery( const std::string &query ) //ritorna quante corrispondenze 
 
     int answer = 0;
 
-    if( !execQuery( query ) ) {
+    if (!execQuery(query)) {
         std::cout << "query failed\n";
         answer = -1;
+    } else {
+        answer = m_resultOccurrences;
     }
-    else
-        answer = m_data.size();
 
 #ifdef DB_DEBUG
-    std::cout << "\e[1;37mDb::resultQuery ANSWER SIZE > " << m_data.size() << "\e[0m \n";
-    std::cout << "\e[1;37mDb::resultQuery ANSWER SENDING OUT IS > " << answer << "\e[0m \n";
+    std::cout << "\e[1;37mDb::resultQuery ANSWER SIZE : " << m_resultOccurrences << "\e[0m \n";
+    std::cout << "\e[1;37mDb::resultQuery ANSWER SENDING OUT IS : " << answer << "\e[0m \n";
 #endif
 
     return answer;

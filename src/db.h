@@ -114,10 +114,10 @@ class Db
         void dumpDatabases();                       // dumps database creating a copy
 
         //banned table
-        bool ban( const std::string &nick, const std::string &ip, const std::string &date, const std::string &time, const std::string &guid, const std::string &motive, const std::string &adminGuid );    // bans player
-        std::string insertNewBanned( const std::string &nick, const std::string &ip,  const std::string &date, const std::string &time, const std::string &motive, std::string adminNick );                // insert banned player info into "banned" table
-        bool modifyBanned( const std::string &nick, const std::string &ip,  const std::string &date, const std::string &time, const std::string &motive, const std::string &id );                     // modify info for banned player with id = "id"
-        bool deleteBanned( const std::string &id );                                                                                                                          // deletes records for banned player with given "id"
+        bool ban(const std::string &nick, const std::string &ip, const std::string &date, const std::string &time, const std::string &guid, const std::string &motive, const std::string &adminGuid);   // bans player adding banned guid to database
+        std::string insertNewBanned(const std::string &nick, const std::string &ip,  const std::string &date, const std::string &time, const std::string &motive, std::string adminNick);               // insert banned player info into "banned" table and return the banId
+        bool modifyBanned(const std::string &nick, const std::string &ip,  const std::string &date, const std::string &time, const std::string &motive, const std::string &id);                         // modify info for banned player with id = "id"
+        bool deleteBanned(const std::string &id);                                                                                                                                                       // deletes records for banned player with given "id"
 
         // guid table
         std::string insertNewGuid( const std::string &guid, const std::string &banId );                // inserts guid with specified "banId" to records
@@ -166,7 +166,7 @@ class Db
         bool connect();                                                     // connects to the sqlite3 database
         bool copyFile( const std::string &source, const std::string &destination );   // copy a file to another one
         void createDb();                                                    // creates database
-        bool execQuery( const std::string &query );                              // executes query and returns status to tell if the operation went well or not
+        bool execQuery(const std::string &query);                           // executes query and returns status to tell if the operation went well or not
         std::string getAdminNick( const std::string &guid );                          // return's admin's nick from his guid
 //         void loadAdminlist( std::vector<ConfigLoader::AdminList> admins );
 //         void loadBanlist( std::vector<ConfigLoader::Banlist> banned );
@@ -179,6 +179,7 @@ class Db
         char *m_zErrMsg;
         char **m_result;
         int m_resultCode;                                                   // return code i get from query ( use to check query returns. SQLITE_OK ecc )
+        int m_resultOccurrences;                                            // how many occurrences i get from data when executing a query
         int m_nrow, m_ncol;                                                 // number of rows and columns
 
         // data is stored here after query executions!!

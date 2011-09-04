@@ -2,7 +2,8 @@ project(BanBot)
 
 cmake_minimum_required(VERSION 2.8)
 
-set(boost_libs_DIR src/boost_1_45/libs)
+# for debug
+# add_definitions(-DDB_DEBUG -DDEBUG_MODE)
 
 #banbot sources for build
 set(BanBot_SRCS
@@ -20,27 +21,10 @@ set(BanBot_SRCS
     src/server.cpp
 )
 
-#boost sources for buildign libs
-set(Boost_Filesystem_SRCS
-    ${boost_libs_DIR}/filesystem/v2/src/v2_operations.cpp
-    ${boost_libs_DIR}/filesystem/v2/src/v2_path.cpp
-    ${boost_libs_DIR}/filesystem/v2/src/v2_portability.cpp
-)
-
-set(Boost_SmartPtr_SRCS
-    ${boost_libs_DIR}/smart_ptr/src/sp_collector.cpp
-    ${boost_libs_DIR}/smart_ptr/src/sp_debug_hooks.cpp
-)
-
-set(Boost_System_SRCS
-    ${boost_libs_DIR}/system/src/error_code.cpp
-    ${boost_libs_DIR}/system/src/local_free_on_destruction.hpp
-)
-
-# for boost lib
-add_library(boost_filesystem_LIB ${Boost_Filesystem_SRCS})
-add_library(boost_smartPtr_LIB ${Boost_SmartPtr_SRCS})
-add_library(boost_system_LIB ${Boost_System_SRCS})
+#boost libs
+add_subdirectory(src/boost_1_45/libs/filesystem)
+add_subdirectory(src/boost_1_45/libs/smart_ptr)
+add_subdirectory(src/boost_1_45/libs/system)
 
 # sqlite lib
 add_subdirectory(src/sqlite3)
