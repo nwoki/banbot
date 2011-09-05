@@ -82,34 +82,31 @@ Db::~Db()
 
 bool Db::openDatabase()
 {
-    if( !connect() ) {  //not opened
+    if (!connect()) {  //not opened
         std::cout << "\e[1;31mDb::open() FAILED to open database!\e[0m \n";
         *(m_options->log) << "Db::open() FAILED to open database!\n";
         *(m_options->errors) << "On " << (*m_options)[m_options->serverNumber].name()  << " : Db::open() FAILED to open database!\n";
         return false;
-    }
-    else
+    } else {
         return true;
+    }
 }
 
 
 void Db::closeDatabase()
 {
-    m_resultCode = sqlite3_close( m_database );
+    m_resultCode = sqlite3_close(m_database);
 
-    if( m_resultCode != SQLITE_OK ) {
+    if (m_resultCode != SQLITE_OK) {
         std::cout << "\e[1;31m[FAIL] Can't close database! Something's wrong\e[0m \n";
         *(m_options->log) << "[FAIL] Can't close database! Something's wrong\n";
         *(m_options->errors) << "[FAIL] On " << (*m_options)[m_options->serverNumber].name()  << " : Can't close database! Something's wrong\n";
     }
 
     #ifdef DB_DEBUG
-    if( m_resultCode == SQLITE_OK )
-    {
+    if (m_resultCode == SQLITE_OK) {
         std::cout << "\e[1;35mDATABASE CLOSED\e[0m \n";
-    }
-    else
-    {
+    } else {
         std::cout << "\e[1;31mFAILED TO CLOSE DATABASE\e[0m \n";
         *(m_options->errors) << "\e[1;31mFAILED TO CLOSE DATABASE\e[0m \n";
     }
@@ -117,23 +114,22 @@ void Db::closeDatabase()
 }
 
 
-int Db::checkAuthGuid( const std::string &guid )    //checks oplist for ops
+int Db::checkAuthGuid(const std::string &guid)    //checks oplist for ops
 {
 
 #ifdef DB_DEBUG
     std::cout << "Db::checkAuthGuid\n";
 #endif
 
-    std::string query( "select level from oplist where guid='" );
-    query.append( guid );
-    query.append( "'" );
+    std::string query("select level from oplist where guid='");
+    query.append(guid);
+    query.append("'");
 
     int convertedInt = 100;     // default value
 
-    if( execQuery( query ) ) {
-        if( !m_data.empty() )
-        {
-            convertedInt = atoi( m_data[0].c_str() );
+    if (execQuery(query)) {
+        if (!m_data.empty()) {
+            convertedInt = atoi(m_data[0].c_str());
             #ifdef DB_DEBUG
             std::cout << "Level from db: "<<m_data[0]<<" converted in "<<convertedInt<<"\n";
             #endif
@@ -144,40 +140,48 @@ int Db::checkAuthGuid( const std::string &guid )    //checks oplist for ops
 }
 
 
-bool Db::checkBanGuid( const std::string &banGuid )
+bool Db::checkBanGuid(const std::string &banGuid)
 {
-    std::string query( "select guid FROM guids WHERE guid='" );
-    query.append( banGuid );
-    query.append( "';" );
+    std::string query("select guid FROM guids WHERE guid='");
+    query.append(banGuid);
+    query.append("';");
 
     std::cout << "[-] Test sul ban " << banGuid << "\n";
     *(m_options->log) << "[-] Test sul ban "<< banGuid << "\n";
 
-    if( resultQuery( query ) > 0 )
+    if (resultQuery(query) > 0) {
         return true;
-    else return false;
+    } else {
+        return false;
+    }
 }
 
 
-bool Db::checkBanNick( const std::string& nick )
+bool Db::checkBanNick(const std::string& nick)
 {
 
 #ifdef DB_DEBUG
     std::cout << "Db::checkBanNick\n";
 #endif
 
-    std::string query( "select id from banned where nick='" );
-    query.append( nick );
-    query.append( "';" );
+    // don't interrogate db if nick is empty
+    if (nick.empty()) {
+        return false;
+    }
+
+    std::string query("select id from banned where nick='");
+    query.append(nick);
+    query.append("';");
 
 #ifdef DB_DEBUG
     std::cout << query << "\n";
 #endif
 
-    if( resultQuery( query ) > 0 )
+    if (resultQuery(query) > 0) {
         return true;
-    else
+    } else {
         return false;
+    }
 }
 
 
@@ -188,55 +192,53 @@ void Db::checkDatabases()
      * useful for when adding a new server to check "on the fly
      */
 
-    for( unsigned int i = 0; i < m_options->size(); i++ ) {
-        m_options->serverNumber = i;    /* set server number I'm working onDbCounter */
+    for (unsigned int i = 0; i < m_options->size(); ++i) {
+        m_options->serverNumber = i;    // set server number I'm working onDbCounter
 
         // get path to db folder
         std::string dbPath = (*m_options)[i].dbFolder();
 
-        if( dbPath[dbPath.size()-1] != '/' )
-            dbPath.append( "/" );
+        if (dbPath[dbPath.size()-1] != '/') {
+            dbPath.append("/");
+        }
 
-        std::string pathWithFile( dbPath ); /* set full file path */
-        pathWithFile.append( DB_NAME );
+        std::string pathWithFile(dbPath); /* set full file path */
+        pathWithFile.append(DB_NAME);
 
         /* DIRECTORY CHECK */
-        if( !handyFunctions::fileOrDirExistance( dbPath ) ) {    // does directory exist?
-            if( !handyFunctions::createDir( dbPath ) ) {
+        if (!handyFunctions::fileOrDirExistance(dbPath)) {    // does directory exist?
+            if (!handyFunctions::createDir(dbPath)) {
                 std::cout << "\e[1;31mDb::Db couldn't create database folder: " << dbPath << "\e[0m \n";
                 *(m_options->errors) << "Db::Db couldn't create database folder: " << dbPath << "\n";
-            }
-            else {
+            } else {
                 std::cout << "\e[0;32m  [OK]created " << dbPath << " directory..\e[0m \n";
                 *(m_options->errors) << "  [OK]created " << dbPath << " directory..\n";
             }
-        }
-        else
+        } else {
             std::cout << "\e[0;33m database folder: " << dbPath << " already exists \e[0m \n";
+        }
 
         /* FILE CHECK */
-        if( !handyFunctions::fileOrDirExistance( pathWithFile ) ) {  // does file exist?
-            if( !handyFunctions::createFile( pathWithFile ) ) { // create database if needed
+        if (!handyFunctions::fileOrDirExistance(pathWithFile)) {  // does file exist?
+            if (!handyFunctions::createFile(pathWithFile)) { // create database if needed
                 std::cout << "\e[1;31mDb::Db couldn't create database file: " << pathWithFile << "\e[0m \n";
                 *(m_options->errors) << "Db::Db couldn't create database file: " << pathWithFile << "\n";
-                (*m_options)[i].setValid( false );   // set database validity
-            }
-            else {
+                (*m_options)[i].setValid(false);   // set database validity
+            } else {
                 std::cout << "\e[0;32m [OK]created database file: " << pathWithFile << "\e[0m \n";
                 *(m_options->errors) << "[OK]created database file: " << pathWithFile << "\n";
                 openDatabase();
                 createDb();
                 closeDatabase();
-                (*m_options)[i].setValid( true );   // set database validity
+                (*m_options)[i].setValid(true);   // set database validity
             }
-        }
-        else {
+        } else {
             std::cout << "\e[0;33m database file: " << pathWithFile << " already exists \e[0m \n";
             openDatabase();
-            if( checkDbVersion() == m_latestVersion )       // last valid database version used by BanBot
-                (*m_options)[i].setValid( true );   // set database validity
-            else
-            {
+            if (checkDbVersion() == m_latestVersion) {       // last valid database version used by BanBot
+                // set database validity
+                (*m_options)[i].setValid(true);
+            } else {
                 #ifdef ITA
                 std::cout<< "\e[1;31m Versione del database errata. Leggere il manuale per vedere come convertirlo.\e[0m \n";
                 *(m_options->errors) << "Versione del database errata. Leggere il manuale per vedere come convertirlo.\n";
@@ -244,7 +246,7 @@ void Db::checkDatabases()
                 std::cout<< "\e[1;31m Wrong Db version: read the manual to see how to convert it.\e[0m \n";
                 *(m_options->errors) << "Wrong Db version: read the manual to see how to convert it.\n";
                 #endif
-                (*m_options)[i].setValid( false );  // server is invalid due to database inconsistency
+                (*m_options)[i].setValid(false);  // server is invalid due to database inconsistency
             }
             closeDatabase();
         }
@@ -256,10 +258,11 @@ void Db::checkDatabases()
 
 bool Db::isOpTableEmpty()
 {
-    if( resultQuery( "select * from oplist;" ) > 0 )   //got results so not empty
+    if (resultQuery("select * from oplist;") > 0) {   //got results so not empty
         return false;
-    else
+    } else {
         return true;
+    }
 }
 
 
@@ -459,14 +462,17 @@ void Db::dumpDatabases()
 
     //  dump all db's
     //command creation
-    for( unsigned int i = 0; i < m_options->size()/*how many servers i've got*/; i++ ) {
+    for (unsigned int i = 0; i < m_options->size()/*how many servers i've got*/; i++) {
         //create copy command
 
         //get current database directory
-        std::string source( (*m_options)[i].dbFolder() );
-        if( source[ source.length()-1 ] != '/' )
-            source.append( "/" );
-        source.append( DB_NAME );
+        std::string source((*m_options)[i].dbFolder());
+
+        if (source[source.length()-1 ] != '/') {
+            source.append("/");
+        }
+
+        source.append(DB_NAME);
 
         /*//get backup directory
         cmd.append( (*m_options)[i].backupDir() );
@@ -474,32 +480,33 @@ void Db::dumpDatabases()
         if( cmd[ cmd.length()-1 ] != '/' )
             cmd.append( "/" );*/
 
-        std::string dest( (*m_options)[i].dbFolder() );
+        std::string dest((*m_options)[i].dbFolder());
 
-        if( dest[ dest.length()-1 ] != '/' )
-            dest.append( "/" );
+        if (dest[dest.length()-1] != '/') {
+            dest.append("/");
+        }
 
-        dest.append( DB_NAME );
-        dest.append( ".backup-" );
-        dest.append( (*m_options)[i].name() );
+        dest.append(DB_NAME);
+        dest.append(".backup-");
+        dest.append((*m_options)[i].name());
         //cmd.append( timeStamp() );  //add day,month and year to backup file name
 
         //if( system( cmd.c_str() ) ) {  // 0 is success, if I enter here, cmd FAILED
-        if( !copyFile( source, dest ) ) {
+        if (!copyFile(source, dest)) {
             std::cout << "\e[1;31mDb::dumpDatabase " << source << " to " << dest << " database dump failed!\e[0m \n";
             *(m_options->errors) << "On " << (*m_options)[m_options->serverNumber].name()  << " : Db::dumpDatabase " << source << " to " << dest << " database dump failed!\n";
             return;
-        }
-        else {
+        } else {
             //just log this call, no need for output
             *(m_options->errors) << "Db::dumpDatabase SUCCESS, dumped the database\n";
 
             #ifdef DB_DEBUG
                 *(m_options->errors) << "Checking the file...";
-                if( handyFunctions::fileOrDirExistance( dest ) )
+                if (handyFunctions::fileOrDirExistance(dest)) {
                     *(m_options->errors) << "It exists!\n";
-                else
+                } else {
                     *(m_options->errors) << "Fail! Not found!\n";
+                }
             #endif
         }
     }
@@ -591,86 +598,91 @@ std::string Db::insertNewBanned(const std::string& nick, const std::string& ip, 
 }
 
 
-bool Db::modifyBanned( const std::string &nick, const std::string &ip, const std::string &date, const std::string &time, const std::string &motive, const std::string &id )
+bool Db::modifyBanned(const std::string &nick, const std::string &ip, const std::string &date, const std::string &time, const std::string &motive, const std::string &id)
 {
-    std::string query( "update banned set " );
+    std::string query("update banned set ");
     bool paramCount = false;
     //TODO semplificare questa funzione usando un std::vector o struct con chiave-valore
 
-    if( !nick.empty() ) {
-        query.append( "nick = '" );
-        query.append( nick );
-        query.append( "' " );
+    if (!nick.empty()) {
+        query.append("nick = '");
+        query.append(nick);
+        query.append("' ");
         paramCount = true;
     }
 
-    if( !ip.empty() ) {
-        if( paramCount )
-            query.append( "," );
-        query.append( "ip = '" );
-        query.append( ip );
-        query.append( "' " );
+    if (!ip.empty()) {
+        if (paramCount) {
+            query.append(",");
+        }
+        query.append("ip = '");
+        query.append(ip);
+        query.append("' ");
         paramCount = true;
     }
 
-    if( !date.empty() ) {
-        if( paramCount )
-            query.append( "," );
-        query.append( "date = '" );
-        query.append( date );
-        query.append( "' " );
+    if (!date.empty()) {
+        if (paramCount) {
+            query.append(",");
+        }
+        query.append("date = '");
+        query.append(date);
+        query.append("' ");
         paramCount = true;
     }
 
-    if( !time.empty() ) {
-        if( paramCount )
-            query.append( "," );
-        query.append( "time = '" );
-        query.append( time );
-        query.append( "' " );
+    if (!time.empty()) {
+        if (paramCount) {
+            query.append(",");
+        }
+        query.append("time = '");
+        query.append(time);
+        query.append("' ");
         paramCount = true;
     }
 
-    if( !motive.empty() ) {
-        if( paramCount )
-            query.append( "," );
-        query.append( "motive = '" );
-        query.append( motive );
-        query.append( "' " );
+    if (!motive.empty()) {
+        if (paramCount) {
+            query.append(",");
+        }
+        query.append("motive = '");
+        query.append(motive);
+        query.append("' ");
     }
 
-    query.append( "where id = '" );
-    query.append( id );
-    query.append( "';" );
+    query.append("where id = '");
+    query.append(id);
+    query.append("';");
 
     //std::cout << "\nmodify banned" << query << "\n"
-    if( !execQuery( query ) ) {
+    if (!execQuery(query)) {
         std::cout << "\e[0;31m[FAIL] Db::modifyBanned : " << query << "\e[0m \n";
         *(m_options->log) << "[FAIL] Db::modifyBanned : " << query << "\n";
         *(m_options->errors) << "[FAIL] On " << (*m_options)[m_options->serverNumber].name()  << " : Db::modifyBanned : " << query << "\n";
         return false;
+    } else {
+        return true;
     }
-    else return true;
 }
 
 
-bool Db::deleteBanned( const std::string &id )
+bool Db::deleteBanned(const std::string &id)
 {
-    if( id.empty() ) {
+    if (id.empty()) {
         std::cout << "\e[0;31m Db::deleteBanned empty id! \e[0m \n";
         return false;
     }
 
     //first clean guid records
-    std::string deleteGuidsQuery( "delete from guids where banId='" );
-    deleteGuidsQuery.append( id );
-    deleteGuidsQuery.append( "';" );
+    std::string deleteGuidsQuery("delete from guids where banId='");
+    deleteGuidsQuery.append(id);
+    deleteGuidsQuery.append("';");
 
 #ifdef DB_DEBUG
     std::cout << "Db::deleteBanned guids query -> " << deleteGuidsQuery << "\n";
 #endif
 
-    if( !execQuery( deleteGuidsQuery ) ) {
+    if (!execQuery(deleteGuidsQuery)) {
         std::cout << "\e[0;31m[FAIL] Db::deleteBanned can't delete guid with banId = " << id << "\e[0m \n ";
         *(m_options->log) << "[FAIL] Db::deleteBanned can't delete guid with banId = " << id << "\n";
         *(m_options->errors) << "[FAIL] On " << (*m_options)[m_options->serverNumber].name()  << " : Db::deleteBanned can't delete guid with banId = " << id << "\n";
@@ -682,15 +694,15 @@ bool Db::deleteBanned( const std::string &id )
 
 
     //and now clean banned table
-    std::string query( "delete from banned where id ='" );
-    query.append( id );
-    query.append( "';" );
+    std::string query("delete from banned where id ='");
+    query.append(id);
+    query.append("';");
 
 #ifdef DB_DEBUG
     std::cout << "Db::deleteBanned bantable query -> " << query << "\n";
 #endif
 
-    if( !execQuery( query ) ) {
+    if (!execQuery(query)) {
         std::cout << "\e[0;31m[FAIL] Db::deleteBanned : " << query << "\e[0m \n";
         *(m_options->log) << "[FAIL] Db::deleteBanned : " << query << "\n";
         *(m_options->errors) << "[FAIL] On " << (*m_options)[m_options->serverNumber].name()  << " : Db::deleteBanned : " << query << "\n";
@@ -726,129 +738,135 @@ std::string Db::insertNewGuid(const std::string& guid, const std::string &banId)
 }
 
 
-bool Db::modifyGuid( const std::string& guid, const std::string &banId, const std::string &id )
+bool Db::modifyGuid(const std::string& guid, const std::string &banId, const std::string &id)
 {
-    std::string query( "update guids set ") ;
+    std::string query("update guids set ");
     bool paramCount = false;
 
-    if( !guid.empty() ) {
-        query.append( "guid = '" );
-        query.append( guid );
-        query.append( "' " );
+    if (!guid.empty()) {
+        query.append("guid = '");
+        query.append(guid);
+        query.append("' ");
         paramCount = true;
     }
 
-    if( !banId.empty() ) {
-        if( paramCount )
-            query.append( "," );
-        query.append( "banId = '" );
-        query.append( banId );
-        query.append( "' " );
+    if (!banId.empty()) {
+        if (paramCount) {
+            query.append(",");
+        }
+        query.append("banId = '");
+        query.append(banId);
+        query.append("' ");
     }
 
-    query.append( "where id = '" );
-    query.append( id );
-    query.append( "';" );
+    query.append("where id = '");
+    query.append(id);
+    query.append("';");
 
-    if( !execQuery( query ) ) {
+    if (!execQuery(query)) {
         std::cout << "\e[0;31m[FAIL] Db::modifyGuid : " << query << "\e[0m \n";
         *(m_options->log) << "[FAIL] Db::modifyGuid : " << query << "\n";
         *(m_options->errors) << "[FAIL] On " << (*m_options)[m_options->serverNumber].name()  << " : Db::modifyGuid : " << query << "\n";
         return false;
+    } else {
+        return true;
     }
-    else return true;
 }
 
 
-bool Db::deleteGuid( const std::string &id )
+bool Db::deleteGuid(const std::string &id)
 {
-    std::string query( "delete from guids where id ='" );
-    query.append( id );
-    query.append( "';" );
+    std::string query("delete from guids where id ='");
+    query.append(id);
+    query.append("';");
 
-    if( !execQuery( query ) ){
+    if (!execQuery(query)) {
         std::cout << "\e[0;31m[FAIL] Db::deleteGuid : " << query << "\e[0m \n";
         *(m_options->log) << "[FAIL] Db::deleteGuid : " << query << "\n";
         *(m_options->errors) << "[FAIL] On " << (*m_options)[m_options->serverNumber].name()  << " : Db::deleteGuid : " << query << "\n";
         return false;
+    } else {
+        return true;
     }
-    else return true;
 }
 
 
 /********************************
 *     OPLIST TABLE METHODS      *
 ********************************/
-bool Db::addOp( const std::string& nick, const std::string& guid, const std::string &opLvl )
+bool Db::addOp(const std::string& nick, const std::string& guid, const std::string &opLvl)
 {
-    if ( checkAuthGuid( guid ) < 100 ) {
+    if (checkAuthGuid(guid) < 100) {
         std::cout << "\e[0;33m[!]Admin: " << nick << " : " << guid << " already exists on Database\e[0m \n";
         *(m_options->log) << "[!]Admin: " << nick << " : " << guid << " already exists on Database\n";
         return false;
     }
 
-    std::string addOpQuery( "insert into oplist( nick, guid, level ) values('" );
-    addOpQuery.append( nick );
-    addOpQuery.append( "','" );
-    addOpQuery.append( guid );
-    addOpQuery.append( "','" );
-    addOpQuery.append( opLvl );
-    addOpQuery.append( "');" );
+    std::string addOpQuery("insert into oplist( nick, guid, level ) values('");
+    addOpQuery.append(nick);
+    addOpQuery.append("','");
+    addOpQuery.append(guid);
+    addOpQuery.append("','");
+    addOpQuery.append(opLvl);
+    addOpQuery.append("');");
 
-    return execQuery( addOpQuery ); //true on success
+    return execQuery(addOpQuery); //true on success
 }
 
 
-bool Db::modifyOp( const std::string& id, const std::string& nick, const std::string& guid, const std::string &opLvl )
+bool Db::modifyOp(const std::string& id, const std::string& nick, const std::string& guid, const std::string &opLvl)
 {
-    std::string modifyQuery( "update oplist set ") ;
+    std::string modifyQuery("update oplist set ");
     bool paramCount = false;
 
-    if( !nick.empty() ) {
-        modifyQuery.append( "nick = '" );
-        modifyQuery.append( nick );
-        modifyQuery.append( "' " );
+    if (!nick.empty()) {
+        modifyQuery.append("nick = '");
+        modifyQuery.append(nick);
+        modifyQuery.append("' ");
         paramCount = true;
     }
 
-    if( !guid.empty() ) {
-        if( paramCount )
-            modifyQuery.append( "," );
-        modifyQuery.append( "guid = '" );
-        modifyQuery.append( guid );
-        modifyQuery.append( "' " );
+    if (!guid.empty()) {
+        if(paramCount) {
+            modifyQuery.append(",");
+        }
+        modifyQuery.append("guid = '");
+        modifyQuery.append(guid);
+        modifyQuery.append("' ");
         paramCount = true;
     }
 
-    if( !opLvl.empty() ) {
-        if( paramCount )
-            modifyQuery.append( "," );
-        modifyQuery.append( "level='" );
-        modifyQuery.append( opLvl );
-        modifyQuery.append( "' " );
+    if (!opLvl.empty()) {
+        if (paramCount) {
+            modifyQuery.append(",");
+        }
+        modifyQuery.append("level='");
+        modifyQuery.append(opLvl);
+        modifyQuery.append("' ");
     }
 
-    modifyQuery.append( "where id = '" );
-    modifyQuery.append( id );
-    modifyQuery.append( "';" );
+    modifyQuery.append("where id = '");
+    modifyQuery.append(id);
+    modifyQuery.append("';");
 
-    if( !execQuery( modifyQuery ) ) {
+    if (!execQuery( modifyQuery)) {
         std::cout << "\e[0;31m[FAIL] Db::modifyOp : " << modifyQuery << "\e[0m \n";
         *(m_options->log) << "[FAIL] Db::modifyOp : " << modifyQuery << "\n";
         *(m_options->errors) << "[FAIL] On " << (*m_options)[m_options->serverNumber].name()  << " : Db::modifyOp : " << modifyQuery << "\n";
         return false;
+    } else {
+        return true;
     }
-    else return true;
 }
 
 
-bool Db::deleteOp( const std::string& id )
+bool Db::deleteOp(const std::string& id)
 {
-    std::string deleteQuery( "delete from oplist where id='" );
-    deleteQuery.append( id );
-    deleteQuery.append( "';" );
+    std::string deleteQuery("delete from oplist where id='");
+    deleteQuery.append(id);
+    deleteQuery.append("';");
 
-    return execQuery( deleteQuery );
+    return execQuery(deleteQuery);
 }
 
 
@@ -857,75 +875,84 @@ bool Db::deleteOp( const std::string& id )
 ********************************/
 
 /* id motive queries */
-std::vector< Db::idMotiveStruct > Db::idMotiveViaGuid( const std::string& guid )
+std::vector<Db::idMotiveStruct> Db::idMotiveViaGuid(const std::string& guid)
 {
-    std::string query( "SELECT banned.id,banned.motive,banned.date,banned.time FROM banned join guids ON banned.id=guids.banId WHERE guids.guid='" );
-    query.append( guid );
-    query.append( "' order by banned.date DESC, banned.time DESC;" );
+    std::string query("SELECT banned.id,banned.motive,banned.date,banned.time FROM banned join guids ON banned.id=guids.banId WHERE guids.guid='");
+    query.append(guid);
+    query.append("' order by banned.date DESC, banned.time DESC;");
 
-    std::vector< idMotiveStruct >structs;
+    std::vector<idMotiveStruct>structs;
 
-    if( !execQuery( query ) )   /* on fail, return immediatly empty struct */
+    if (!execQuery(query)) {   /* on fail, return immediatly empty struct */
         return structs;
+    }
 
     #ifdef DB_DEBUG
     std::cout << "Db::idMotiveViaGuid\n";
-    for( unsigned int i = 0; i < m_data.size(); i++ )
-        std::cout << "ANSWER" << i << " is -> " << m_data.at( i ) << std::endl;
+    for (unsigned int i = 0; i < m_data.size(); i++) {
+        std::cout << "ANSWER" << i << " is -> " << m_data.at(i) << std::endl;
+    }
     #endif
 
-    if( m_data.size() > 0 )
-        structs.push_back( idMotiveStruct( m_data[0], m_data[1], m_data[2], m_data[3] ) );  /* insert in order, id, motive, date, time */
+    if (m_data.size() > 0) {
+        structs.push_back(idMotiveStruct(m_data[0], m_data[1], m_data[2], m_data[3]));  /* insert in order, id, motive, date, time */
+    }
 
     return structs;
 }
 
-std::vector< Db::idMotiveStruct > Db::idMotiveViaIp( const std::string& ip )
+std::vector<Db::idMotiveStruct> Db::idMotiveViaIp(const std::string& ip)
 {
-    std::string query( "SELECT id,motive,date,time FROM banned WHERE ip='" );
-    query.append( ip );
-    query.append( "' order by date DESC, time DESC;" );
+    std::string query("SELECT id,motive,date,time FROM banned WHERE ip='");
+    query.append(ip);
+    query.append("' order by date DESC, time DESC;");
 
-    std::vector< idMotiveStruct >structs;
+    std::vector<idMotiveStruct>structs;
 
-    if( !execQuery( query ) )
+    if (!execQuery(query)) {
         return structs; /* on fail, return immediatly empty struct */
+    }
 
     #ifdef DB_DEBUG
     std::cout << "Db::idMotiveViaIp" << std::endl;
 
-    for( unsigned int i = 0; i < m_data.size(); i++ )
-        std::cout << "ANSWER " << i << " is -> " << m_data.at( i );
+    for (unsigned int i = 0; i < m_data.size(); i++) {
+        std::cout << "ANSWER " << i << " is -> " << m_data.at(i);
+    }
     #endif
     //  SHOULD I ASSUME THAT THERE ARE NO DOUBLES?  YES FOR NOW
-    if( m_data.size() > 0 )
-        structs.push_back( idMotiveStruct( m_data[0], m_data[1], m_data[2], m_data[3] ) );  /* insert in order, id, motive, date, time */
+    if (m_data.size() > 0) {
+        structs.push_back(idMotiveStruct(m_data[0], m_data[1], m_data[2], m_data[3]));  /* insert in order, id, motive, date, time */
+    }
 
     return structs;
 }
 
-std::vector< Db::idMotiveStruct > Db::idMotiveViaNick( const std::string& nick )
+std::vector<Db::idMotiveStruct> Db::idMotiveViaNick(const std::string& nick)
 {
 
-    std::string query( "select id,motive,date,time from banned where nick='" );
-    query.append( nick );
-    query.append( "' order by date DESC, time DESC;" );
+    std::string query("select id,motive,date,time from banned where nick='");
+    query.append(nick);
+    query.append("' order by date DESC, time DESC;");
 
-    std::vector< idMotiveStruct >structs;
+    std::vector<idMotiveStruct>structs;
 
-    if( !execQuery( query ) )
+    if (!execQuery(query)) {
         return structs; /* on fail, return immediatly empty struct */
+    }
 
 
     #ifdef DB_DEBUG
     std::cout << "Db::idMotiveViaNick" << std::endl;
 
-    for( unsigned int i = 0; i < m_data.size(); i++ )
-        std::cout << "ANSWER " << i << " is -> " << m_data.at( i );
+    for (unsigned int i = 0; i < m_data.size(); i++) {
+        std::cout << "ANSWER " << i << " is -> " << m_data.at(i);
+    }
     #endif
     //  SHOULD I ASSUME THAT THERE ARE NO DOUBLES?  YES FOR NOW
-    if( m_data.size() > 0 )
-        structs.push_back( idMotiveStruct( m_data[0], m_data[1], m_data[2], m_data[3] ) );  /* insert in order, id, motive, date, time */
+    if (m_data.size() > 0) {
+        structs.push_back(idMotiveStruct(m_data[0], m_data[1], m_data[2], m_data[3]));  /* insert in order, id, motive, date, time */
+    }
 
     return structs;
 }
@@ -933,57 +960,61 @@ std::vector< Db::idMotiveStruct > Db::idMotiveViaNick( const std::string& nick )
 /* "how many" queries */
 std::string Db::autoBanned()
 {
-    std::string query( "select count(*) from banned where author='BanBot' group by id;" );
+    std::string query("select count(*) from banned where author='BanBot' group by id;");
 
     #ifdef DB_DEBUG
-    std::cout << "Db::autoBanned returning value " << resultQuery( query ) << std::endl;
+    std::cout << "Db::autoBanned returning value " << resultQuery(query) << std::endl;
     #endif
 
-    return handyFunctions::intToString( resultQuery( query ) );
+    return handyFunctions::intToString(resultQuery(query));
 }
 
 std::string Db::banned()
 {
-    std::string query( "select count(*) from banned group by id;" );
+    std::string query("select count(*) from banned group by id;");
 
     #ifdef DB_DEBUG
-    std::cout << "Db::banned returning value " << resultQuery( query ) << std::endl;
+    std::cout << "Db::banned returning value " << resultQuery(query) << std::endl;
     #endif
 
-    return handyFunctions::intToString( resultQuery( query ) );
+    return handyFunctions::intToString(resultQuery(query));
 }
 
 std::string Db::ops()
 {
-    std::string query( "select count(*) from oplist group by id;" );
+    std::string query("select count(*) from oplist group by id;");
 
     #ifdef DB_DEBUG
-    std::cout << "Db::ops returning value " << resultQuery( query ) << std::endl;
+    std::cout << "Db::ops returning value " << resultQuery(query) << std::endl;
     #endif
 
-    return handyFunctions::intToString( resultQuery( query ) );
+    return handyFunctions::intToString(resultQuery(query));
 }
 
-Db::idNickStruct Db::opStruct( const std::string &id )
+Db::idNickStruct Db::opStruct(const std::string &id)
 {
-    std::string query( "select nick, level from oplist where id='" + id + "';" );
+    std::string query("select nick, level from oplist where id='" + id + "';");
 
-    if( execQuery( query ) )
-        if( !m_data.empty() )
-            return idNickStruct( id, m_data[0], m_data[1] );
-    // return empty admin
-    return idNickStruct();
+    if (execQuery(query)) {
+        if (!m_data.empty()) {
+            return idNickStruct(id, m_data[0], m_data[1]);
+        }
+    } else {
+        // return empty admin
+        return idNickStruct();
+    }
 }
 
-std::string Db::adminRegisteredNickViaGuid( const std::string& guid )
+std::string Db::adminRegisteredNickViaGuid(const std::string& guid)
 {
-    std::string query( "select nick from oplist where guid='" );
-    query.append( guid );
-    query.append( "';" );
+    std::string query("select nick from oplist where guid='");
+    query.append(guid);
+    query.append("';");
 
-    if( execQuery( query ) ) {
-        if( !m_data.empty() )
+    if (execQuery(query)) {
+        if (!m_data.empty()) {
             return m_data[0];
+        }
     }
 
     // in both failed cases i return an empty std::string
@@ -992,105 +1023,117 @@ std::string Db::adminRegisteredNickViaGuid( const std::string& guid )
 
 
 /* find queries */
-std::vector< Db::idNickMotiveAuthorStruct > Db::findAproxIdMotiveAuthorViaNickBanned( const std::string& nick )
+std::vector<Db::idNickMotiveAuthorStruct> Db::findAproxIdMotiveAuthorViaNickBanned(const std::string& nick)
 {
-    std::string query( "select id,nick,motive,author from banned where nick like '%" );
-    query.append( nick );
-    query.append( "%' limit 16;" );
+    std::string query("select id,nick,motive,author from banned where nick like '%");
+    query.append(nick);
+    query.append("%' limit 16;");
 
-    std::vector< idNickMotiveAuthorStruct > structs;
+    std::vector<idNickMotiveAuthorStruct> structs;
 
-    if( !execQuery( query ) )
+    if (!execQuery(query)) {
         return structs;  /* on fail, return immediatly empty struct */
+    }
 
     #ifdef DB_DEBUG
     std::cout << "Db::findAproxIdMotiveAuthorViaNickBanned" << std::endl;
     std::cout << "mdata SIZE IS -> " << m_data.size() << std::endl;
 
-    for( unsigned int i = 0; i < m_data.size(); i++ )
-        std::cout << "ANSWER " << i << " is -> " << m_data.at( i );
+    for (unsigned int i = 0; i < m_data.size(); i++) {
+        std::cout << "ANSWER " << i << " is -> " << m_data.at(i);
+    }
     #endif
 
-    for( unsigned int i = 0; i < m_data.size()/4; i++ ) {
+    for (unsigned int i = 0; i < m_data.size()/4; i++) {
+        /// TODO still need this output?
         std::cout << "TEST for segfault\n";
-        structs.push_back( idNickMotiveAuthorStruct( m_data.at(4*i + 0), m_data.at(4*i + 1), m_data.at(4*i + 2), m_data.at(4*i + 3) ) );
+        structs.push_back(idNickMotiveAuthorStruct(m_data.at(4*i + 0), m_data.at(4*i + 1), m_data.at(4*i + 2), m_data.at(4*i + 3)));
     }
 
     return structs;
 }
 
-std::vector< Db::idNickMotiveAuthorStruct > Db::findPreciseIdMotiveAuthorViaNickBanned( const std::string &nick )
+std::vector<Db::idNickMotiveAuthorStruct> Db::findPreciseIdMotiveAuthorViaNickBanned(const std::string &nick)
 {
-    std::string query( "select id,nick,motive,author from banned where nick='" );
-    query.append( nick );
-    query.append( "' limit 7;" );
+    std::string query("select id,nick,motive,author from banned where nick='");
+    query.append(nick);
+    query.append("' limit 7;");
 
-    std::vector< idNickMotiveAuthorStruct > structs;
+    std::vector<idNickMotiveAuthorStruct> structs;
 
-    if( !execQuery( query ) )
+    if (!execQuery(query)) {
         return structs; /* on fail, return immediatly empty struct */
+    }
 
     #ifdef DB_DEBUG
     std::cout << "Db::findPreciseIdMotiveAuthorViaNick" << std::endl;
 
-    for( unsigned int i = 0; i < m_data.size(); i++ )
-        std::cout << "ANSWER " << i << " is -> " << m_data.at( i );
+    for (unsigned int i = 0; i < m_data.size(); i++) {
+        std::cout << "ANSWER " << i << " is -> " << m_data.at(i);
+    }
     #endif
 
     std::cout << "ANSWER SIZE IS -> " << m_data.size() << std::endl;
 
     /* SHOULD I ASSUME THAT THERE ARE NO DOUBLES?  YES FOR NOW */
-    if( m_data.size() > 0 )
-        structs.push_back( idNickMotiveAuthorStruct( m_data[0], m_data[1], m_data[2], m_data[3] ) );    /* insert in order, id, nick, motive, author */
+    if (m_data.size() > 0) {
+        structs.push_back(idNickMotiveAuthorStruct(m_data[0], m_data[1], m_data[2], m_data[3]));    /* insert in order, id, nick, motive, author */
+    }
 
     return structs;
 }
 
-std::vector< Db::idNickStruct > Db::findAproxIdNickViaNickOp( const std::string& nick )
+std::vector<Db::idNickStruct> Db::findAproxIdNickViaNickOp(const std::string& nick)
 {
-    std::string query( "select id,nick,level from oplist where nick like '%" );
-    query.append( nick );
-    query.append( "%' limit 16;" );
+    std::string query("select id,nick,level from oplist where nick like '%");
+    query.append(nick);
+    query.append("%' limit 16;");
 
-    std::vector< idNickStruct > structs;
+    std::vector<idNickStruct> structs;
 
-    if( !execQuery( query ) )
+    if (!execQuery(query)) {
         return structs;     /* on fail, return immediatly empty struct */
+    }
 
     #ifdef DB_DEBUG
     std::cout << "Db::findAproxIdNickViaNickOp" << std::endl;
 
-    for( unsigned int i = 0; i < m_data.size(); i++ )
-        std::cout << "ANSWER " << i << " is -> " << m_data.at( i );
+    for (unsigned int i = 0; i < m_data.size(); i++) {
+        std::cout << "ANSWER " << i << " is -> " << m_data.at(i);
+    }
     #endif
 
-    for( unsigned int i = 0; i < m_data.size()/3; i++ )
-        structs.push_back( idNickStruct( m_data[3*i + 0], m_data[3*i + 1], m_data[3*i + 2] ) );
+    for (unsigned int i = 0; i < m_data.size()/3; i++) {
+        structs.push_back(idNickStruct(m_data[3*i + 0], m_data[3*i + 1], m_data[3*i + 2]));
+    }
 
     return structs;
 }
 
-std::vector< Db::idNickStruct > Db::findPreciseIdNickViaNickOp( const std::string& nick )
+std::vector<Db::idNickStruct> Db::findPreciseIdNickViaNickOp(const std::string& nick)
 {
-    std::string query( "select id,nick from oplist where nick='" );
-    query.append( nick );
-    query.append( "' limit 7;" );
+    std::string query("select id,nick from oplist where nick='");
+    query.append(nick);
+    query.append("' limit 7;");
 
-    std::vector< idNickStruct > structs;
+    std::vector<idNickStruct> structs;
 
-    if( !execQuery( query ) )
+    if (!execQuery(query)) {
         return structs;     /* on fail, return immediatly empty struct */
+    }
 
     #ifdef DB_DEBUG
     std::cout << "Db::findPreciseIdNickViaNickOp" << std::endl;
 
-    for( unsigned int i = 0; i < m_data.size(); i++ )
-        std::cout << "ANSWER " << i << " is -> " << m_data.at( i );
+    for (unsigned int i = 0; i < m_data.size(); i++) {
+        std::cout << "ANSWER " << i << " is -> " << m_data.at(i);
+    }
     #endif
 
     /* SHOULD I ASSUME THAT THERE ARE NO DOUBLES?  YES FOR NOW */
-    if( m_data.size() > 0 )
-        structs.push_back( idNickStruct( m_data[0], m_data[1], m_data[2] ) );
+    if (m_data.size() > 0) {
+        structs.push_back(idNickStruct(m_data[0], m_data[1], m_data[2]));
+    }
 
     return structs;
 }
@@ -1105,38 +1148,33 @@ bool Db::sequentialDbUpgrade()
     std::cout<<"********* Starting the upgrade: ***********\n";
     m_options->errors->timestamp();
     *(m_options->errors)<<"********* Starting the upgrade: ***********\n";
-    for( unsigned int i = 0; i < m_options->size(); i++ )
-    {
+    for (unsigned int i = 0; i < m_options->size(); i++) {
         //for each db, i'll check the version
-        std::cout<<"Starting version of database in \""<<(*m_options)[i].dbFolder()<<"\": ";
-        m_options->serverNumber=i;
-        *(m_options->errors)<<"Starting version of database in \""<<(*m_options)[i].dbFolder()<<"\": ";
+        std::cout << "Starting version of database in \"" << (*m_options)[i].dbFolder() << "\": ";
+        m_options->serverNumber = i;
+        *(m_options->errors) << "Starting version of database in \""<< (*m_options)[i].dbFolder() << "\": ";
         openDatabase();
         DbVersion version = checkDbVersion();
-        std::cout<<version<<"\n";
-        *(m_options->errors)<<version<<"\n";
-        if( version == VER_1_1 )
-        {
-            std::cout<<"converting it to "<<VER_1_2<<"\n";
-            *(m_options->errors)<<"converting it to "<<VER_1_2<<"\n";
-            if (execQuery("ALTER TABLE oplist ADD COLUMN level TEXT DEFAULT '0';"))
-            {
-                *(m_options->errors)<<"Ok, converted. ";
-                std::cout<<"Ok, converted. ";
-            }
-            else
-            {
-                std::cout<<"ERROR converting.\n";
-                *(m_options->errors)<<"ERROR converting.\n";
+        std::cout << version << "\n";
+        *(m_options->errors) << version << "\n";
+        if (version == VER_1_1) {
+            std::cout<<"converting it to " << VER_1_2 << "\n";
+            *(m_options->errors) << "converting it to " << VER_1_2 << "\n";
+            if (execQuery("ALTER TABLE oplist ADD COLUMN level TEXT DEFAULT '0';")) {
+                *(m_options->errors) << "Ok, converted. ";
+                std::cout << "Ok, converted. ";
+            } else {
+                std::cout << "ERROR converting.\n";
+                *(m_options->errors) << "ERROR converting.\n";
                 return false;
             }
             version = checkDbVersion();
-            std::cout<<"New version: "<<version<<"\n";
-            *(m_options->errors)<<"New version: "<<version<<"\n";
+            std::cout << "New version: " << version << "\n";
+            *(m_options->errors) << "New version: " << version << "\n";
         }
     }
 
-    m_options->serverNumber=0;
+    m_options->serverNumber = 0;
     return true;
 }
 
@@ -1145,12 +1183,13 @@ bool Db::sequentialDbUpgrade()
 ********************************/
 Db::DbVersion Db::checkDbVersion()
 {
-    if( checkForDbVersion1_1() )
+    if (checkForDbVersion1_1()) {
         return VER_1_1;
-    else if( checkForDbVersion1_2() )
+    } else if (checkForDbVersion1_2()) {
         return VER_1_2;
-    else
+    } else {
         return UNKOWN;
+    }
 }
 
 bool Db::checkForDbVersion1_1()
@@ -1160,33 +1199,37 @@ bool Db::checkForDbVersion1_1()
     , guidsFlag = false;
 
     // banned table check
-    if( execQuery( "select sql from sqlite_master where name='banned';" ) ) {
-        if( !m_data.empty() ) {
-            if( m_data[0].compare( BANNED_1_1 ) == 0 )
+    if (execQuery("select sql from sqlite_master where name='banned';")) {
+        if (!m_data.empty()) {
+            if (m_data[0].compare(BANNED_1_1) == 0) {
                 banFlag = true;
+            }
         }
     }
 
     // oplist table check
-    if( execQuery( "select sql from sqlite_master where name='oplist';" ) ) {
-        if( !m_data.empty() ) {
-            if( m_data[0].compare( OPLIST_1_1 ) == 0 )
+    if (execQuery("select sql from sqlite_master where name='oplist';")) {
+        if (!m_data.empty()) {
+            if (m_data[0].compare(OPLIST_1_1) == 0) {
                 oplistFlag = true;
+            }
         }
     }
 
     // banned table check
-    if( execQuery( "select sql from sqlite_master where name='guids';" ) ) {
-        if( !m_data.empty() ) {
-            if( m_data[0].compare( GUIDS_1_1 ) == 0 )
+    if (execQuery("select sql from sqlite_master where name='guids';")) {
+        if (!m_data.empty()) {
+            if (m_data[0].compare(GUIDS_1_1) == 0) {
                 guidsFlag = true;
+            }
         }
     }
 
-    if( !banFlag || !oplistFlag || !guidsFlag  )
+    if (!banFlag || !oplistFlag || !guidsFlag) {
         return false;
-    else
+    } else {
         return true;
+    }
 }
 
 bool Db::checkForDbVersion1_2()
@@ -1196,51 +1239,56 @@ bool Db::checkForDbVersion1_2()
     , guidsFlag = false;
 
     // banned table check
-    if( execQuery( "select sql from sqlite_master where name='banned';" ) ) {
-        if( !m_data.empty() ) {
-            if( m_data[0].compare( BANNED_1_2 ) == 0 )
+    if (execQuery("select sql from sqlite_master where name='banned';")) {
+        if (!m_data.empty()) {
+            if (m_data[0].compare(BANNED_1_2) == 0) {
                 banFlag = true;
+            }
         }
     }
 
     // oplist table check
-    if( execQuery( "select sql from sqlite_master where name='oplist';" ) ) {
-        if( !m_data.empty() ) {
-            if( m_data[0].compare( OPLIST_1_2 ) == 0 )
+    if (execQuery("select sql from sqlite_master where name='oplist';")) {
+        if (!m_data.empty()) {
+            if (m_data[0].compare(OPLIST_1_2) == 0) {
                 oplistFlag = true;
+            }
         }
     }
 
     // banned table check
-    if( execQuery( "select sql from sqlite_master where name='guids';" ) ) {
-        if( !m_data.empty() ) {
-            if( m_data[0].compare( GUIDS_1_2 ) == 0 )
+    if (execQuery("select sql from sqlite_master where name='guids';")) {
+        if (!m_data.empty()) {
+            if (m_data[0].compare(GUIDS_1_2) == 0) {
                 guidsFlag = true;
+            }
         }
     }
 
-    if( !banFlag || !oplistFlag || !guidsFlag  )
+    if (!banFlag || !oplistFlag || !guidsFlag) {
         return false;
-    else
+    } else {
         return true;
+    }
 }
 
 bool Db::connect()  //called by Db::open ( public function )
 {
     std::cout << "\e[0;33m connecting to database in " << (*m_options)[m_options->serverNumber].dbFolder() << "\e[0m \n";
     //get path to current db
-    std::string database( (*m_options)[m_options->serverNumber].dbFolder() );
+    std::string database((*m_options)[m_options->serverNumber].dbFolder());
 
-    if( database[database.size()-1] != '/' )  //CAREFUL, NEED THIS!!!
-        database.append( "/" );
+    if (database[database.size()-1] != '/') {  //CAREFUL, NEED THIS!!!
+        database.append("/");
+    }
 
-    database.append( DB_NAME );             // and now i have database full path + name
+    database.append(DB_NAME);             // and now i have database full path + name
 
-    if( sqlite3_open( database.c_str(), &m_database ) ) {
-        std::cout<<"\e[0;31m[EPIC FAIL] " << sqlite3_errmsg( m_database ) << "\e[0m \n";
-        *(m_options->log) <<"[FAIL] " << sqlite3_errmsg( m_database );
-        *(m_options->errors) <<"[FAIL] On " << (*m_options)[m_options->serverNumber].name()  << "@ " << database << " : " << sqlite3_errmsg( m_database );
-        sqlite3_close( m_database );
+    if (sqlite3_open(database.c_str(), &m_database)) {
+        std::cout<<"\e[0;31m[EPIC FAIL] " << sqlite3_errmsg(m_database) << "\e[0m \n";
+        *(m_options->log) <<"[FAIL] " << sqlite3_errmsg(m_database);
+        *(m_options->errors) <<"[FAIL] On " << (*m_options)[m_options->serverNumber].name()  << "@ " << database << " : " << sqlite3_errmsg(m_database);
+        sqlite3_close(m_database);
         return false;
     }
 
@@ -1252,53 +1300,52 @@ bool Db::connect()  //called by Db::open ( public function )
     return true;
 }
 
-bool Db::copyFile( const std::string &source, const std::string &destination )
+bool Db::copyFile(const std::string &source, const std::string &destination)
 {
     std::ifstream src;   // the source file
     std::ofstream dest;  // the destination file
 
-    src.open( source.c_str(), std::ios::binary );   // open in binary to prevent jargon at the end of the buffer
-    dest.open( destination.c_str(), std::ios::binary );  // same again, binary
+    src.open(source.c_str(), std::ios::binary);   // open in binary to prevent jargon at the end of the buffer
+    dest.open(destination.c_str(), std::ios::binary);  // same again, binary
 
-    if( !src.is_open() || !dest.is_open() )
-        return false;   // could not be copied
+    if (!src.is_open() || !dest.is_open()) {
+        return false;       // could not be copied
+    }
 
     dest << src.rdbuf ();   // copy the content
-    dest.close ();  // close destination file
-    src.close ();   // close source file
+    dest.close ();          // close destination file
+    src.close ();           // close source file
 
-    return true; // file copied successfully
+    return true;            // file copied successfully
 }
 
 
 void Db::createDb()   //initial creation of database
 {
     //checks...
-    if( resultQuery( BANNED_1_2 ) == 0 ) {
+    // ALWAYS USE LATEST VERSION!
+    if (resultQuery(BANNED_1_2) == 0) {
         std::cout << "\e[0;32m    [*]created 'banned' table..\e[0m \n";
         *(m_options->log) << "    [*]created 'banned' table..\n";
-    }
-    else {
+    } else {
         std::cout << "\e[0;31m    [FAIL]error creating 'banned' table on database @ : " << (*m_options)[m_options->serverNumber].name() << "\e[0m \n";
         *(m_options->log) << "    [FAIL]error creating 'banned' table\n";
         *(m_options->errors) << "[FAIL] On " << (*m_options)[m_options->serverNumber].name()  << " : error creating 'banned' table\n";
     }
 
-    if( resultQuery( GUIDS_1_2 ) == 0 ) {
+    if (resultQuery(GUIDS_1_2) == 0) {
         std::cout << "\e[0;32m     [*]created 'guid' table..\e[0m \n";
         *(m_options->log) << "    [*]created 'guid' table..\n";
-    }
-    else {
+    } else {
         std::cout << "\e[0;31m    [FAIL]error creating 'guid' table on database @ : " << (*m_options)[m_options->serverNumber].name() << "\e[0m \n";
         *(m_options->log) << "    [FAIL]error creating 'guid' table\n";
         *(m_options->errors) << "[FAIL] On " << (*m_options)[m_options->serverNumber].name()  << " : error creating 'guid' table\n";
     }
 
-    if( resultQuery( OPLIST_1_2 ) == 0 ) {
+    if (resultQuery(OPLIST_1_2) == 0) {
         std::cout << "\e[0;32m     [*]created 'oplist' table..\e[0m \n";
         *(m_options->log) << "    [*]created 'oplist' table..\n";
-    }
-    else {
+    } else {
         std::cout << "\e[0;31m    [FAIL]error creating 'oplist' table on database @ : " << (*m_options)[m_options->serverNumber].name() << "\e[0m \n";
         *(m_options->log) << "    [FAIL]error creating 'oplist' table\n";
         *(m_options->errors) << "[FAIL] On " << (*m_options)[m_options->serverNumber].name()  << " : error creating 'oplist' table\n";
@@ -1380,21 +1427,23 @@ bool Db::execQuery(const std::string &query)
 }
 
 
-std::string Db::getAdminNick( const std::string& guid )
+std::string Db::getAdminNick(const std::string& guid)
 {
     //if empty return empty std::string and don't do query
     //otherwise it wil crash returning vdata[0] because it doesn't exist!
-    if( guid.empty() )
+    if (guid.empty()) {
         return std::string();
+    }
 
-    std::string query( "select nick from oplist where guid='" );
-    query.append( guid );
-    query.append( "';" );
+    std::string query("select nick from oplist where guid='");
+    query.append(guid);
+    query.append("';");
 
-    if( execQuery( query ) )
+    if (execQuery(query)) {
         return m_data[0];
-    else
+    } else {
         return std::string();
+    }
 }
 
 

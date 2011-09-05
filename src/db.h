@@ -49,20 +49,21 @@ class Db
         {
             std::string id, nick, level;
 
-            idNickStruct( const std::string &id = std::string()
-                        , const std::string &nick = std::string()
-                        , const std::string &lvl = std::string() )
-            : id( id )
-            , nick( nick )
-            , level( lvl )
+            idNickStruct(const std::string &id = std::string()
+                        ,const std::string &nick = std::string()
+                        ,const std::string &lvl = std::string())
+            : id(id)
+            , nick(nick)
+            , level(lvl)
             {}
 
             bool isValid() const
             {
-                if( id.empty() || nick.empty() || level.empty() )
+                if(id.empty() || nick.empty() || level.empty()) {
                     return false;
-                else
+                } else {
                     return true;
+                }
             }
         };
 
@@ -70,12 +71,14 @@ class Db
         {
             std::string id, motive, date, time;
 
-            idMotiveStruct( const std::string &id, const std::string &motive
-            , const std::string &date, const std::string &time )
-            : id( id )
-            , motive( motive )
-            , date( date )
-            , time( time )
+            idMotiveStruct(const std::string &id
+                           , const std::string &motive
+                           , const std::string &date
+                           , const std::string &time)
+            : id(id)
+            , motive(motive)
+            , date(date)
+            , time(time)
             {}
         };
 
@@ -83,17 +86,19 @@ class Db
         {
             std::string id, nick, motive, author;
 
-            idNickMotiveAuthorStruct( const std::string &id, const std::string &nick
-            , const std::string &motive, const std::string &author )
-            : id( id )
-            , nick( nick )
-            , motive( motive )
-            , author( author )
+            idNickMotiveAuthorStruct(const std::string &id
+                                    , const std::string &nick
+                                    , const std::string &motive
+                                    , const std::string &author)
+            : id(id)
+            , nick(nick)
+            , motive(motive)
+            , author(author)
             {}
         };
 
 
-        Db( ConfigLoader::Options* conf );
+        Db(ConfigLoader::Options* conf);
         ~Db();
 
         // database connection
@@ -101,9 +106,9 @@ class Db
         void closeDatabase();   // closes database connection
 
         // checks
-        int checkAuthGuid( const std::string &guid );   // checks for the existance of "guid" in the oplist table (returns the op level)
-        bool checkBanGuid( const std::string &guid );   // checks if "guid" is present amongst the banned users
-        bool checkBanNick( const std::string &nick );   // checks if "nick" is present amongst the banned users
+        int checkAuthGuid(const std::string &guid);   // checks for the existance of "guid" in the oplist table (returns the op level)
+        bool checkBanGuid(const std::string &guid);   // checks if "guid" is present amongst the banned users
+        bool checkBanNick(const std::string &nick);   // checks if "nick" is present amongst the banned users
         void checkDatabases();                          // creates and checks if database files exist and flags them in m_options
         bool isOpTableEmpty();                          //checks if oplist table is empty ( returns true ) else returns false
         //bool checkDirAndFile( const std::string &guid ); //passa url file compreso
@@ -120,35 +125,35 @@ class Db
         bool deleteBanned(const std::string &id);                                                                                                                                                       // deletes records for banned player with given "id"
 
         // guid table
-        std::string insertNewGuid( const std::string &guid, const std::string &banId );                // inserts guid with specified "banId" to records
-        bool modifyGuid( const std::string &guid, const std::string &banId, const std::string &id );   // modifies guid with given "guid" where banId and "id" find a match
-        bool deleteGuid( const std::string &id );                                            // deletes records for guid with given "id"
+        std::string insertNewGuid(const std::string &guid, const std::string &banId);                // inserts guid with specified "banId" to records
+        bool modifyGuid(const std::string &guid, const std::string &banId, const std::string &id);   // modifies guid with given "guid" where banId and "id" find a match
+        bool deleteGuid(const std::string &id);                                                      // deletes records for guid with given "id"
 
         // oplist table
-        bool addOp( const std::string &nick, const std::string &guid, const std::string &opLvl );                       // add's op with given "nick" and "guid" with given lvl
-        bool modifyOp( const std::string &id, const std::string &nick, const std::string &guid, const std::string &opLvl );  // modifies op's "nick" and/or "guid" and/or "op level" where "id" finds a match
-        bool deleteOp( const std::string &id );                                                               // deletes records for op with given "id"
+        bool addOp(const std::string &nick, const std::string &guid, const std::string &opLvl);                       // add's op with given "nick" and "guid" with given lvl
+        bool modifyOp(const std::string &id, const std::string &nick, const std::string &guid, const std::string &opLvl);  // modifies op's "nick" and/or "guid" and/or "op level" where "id" finds a match
+        bool deleteOp(const std::string &id);                                                               // deletes records for op with given "id"
 
         // id motive
-        std::vector< idMotiveStruct > idMotiveViaGuid( const std::string &guid ); // returns id, motive, date and time of a ban by looking up the guid
-        std::vector< idMotiveStruct > idMotiveViaIp( const std::string &ip );     // returns id, motive, date and time of a ban by looking up the ip
-        std::vector< idMotiveStruct > idMotiveViaNick( const std::string &nick ); // returns id, motive, date and time of a ban by looking up the nick
+        std::vector<idMotiveStruct> idMotiveViaGuid(const std::string &guid); // returns id, motive, date and time of a ban by looking up the guid
+        std::vector<idMotiveStruct> idMotiveViaIp(const std::string &ip);     // returns id, motive, date and time of a ban by looking up the ip
+        std::vector<idMotiveStruct> idMotiveViaNick(const std::string &nick); // returns id, motive, date and time of a ban by looking up the nick
 
         /* custom queries for analyzer */
         //"how many?" queries
         std::string autoBanned();                           /** returns how many users have been autobanned by the bot */
         std::string banned();                               /** returns how many have been banned */
         std::string ops();                                  /** returns how many ops are registered to the bot */
-        idNickStruct opStruct( const std::string &id );     /** get op's idNickStruct from his id */
+        idNickStruct opStruct(const std::string &id);       /** get op's idNickStruct from his id */
 
-        std::string adminRegisteredNickViaGuid( const std::string &guid );    // returns the nick which with the admin is registered to the bot
+        std::string adminRegisteredNickViaGuid(const std::string &guid);    // returns the nick which with the admin is registered to the bot
 
         //"find" queries
-        std::vector< idNickMotiveAuthorStruct > findAproxIdMotiveAuthorViaNickBanned( const std::string &nick );      // returns idNickMotiveAuthor struct after aprox find query ( BANNED TABLE )
-        std::vector< idNickMotiveAuthorStruct > findPreciseIdMotiveAuthorViaNickBanned( const std::string &nick );    // returns idNickMotiveAuthor struct after precise find query ( BANNED TABLE )
+        std::vector<idNickMotiveAuthorStruct> findAproxIdMotiveAuthorViaNickBanned(const std::string &nick);      // returns idNickMotiveAuthor struct after aprox find query ( BANNED TABLE )
+        std::vector<idNickMotiveAuthorStruct> findPreciseIdMotiveAuthorViaNickBanned(const std::string &nick);    // returns idNickMotiveAuthor struct after precise find query ( BANNED TABLE )
 
-        std::vector< idNickStruct > findAproxIdNickViaNickOp( const std::string &nick );                              //  returns idNick struct after aprox find query ( OPLIST TABLE )
-        std::vector< idNickStruct > findPreciseIdNickViaNickOp( const std::string &nick );                            // returns idNick struct after precise find query ( OPLIST TABLE )
+        std::vector<idNickStruct> findAproxIdNickViaNickOp(const std::string &nick);                              //  returns idNick struct after aprox find query ( OPLIST TABLE )
+        std::vector<idNickStruct> findPreciseIdNickViaNickOp(const std::string &nick);                            // returns idNick struct after precise find query ( OPLIST TABLE )
 
         bool sequentialDbUpgrade();                                         // upgrade the db to be conpatible with the new version.
 
@@ -164,13 +169,13 @@ class Db
         bool checkForDbVersion1_2();                                        // checks for database version 2
 
         bool connect();                                                     // connects to the sqlite3 database
-        bool copyFile( const std::string &source, const std::string &destination );   // copy a file to another one
+        bool copyFile(const std::string &source, const std::string &destination);   // copy a file to another one
         void createDb();                                                    // creates database
         bool execQuery(const std::string &query);                           // executes query and returns status to tell if the operation went well or not
-        std::string getAdminNick( const std::string &guid );                          // return's admin's nick from his guid
+        std::string getAdminNick(const std::string &guid);                          // return's admin's nick from his guid
 //         void loadAdminlist( std::vector<ConfigLoader::AdminList> admins );
 //         void loadBanlist( std::vector<ConfigLoader::Banlist> banned );
-        int resultQuery( const std::string &query );                             //if query fails -> -1 else return number of elements found
+        int resultQuery(const std::string &query);                             //if query fails -> -1 else return number of elements found
 
         sqlite3 *m_database;
         ConfigLoader::Options* m_options;                                   // where i get all my info from ( bot related )
@@ -183,8 +188,8 @@ class Db
         int m_nrow, m_ncol;                                                 // number of rows and columns
 
         // data is stored here after query executions!!
-        std::vector< std::string > m_vcolHead;                                        // MUST clear otherwise i keep old values as well
-        std::vector< std::string > m_data;                                            // the info i need is stored here after a query
+        std::vector<std::string> m_vcolHead;                                        // MUST clear otherwise i keep old values as well
+        std::vector<std::string> m_data;                                            // the info i need is stored here after a query
 };
 
 #endif //DB_H
