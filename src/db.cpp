@@ -1314,6 +1314,9 @@ bool Db::execQuery(const std::string &query)
     std::cout << "using database @: " << (*m_options)[m_options->serverNumber].dbFolder() << std::endl;
 #endif
 
+    // reset result occurences
+    m_resultOccurrences = 0;
+
     //clean old m_data... MUST clear otherwise i keep old values
     if (!m_data.empty()) {
         m_data.clear();
