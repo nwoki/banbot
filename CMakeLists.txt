@@ -2,6 +2,8 @@ project(BanBot)
 
 cmake_minimum_required(VERSION 2.8)
 
+INCLUDE_DIRECTORIES(src/boost_1_45/)
+
 # for debug
 # add_definitions(-DDB_DEBUG -DDEBUG_MODE)
 
