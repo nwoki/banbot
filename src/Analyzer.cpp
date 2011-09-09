@@ -2536,8 +2536,9 @@ void Analyzer::teams(char* line)
                 #endif
                 block->say(phrase);
                 
+                //last players in the vector are the last that joined the server. I'll change them.
                 if ( red > blue ){
-                    for( unsigned int i = 0; i < m_dati->currentServer()->size() && red > blue; i++)
+                    for( unsigned int i = m_dati->currentServer()->size(); i != 0 && red > blue; --i)
                         if ( (*m_dati->currentServer())[i]->team == Server::Player::RED ) {
                             block->force((*m_dati->currentServer())[i]->number,"blue");
                             #ifdef DEBUG_MODE
@@ -2548,7 +2549,7 @@ void Analyzer::teams(char* line)
                         }
                 }
                 else {
-                    for( unsigned int i = 0; i < m_dati->currentServer()->size() && red < blue; i++)
+                    for( unsigned int i = m_dati->currentServer()->size(); i != 0 && red < blue; --i)
                         if ( (*m_dati->currentServer())[i]->team == Server::Player::BLUE ) {
                             block->force((*m_dati->currentServer())[i]->number,"red");
                             #ifdef DEBUG_MODE
