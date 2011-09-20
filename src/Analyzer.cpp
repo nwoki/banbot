@@ -2367,7 +2367,7 @@ void Analyzer::changeLevel(char* line)
         int end=temp.find_first_of(" \t\n\r\f\v",pos);
         std::string player=temp.substr(pos,end-pos);
         pos=temp.find_first_of("0123456789",end);
-        end=temp.find_first_of(" \t\n\r\f\v",pos);
+        end=temp.find_first_not_of("0123456789",pos);
         std::string newOpLevel=temp.substr(pos, end-pos);
         
         //i don't permit an highter level of the admin
@@ -2993,12 +2993,14 @@ void Analyzer::main_loop()
             else m_fileLister->updateServerConfigMapList();
             
             //spam messages
-            for (m_dati->serverNumber=0;m_dati->serverNumber<m_dati->size();m_dati->serverNumber++){
-                std::string t = (m_dati->currentServer())->nextSpamMessage();
-                if ( !t.empty() ){
-                    InstructionsBlock * block = new InstructionsBlock();
-                    block->say( t );
-                    m_scheduler->addInstructionBlock( block, Server::LOW );
+            for (m_dati->serverNumber = 0; m_dati->serverNumber < m_dati->size(); m_dati->serverNumber++){
+                if ( (*m_dati)[m_dati->serverNumber].strict() > 0 ){ //if the bot is 'on' on this server.
+                    std::string t = (m_dati->currentServer())->nextSpamMessage();
+                    if ( !t.empty() ){
+                        InstructionsBlock * block = new InstructionsBlock();
+                        block->say( t );
+                        m_scheduler->addInstructionBlock( block, Server::LOW );
+                    }
                 }
             }
         }
