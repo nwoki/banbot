@@ -77,8 +77,10 @@
 #define _R_NUKE_NUMBER "^ *[0-9]+:[0-9]{2} *say: +[0-9]+ +[^ \t\n\r\f\v]+: +!nuke [0-9]{1,2}$"
 #define _R_COMMAND "^ *[0-9]+:[0-9]{2} *say: +[0-9]+ +[^ \t\n\r\f\v]+: +![^\t\n\r\f\v]+$"
 #define _R_STATUS "^ *[0-9]+:[0-9]{2} *say: +[0-9]+ +[^ \t\n\r\f\v]+: +!status$"
-#define _R_FORCE "^ *[0-9]+:[0-9]{2} *say: +[0-9]+ +[^ \t\n\r\f\v]+: +!force (red|blue|spect) [^ \t\n\r\f\v]+$"
-#define _R_FORCE_NUMBER "^ *[0-9]+:[0-9]{2} *say: +[0-9]+ +[^ \t\n\r\f\v]+: +!force (red|blue|spect) [0-9]{1,2}$"
+#define _R_FORCE "^ *[0-9]+:[0-9]{2} *say: +[0-9]+ +[^ \t\n\r\f\v]+: +!(red|blue|spect) [^ \t\n\r\f\v]+$"
+#define _R_FORCE_RED "^ *[0-9]+:[0-9]{2} *say: +[0-9]+ +[^ \t\n\r\f\v]+: +!red [^ \t\n\r\f\v]+$"
+#define _R_FORCE_BLUE "^ *[0-9]+:[0-9]{2} *say: +[0-9]+ +[^ \t\n\r\f\v]+: +!blue [^ \t\n\r\f\v]+$"
+#define _R_FORCE_NUMBER "^ *[0-9]+:[0-9]{2} *say: +[0-9]+ +[^ \t\n\r\f\v]+: +!(red|blue|spect) [0-9]{1,2}$"
 #define _R_IAMGOD "^ *[0-9]+:[0-9]{2} *say: +[0-9]+ +[^ \t\n\r\f\v]+: +!iamgod$"
 #define _R_MAP "^ *[0-9]+:[0-9]{2} *say: +[0-9]+ +[^ \t\n\r\f\v]+: +!map [^\t\n\r\f\v]+$"
 #define _R_NEXTMAP "^ *[0-9]+:[0-9]{2} *say: +[0-9]+ +[^ \t\n\r\f\v]+: +!nextmap [^\t\n\r\f\v]+$"
@@ -1851,14 +1853,24 @@ void Analyzer::force(char* line)
     {
         InstructionsBlock * block = new InstructionsBlock();
         std::string temp(line);
-        int pos=temp.find("!force");
-        pos=temp.find_first_not_of(" \t\n\r\f\v",pos+6);
-        int end=temp.find_first_of(" ",pos);
-        std::string action=temp.substr(pos,end-pos);
-        pos=temp.find_first_not_of(" \t\n\r\f\v",end+1);
+	int pos = 0;
+	std::string action;
+	if (isA(line,_R_FORCE_RED)){
+	  pos=temp.find("!red");
+	  pos=temp.find_first_not_of(" \t\n\r\f\v",pos+4);
+	  action = "red";
+	}
+	else if (isA(line,_R_FORCE_BLUE)){
+	  pos=temp.find("!blue");
+	  pos=temp.find_first_not_of(" \t\n\r\f\v",pos+5);
+	  action = "blue";
+	}
+	else {
+	  pos=temp.find("!spect");
+	  pos=temp.find_first_not_of(" \t\n\r\f\v",pos+6);
+	  action = "spectator";
+	}
         std::string player=temp.substr(pos);
-        if ( action.compare("spect") == 0 )
-            action = "spectator";
 
         std::string phrase;
         if (isA(line,_R_FORCE_NUMBER))
@@ -2994,7 +3006,7 @@ void Analyzer::main_loop()
             
             //spam messages
             for (m_dati->serverNumber = 0; m_dati->serverNumber < m_dati->size(); m_dati->serverNumber++){
-                if ( (*m_dati)[m_dati->serverNumber].strict() > 0 ){ //if the bot is 'on' on this server.
+                if ( (*m_dati)[m_dati->serverNumber].strict() > LEVEL0 ){ //if the bot is 'on' on this server.
                     std::string t = (m_dati->currentServer())->nextSpamMessage();
                     if ( !t.empty() ){
                         InstructionsBlock * block = new InstructionsBlock();
