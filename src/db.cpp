@@ -127,13 +127,11 @@ int Db::checkAuthGuid(const std::string &guid)    //checks oplist for ops
 
     int convertedInt = 100;     // default value
 
-    if (execQuery(query)) {
-        if (!m_data.empty()) {
-            convertedInt = atoi(m_data[0].c_str());
-            #ifdef DB_DEBUG
-            std::cout << "Level from db: "<<m_data[0]<<" converted in "<<convertedInt<<"\n";
-            #endif
-        }
+    if (execQuery(query) && !m_data.empty()) {
+        convertedInt = atoi(m_data[0].c_str());
+        #ifdef DB_DEBUG
+        std::cout << "Level from db: "<<m_data[0]<<" converted in "<<convertedInt<<"\n";
+        #endif
     }
 
     return convertedInt;        // 100 if not found
@@ -995,10 +993,8 @@ Db::idNickStruct Db::opStruct(const std::string &id)
 {
     std::string query("select nick, level from oplist where id='" + id + "';");
 
-    if (execQuery(query)) {
-        if (!m_data.empty()) {
-            return idNickStruct(id, m_data[0], m_data[1]);
-        }
+    if (execQuery(query) && !m_data.empty()) {
+        return idNickStruct(id, m_data[0], m_data[1]);
     } else {
         // return empty admin
         return idNickStruct();
@@ -1011,14 +1007,11 @@ std::string Db::adminRegisteredNickViaGuid(const std::string& guid)
     query.append(guid);
     query.append("';");
 
-    if (execQuery(query)) {
-        if (!m_data.empty()) {
-            return m_data[0];
-        }
+    if (execQuery(query) && (!m_data.empty())) {
+        return m_data[0];
+    } else {
+        return std::string();
     }
-
-    // in both failed cases i return an empty std::string
-    return std::string();
 }
 
 
