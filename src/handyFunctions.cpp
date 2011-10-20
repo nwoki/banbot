@@ -194,13 +194,13 @@ namespace handyFunctions{
             }
         }
     }
-    
+
     bool extractFromStatus( std::string msg, std::vector< stats >* datas ){
         if ( isA(msg.c_str(),_R_STATUS_RESPONSE) ){
-            
+
             std::vector< std::string > rows;
             stringExplode(msg, "\n", &rows);
-            
+
             for (unsigned int i=3; i<rows.size(); i++)
             {
                 //i'm working on a player line.
@@ -235,11 +235,11 @@ namespace handyFunctions{
         }
         return false;
     }
-    
+
     bool isA(const char* line, const std::string& regex )
     {
         regex_t r;
-        
+
         if ( regcomp( &r, regex.c_str(), REG_EXTENDED|REG_NOSUB ) == 0){
             int status = regexec( &r, line, ( size_t )0, NULL, 0 );
             regfree( &r );
@@ -248,7 +248,7 @@ namespace handyFunctions{
         }
         return false;
     }
-    
+
     void stringExplode(std::string str, std::string separator, std::vector<std::string>* results){
         unsigned int found;
         found = str.find_first_of(separator);
@@ -263,7 +263,7 @@ namespace handyFunctions{
             results->push_back(str);
         }
     }
-    
+
     std::string correggi(std::string stringa)
     {
         unsigned int pos=0;
