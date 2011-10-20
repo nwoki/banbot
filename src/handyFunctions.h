@@ -44,7 +44,7 @@ namespace handyFunctions {
     struct stats {
         std::string slot;
         int score;
-        int ping;
+        std::string ping;
         std::string nick;
         std::string ip;
         std::string port;
@@ -55,7 +55,7 @@ namespace handyFunctions {
             t+= " ";
             t+= handyFunctions::intToString(score);
             t+= " ";
-            t+= handyFunctions::intToString(ping);
+            t+= ping;
             t+= " ";
             t+= nick;
             t+= " ";

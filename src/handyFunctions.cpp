@@ -210,7 +210,7 @@ namespace handyFunctions{
                 stats temp;
                 temp.slot = infos[0];
                 temp.score = atoi(infos[1].c_str());
-                temp.ping = atoi(infos[2].c_str());
+                temp.ping = infos[2];
                 temp.rate = infos[infos.size()-1];
                 temp.qport = infos[infos.size()-2];
                 std::vector<std::string> address;
