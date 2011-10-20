@@ -61,7 +61,7 @@ TARGET = BanBot
 all: Makefile $(TARGET)
 
 $(TARGET): build_dir_check boost_build obj_dir_check $(OBJECTS)
-	@$(CPP) -o $(TARGET) $(OBJECTS) $(BOOST_LIBS)
+	@$(CPP) $(DEFINES) -o $(TARGET) $(OBJECTS) $(BOOST_LIBS)
 	@echo ""
 	@echo "BanBot ready for use ;)"
 
