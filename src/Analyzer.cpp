@@ -168,12 +168,12 @@ void Analyzer::loadOptions()
         }
     }
     database->checkDatabases();
-    
+
     std::cout<<m_dati->toString()<<"\n";
     *(m_dati->errors)<<m_dati->toString()<<"\n";
-    
+
     m_fileLister->updateServerConfigMapList();
-    
+
     #ifdef ITA
     std::cout<<"Nuove opzioni caricate.\n";
     m_dati->errors->timestamp();
@@ -251,7 +251,7 @@ void Analyzer::clientUserInfoChanged(char* line)
     pos=temp.find_first_not_of("\\",pos+2);
     end=temp.find_first_of("\\",pos);        //permetto anche spazi all'interno del nome, tutti i caratteri permessi tranne lo slash
     std::string team=temp.substr(pos,end-pos);
-    
+
     #ifdef ITA
     std::cout<<"[-]Estrapolati i dati: numero="<<numero<<" nick="<<nick<<" team="<<team<<"\n";
     (m_dati->log)->timestamp();
@@ -261,7 +261,7 @@ void Analyzer::clientUserInfoChanged(char* line)
     (m_dati->log)->timestamp();
     *(m_dati->log)<<"\n[-]Extracted data: number="<<numero<<" nick="<<nick<<" team="<<team<<"\n";
     #endif
-    
+
     int i = findPlayer( numero );
     if( i >= 0 ){
         (*m_dati->currentServer())[i]->nick = nick;
@@ -450,7 +450,8 @@ void Analyzer::clientUserInfo(char* line)
     if (!kicked)
     {
         //some checks: if he's banned, and others anticheat checks.
-        if( !( guidIsBanned( guid, nick, numero, ip) || nickIsBanned( nick, numero, ip, guid ) || ipIsBanned( ip, numero, nick, guid )) )
+        if( database->checkAuthGuid(guid) < 100
+            || !(guidIsBanned(guid, nick, numero, ip) || nickIsBanned(nick, numero, ip, guid) || ipIsBanned(ip, numero, nick, guid )) )
         {
             //ok, non è stato bannato (per il momento). Controllo se ha un GUID valido.
             if ( (*m_dati)[m_dati->serverNumber].strict() >= LEVEL2 && !guid.empty() && !isA(line, _R_GUID) )
@@ -1154,8 +1155,8 @@ void Analyzer::op(char* line)
         pos=temp.find_first_not_of(" \t\n\r\f\v",end);
         end=temp.find_first_of(" \t\n\r\f\v",pos);
         std::string newOpLevel;
-        if (end != pos) newOpLevel = temp.substr(pos, end-pos); 
-        
+        if (end != pos) newOpLevel = temp.substr(pos, end-pos);
+
         if (isA(newOpLevel.c_str(),_R_NUMBER))
         {
             int opLevel = level;
@@ -1221,8 +1222,8 @@ void Analyzer::deop(char* line)
         pos=temp.find_first_not_of(" \t\n\r\f\v",pos+5);
         int end=temp.find_first_of(" \t\n\r\f\v",pos);
         std::string player=temp.substr(pos,end-pos);
-        
-        
+
+
         if (!isA(line,_R_DEOP_ID))
         {
             //search the precise nick on the database
@@ -1251,7 +1252,7 @@ void Analyzer::deop(char* line)
                 }
                 else {
                     phrase.append("^0BanBot: ^2");
-                    #ifdef ITA 
+                    #ifdef ITA
                         phrase.append("non hai permessi sufficienti per togliere l'op a ^1");
                         phrase.append(risultatoEsatto[0].nick);
                         phrase.append("^2.");
@@ -1289,7 +1290,7 @@ void Analyzer::deop(char* line)
                     }
                     else {
                         phrase.append("^0BanBot: ^2");
-                        #ifdef ITA 
+                        #ifdef ITA
                         phrase.append("non hai permessi sufficienti per togliere l'op a ^1");
                         phrase.append(risultatoApprossimativo[0].nick);
                         phrase.append("^2.");
@@ -1356,7 +1357,7 @@ void Analyzer::deop(char* line)
             }
             else {
                 phrase.append("^0BanBot: ^2");
-                #ifdef ITA 
+                #ifdef ITA
                 phrase.append("non hai permessi sufficienti per togliere l'op a ^1");
                 phrase.append(other.nick);
                 phrase.append("^2.");
@@ -1977,7 +1978,7 @@ void Analyzer::map(char* line)
         end=temp.find_first_of(" \t\n\r\f\v",pos);
         std::string map2;
         if (end != pos) map2=temp.substr(pos, end-pos);
-        
+
         int listIndex=translateMap(map, map2);
         if (listIndex>=0)
         {
@@ -2015,7 +2016,7 @@ void Analyzer::nextmap(char* line)
         end=temp.find_first_of(" \t\n\r\f\v",pos);
         std::string map2;
         if (end != pos) map2=temp.substr(pos, end-pos);
-        
+
         int listIndex=translateMap(map, map2);
         if (listIndex>=0)
         {
@@ -2080,7 +2081,7 @@ void Analyzer::pass(char* line)
         std::string password;
         std::string phrase;
         if (isA(line, _R_PASS)){
-            
+
             std::string temp = line;
             int pos = temp.find( "!pass" );
             pos = temp.find_first_not_of( " ", pos+5 );
@@ -2127,9 +2128,9 @@ void Analyzer::config(char* line)
         end = temp.find_first_of( " \t\n\r\f\v", pos );
         std::string conf2;
         if (end != pos) conf2=temp.substr(pos, end-pos);
-        
+
         int listIndex = translateConfig(conf1,conf2);
-        
+
         if (listIndex >= 0)
         {
             std::string file = m_dati->currentServer()->config(listIndex);
@@ -2214,18 +2215,18 @@ void Analyzer::bantimewarn(char* line)
         pos=temp.find_first_not_of(" \t\n\r\f\v",pos+12);
         int end=temp.find_first_of(" \t\n\r\f\v",pos);
         std::string option=temp.substr(pos,end-pos);
-        
+
         std::string phrase;
         #ifdef ITA
-        phrase.append("^0BanBot: ^1Gli avvisi per i vecchi ban ora sono ^2"); 
+        phrase.append("^0BanBot: ^1Gli avvisi per i vecchi ban ora sono ^2");
         #else
-        phrase.append("^0BanBot: ^1Old bans warnings now are ^2"); 
+        phrase.append("^0BanBot: ^1Old bans warnings now are ^2");
         #endif
         if (option.compare("off")==0)
         {
             (*m_dati)[(*m_dati).serverNumber].setBanWarnings(false);
             #ifdef ITA
-            phrase.append("disattivati^1."); 
+            phrase.append("disattivati^1.");
             #else
             phrase.append("disabled^1.");
             #endif
@@ -2234,13 +2235,13 @@ void Analyzer::bantimewarn(char* line)
         {
             (*m_dati)[(*m_dati).serverNumber].setBanWarnings(true);
             #ifdef ITA
-            phrase.append("attivati^1."); 
+            phrase.append("attivati^1.");
             #else
             phrase.append("enabled^1.");
             #endif
         }
-        
-        
+
+
         block->tell(phrase,numeroAdmin);
         m_scheduler->addInstructionBlock( block, Server::MEDIUM );
     }
@@ -2256,13 +2257,13 @@ void Analyzer::restart(char* line)
     if (isAdminSay(line,numeroAdmin) <= (*m_dati)[(*m_dati).serverNumber].commandPermission(Server::RESTART))
     {
         InstructionsBlock *block = new InstructionsBlock();
-        
+
         #ifdef ITA
         std::string phrase ("^0BanBot:^1 Partita riavviata: ^2 hf!");
         #else
         std::string phrase ("^0BanBot:^1 Match restarted: ^2 hf!");
         #endif
-        
+
         block->restart();
         block->say(phrase);
         m_scheduler->addInstructionBlock( block, Server::MEDIUM );
@@ -2279,13 +2280,13 @@ void Analyzer::reload(char* line)
     if (isAdminSay(line,numeroAdmin) <= (*m_dati)[(*m_dati).serverNumber].commandPermission(Server::RESTART))
     {
         InstructionsBlock *block = new InstructionsBlock();
-        
+
         #ifdef ITA
         std::string phrase ("^0BanBot:^2 reload ^1in corso.");
         #else
         std::string phrase ("^0BanBot: ^1doing a^2 reload.");
         #endif
-        
+
         block->say(phrase);
         block->reload();
         m_scheduler->addInstructionBlock( block, Server::MEDIUM );
@@ -2308,7 +2309,7 @@ void Analyzer::balance(char* line)
             #else
             std::string phrase ("^0BanBot: ^2 balancing teams.");
             #endif
-            
+
             block->say(phrase);
             block->teamBalance( m_dati->currentServer()->getSpectNumbers() );
         }
@@ -2339,17 +2340,17 @@ void Analyzer::gravity(char* line)
         pos=temp.find_first_not_of(" \t\n\r\f\v",pos+5);
         int end=temp.find_first_of(" \t\n\r\f\v",pos);
         std::string option=temp.substr(pos,end-pos);
-        
+
         std::string phrase;
         #ifdef ITA
-        phrase.append("^0BanBot: ^1La nuova gravita' e' ^2"); 
+        phrase.append("^0BanBot: ^1La nuova gravita' e' ^2");
         #else
-        phrase.append("^0BanBot: ^1The new gravity is ^2"); 
+        phrase.append("^0BanBot: ^1The new gravity is ^2");
         #endif
         if (option.compare("off")==0)
         {
             (*m_dati)[(*m_dati).serverNumber].setBanWarnings(false);
-            phrase.append("800^1."); 
+            phrase.append("800^1.");
             block->gravity("800");
         }
         else
@@ -2359,7 +2360,7 @@ void Analyzer::gravity(char* line)
             phrase.append("^1.");
             block->gravity(option);
         }
-        
+
         block->say(phrase);
         m_scheduler->addInstructionBlock( block, Server::MEDIUM );
     }
@@ -2370,7 +2371,7 @@ void Analyzer::changeLevel(char* line)
     std::cout<<"[!] Change admin level";
     (m_dati->log)->timestamp();
     *(m_dati->log)<<"\n[!] Change admin level";
-    
+
     std::string numeroAdmin;
     int level = isAdminSay(line,numeroAdmin);
     if (level <= (*m_dati)[(*m_dati).serverNumber].commandPermission(Server::CHANGELEVEL))
@@ -2387,12 +2388,12 @@ void Analyzer::changeLevel(char* line)
         pos=temp.find_first_of("0123456789",end);
         end=temp.find_first_not_of("0123456789",pos);
         std::string newOpLevel=temp.substr(pos, end-pos);
-        
+
         //i don't permit an highter level of the admin
-        if ( atoi(newOpLevel.c_str()) < level ){ 
+        if ( atoi(newOpLevel.c_str()) < level ){
             newOpLevel = handyFunctions::intToString(level);
         }
-        
+
         if (isA(line,_R_CHANGELEVEL_NUMBER)){ //i already have the id if the admin's record
             id = player;
             oldLevel = database->opStruct(id).level;
@@ -2470,7 +2471,7 @@ void Analyzer::changeLevel(char* line)
                 block->tell(phrase,numeroAdmin);
             }
         }
-        
+
         //ok, let's do it!
         if( !id.empty() && !oldLevel.empty() ){
             if ( atoi(oldLevel.c_str()) >= level )
@@ -2489,7 +2490,7 @@ void Analyzer::changeLevel(char* line)
                     phrase.append(" fail, admin non modificato.");
                     #else
                     phrase.append(" fail, admin not modified.");
-                    #endif 
+                    #endif
                 block->tell( phrase, numeroAdmin );
             }
             else
@@ -2517,7 +2518,7 @@ void Analyzer::bigtext(char* line)
         int pos=temp.find("!bigtext");
         pos=temp.find_first_not_of(" \t\n\r\f\v",pos+8);
         std::string option=temp.substr(pos);
-        
+
         block->bigtext(option);
         m_scheduler->addInstructionBlock( block, Server::MEDIUM );
     }
@@ -2538,13 +2539,13 @@ void Analyzer::teams(char* line)
             int red = 0;
             int blue = 0;
             for( unsigned int i = 0; i < m_dati->currentServer()->size(); i++ ){
-                if( (*m_dati->currentServer())[i]->team == Server::Player::RED ) red++; 
+                if( (*m_dati->currentServer())[i]->team == Server::Player::RED ) red++;
                 else if( (*m_dati->currentServer())[i]->team == Server::Player::BLUE ) blue++;
             }
             #ifdef DEBUG_MODE
             std::cout<<"Red found: "<<red<<" Blue found: "<<blue<<" Total: "<<m_dati->currentServer()->size()<<"\n";
             #endif
-            
+
             if (red != blue)
             {
                 #ifdef ITA
@@ -2553,7 +2554,7 @@ void Analyzer::teams(char* line)
                 std::string phrase ("^0BanBot: ^2 fixing teams.");
                 #endif
                 block->say(phrase);
-                
+
                 //last players in the vector are the last that joined the server. I'll change them.
                 if ( red > blue ){
                     for( unsigned int i = m_dati->currentServer()->size(); i != 0 && red > blue; --i)
@@ -2699,20 +2700,20 @@ Analyzer::CheckTimingEnum Analyzer::checkTiming ( const std::vector<Db::idMotive
         if ( option != Server::NEVER && records.size() )
         {
             if ( option == Server::ALWAYS ) return Analyzer::BANNED;
-            
+
             std::string ora;
             std::string data;
             getDateAndTime(data,ora);
-            
+
             if (data.compare(records[0].date) == 0)
             {
-            
+
                 int oraAttuale=atoi(ora.substr(0,2).c_str());
                 int minutoAttuale=atoi(ora.substr(3,5).c_str());
                 int oraBan = atoi(records[0].time.substr(0,2).c_str());
                 int minutoBan = atoi(records[0].time.substr(3,5).c_str());
                 int diff = (oraAttuale*60+minutoAttuale)-(oraBan*60+minutoBan);
-                
+
                 //i check options to see if i have to ban or advice.
                 if ( (diff < 30 && option == Server::TIRTEEN) || (diff < 15 && option == Server::FIFTEEN) || (diff < 10 && option == Server::TEN) ||
                     diff < 5 ) return Analyzer::BANNED;
@@ -2764,7 +2765,7 @@ bool Analyzer::nickIsBanned(const std::string &nick, const std::string &numero, 
         std::string ora;
         std::string data;
         getDateAndTime(data,ora);
-        
+
         Analyzer::CheckTimingEnum ris = checkTiming( risultato, (*m_dati)[m_dati->serverNumber].banNick() );
 
         if( ris == Analyzer::BANNED )
@@ -2821,7 +2822,7 @@ bool Analyzer::ipIsBanned(const std::string &ip, const std::string &numero, cons
         std::vector<Db::idMotiveStruct> risultato = database->idMotiveViaIp( ip );
 
         Analyzer::CheckTimingEnum ris = checkTiming( risultato, (*m_dati)[m_dati->serverNumber].banIp() );
-        
+
         if( ris == Analyzer::BANNED )
         {
             #ifdef ITA
@@ -2835,7 +2836,7 @@ bool Analyzer::ipIsBanned(const std::string &ip, const std::string &numero, cons
             std::cout<<"  Strict level was "<<(*m_dati)[m_dati->serverNumber].strict()<<".\n";
             #endif
             buttaFuori(risultato[0].motive, numero, nick);
-            
+
             std::string ora;
             std::string data;
             getDateAndTime(data,ora);
@@ -3043,7 +3044,7 @@ void Analyzer::main_loop()
                 loadOptions(); //it does updateServerConfigMapList too.
             }
             else m_fileLister->updateServerConfigMapList();
-            
+
             //spam messages
             for (m_dati->serverNumber = 0; m_dati->serverNumber < m_dati->size(); m_dati->serverNumber++){
                 if ( (*m_dati)[m_dati->serverNumber].strict() > LEVEL0 ){ //if the bot is 'on' on this server.
@@ -3171,11 +3172,11 @@ void Analyzer::main_loop()
                                                         ban(line);
                                                     else if (isA(line,_R_FIND))
                                                         find(line);
-                                                    else if (isA(line, _R_UNBAN)) 
+                                                    else if (isA(line, _R_UNBAN))
                                                         unban(line);
                                                     else if (isA(line, _R_OP))
                                                         op(line);
-                                                    else if (isA(line, _R_DEOP)) 
+                                                    else if (isA(line, _R_DEOP))
                                                         deop(line);
                                                     else if (isA(line, _R_HELP))
                                                         help(line);
