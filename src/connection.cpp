@@ -427,8 +427,8 @@ void Connection::receive(Packets * container){
         #ifdef DEBUG_MODE
         std::cout<<"Receiving a packet!\n";
         #endif
-        t1=0;
-        t2=100000;
+        t1=0;	     // timeout in seconds
+        t2=150000;   // timeout in nanoseconds
         char buf [2000];
         socklen_t adrSize = sizeof(serverAdd);
         int rec = recvfrom( socketID, buf, sizeof buf, 0, &(sockaddr &)serverAdd, &adrSize );

@@ -65,7 +65,7 @@ class Connection
         void gravity ( std::string amount, int server);  //changes the gravity on the server.
         void sendInfo ();
         
-        std::string status ( int server ); //balance teams.
+        std::string status ( int server ); //request the status at the server.
         
     private:
         //class packets, used to receive the rcon message and rebuild it.
