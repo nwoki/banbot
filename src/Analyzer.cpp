@@ -1569,6 +1569,8 @@ void Analyzer::help(char* line)
             phrase.append( H_BIGTEXT );
         if ( level <= (*m_dati)[(*m_dati).serverNumber].commandPermission(Server::PLAYERSINFO) )
             phrase.append( H_PLAYERSINFO );
+        if ( level <= (*m_dati)[(*m_dati).serverNumber].commandPermission(Server::CYCLE) )
+            phrase.append( H_CYCLE );
 
         phrase.append( H_LEVEL );
         phrase.append( handyFunctions::intToString(level) );
