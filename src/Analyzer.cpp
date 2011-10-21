@@ -553,7 +553,7 @@ void Analyzer::clientUserInfo(char* line)
                 {
                     //the guid is valid
                     //advanced checks:
-                    if ( (*m_dati)[m_dati->serverNumber].advancedChecks() >= ADVANCED_LEVEL0 )
+                    if ( (*m_dati)[m_dati->serverNumber].advancedChecks() > ADVANCED_LEVEL0 )
                     {
                         bool missing = false;
                         #ifdef DEBUG_MODE
@@ -717,6 +717,7 @@ void Analyzer::clientUserInfo(char* line)
                                 //only warning
                                 #ifdef DEBUG_MODE
                                 tellToAdmins(advanced_debug);
+                                *(m_dati->log)<<advanced_debug<<".\n";
                                 #endif
                                 #ifdef ITA
                                 std::string phrase("^0BanBot ^1attenzione: il giocatore numero ");
