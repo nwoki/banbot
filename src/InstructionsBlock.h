@@ -56,6 +56,7 @@ class InstructionsBlock
         void restart(); //restart the current map.
         void teamBalance( std::vector<std::string> excludelist ); //balance teams
         void gravity( std::string amount ); //changes the gravity
+        void playersInfo( std::string player ); //send info on online players to the admin @player (with a pm).
 
         void execFirstCommand( Connection* conn, int server );  //execute the first command of the stack on a server using the given connection class.
 
@@ -405,20 +406,6 @@ class InstructionsBlock
                     }
                 };
             private:
-                //check a line with a regex (regular expression): if the line respect the rule, returns true
-                bool isA(const char* line, const std::string& regex )
-                {
-                    regex_t r;
-                    
-                    if ( regcomp( &r, regex.c_str(), REG_EXTENDED|REG_NOSUB ) == 0){
-                        int status = regexec( &r, line, ( size_t )0, NULL, 0 );
-                        regfree( &r );
-                        if( status == 0 )
-                            return true;
-                    }
-                    return false;
-                }
-                
                 int tentativi;
                 std::vector<std::string> exclude;
         };
@@ -439,6 +426,73 @@ class InstructionsBlock
         //pointers
         InstructionsBlock* m_next;
         Common* m_list;
+        
+        //players command node
+        class PlayersInfo : public Common
+        {
+            public:
+                PlayersInfo(std::string player, int tryed = 0):Common(),tentativi(tryed),number(player){};
+                virtual void exec ( Connection* conn, int server )
+                {
+                    std::string temp = conn->status( server );
+                    std::vector<handyFunctions::stats> players;
+                    if ( handyFunctions::extractFromStatus(temp,&players) ){
+                        std::string phrase;
+                        #ifdef ITA
+                        phrase.append("^0BanBot: ^1 informazioni sui player :\n");
+                        #else
+                        phrase.append("^0BanBot: ^1player's info :\n");
+                        #endif
+                        for (unsigned int i = 0; i < players.size(); i++){
+                            phrase.append("^2");
+                            phrase.append(players.at(i).slot);
+                            phrase.append(" ^1");
+                            phrase.append(players.at(i).nick);
+                            phrase.append(" ^2");
+                            phrase.append(players.at(i).ip);
+                            phrase.append(" ^1");
+                            phrase.append(players.at(i).port);
+                            addToTail( new Tell(phrase,number) );
+                            phrase.clear();
+                        }
+                    } 
+                    else {
+                        if ( tentativi < 3 ){
+                            tentativi++;
+                            std::string phrase;
+                            #ifdef ITA
+                            phrase.append("^0BanBot: ^1rcon status fallito, riprovo (^2");
+                            phrase.append(handyFunctions::intToString(tentativi));
+                            phrase.append("°^1 tentativo).");
+                            #else
+                            phrase.append("^0BanBot: ^1rcon status failed, trying again (tryed ^2");
+                            phrase.append(handyFunctions::intToString(tentativi));
+                            phrase.append("^1 times).");
+                            #endif
+                            
+                            #ifdef DEBUG_MODE
+                            std::cout<<"status failed, trying again.\n";
+                            #endif
+                            
+                            addToTail( new Tell(phrase,number) );
+                            addToTail( new PlayersInfo( number, tentativi) );
+                        }
+                        else{
+                            std::string phrase;
+                            #ifdef ITA
+                            phrase.append("^0BanBot: ^1rcon status fallito: operazione annullata.");
+                            #else
+                            phrase.append("^0BanBot: ^1rcon status failed: command aborted.");
+                            #endif
+                            
+                            addToTail( new Tell(phrase,number) );
+                        }
+                    }
+                };
+            private:
+                int tentativi;
+                std::string number;
+        };
 };
 
 #endif // INSTRUCTIONSBLOCK_H

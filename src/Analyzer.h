@@ -110,6 +110,7 @@
     #define H_GRAVITY "^2!grav <livello/off> ^1: cambia la gravita'.\n"
     #define H_CHANGELEVEL "^2!level <nome/id> <livello> ^1: cambia il livello di un admin.\n"
     #define H_BIGTEXT "^2!bigtext <message> ^1: stampa un testo in grande.\n"
+    #define H_PLAYERSINFO "^2!pinfo ^1: mostra alcune informazioni dei giocatori online (rcon status).\n"
     #define H_TEAMS "^2!teams ^1: sistema il numero di giocatori per squadra.\n"
 #else
     #define COMMANDLIST "^1You can use these commands:\n"
@@ -141,6 +142,7 @@
     #define H_GRAVITY "^2!grav <level/off> ^1: change gravity.\n"
     #define H_CHANGELEVEL "^2!level <nick/id> <level> ^1: change the admin's level.\n"
     #define H_BIGTEXT "^2!bigtext <message> ^1: write the message using a big font.\n"
+    #define H_PLAYERSINFO "^2!pinfo ^1: shows infos of ingame players (rcon status).\n"
     #define H_TEAMS "^2!teams ^1: fixes the number of players per team.\n"
 #endif
 
@@ -198,6 +200,7 @@ private:
     void changeLevel(char* line);
     void bigtext(char* line);
     void teams(char* line);
+    void playersInfos(char* line);
 
 protected:
     bool isA(const char* line,const std::string &regex);          //testa se la riga soddisfa il regex.
@@ -207,7 +210,7 @@ protected:
     bool nickIsBanned(const std::string& nick, const std::string& numero, const std::string& ip, const std::string& guid);               //controlla se il nick è stato bannato.
     bool ipIsBanned(const std::string& ip, const std::string& numero, const std::string& nick, const std::string& guid);               //controlla se l'ip è stato bannato.
     void buttaFuori(const std::string& reason, const std::string numero, const std::string nick);
-    std::vector<unsigned int> admins();                          //restituisce gli indici dell'array dei player dei giocatori attualmente nel server che sono admin.
+    std::vector<unsigned int> admins();                  //returns array's indexes of in-game players that are admin. *WARNING* do not use in threads operations.
     void tellToAdmins(std::string phrase);               //invia un messaggio a tutti gli admin attualmente in game (messaggio privato).
     int translatePlayer(std::string player);            //@player rappresenta un nick o una parte del nick di un player in game, la funzione restituisce l'indice nell'array dei giocatori indicato da @player, se non trovato o non univoco restituisce -1.
     int findPlayer(std::string number);                 //return the index of player with number @number if exists, or -1.

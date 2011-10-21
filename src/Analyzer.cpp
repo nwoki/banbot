@@ -98,6 +98,7 @@
 #define _R_CHANGELEVEL_NUMBER "^ *[0-9]+:[0-9]{2} *say: +[0-9]+ +[^ \t\n\r\f\v]+: +!level [0-9]+ [0-9]{1,2}$"
 #define _R_BIGTEXT "^ *[0-9]+:[0-9]{2} *say: +[0-9]+ +[^ \t\n\r\f\v]+: +!bigtext [^\t\n\r\f\v]+$"
 #define _R_TEAMS "^ *[0-9]+:[0-9]{2} *say: +[0-9]+ +[^ \t\n\r\f\v]+: +!teams$"
+#define _R_PLAYERSINFO "^ *[0-9]+:[0-9]{2} *say: +[0-9]+ +[^ \t\n\r\f\v]+: +!pinfo$"
 
 //costruttore
 Analyzer::Analyzer(Connection* conn, Db* db, ConfigLoader* configLoader )
@@ -1565,6 +1566,8 @@ void Analyzer::help(char* line)
             phrase.append( H_CHANGELEVEL );
         if ( level <= (*m_dati)[(*m_dati).serverNumber].commandPermission(Server::BIGTEXT) )
             phrase.append( H_BIGTEXT );
+        if ( level <= (*m_dati)[(*m_dati).serverNumber].commandPermission(Server::PLAYERSINFO) )
+            phrase.append( H_PLAYERSINFO );
 
         phrase.append( H_LEVEL );
         phrase.append( handyFunctions::intToString(level) );
@@ -1773,7 +1776,7 @@ void Analyzer::status(char* line)
     if (isAdminSay(line,numeroAdmin) <= (*m_dati)[(*m_dati).serverNumber].commandPermission(Server::STATUS))
     {
         InstructionsBlock * block = new InstructionsBlock();
-        std::string phrase( "^0BanBot ^1status: version " );
+        std::string phrase( "^2BanBot ^1status: version " );
         phrase.append( _VERSION );
         phrase.append( ", coded by [2s2h]n3m3s1s & [2s2h]Zamy.\n^1Strict level: ^2" );
         switch ((*m_dati)[m_dati->serverNumber].strict())
@@ -2600,7 +2603,24 @@ void Analyzer::teams(char* line)
         m_scheduler->addInstructionBlock( block, Server::LOW );
     }
 }
-/*************************************************************************** UTILS **************************************/
+
+void Analyzer::playersInfos(char* line){
+    std::cout<<"[!] Players";
+    (m_dati->log)->timestamp();
+    *(m_dati->log)<<"\n[!] Players";
+    //i check the player and his permissions, if he isn't autorized to use this command, nothing to do.
+    std::string numeroAdmin;
+    if (isAdminSay(line,numeroAdmin) <= (*m_dati)[(*m_dati).serverNumber].commandPermission(Server::PLAYERSINFO))
+    {
+        #ifdef DEBUG_MODE
+        std::cout<<"Adding a new PlayersInfo request to the admin number "<< numeroAdmin <<".\n";
+        #endif
+        InstructionsBlock *block = new InstructionsBlock();
+        block->playersInfo(numeroAdmin);
+        m_scheduler->addInstructionBlock(block, Server::LOW);
+    }
+}
+/********************************************************************** UTILS **********************************************************************/
 
 void Analyzer::getDateAndTime(std::string &data,std::string &ora)
 {
@@ -3181,6 +3201,8 @@ void Analyzer::main_loop()
                                                         bigtext(line);
                                                     else if (isA(line, _R_TEAMS))
                                                         teams(line);
+                                                    else if (isA(line, _R_PLAYERSINFO))
+                                                        playersInfos(line);
                                                 }
                                             }
                                         }

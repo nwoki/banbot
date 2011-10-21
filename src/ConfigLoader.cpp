@@ -240,6 +240,8 @@ void ConfigLoader::loadOptions()
                                         newServer->setCommandPermission( Server::BIGTEXT, atoi(extract(temp).c_str()));
                                     else if ( isA (temp, (char *)"^[ \t]*LEVEL_TEAMS[ \t]*=[ \t]*[0-9]{1,3}$" ) )
                                         newServer->setCommandPermission( Server::TEAMS, atoi(extract(temp).c_str()));
+                                    else if ( isA (temp, (char *)"^[ \t]*LEVEL_PLAYERSINFO[ \t]*=[ \t]*[0-9]{1,3}$" ) )
+                                        newServer->setCommandPermission( Server::PLAYERSINFO, atoi(extract(temp).c_str()));
                                     else {
                                         #ifdef ITA
                                         std::cout << "Attenzione: \"" << temp << "\" non e' un'opzione valida!.\n";

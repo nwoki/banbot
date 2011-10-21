@@ -78,7 +78,8 @@ class Server
             GRAVITY,
             CHANGELEVEL,
             BIGTEXT,
-            TEAMS
+            TEAMS,
+            PLAYERSINFO
         };
 
         enum Timing {               //used to define the timing of nick and ip bans.

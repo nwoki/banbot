@@ -255,4 +255,12 @@ void InstructionsBlock::gravity( std::string amount )
         m_list = new Gravity(amount);
 }
 
+void InstructionsBlock::playersInfo(std::string player)
+{
+    if ( m_list != NULL )
+        m_list->addToTail( new PlayersInfo(player) );
+    else
+        m_list = new PlayersInfo(player);
+}
+
 #endif // INSTRUCTIONSBLOCK_CPP
