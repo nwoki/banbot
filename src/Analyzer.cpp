@@ -685,7 +685,7 @@ void Analyzer::clientUserInfo(char* line)
                         }
                         
                         if ( missing ) {
-                            if ( (*m_dati)[m_dati->serverNumber].advancedChecks() >= ADVANCED_LEVEL2 )
+                            if ( (*m_dati)[m_dati->serverNumber].advancedChecks() >= ADVANCED_LEVEL2 && (*m_dati)[m_dati->serverNumber].strict() >= LEVEL3 )
                             {
                                 //automated action
                                 #ifdef DEBUG_MODE
