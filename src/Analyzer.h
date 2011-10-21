@@ -93,6 +93,7 @@
     #define H_OP "^2!op <numero/nick> [level] ^1: da' lo stato di admin ad un player\n"
     #define H_DEOP "^2!deop <id> ^1: toglie lo stato di admin ad un player (id da !findop)\n"
     #define H_STRICT "^2!strict <off/0/1/2/3/4> ^1: cambia il livello di sicurezza del server\n"
+    #define H_ADVANCEDCHECKS "^2!advanced <off/0/1/2> ^1: cambia i controlli avanzati del server\n"
     #define H_NUKE "^2!nuke <numero/nick> ^1: lancia un nuke ad un player\n"
     #define H_SLAP "^2!slap <numero/nick> [2-9] ^1: slappa una (o piu' volte) un player\n"
     #define H_VETO "^2!veto ^1: annulla la votazione in corso\n"
@@ -126,6 +127,7 @@
     #define H_OP "^2!op <number/nick> [level] ^1: register the player as admin\n"
     #define H_DEOP "^2!deop <id> ^1: unregister the player as admin (id from !findop)\n"
     #define H_STRICT "^2!strict <off/0/1/2/3/4> ^1: change the security level of the server\n"
+    #define H_ADVANCEDCHECKS "^2!advanced <off/0/1/2> ^1: change the advanced checks of the server\n"
     #define H_NUKE "^2!nuke <number/nick> ^1: nuke a player\n"
     #define H_SLAP "^2!slap <number/nick> [2-9] ^1: slaps once (or more times) a player\n"
     #define H_VETO "^2!veto ^1: cancel the vote in progress\n"
@@ -205,6 +207,7 @@ private:
     void teams(char* line);
     void playersInfos(char* line);
     void cyclemap(char* line);
+    void advancedChecks(char* line);
 
 protected:
     bool isA(const char* line,const std::string &regex);          //testa se la riga soddisfa il regex.

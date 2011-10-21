@@ -64,6 +64,7 @@
 #define _R_MUTE_ALL "^ *[0-9]+:[0-9]{2} *say: +[0-9]+ +[^ \t\n\r\f\v]+: +!mute (all|ALL)$"
 #define _R_MUTE_NUMBER "^ *[0-9]+:[0-9]{2} *say: +[0-9]+ +[^ \t\n\r\f\v]+: +!mute [0-9]{1,2}$"
 #define _R_STRICT "^ *[0-9]+:[0-9]{2} *say: +[0-9]+ +[^ \t\n\r\f\v]+: +!strict (OFF|off|[0-4]{1})$"
+#define _R_CHECKS_ADVANCED "^ *[0-9]+:[0-9]{2} *say: +[0-9]+ +[^ \t\n\r\f\v]+: +!advanced (OFF|off|[0-2]{1})$"
 #define _R_VETO "^ *[0-9]+:[0-9]{2} *say: +[0-9]+ +[^ \t\n\r\f\v]+: +!veto$"
 #define _R_SLAP "^ *[0-9]+:[0-9]{2} *say: +[0-9]+ +[^ \t\n\r\f\v]+: +!slap [^\t\n\r\f\v]+$"
 #define _R_SLAP_NUMBER "^ *[0-9]+:[0-9]{2} *say: +[0-9]+ +[^ \t\n\r\f\v]+: +!slap [0-9]{1,2}"
@@ -1712,7 +1713,10 @@ void Analyzer::help(char* line)
             phrase.append( H_DEOP );
         }
         if ( level <= (*m_dati)[(*m_dati).serverNumber].commandPermission(Server::STRICT) )
+        {
             phrase.append( H_STRICT );
+            phrase.append( H_ADVANCEDCHECKS );
+        }
         if ( level <= (*m_dati)[(*m_dati).serverNumber].commandPermission(Server::NUKE) )
             phrase.append( H_NUKE );
         if ( level <= (*m_dati)[(*m_dati).serverNumber].commandPermission(Server::SLAP) )
@@ -1978,6 +1982,23 @@ void Analyzer::status(char* line)
                 break;
             default:
                 phrase.append("4");
+                break;
+        }
+        #ifdef ITA
+        phrase.append("\n^1Controlli avanzati: ^2");
+        #else
+        phrase.append("\n^1Advanced checks: ^2");
+        #endif
+        switch ((*m_dati)[m_dati->serverNumber].advancedChecks())
+        {
+            case 0:
+                phrase.append("OFF");
+                break;
+            case 1:
+                phrase.append("1");
+                break;
+            default:
+                phrase.append("2");
                 break;
         }
         #ifdef ITA
@@ -2814,6 +2835,47 @@ void Analyzer::cyclemap(char* line){
         m_scheduler->addInstructionBlock(block, Server::MEDIUM);
     }
 }
+
+void Analyzer::advancedChecks ( char* line )
+{
+    std::cout<<"[!] Set Advanced checks";
+    (m_dati->log)->timestamp();
+    *(m_dati->log)<<"\n[!] Set Advanced checks";
+    //i check the player and his permissions, if he isn't autorized to use this command, nothing to do.
+    std::string numeroAdmin;
+    if (isAdminSay(line,numeroAdmin) <= (*m_dati)[(*m_dati).serverNumber].commandPermission(Server::STRICT))
+    {
+        InstructionsBlock * block = new InstructionsBlock();
+        std::string temp(line);
+        int pos=temp.find("!advanced");
+        pos=temp.find_first_not_of(" \t\n\r\f\v",pos+9);
+        int end=temp.find_first_of(" ",pos);
+        std::string variable=temp.substr(pos,end-pos);
+        
+        if ( variable.compare("off")==0 || variable.compare("OFF")==0 )
+        {
+            (*m_dati)[m_dati->serverNumber].setAdvancedCheks(0);
+            
+            #ifdef ITA
+            block->tell("^0BanBot: ^1Controlli avanzati ^2disattivati.",numeroAdmin);
+            #else
+            block->tell("^0BanBot: ^1Advanced checks ^2OFF.",numeroAdmin);
+            #endif
+        }
+        else
+        {
+            (*m_dati)[m_dati->serverNumber].setStrict( atoi(variable.c_str()) );
+            #ifdef ITA
+            std::string phrase("^0BanBot: ^1I controlli avanzati ora sono al livello ");
+            #else
+            std::string phrase("^0BanBot: ^1Advanced checks now are at level ");
+            #endif
+            phrase.append(variable);
+            block->tell(phrase,numeroAdmin);
+        }
+        m_scheduler->addInstructionBlock( block, Server::MEDIUM );
+    }
+}
 /********************************************************************** UTILS **********************************************************************/
 
 void Analyzer::getDateAndTime(std::string &data,std::string &ora)
@@ -3399,6 +3461,8 @@ void Analyzer::main_loop()
                                                         playersInfos(line);
                                                     else if (isA(line, _R_CYCLE))
                                                         cyclemap(line);
+                                                    else if (isA(line, _R_CHECKS_ADVANCED))
+                                                        advancedChecks(line);
                                                 }
                                             }
                                         }
