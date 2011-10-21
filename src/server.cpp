@@ -85,6 +85,7 @@ Server::Server()
     m_permissions.push_back( 3 );     //bigtext level
     m_permissions.push_back( 3 );     //teams level
     m_permissions.push_back( 3 );     //playersinfo level
+    m_permissions.push_back( 3 );     //cycle level
 }
 
 Server::~Server()

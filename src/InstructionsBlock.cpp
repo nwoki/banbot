@@ -263,4 +263,11 @@ void InstructionsBlock::playersInfo(std::string player)
         m_list = new PlayersInfo(player);
 }
 
+void InstructionsBlock::cycle()
+{
+    if ( m_list != NULL )
+        m_list->addToTail( new Cycle() );
+    else
+        m_list = new Cycle();
+}
 #endif // INSTRUCTIONSBLOCK_CPP

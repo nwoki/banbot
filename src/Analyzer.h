@@ -112,6 +112,7 @@
     #define H_BIGTEXT "^2!bigtext <message> ^1: stampa un testo in grande.\n"
     #define H_PLAYERSINFO "^2!pinfo ^1: mostra alcune informazioni dei giocatori online (rcon status).\n"
     #define H_TEAMS "^2!teams ^1: sistema il numero di giocatori per squadra.\n"
+    #define H_CYCLE "^2!cycle ^1: carica la mappa successiva.\n"
 #else
     #define COMMANDLIST "^1You can use these commands:\n"
     #define H_LEVEL "^1Your level is ^2"
@@ -144,6 +145,7 @@
     #define H_BIGTEXT "^2!bigtext <message> ^1: write the message using a big font.\n"
     #define H_PLAYERSINFO "^2!pinfo ^1: shows infos of ingame players (rcon status).\n"
     #define H_TEAMS "^2!teams ^1: fixes the number of players per team.\n"
+    #define H_CYCLE "^2!cycle ^1: load the next map.\n"
 #endif
 
 class Analyzer
@@ -201,6 +203,7 @@ private:
     void bigtext(char* line);
     void teams(char* line);
     void playersInfos(char* line);
+    void cyclemap(char* line);
 
 protected:
     bool isA(const char* line,const std::string &regex);          //testa se la riga soddisfa il regex.

@@ -99,6 +99,7 @@
 #define _R_BIGTEXT "^ *[0-9]+:[0-9]{2} *say: +[0-9]+ +[^ \t\n\r\f\v]+: +!bigtext [^\t\n\r\f\v]+$"
 #define _R_TEAMS "^ *[0-9]+:[0-9]{2} *say: +[0-9]+ +[^ \t\n\r\f\v]+: +!teams$"
 #define _R_PLAYERSINFO "^ *[0-9]+:[0-9]{2} *say: +[0-9]+ +[^ \t\n\r\f\v]+: +!pinfo$"
+#define _R_CYCLE "^ *[0-9]+:[0-9]{2} *say: +[0-9]+ +[^ \t\n\r\f\v]+: +!cycle$"
 
 //costruttore
 Analyzer::Analyzer(Connection* conn, Db* db, ConfigLoader* configLoader )
@@ -2620,6 +2621,23 @@ void Analyzer::playersInfos(char* line){
         m_scheduler->addInstructionBlock(block, Server::LOW);
     }
 }
+
+void Analyzer::cyclemap(char* line){
+    std::cout<<"[!] Cycle";
+    (m_dati->log)->timestamp();
+    *(m_dati->log)<<"\n[!] Cycle";
+    //i check the player and his permissions, if he isn't autorized to use this command, nothing to do.
+    std::string numeroAdmin;
+    if (isAdminSay(line,numeroAdmin) <= (*m_dati)[(*m_dati).serverNumber].commandPermission(Server::CYCLE))
+    {
+        #ifdef DEBUG_MODE
+        std::cout<<"Doing the cyclemap.\n";
+        #endif
+        InstructionsBlock *block = new InstructionsBlock();
+        block->cycle();
+        m_scheduler->addInstructionBlock(block, Server::MEDIUM);
+    }
+}
 /********************************************************************** UTILS **********************************************************************/
 
 void Analyzer::getDateAndTime(std::string &data,std::string &ora)
@@ -2985,7 +3003,7 @@ void Analyzer::main_loop()
             for (m_dati->serverNumber = 0; m_dati->serverNumber < m_dati->size(); m_dati->serverNumber++)
             {
                 InstructionsBlock * block = new InstructionsBlock();
-                block->reload();
+                block->cycle();
                 m_scheduler->addInstructionBlock( block, Server::HIGH );
             }
             //if the backup gone successfully, i'll reset the log line pointer.
@@ -3203,6 +3221,8 @@ void Analyzer::main_loop()
                                                         teams(line);
                                                     else if (isA(line, _R_PLAYERSINFO))
                                                         playersInfos(line);
+                                                    else if (isA(line, _R_CYCLE))
+                                                        cyclemap(line);
                                                 }
                                             }
                                         }

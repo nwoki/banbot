@@ -57,6 +57,7 @@ class InstructionsBlock
         void teamBalance( std::vector<std::string> excludelist ); //balance teams
         void gravity( std::string amount ); //changes the gravity
         void playersInfo( std::string player ); //send info on online players to the admin @player (with a pm).
+        void cycle(); //load the next map.
 
         void execFirstCommand( Connection* conn, int server );  //execute the first command of the stack on a server using the given connection class.
 
@@ -492,6 +493,17 @@ class InstructionsBlock
             private:
                 int tentativi;
                 std::string number;
+        };
+        
+        //cycle command node
+        class Cycle : public Common
+        {
+            public:
+                Cycle():Common(){};
+                virtual void exec ( Connection* conn, int server )
+                {
+                    conn->cycle( server );
+                };
         };
 };
 

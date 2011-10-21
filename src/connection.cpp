@@ -387,6 +387,35 @@ void Connection::gravity( std::string amount, int server )
     sendto( socketID, command.data(), bufferSize, 0, &(sockaddr &)serverAdd, sizeof( serverAdd ) );
 }
 
+void Connection::cycle( int server )
+{
+    if ( server >= 0 )
+    {
+        std::string comando("rcon ");
+        comando.append( (*m_options)[server].rcon() );
+        comando.append(" cyclemap");
+        
+        std::vector<char> command=makeCmd(comando);
+        int bufferSize = command.size();
+        prepareConnection( server );
+        sendto( socketID, command.data(), bufferSize, 0, &(sockaddr &)serverAdd, sizeof( serverAdd ) );
+    }
+    else
+    {
+        for (unsigned int i=0;i<m_options->size();i++)
+        {
+            std::string comando("rcon ");
+            comando.append( (*m_options)[i].rcon() );
+            comando.append(" cyclemap");
+            
+            std::vector<char> command=makeCmd(comando);
+            int bufferSize = command.size();
+            prepareConnection( i );
+            sendto( socketID, command.data(), bufferSize, 0, &(sockaddr &)serverAdd, sizeof( serverAdd ) );
+        }
+    }
+}
+
 void Connection::sendInfo()
 {
     prepareConnection(-1);
