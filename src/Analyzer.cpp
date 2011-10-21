@@ -44,10 +44,6 @@
 #define _R_CLIENT_CONNECT " *[0-9]+:[0-9]{2} *ClientConnect:"
 #define _R_CLIENT_USER_INFO " *[0-9]+:[0-9]{2} *ClientUserinfo:"
 #define _R_CLIENT_USER_INFO_CHANGED " *[0-9]+:[0-9]{2} *ClientUserinfoChanged:"
-#define _R_COMPLETE_CLIENT_USER_INFO " *[0-9]+:[0-9]{2} *ClientUserinfo: +[0-9]+ +\\ip\\[0-9]{1,3}.[0-9]{1,3}.[0-9]{1,3}.[0-9]{1,3}:[0-9]{1,6}\\name\\[^ \t\n\r\f\v]+\\racered\
-\\[0-9]{1}\\raceblue\\[0-9]{1}\\rate\\[0-9]+\\ut_timenudge\\[0-9]+\\cg_rgb\\[0-9]{1,3} [0-9]{1,3} [0-9]{1,3}\\cg_predictitems\\[01]{1}\\cg_physics\\[01]{1}\\snaps\\[0-9]{1,2}\\model\\[^ \t\n\r\f\v]+\
-\\headmodel\\[^ \t\n\r\f\v]+\\team_model\\[^ \t\n\r\f\v]+\\team_headmodel\\[^ \t\n\r\f\v]+\\color1\\[0-9]{1,2}\\color2\\[0-9]{1,2}\\handicap\\100\\sex\\[^ \t\n\r\f\v]+\\cl_anonymous\\[01]{1}\
-\\gear\\[^ \t\n\r\f\v]+\\teamtask\\[0-9]+\\cl_guid\\[A-F0-9]{32}\\weapmodes\\[0-2]{20}"
 
 #define _R_CLIENT_DISCONNECT "^ *[0-9]+:[0-9]{2} *ClientDisconnect:"
 #define _R_BAN "^ *[0-9]+:[0-9]{2} *say: +[0-9]+ +[^ \t\n\r\f\v]+: +!ban [^\t\n\r\f\v]+"
@@ -60,7 +56,6 @@
 #define _R_OP_NUMBER "^ *[0-9]+:[0-9]{2} *say: +[0-9]+ +[^ \t\n\r\f\v]+: +!op [0-9]{1,2}"
 #define _R_DEOP "^ *[0-9]+:[0-9]{2} *say: +[0-9]+ +[^ \t\n\r\f\v]+: +!deop [^ \t\n\r\f\v]+$"
 #define _R_DEOP_ID "^ *[0-9]+:[0-9]{2} *say: +[0-9]+ +[^ \t\n\r\f\v]+: +!deop [0-9]+$"
-#define _R_GUID "[A-F0-9]{32}"
 #define _R_INITGAME "^ *[0-9]+:[0-9]{2} *InitGame:"
 #define _R_HELP "^ *[0-9]+:[0-9]{2} *say: +[0-9]+ +[^ \t\n\r\f\v]+: +!help$"
 #define _R_KICK "^ *[0-9]+:[0-9]{2} *say: +[0-9]+ +[^ \t\n\r\f\v]+: +!kick [^ \t\n\r\f\v]+$"
@@ -68,7 +63,7 @@
 #define _R_MUTE " *[0-9]+:[0-9]{2} *say: +[0-9]+ +[^ \t\n\r\f\v]+: +!mute [^ \t\n\r\f\v]+$"
 #define _R_MUTE_ALL "^ *[0-9]+:[0-9]{2} *say: +[0-9]+ +[^ \t\n\r\f\v]+: +!mute (all|ALL)$"
 #define _R_MUTE_NUMBER "^ *[0-9]+:[0-9]{2} *say: +[0-9]+ +[^ \t\n\r\f\v]+: +!mute [0-9]{1,2}$"
-#define _R_STRICT "^ *[0-9]+:[0-9]{2} *say: +[0-9]+ +[^ \t\n\r\f\v]+: +!strict (OFF|off|[0-5]{1})$"
+#define _R_STRICT "^ *[0-9]+:[0-9]{2} *say: +[0-9]+ +[^ \t\n\r\f\v]+: +!strict (OFF|off|[0-4]{1})$"
 #define _R_VETO "^ *[0-9]+:[0-9]{2} *say: +[0-9]+ +[^ \t\n\r\f\v]+: +!veto$"
 #define _R_SLAP "^ *[0-9]+:[0-9]{2} *say: +[0-9]+ +[^ \t\n\r\f\v]+: +!slap [^\t\n\r\f\v]+$"
 #define _R_SLAP_NUMBER "^ *[0-9]+:[0-9]{2} *say: +[0-9]+ +[^ \t\n\r\f\v]+: +!slap [0-9]{1,2}"
@@ -100,6 +95,48 @@
 #define _R_TEAMS "^ *[0-9]+:[0-9]{2} *say: +[0-9]+ +[^ \t\n\r\f\v]+: +!teams$"
 #define _R_PLAYERSINFO "^ *[0-9]+:[0-9]{2} *say: +[0-9]+ +[^ \t\n\r\f\v]+: +!pinfo$"
 #define _R_CYCLE "^ *[0-9]+:[0-9]{2} *say: +[0-9]+ +[^ \t\n\r\f\v]+: +!cycle$"
+
+
+/*******    Advanced checks regex   *******/
+/*
+ * Initial are the paramerters sended on connection (like challenge).
+ * Usual are the parameters that are sended during the game.
+ * Both are the parameters that appears in both of them.
+ * 
+ * Notice that the game (depending on installation, version etc) sometimes send in a single line all the parameters,
+ * here we assume the most common distribution.
+ * Anyway, we wont penalize the all-in-one sending client.
+ */
+#define _R_GUID "[A-F0-9]{32}"
+#define _R_GUID_QUAKE "(unknown|UNKNOWN)"
+
+#define _R_ADVANCED_BOTH_IP " *[0-9]+:[0-9]{2} *ClientUserinfo:[^\t\n\r\f\v]+\\ip\\[0-9]{1,3}.[0-9]{1,3}.[0-9]{1,3}.[0-9]{1,3}:[0-9]{1,6}"
+#define _R_ADVANCED_BOTH_NAME " *[0-9]+:[0-9]{2} *ClientUserinfo:[^\t\n\r\f\v]+\\name\\[^\t\n\r\f\v]+"
+#define _R_ADVANCED_BOTH_RATE " *[0-9]+:[0-9]{2} *ClientUserinfo:[^\t\n\r\f\v]+\\rate\\[0-9]+"
+#define _R_ADVANCED_BOTH_PREDICTITMES " *[0-9]+:[0-9]{2} *ClientUserinfo:[^\t\n\r\f\v]+\\cg_predictitems\\[01]{1}"
+#define _R_ADVANCED_BOTH_MODEL " *[0-9]+:[0-9]{2} *ClientUserinfo:[^\t\n\r\f\v]+\\model\\[^ \t\n\r\f\v]+"
+#define _R_ADVANCED_BOTH_HEADMODEL " *[0-9]+:[0-9]{2} *ClientUserinfo:[^\t\n\r\f\v]+\\headmodel\\[^ \t\n\r\f\v]+"
+#define _R_ADVANCED_BOTH_TEAM_MODEL " *[0-9]+:[0-9]{2} *ClientUserinfo:[^\t\n\r\f\v]+\\team_model\\[^ \t\n\r\f\v]+"
+#define _R_ADVANCED_BOTH_TEAM_HEADMODEL " *[0-9]+:[0-9]{2} *ClientUserinfo:[^\t\n\r\f\v]+\\team_headmodel\\[^ \t\n\r\f\v]+"
+#define _R_ADVANCED_BOTH_COLOR1 " *[0-9]+:[0-9]{2} *ClientUserinfo:[^\t\n\r\f\v]+\\color1\\[0-9]{1,2}"
+#define _R_ADVANCED_BOTH_COLOR2 " *[0-9]+:[0-9]{2} *ClientUserinfo:[^\t\n\r\f\v]+\\color2\\[0-9]{1,2}"
+#define _R_ADVANCED_BOTH_HANDICAP " *[0-9]+:[0-9]{2} *ClientUserinfo:[^\t\n\r\f\v]+\\handicap\\100"
+#define _R_ADVANCED_BOTH_SEX " *[0-9]+:[0-9]{2} *ClientUserinfo:[^\t\n\r\f\v]+\\sex\\(male|female)"
+#define _R_ADVANCED_BOTH_ANONYMOUS " *[0-9]+:[0-9]{2} *ClientUserinfo:[^\t\n\r\f\v]+\\cl_anonymous\\[01]{1}"
+#define _R_ADVANCED_BOTH_TEAMTASK " *[0-9]+:[0-9]{2} *ClientUserinfo:[^\t\n\r\f\v]+\\teamtask\\-{0,1}[0-9]+"
+#define _R_ADVANCED_BOTH_SNAPS " *[0-9]+:[0-9]{2} *ClientUserinfo:[^\t\n\r\f\v]+\\snaps\\[0-9]"
+
+#define _R_ADVANCED_INITIAL_CHALLENGE " *[0-9]+:[0-9]{2} *ClientUserinfo:[^\t\n\r\f\v]+\\challenge\\-{0,1}[0-9]+"
+#define _R_ADVANCED_INITIAL_QPORT " *[0-9]+:[0-9]{2} *ClientUserinfo:[^\t\n\r\f\v]+\\qport\\[0-9]{1,6}"
+#define _R_ADVANCED_INITIAL_PROTOCOL " *[0-9]+:[0-9]{2} *ClientUserinfo:[^\t\n\r\f\v]+\\protocol\\[0-9]{1,3}"
+
+#define _R_ADVANCED_USUAL_RACERED " *[0-9]+:[0-9]{2} *ClientUserinfo:[^\t\n\r\f\v]+\\racered\\[0-9]{1}"
+#define _R_ADVANCED_USUAL_RACEBLUE " *[0-9]+:[0-9]{2} *ClientUserinfo:[^\t\n\r\f\v]+\\raceblue\\[0-9]{1}"
+#define _R_ADVANCED_USUAL_TIMENUDGE " *[0-9]+:[0-9]{2} *ClientUserinfo:[^\t\n\r\f\v]+\\ut_timenudge\\[0-9]+"
+#define _R_ADVANCED_USUAL_CGRGB " *[0-9]+:[0-9]{2} *ClientUserinfo:[^\t\n\r\f\v]+\\cg_rgb\\[0-9]{1,3} [0-9]{1,3} [0-9]{1,3}"
+#define _R_ADVANCED_USUAL_PHYSICS " *[0-9]+:[0-9]{2} *ClientUserinfo:[^\t\n\r\f\v]+\\cg_physics\\1"
+#define _R_ADVANCED_USUAL_GEAR " *[0-9]+:[0-9]{2} *ClientUserinfo:[^\t\n\r\f\v]+\\gear\\[a-zA-Z]{7}"
+#define _R_ADVANCED_USUAL_WEAPMODES " *[0-9]+:[0-9]{2} *ClientUserinfo:[^\t\n\r\f\v]+\\weapmodes\\[0-2]{20}"
 
 //costruttore
 Analyzer::Analyzer(Connection* conn, Db* db, ConfigLoader* configLoader )
@@ -389,7 +426,7 @@ void Analyzer::clientUserInfo(char* line)
     if (guid.empty() && (*m_dati)[m_dati->serverNumber].strict() >= LEVEL2)
     {
         //empty guid: cheat, or client touched (like qkey file deleted).
-        if ( (*m_dati)[m_dati->serverNumber].strict() >= LEVEL5 )
+        if ( (*m_dati)[m_dati->serverNumber].strict() >= LEVEL4 )
         {
             kicked=true;
             #ifdef ITA
@@ -453,118 +490,260 @@ void Analyzer::clientUserInfo(char* line)
         if( database->checkAuthGuid(guid) < 100
             || !(guidIsBanned(guid, nick, numero, ip) || nickIsBanned(nick, numero, ip, guid) || ipIsBanned(ip, numero, nick, guid )) )
         {
-            //ok, non è stato bannato (per il momento). Controllo se ha un GUID valido.
-            if ( (*m_dati)[m_dati->serverNumber].strict() >= LEVEL2 && !guid.empty() && !isA(line, _R_GUID) )
+            //ok, the player is not banned (for the moment). Start with anticheat checks.
+            if ( (*m_dati)[m_dati->serverNumber].strict() >= LEVEL2 )
             {
-                //wrong guid.
-                if ( (*m_dati)[m_dati->serverNumber].strict() >= LEVEL4 )
+                //check if the guid isn't valid
+                if ( !guid.empty() && !(isA(line, _R_GUID) || ((*m_dati)[m_dati->serverNumber].acceptQuakeClients() && isA(line, _R_GUID_QUAKE))) )
                 {
-                    #ifdef ITA
+                    //wrong guid.
+                    if ( (*m_dati)[m_dati->serverNumber].strict() >= LEVEL3 )
+                    {
+                        #ifdef ITA
                         std::cout<<"  [!] ban automatico per GUID illegale\n";
                         *(m_dati->log)<<"  [!] ban automatico per GUID illegale\n";
                         std::string phrase("^0BanBot: ^1kick automatico al giocatore ");
-                    #else
+                        #else
                         std::cout<<"  [!] automated ban for illegal GUID.\n";
                         *(m_dati->log)<<"  [!] automated ban for illegal GUID.\n";
                         std::string phrase("^0BanBot: ^1kicking player number ");
-                    #endif
-
-                    phrase.append(numero);
-                    phrase.append(", ");
-                    phrase.append(nick);
-                    #ifdef ITA
-                        phrase.append("^1 per cheats.");
-                    #else
-                        phrase.append("^1 for cheats.");
-                    #endif
-                    block->say(phrase);
-                    std::string ora;
-                    std::string data;
-                    std::string motivo("auto-ban 4 cheats.");
-                    getDateAndTime(data,ora);
-                    database->ban(handyFunctions::correggi(nick),ip,data,ora,handyFunctions::correggi(guid),handyFunctions::correggi(motivo),std::string());
-                    block->kick(numero);
-                }
-                else
-                {
-                    #ifdef ITA
-                    std::cout<<"  [!] warning per GUID illegale\n";
-                    *(m_dati->log)<<"  [!] warning per GUID illegale\n";
-                    std::string phrase("^0BanBot warning: ^1il giocatore ");
-                    #else
-                    std::cout<<"  [!] warning for illegal GUID.\n";
-                    *(m_dati->log)<<"  [!] warning for illegal GUID.\n";
-                    std::string phrase("^0BanBot warning: ^1player number ");
-                    #endif
-
-                    phrase.append(numero);
-                    phrase.append(", ");
-                    phrase.append(nick);
-                    #ifdef ITA
-                    phrase.append("^1 ha dei cheat attivi.");
-                    #else
-                    phrase.append("^1 has cheats activated.");
-                    #endif
-                    tellToAdmins(phrase);
-                }
-            }
-            else
-            {
-                //advanced checks:
-                //TODO implement and activate
-                if ( (*m_dati)[m_dati->serverNumber].strict() >= LEVEL6 && !isA( line,_R_COMPLETE_CLIENT_USER_INFO ) )
-                {
-                    if ( (*m_dati)[m_dati->serverNumber].strict() >= LEVEL5 )
-                    {
-                        //automated action
-                        #ifdef ITA
-                            std::cout<<"  [!] kick automatico per client non pulito (controlli avanzati non superati).\n";
-                            *(m_dati->log)<<"  [!] kick automatico per client non pulito (controlli avanzati non superati).\n";
-                            std::string phrase("^0BanBot: ^1auto-kick al giocatore ");
-                        #else
-                            std::cout<<"  [!] automated kick for illegal client ( advanced checks not passed ).\n";
-                            *(m_dati->log)<<"  [!] automated kick for illegal client ( advanced checks not passed ).\n";
-                            std::string phrase("^0BanBot: ^1auto-kicking player number ");
                         #endif
+                        
                         phrase.append(numero);
                         phrase.append(", ");
                         phrase.append(nick);
                         #ifdef ITA
-                            phrase.append("^1 per client non pulito.");
+                        phrase.append("^1 per cheats.");
                         #else
-                            phrase.append("^1 for illegal client.");
+                        phrase.append("^1 for cheats.");
                         #endif
                         block->say(phrase);
+                        std::string ora;
+                        std::string data;
+                        std::string motivo("auto-ban 4 cheats.");
+                        getDateAndTime(data,ora);
+                        database->ban(handyFunctions::correggi(nick),ip,data,ora,handyFunctions::correggi(guid),handyFunctions::correggi(motivo),std::string());
                         block->kick(numero);
                     }
                     else
                     {
-                        //only warning
                         #ifdef ITA
-                        std::string phrase("^0BanBot ^1attenzione: il giocatore numero ");
+                        std::cout<<"  [!] warning per GUID illegale\n";
+                        *(m_dati->log)<<"  [!] warning per GUID illegale\n";
+                        std::string phrase("^0BanBot warning: ^1il giocatore ");
                         #else
-                        std::string phrase("^0BanBot ^1warning: player number ");
+                        std::cout<<"  [!] warning for illegal GUID.\n";
+                        *(m_dati->log)<<"  [!] warning for illegal GUID.\n";
+                        std::string phrase("^0BanBot warning: ^1player number ");
                         #endif
+                        
                         phrase.append(numero);
                         phrase.append(", ");
                         phrase.append(nick);
                         #ifdef ITA
-                            phrase.append("^1 ha un client non pulito.");
+                        phrase.append("^1 ha dei cheat attivi.");
                         #else
-                            phrase.append("^1 has an illegal client.");
+                        phrase.append("^1 has cheats activated.");
                         #endif
                         tellToAdmins(phrase);
                     }
                 }
                 else
                 {
-                    #ifdef ITA
+                    //the guid is valid
+                    //advanced checks:
+                    if ( (*m_dati)[m_dati->serverNumber].advancedChecks() >= ADVANCED_LEVEL0 )
+                    {
+                        bool missing = false;
+                        #ifdef DEBUG_MODE
+                        std::string advanced_debug = "^0BanBot: ^1Ignore this debug message (and the warning). The player ^2";
+                        advanced_debug.append(nick);
+                        advanced_debug.append(" ^1has failed these advanced checks:\n^1");
+                        #endif
+                        //common checks
+                        if ( !isA(line,_R_ADVANCED_BOTH_ANONYMOUS) ){ 
+                            missing = true; 
+                            #ifdef DEBUG_MODE
+                            advanced_debug.append("anonymous ");
+                            #endif
+                        }
+                        if ( !isA(line,_R_ADVANCED_BOTH_COLOR1) || !isA(line,_R_ADVANCED_BOTH_COLOR2) ){ 
+                            missing = true; 
+                            #ifdef DEBUG_MODE
+                            advanced_debug.append("color ");
+                            #endif
+                        }
+                        if ( !isA(line,_R_ADVANCED_BOTH_HANDICAP) ){ 
+                            missing = true; 
+                            #ifdef DEBUG_MODE
+                            advanced_debug.append("handicap ");
+                            #endif
+                        }
+                        if ( !isA(line,_R_ADVANCED_BOTH_MODEL) || !isA(line,_R_ADVANCED_BOTH_HEADMODEL) || !isA(line,_R_ADVANCED_BOTH_TEAM_MODEL) || !isA(line,_R_ADVANCED_BOTH_TEAM_HEADMODEL) ){ 
+                            missing = true; 
+                            #ifdef DEBUG_MODE
+                            advanced_debug.append("model ");
+                            #endif
+                        }
+                        if ( !isA(line,_R_ADVANCED_BOTH_IP) ){ 
+                            missing = true; 
+                            #ifdef DEBUG_MODE
+                            advanced_debug.append("ip ");
+                            #endif
+                        }
+                        if ( !isA(line,_R_ADVANCED_BOTH_NAME) ){ 
+                            missing = true; 
+                            #ifdef DEBUG_MODE
+                            advanced_debug.append("name ");
+                            #endif
+                        }
+                        if ( !isA(line,_R_ADVANCED_BOTH_PREDICTITMES) ){ 
+                            missing = true; 
+                            #ifdef DEBUG_MODE
+                            advanced_debug.append("predictTimes ");
+                            #endif
+                        }
+                        if ( !isA(line,_R_ADVANCED_BOTH_RATE) ){ 
+                            missing = true; 
+                            #ifdef DEBUG_MODE
+                            advanced_debug.append("rate ");
+                            #endif
+                        }
+                        if ( !isA(line,_R_ADVANCED_BOTH_SEX) ){ 
+                            missing = true; 
+                            #ifdef DEBUG_MODE
+                            advanced_debug.append("sex ");
+                            #endif
+                        }
+                        if ( !isA(line,_R_ADVANCED_BOTH_SNAPS) ){ 
+                            missing = true; 
+                            #ifdef DEBUG_MODE
+                            advanced_debug.append("snaps ");
+                            #endif
+                        }
+                        if ( !isA(line,_R_ADVANCED_BOTH_TEAMTASK) ){ 
+                            missing = true; 
+                            #ifdef DEBUG_MODE
+                            advanced_debug.append("teamtask ");
+                            #endif
+                        }
+                        
+                        //challenge checks
+                        if ( isA(line,_R_ADVANCED_INITIAL_CHALLENGE) ){
+                            if ( !isA(line,_R_ADVANCED_INITIAL_PROTOCOL) ){ 
+                                missing = true; 
+                                #ifdef DEBUG_MODE
+                                advanced_debug.append("protocol ");
+                                #endif
+                            }
+                            else if ( !isA(line,_R_ADVANCED_INITIAL_QPORT) ){ 
+                                missing = true; 
+                                #ifdef DEBUG_MODE
+                                advanced_debug.append("qport ");
+                                #endif
+                            }
+                        }
+                        
+                        //normal checks
+                        else {
+                            if ( !isA(line,_R_ADVANCED_USUAL_CGRGB) ){ 
+                                missing = true; 
+                                #ifdef DEBUG_MODE
+                                advanced_debug.append("cgrgb ");
+                                #endif
+                            }
+                            if ( !isA(line,_R_ADVANCED_USUAL_GEAR) ){ 
+                                missing = true; 
+                                #ifdef DEBUG_MODE
+                                advanced_debug.append("gear ");
+                                #endif
+                            }
+                            if ( !isA(line,_R_ADVANCED_USUAL_PHYSICS) ){ 
+                                missing = true; 
+                                #ifdef DEBUG_MODE
+                                advanced_debug.append("physics ");
+                                #endif
+                            }
+                            if ( !isA(line,_R_ADVANCED_USUAL_RACEBLUE) || !isA(line,_R_ADVANCED_USUAL_RACERED) ){ 
+                                missing = true; 
+                                #ifdef DEBUG_MODE
+                                advanced_debug.append("race ");
+                                #endif
+                            }
+                            if ( !isA(line,_R_ADVANCED_USUAL_TIMENUDGE) ){ 
+                                missing = true; 
+                                #ifdef DEBUG_MODE
+                                advanced_debug.append("timenudge ");
+                                #endif
+                            }
+                            if ( !isA(line,_R_ADVANCED_USUAL_WEAPMODES) ){ 
+                                missing = true; 
+                                #ifdef DEBUG_MODE
+                                advanced_debug.append("weapmodes ");
+                                #endif
+                            }
+                        }
+                        
+                        if ( missing ) {
+                            if ( (*m_dati)[m_dati->serverNumber].advancedChecks() >= ADVANCED_LEVEL2 )
+                            {
+                                //automated action
+                                #ifdef DEBUG_MODE
+                                *(m_dati->log)<<advanced_debug<<".\n";
+                                #endif
+                                #ifdef ITA
+                                std::cout<<"  [!] kick automatico per client non pulito (controlli avanzati non superati).\n";
+                                *(m_dati->log)<<"  [!] kick automatico per client non pulito (controlli avanzati non superati).\n";
+                                std::string phrase("^0BanBot: ^1auto-kick al giocatore ");
+                                #else
+                                std::cout<<"  [!] automated kick for illegal client ( advanced checks not passed ).\n";
+                                *(m_dati->log)<<"  [!] automated kick for illegal client ( advanced checks not passed ).\n";
+                                std::string phrase("^0BanBot: ^1auto-kicking player number ");
+                                #endif
+                                phrase.append(numero);
+                                phrase.append(", ");
+                                phrase.append(nick);
+                                #ifdef ITA
+                                phrase.append("^1 per client non pulito.");
+                                #else
+                                phrase.append("^1 for illegal client.");
+                                #endif
+                                block->say(phrase);
+                                block->kick(numero);
+                            }
+                            else
+                            {
+                                //only warning
+                                #ifdef DEBUG_MODE
+                                tellToAdmins(advanced_debug);
+                                #endif
+                                #ifdef ITA
+                                std::string phrase("^0BanBot ^1attenzione: il giocatore numero ");
+                                #else
+                                std::string phrase("^0BanBot ^1warning: player number ");
+                                #endif
+                                phrase.append(numero);
+                                phrase.append(", ");
+                                phrase.append(nick);
+                                #ifdef ITA
+                                phrase.append("^1 ha un client non pulito.");
+                                #else
+                                phrase.append("^1 has an illegal client.");
+                                #endif
+                                tellToAdmins(phrase);
+                            }
+                        }
+                    }
+                    else
+                    {
+                        #ifdef ITA
                         std::cout<<"  [OK] è a posto.\n";
                         *(m_dati->log)<<"  [OK] è a posto.\n";
-                    #else
+                        #else
                         std::cout<<"  [OK] (s)he's ok.\n";
                         *(m_dati->log)<<"  [OK] (s)he's ok.\n";
-                    #endif
+                        #endif
+                    }
                 }
             }
         }
@@ -1797,14 +1976,8 @@ void Analyzer::status(char* line)
             case 3:
                 phrase.append("3");
                 break;
-            case 4:
-                phrase.append("4");
-                break;
-            case 5:
-                phrase.append("5");
-                break;
             default:
-                phrase.append("6");
+                phrase.append("4");
                 break;
         }
         #ifdef ITA

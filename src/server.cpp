@@ -50,6 +50,7 @@ Server::Server()
     , m_permissions( std::vector<int>() )
     , m_messages( std::vector<std::string>() )
     , m_nextMessage( 0 )
+    , m_acceptQuakeClients( 1 )
 {
     //initializing command permissions' vector (default power levels needed)
     //group 0 = full admin
@@ -422,6 +423,27 @@ std::string Server::nextSpamMessage() {
 void Server::addSpamMessage( std::string message) {
     m_messages.push_back(message);
 }
+
+bool Server::acceptQuakeClients()
+{
+    return m_acceptQuakeClients;
+}
+
+void Server::setAcceptQuakeClients ( bool option )
+{
+    m_acceptQuakeClients = option;
+}
+
+int Server::advancedChecks()
+{
+    return m_advancedChecks;
+}
+
+void Server::setAdvancedCheks ( int level )
+{
+    m_advancedChecks = level;
+}
+
 //**************************************** Functions for direct access to player vector ************************
 unsigned int Server::size()
 {

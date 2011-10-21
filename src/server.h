@@ -200,6 +200,8 @@ class Server
         Timing banIp () const;                                              // like banNick
         bool banWarnings () const;                                          // return ban warnings option (see m_banWarnings).
         std::string nextSpamMessage();                                      // return the next message.
+        bool acceptQuakeClients();                                          // get the beahvior with Quake clients
+        int advancedChecks();                                               // get advanced checks's behavior
 
         // setters
         void setName( std::string name );                                   // set server name
@@ -225,6 +227,8 @@ class Server
         void setBanIp( Server::Timing time );                               // set the ip ban timing.
         void setBanWarnings( bool option );                                 // enable or disable ban warnings (see m_banWarnings).
         void addSpamMessage( std::string );                                 // add a message to the list.
+        void setAcceptQuakeClients( bool option );                          // set the beahvior with Quake clients
+        void setAdvancedCheks( int level = 1);                              // set advanced checks behavior
 
 
         // returns true and updates m_lastBalance
@@ -283,8 +287,10 @@ class Server
         std::string m_gameDir;                      // directory where the game in installed
         std::vector<int> m_permissions;             // minimum power level requested for each command.
         
-        std::vector<std::string> m_messages;        //broadcast messages
-        unsigned int m_nextMessage;                 //index of the next message to send.
+        std::vector<std::string> m_messages;        // broadcast messages
+        unsigned int m_nextMessage;                 // index of the next message to send.
+        bool m_acceptQuakeClients;                  // tells if we should accept a quake client too or if accept pure UrT clients only.
+        int m_advancedChecks;                       // level of advanced checks
 };
 
 #endif

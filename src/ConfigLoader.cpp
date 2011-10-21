@@ -349,11 +349,18 @@ void ConfigLoader::loadOptions()
                                     newServer->setDbFolder( t );
                                 }
 
-                                else if ( isA( temp, (char*)"^[ \t]*STRICT_LEVEL[ \t]*=[ \t]*[0-5]{1}$" ) )
+                                else if ( isA( temp, (char*)"^[ \t]*STRICT_LEVEL[ \t]*=[ \t]*[0-4]{1}$" ) )
                                     newServer->setStrict( atoi( extract( temp ).c_str() ) );
                                     
                                 else if ( isA( temp, (char*)"^[ \t]*MESSAGE[ \t]*=[ \t]*[^\t\n\r\f\v]+$" ) )
                                     newServer->addSpamMessage( extract( temp ) );
+                                
+                                else if ( isA( temp, (char*)"^[ \t]*ACCEPT_QUAKE_CLIENTS[ \t]*=[ \t]*(YES|yes|NO|no){1}$" ) )
+                                {
+                                    std::string opt = extract( temp );
+                                    if ( opt.compare("no") == 0 || opt.compare("NO") == 0 ) newServer->setAcceptQuakeClients(false);
+                                    else newServer->setAcceptQuakeClients(true);
+                                }
 
                                 else if ( temp.compare("EXTERNAL_OPTIONS = YES") == 0 )
                                     secondary = true;
