@@ -2752,22 +2752,22 @@ void Analyzer::teams(char* line)
 
                 //last players in the vector are the last that joined the server. I'll change them.
                 if ( red > blue ){
-                    for( unsigned int i = m_dati->currentServer()->size(); i != 0 && red > blue; --i)
-                        if ( (*m_dati->currentServer())[i]->team == Server::Player::RED ) {
-                            block->force((*m_dati->currentServer())[i]->number,"blue");
+                    for( unsigned int i = m_dati->currentServer()->size(); i != 0 && red > blue; i--)
+                        if ( (*m_dati->currentServer())[i-1]->team == Server::Player::RED ) {
+                            block->force((*m_dati->currentServer())[i-1]->number,"blue");
                             #ifdef DEBUG_MODE
-                            std::cout<<"Forcing player number "<<(*m_dati->currentServer())[i]->number<<" "<<(*m_dati->currentServer())[i]->nick<<" to blue.\n";
+                            std::cout<<"Forcing player number "<<(*m_dati->currentServer())[i-1]->number<<" "<<(*m_dati->currentServer())[i-1]->nick<<" to blue.\n";
                             #endif
                             red--;
                             blue++;
                         }
                 }
                 else {
-                    for( unsigned int i = m_dati->currentServer()->size(); i != 0 && red < blue; --i)
-                        if ( (*m_dati->currentServer())[i]->team == Server::Player::BLUE ) {
-                            block->force((*m_dati->currentServer())[i]->number,"red");
+                    for( unsigned int i = m_dati->currentServer()->size(); i != 0 && red < blue; i--)
+                        if ( (*m_dati->currentServer())[i-1]->team == Server::Player::BLUE ) {
+                            block->force((*m_dati->currentServer())[i-1]->number,"red");
                             #ifdef DEBUG_MODE
-                            std::cout<<"Forcing player number "<<(*m_dati->currentServer())[i]->number<<" "<<(*m_dati->currentServer())[i]->nick<<" to red.\n";
+                            std::cout<<"Forcing player number "<<(*m_dati->currentServer())[i-1]->number<<" "<<(*m_dati->currentServer())[i-1]->nick<<" to red.\n";
                             #endif
                             red++;
                             blue--;
