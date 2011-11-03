@@ -916,7 +916,7 @@ std::vector<Db::idMotiveStruct> Db::idMotiveViaIp(const std::string& ip)
     std::cout << "Db::idMotiveViaIp" << std::endl;
 
     for (unsigned int i = 0; i < m_data.size(); i++) {
-        std::cout << "ANSWER " << i << " is -> " << m_data.at(i);
+        std::cout << "ANSWER " << i << " is -> " << m_data.at(i) << std::endl;
     }
     #endif
     //  SHOULD I ASSUME THAT THERE ARE NO DOUBLES?  YES FOR NOW
@@ -945,7 +945,7 @@ std::vector<Db::idMotiveStruct> Db::idMotiveViaNick(const std::string& nick)
     std::cout << "Db::idMotiveViaNick" << std::endl;
 
     for (unsigned int i = 0; i < m_data.size(); i++) {
-        std::cout << "ANSWER " << i << " is -> " << m_data.at(i);
+        std::cout << "ANSWER " << i << " is -> " << m_data.at(i) << std::endl;
     }
     #endif
     //  SHOULD I ASSUME THAT THERE ARE NO DOUBLES?  YES FOR NOW
@@ -993,7 +993,7 @@ std::string Db::ops()
 Db::idNickStruct Db::opStruct(const std::string &id)
 {
     std::string query("select nick, level from oplist where id='" + id + "';");
-    
+
     if (execQuery(query) && !m_data.empty()) {
         return idNickStruct(id, m_data[0], m_data[1]);
     }
@@ -1033,13 +1033,11 @@ std::vector<Db::idNickMotiveAuthorStruct> Db::findAproxIdMotiveAuthorViaNickBann
     std::cout << "mdata SIZE IS -> " << m_data.size() << std::endl;
 
     for (unsigned int i = 0; i < m_data.size(); i++) {
-        std::cout << "ANSWER " << i << " is -> " << m_data.at(i);
+        std::cout << "ANSWER " << i << " is -> " << m_data.at(i) << std::endl;
     }
     #endif
 
     for (unsigned int i = 0; i < m_data.size()/4; i++) {
-        /// TODO still need this output?
-        std::cout << "TEST for segfault\n";
         structs.push_back(idNickMotiveAuthorStruct(m_data.at(4*i + 0), m_data.at(4*i + 1), m_data.at(4*i + 2), m_data.at(4*i + 3)));
     }
 
@@ -1062,7 +1060,7 @@ std::vector<Db::idNickMotiveAuthorStruct> Db::findPreciseIdMotiveAuthorViaNickBa
     std::cout << "Db::findPreciseIdMotiveAuthorViaNick" << std::endl;
 
     for (unsigned int i = 0; i < m_data.size(); i++) {
-        std::cout << "ANSWER " << i << " is -> " << m_data.at(i);
+        std::cout << "ANSWER " << i << " is -> " << m_data.at(i) << std::endl;
     }
     #endif
 
@@ -1092,7 +1090,7 @@ std::vector<Db::idNickStruct> Db::findAproxIdNickViaNickOp(const std::string& ni
     std::cout << "Db::findAproxIdNickViaNickOp" << std::endl;
 
     for (unsigned int i = 0; i < m_data.size(); i++) {
-        std::cout << "ANSWER " << i << " is -> " << m_data.at(i);
+        std::cout << "ANSWER " << i << " is -> " << m_data.at(i) << std::endl;
     }
     #endif
 
@@ -1119,7 +1117,7 @@ std::vector<Db::idNickStruct> Db::findPreciseIdNickViaNickOp(const std::string& 
     std::cout << "Db::findPreciseIdNickViaNickOp" << std::endl;
 
     for (unsigned int i = 0; i < m_data.size(); i++) {
-        std::cout << "ANSWER " << i << " is -> " << m_data.at(i);
+        std::cout << "ANSWER " << i << " is -> " << m_data.at(i) << std::endl;
     }
     #endif
 
@@ -1287,7 +1285,7 @@ bool Db::connect()  //called by Db::open ( public function )
 
 #ifdef DB_DEBUG
     std::cout << "\e[1;35mOPENED DB\e[0m \n";
-    std::cout << "\e[1;35musing database in " << (*m_options)[m_options->serverNumber].dbFolder() << " \e[0m \n";
+//     std::cout << "\e[1;35musing database in " << (*m_options)[m_options->serverNumber].dbFolder() << " \e[0m \n";
 #endif
 
     return true;
@@ -1386,14 +1384,13 @@ bool Db::execQuery(const std::string &query)
     if (m_resultCode == SQLITE_OK) {   // went well and got data
         success = true;
 
-        for (int i = 0; i < m_ncol; ++i) {
-            m_vcolHead.push_back(m_result[i]);   // First row heading
-            for (int i = 0; i < m_ncol * m_nrow; ++i) {
-                m_data.push_back( m_result[m_ncol+i] );
-            }
+        for (int j = m_ncol; j < ((m_ncol*m_nrow) + m_ncol); j++) {
+            m_data.push_back(m_result[j]);
         }
 
     #ifdef DB_DEBUG
+        std::cout << "NCOL: " << m_ncol << " NROW: " << m_nrow << "\n";
+        std::cout << "MDATA SIZE IS: " << m_data.size() << "\n";
         for (unsigned int i = 0; i < m_data.size(); ++i) {
             std::cout << "M_DATA INFO\n";
             std::cout << m_data[i] << "\n";
