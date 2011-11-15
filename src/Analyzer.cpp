@@ -353,9 +353,9 @@ void Analyzer::clientUserInfo(char* line)
     int i = findPlayer( numero );
     if ( i >= 0 )
     {
-        if ( database->checkAuthGuid((*m_dati)[m_dati->serverNumber][i]->GUID) == H_NOADMIN_GROUP && ( (!(*m_dati)[m_dati->serverNumber][i]->GUID.empty() && (*m_dati)[m_dati->serverNumber][i]->GUID.compare(guid)!=0) || guid.empty()) )
+        if ( database->checkAuthGuid((*m_dati)[m_dati->serverNumber][i]->GUID) == H_NOADMIN_GROUP && !(*m_dati)[m_dati->serverNumber][i]->GUID.empty() && (*m_dati)[m_dati->serverNumber][i]->GUID.compare(guid)!=0 ) 
         {
-            if (!guid.empty() && (*m_dati)[m_dati->serverNumber].strict() >= LEVEL2)
+            if ((*m_dati)[m_dati->serverNumber].strict() >= LEVEL2)
             {
                 // illegal change of GUID => cheats
                 if ( (*m_dati)[m_dati->serverNumber].strict() >= LEVEL3 )
