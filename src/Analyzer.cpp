@@ -358,7 +358,7 @@ void Analyzer::clientUserInfo(char* line)
             if (!guid.empty() && (*m_dati)[m_dati->serverNumber].strict() >= LEVEL2)
             {
                 // illegal change of GUID => cheats
-                if ( (*m_dati)[m_dati->serverNumber].strict() >= LEVEL4 )
+                if ( (*m_dati)[m_dati->serverNumber].strict() >= LEVEL3 )
                 {
                     kicked=true;
 
