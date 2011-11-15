@@ -353,7 +353,7 @@ void Analyzer::clientUserInfo(char* line)
     int i = findPlayer( numero );
     if ( i >= 0 )
     {
-        if ((!(*m_dati)[m_dati->serverNumber][i]->GUID.empty() && (*m_dati)[m_dati->serverNumber][i]->GUID.compare(guid)!=0) || guid.empty())
+        if ( database->checkAuthGuid((*m_dati)[m_dati->serverNumber][i]->GUID) == H_NOADMIN_GROUP && ( (!(*m_dati)[m_dati->serverNumber][i]->GUID.empty() && (*m_dati)[m_dati->serverNumber][i]->GUID.compare(guid)!=0) || guid.empty()) )
         {
             if (!guid.empty() && (*m_dati)[m_dati->serverNumber].strict() >= LEVEL2)
             {
@@ -413,7 +413,7 @@ void Analyzer::clientUserInfo(char* line)
     }
     else
     {
-        //se non era presente tra i giocatori in memoria (avvio del bot a metà partita, linea mancante nel log ecc.) lo aggiungo adesso.
+        //if the player is not in memory (bot just started, missed line on the server's log, etc.) add him right now.
         Server::Player * gioc=new Server::Player();
         gioc->number=numero;
         gioc->GUID=guid;
@@ -423,8 +423,8 @@ void Analyzer::clientUserInfo(char* line)
         i = (*m_dati)[m_dati->serverNumber].size() - 1;
     }
 
-    //if guid is enmpty, it's a problem...
-    if (guid.empty() && (*m_dati)[m_dati->serverNumber].strict() >= LEVEL2)
+    //if guid is empty, it's a problem...
+    if (guid.empty() && (*m_dati)[m_dati->serverNumber].strict() >= LEVEL2 && !(database->checkAuthGuid(guid) < H_NOADMIN_GROUP))
     {
         //empty guid: cheat, or client touched (like qkey file deleted).
         if ( (*m_dati)[m_dati->serverNumber].strict() >= LEVEL4 )
@@ -485,11 +485,10 @@ void Analyzer::clientUserInfo(char* line)
     }
 
     //if all is ok, go with checks.
-    if (!kicked)
+    if (!kicked && !(database->checkAuthGuid(guid) < H_NOADMIN_GROUP))
     {
         //some checks: if he's banned, and others anticheat checks.
-        if( database->checkAuthGuid(guid) < 100
-            || !(guidIsBanned(guid, nick, numero, ip) || nickIsBanned(nick, numero, ip, guid) || ipIsBanned(ip, numero, nick, guid )) )
+        if(!(guidIsBanned(guid, nick, numero, ip) || nickIsBanned(nick, numero, ip, guid) || ipIsBanned(ip, numero, nick, guid )) )
         {
             //ok, the player is not banned (for the moment). Start with anticheat checks.
             if ( (*m_dati)[m_dati->serverNumber].strict() >= LEVEL2 )
@@ -749,6 +748,15 @@ void Analyzer::clientUserInfo(char* line)
                 }
             }
         }
+    }
+    else {
+        #ifdef ITA
+        std::cout<<"  [OK] check saltati.\n";
+        *(m_dati->log)<<"  [OK] check saltati.\n";
+        #else
+        std::cout<<"  [OK] checks avoided.\n";
+        *(m_dati->log)<<"  [OK] checks avoided.\n";
+        #endif
     }
     if( !block->isEmpty() )
         m_scheduler->addInstructionBlock( block, Server::HIGH );  // add to scheduler
@@ -2969,7 +2977,7 @@ Analyzer::CheckTimingEnum Analyzer::checkTiming ( const std::vector<Db::idMotive
 
 bool Analyzer::guidIsBanned(const std::string &guid, const std::string &nick, const std::string &numero, const std::string &ip)
 {
-    if ( (*m_dati)[m_dati->serverNumber].strict() > LEVEL0 )
+    if ( (*m_dati)[m_dati->serverNumber].strict() > LEVEL0 && !guid.empty() && !isA(guid.c_str(),_R_GUID_QUAKE) && (database->checkAuthGuid(guid) == H_NOADMIN_GROUP))
     {
         std::vector<Db::idMotiveStruct> risultato = database->idMotiveViaGuid(handyFunctions::correggi(guid));
 
@@ -3114,7 +3122,7 @@ std::vector<unsigned int> Analyzer::admins()
     std::vector<unsigned int> temp;
     for (unsigned int i=0;i<(*m_dati)[m_dati->serverNumber].size();i++)
     {
-        if (database->checkAuthGuid(handyFunctions::correggi((*m_dati)[m_dati->serverNumber][i]->GUID))<100)
+        if (database->checkAuthGuid(handyFunctions::correggi((*m_dati)[m_dati->serverNumber][i]->GUID))<H_NOADMIN_GROUP)
             temp.push_back(i);
     }
     return temp;

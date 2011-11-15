@@ -63,7 +63,7 @@
 #define TIME_SLEEPING_MIDDLE 3      //middle pause time (after approx 30 seconds of inactivity), aka fascia 1
 #define TIME_SLEEPING_MAX 15        //maximum pause time, aka stand-by mode, (after approx 3 minutes if inactivity in fascia 1), aka fascia 2
 
-//livelli di strict:
+//strict levels:
 #define LEVEL0 0        // Bot deactivated. Reacts only to strict and status commands.
 #define LEVEL1 1        // no anti-cheat controls activated, only banned players will be kicked.
 #define LEVEL2 2        // anticheat checks, only warnings.
@@ -73,6 +73,9 @@
 #define ADVANCED_LEVEL0 0 // no advanced checks.
 #define ADVANCED_LEVEL1 1 // advanced checks, only warnings.
 #define ADVANCED_LEVEL2 2 // advanced checks, ban automatically.
+
+//group of not-opped players
+#define H_NOADMIN_GROUP 100
 
 //TODO 
 // team balance
