@@ -74,7 +74,7 @@ class Connection
             private:
                 std::vector<std::string> p;
                 std::string clean (std::string &message){
-                    int i = message.find('\n');
+                    int i = message.find_last_of('\n');
                     return message.substr(i+1);
                 }
             public:

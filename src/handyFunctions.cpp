@@ -206,7 +206,12 @@ namespace handyFunctions{
                 //i'm working on a player line.
                 std::vector< std::string > infos;
                 stringExplode(rows[i]," ",&infos);
-                if (infos.size() < 8) return false;
+                if (infos.size() < 8){
+                    #ifdef DEBUG_MODE
+                    std::cout<<"error (is not a player) on: "<< infos.data()->c_str() <<"\n";
+                    #endif
+                    return false;
+                }
                 stats temp;
                 temp.slot = infos[0];
                 temp.score = atoi(infos[1].c_str());
