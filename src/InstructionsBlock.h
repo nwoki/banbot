@@ -440,10 +440,12 @@ class InstructionsBlock
                     if ( handyFunctions::extractFromStatus(temp,&players) ){
                         std::string phrase;
                         #ifdef ITA
-                        phrase.append("^0BanBot: ^1 informazioni sui player :\n");
+                        phrase.append("^0BanBot: ^1 informazioni sui player :");
                         #else
-                        phrase.append("^0BanBot: ^1player's info :\n");
+                        phrase.append("^0BanBot: ^1player's info :");
                         #endif
+                        addToTail( new Tell(phrase,number) );
+                        phrase.clear();
                         for (unsigned int i = 0; i < players.size(); i++){
                             phrase.append("^2");
                             phrase.append(players.at(i).slot);
