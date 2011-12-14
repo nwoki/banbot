@@ -43,17 +43,18 @@ Logger::Logger():path( "" ),isOpen( false )
 
 void Logger::checkFile()
 {
-    bool ok = true;                                                         // remains true only if log directory exists
+    bool ok = true; // remains true only if log directory exists
     int end = path.find_last_of( "/" );
+    if (end < path.size()){    //it contains one or more dirs.
+        // check existance of folder
+        if( !handyFunctions::fileOrDirExistance( path.substr( 0, end + 1 ) ) ) {
+            std::cout<<"\e[0;33m[!] Log dir doesn't exist... I'll create it. \e[0m \n";
 
-    // check existance of folder
-    if( !handyFunctions::fileOrDirExistance( path.substr( 0, end + 1 ) ) ) {
-        std::cout<<"\e[0;33m[!] Log dir doesn't exist... I'll create it. \e[0m \n";
-
-        // create directory first
-        if( !handyFunctions::createDir( path.substr( 0, end + 1 ) ) ) {     // had to use substr because path has file included
-            std::cout<<"\e[1;31m[EPIC FAIL] couldn't create directory '" << path.substr( 0, end + 1 ) << "'.Please check permissions! \e[0m \n";
-            ok = false;
+            // create directory first
+            if( !handyFunctions::createDir( path.substr( 0, end + 1 ) ) ) {     // had to use substr because path has file included
+                std::cout<<"\e[1;31m[EPIC FAIL] couldn't create directory '" << path.substr( 0, end + 1 ) << "'.Please check permissions! \e[0m \n";
+                ok = false;
+            }
         }
     }
 
