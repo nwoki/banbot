@@ -202,6 +202,7 @@ class Server
         std::string nextSpamMessage();                                      // return the next message.
         bool acceptQuakeClients();                                          // get the beahvior with Quake clients
         int advancedChecks();                                               // get advanced checks's behavior
+        int messagesFrequency();                                            // get the nessage frequency time.
 
         // setters
         void setName( std::string name );                                   // set server name
@@ -229,6 +230,7 @@ class Server
         void addSpamMessage( std::string );                                 // add a message to the list.
         void setAcceptQuakeClients( bool option );                          // set the beahvior with Quake clients
         void setAdvancedCheks( int level = 1);                              // set advanced checks behavior
+        void setMessagesFrequency( int time );                              // set the nessage frequency time.
 
 
         // returns true and updates m_lastBalance
@@ -254,6 +256,7 @@ class Server
         bool test_for_options();
 
 
+        int roundCounter;                         // counts the number of cycles that has been done.
         std::string toString();
 
   private:
@@ -286,8 +289,9 @@ class Server
         std::vector<std::string> m_maps;            // list of maps founded on this server
         std::string m_gameDir;                      // directory where the game in installed
         std::vector<int> m_permissions;             // minimum power level requested for each command.
-        
+
         std::vector<std::string> m_messages;        // broadcast messages
+        int m_messagesFrequency;                    // frequency of messages (approxed time in seconds btw one message and the next).
         unsigned int m_nextMessage;                 // index of the next message to send.
         bool m_acceptQuakeClients;                  // tells if we should accept a quake client too or if accept pure UrT clients only.
         int m_advancedChecks;                       // level of advanced checks

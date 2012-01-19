@@ -31,7 +31,8 @@
 #include "server.h"
 
 Server::Server()
-    : m_changed( true )
+    : roundCounter( 0 )
+    , m_changed( true )
     , m_valid( true )
     , m_ip( "127.0.0.1" )
     , m_port( 0 )
@@ -49,6 +50,7 @@ Server::Server()
     , m_maps( std::vector<std::string>() )
     , m_permissions( std::vector<int>() )
     , m_messages( std::vector<std::string>() )
+    , m_messagesFrequency( 160 )
     , m_nextMessage( 0 )
     , m_acceptQuakeClients( 1 )
     , m_advancedChecks( 1 )
@@ -443,6 +445,16 @@ int Server::advancedChecks()
 void Server::setAdvancedCheks ( int level )
 {
     m_advancedChecks = level;
+}
+
+int Server::messagesFrequency()
+{
+    return m_messagesFrequency;
+}
+
+void Server::setMessagesFrequency ( int time )
+{
+    m_messagesFrequency = time;
 }
 
 //**************************************** Functions for direct access to player vector ************************

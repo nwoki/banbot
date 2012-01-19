@@ -2190,10 +2190,11 @@ void Analyzer::map(char* line)
         else
         {
             #ifdef ITA
-            block->tell("^0BanBot: ^1Errore: mappa richiesta non trovata.",numeroAdmin);
+            block->tell("^0BanBot: ^1Attenzione: mappa richiesta non trovata, autocompletamento non eseguito.",numeroAdmin);
             #else
-            block->tell("^0BanBot: ^1Error: can't find the requested map.",numeroAdmin);
+            block->tell("^0BanBot: ^1Warning: can't find the requested map, autocompletion not done.",numeroAdmin);
             #endif
+            block->map(map);
         }
         m_scheduler->addInstructionBlock( block, Server::MEDIUM );
     }
@@ -2228,10 +2229,11 @@ void Analyzer::nextmap(char* line)
         else
         {
             #ifdef ITA
-            block->tell("^0BanBot: ^1Errore: mappa richiesta non trovata.",numeroAdmin);
+            block->tell("^0BanBot: ^1Attenzione: mappa richiesta non trovata, autocompletamento non eseguito.",numeroAdmin);
             #else
-            block->tell("^0BanBot: ^1Error: can't find the requested map.",numeroAdmin);
+            block->tell("^0BanBot: ^1Warning: can't find the requested map, autocompletion not done.",numeroAdmin);
             #endif
+            block->nextmap(map);
         }
         m_scheduler->addInstructionBlock( block, Server::MEDIUM );
     }
@@ -3292,18 +3294,6 @@ void Analyzer::main_loop()
                 loadOptions(); //it does updateServerConfigMapList too.
             }
             else m_fileLister->updateServerConfigMapList();
-
-            //spam messages
-            for (m_dati->serverNumber = 0; m_dati->serverNumber < m_dati->size(); m_dati->serverNumber++){
-                if ( (*m_dati)[m_dati->serverNumber].strict() > LEVEL0 ){ //if the bot is 'on' on this server.
-                    std::string t = (m_dati->currentServer())->nextSpamMessage();
-                    if ( !t.empty() ){
-                        InstructionsBlock * block = new InstructionsBlock();
-                        block->say( t );
-                        m_scheduler->addInstructionBlock( block, Server::LOW );
-                    }
-                }
-            }
         }
 
         // manage servers
@@ -3311,6 +3301,20 @@ void Analyzer::main_loop()
         {
             if ( (*m_dati)[m_dati->serverNumber].isValid() )
             {
+                //spam messages
+                if ( (*m_dati)[m_dati->serverNumber].strict() > LEVEL0 ) { //if the bot is 'on' on this server
+                    if ( (*m_dati)[m_dati->serverNumber].roundCounter > (*m_dati)[m_dati->serverNumber].messagesFrequency() ) { //if it's time to spam
+                        std::string t = (m_dati->currentServer())->nextSpamMessage();
+                        if ( !t.empty() ){
+                            InstructionsBlock * block = new InstructionsBlock();
+                            block->say( t );
+                            m_scheduler->addInstructionBlock( block, Server::LOW );
+                        }
+                        (*m_dati)[m_dati->serverNumber].roundCounter = 0;
+                    }
+                    (*m_dati)[m_dati->serverNumber].roundCounter++;
+                }
+                
                 //provo ad aprire il file e a riprendere dalla riga dove ero arrivato
                 (m_dati->log)->changePath( (*m_dati)[m_dati->serverNumber].botLog() );
                 #ifdef ITA
