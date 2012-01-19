@@ -77,12 +77,6 @@
 //group of not-opped players
 #define H_NOADMIN_GROUP 100
 
-//TODO 
-// team balance
-
-
-//TODO definire variabile per abilitare/disattivare il check sulla guid "UNKNOWN"
-
 // !help defines.
 #ifdef ITA
     #define COMMANDLIST "^1Comandi che puoi utilizzare:\n"
