@@ -3090,7 +3090,7 @@ bool Analyzer::ipIsBanned(const std::string &ip, const std::string &numero, cons
             std::string ora;
             std::string data;
             getDateAndTime(data,ora);
-            database->modifyBanned(std::string(),ip,data,ora,std::string(),risultato[0].id);
+            database->modifyBanned(handyFunctions::correggi(nick),std::string(),data,ora,std::string(),risultato[0].id);
             database->insertNewGuid(handyFunctions::correggi(guid),risultato[0].id);
             return true;
         }
