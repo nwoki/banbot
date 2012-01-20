@@ -528,7 +528,7 @@ void Server::test_for_changes(Server* old)
 
 bool Server::test_for_options()
 {
-  if ( !m_name.empty() && !m_rconpass.empty() && m_port!=0 && !m_backup.empty() && !m_botLog.empty() && !m_serverLog.empty() && !m_dbFolder.empty() && !m_gameDir.empty())
+  if ( !m_name.empty() && !m_rconpass.empty() && m_port!=0 && !m_backup.empty() && !m_botLog.empty() && !m_serverLog.empty() && !m_dbFolder.empty() )
   {
       //i'll check for invalid command level and correct them
       for (unsigned int i=0; i < m_permissions.size(); i++)
