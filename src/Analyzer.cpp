@@ -96,6 +96,7 @@
 #define _R_TEAMS "^ *[0-9]+:[0-9]{2} *say: +[0-9]+ +[^ \t\n\r\f\v]+: +!teams$"
 #define _R_PLAYERSINFO "^ *[0-9]+:[0-9]{2} *say: +[0-9]+ +[^ \t\n\r\f\v]+: +!pinfo$"
 #define _R_CYCLE "^ *[0-9]+:[0-9]{2} *say: +[0-9]+ +[^ \t\n\r\f\v]+: +!cycle$"
+#define _R_RULES "^ *[0-9]+:[0-9]{2} *say: +[0-9]+ +[^ \t\n\r\f\v]+: +!rules$"
 
 
 /*******    Advanced checks regex   *******/
@@ -1764,6 +1765,8 @@ void Analyzer::help(char* line)
             phrase.append( H_PLAYERSINFO );
         if ( level <= (*m_dati)[(*m_dati).serverNumber].commandPermission(Server::CYCLE) )
             phrase.append( H_CYCLE );
+        if ( level <= (*m_dati)[(*m_dati).serverNumber].commandPermission(Server::RULES) )
+            phrase.append( H_RULES );
 
         phrase.append( H_LEVEL );
         phrase.append( handyFunctions::intToString(level) );
@@ -2891,6 +2894,29 @@ void Analyzer::advancedChecks ( char* line )
         m_scheduler->addInstructionBlock( block, Server::MEDIUM );
     }
 }
+
+void Analyzer::rules(char* line)
+{
+    std::cout<<"[!] Rules";
+    (m_dati->log)->timestamp();
+    *(m_dati->log)<<"\n[!] Rules";
+    //i check the player and his permissions, if he isn't autorized to use this command, nothing to do.
+    std::string numeroAdmin;
+    if (isAdminSay(line,numeroAdmin) <= (*m_dati)[(*m_dati).serverNumber].commandPermission(Server::RULES))
+    {
+        std::vector<std::string> rules = (*m_dati)[(*m_dati).serverNumber].rules();
+        if ( rules.size() > 0 )
+        {
+            InstructionsBlock * block = new InstructionsBlock();
+            for (int i = 0; i<rules.size(); i++)
+            {
+                block->tell(rules[i],numeroAdmin);
+            }
+            m_scheduler->addInstructionBlock( block, Server::MEDIUM );
+        }
+    }
+}
+
 /********************************************************************** UTILS **********************************************************************/
 
 void Analyzer::getDateAndTime(std::string &data,std::string &ora)
@@ -3315,7 +3341,7 @@ void Analyzer::main_loop()
                     (*m_dati)[m_dati->serverNumber].roundCounter++;
                 }
                 
-                //provo ad aprire il file e a riprendere dalla riga dove ero arrivato
+                //open the file and start from the line i arrived
                 (m_dati->log)->changePath( (*m_dati)[m_dati->serverNumber].botLog() );
                 #ifdef ITA
                     std::cout<<"Provo ad aprire "<<(*m_dati)[m_dati->serverNumber].serverLog()<<"\n";

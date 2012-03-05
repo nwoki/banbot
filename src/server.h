@@ -80,7 +80,8 @@ class Server
             BIGTEXT,
             TEAMS,
             PLAYERSINFO,
-            CYCLE
+            CYCLE,
+            RULES
         };
 
         enum Timing {               //used to define the timing of nick and ip bans.
@@ -200,6 +201,7 @@ class Server
         Timing banIp () const;                                              // like banNick
         bool banWarnings () const;                                          // return ban warnings option (see m_banWarnings).
         std::string nextSpamMessage();                                      // return the next message.
+        std::vector<std::string> & rules();                                   // return the rules list.
         bool acceptQuakeClients();                                          // get the beahvior with Quake clients
         int advancedChecks();                                               // get advanced checks's behavior
         int messagesFrequency();                                            // get the nessage frequency time.
@@ -228,6 +230,8 @@ class Server
         void setBanIp( Server::Timing time );                               // set the ip ban timing.
         void setBanWarnings( bool option );                                 // enable or disable ban warnings (see m_banWarnings).
         void addSpamMessage( std::string );                                 // add a message to the list.
+        void setRules( std::vector<std::string> &rules );                   // set the rules list.
+        void addRule( std::string rule );                                  // add a single rule to the rules list.
         void setAcceptQuakeClients( bool option );                          // set the beahvior with Quake clients
         void setAdvancedCheks( int level = 1);                              // set advanced checks behavior
         void setMessagesFrequency( int time );                              // set the nessage frequency time.
@@ -292,6 +296,7 @@ class Server
 
         std::vector<std::string> m_messages;        // broadcast messages
         int m_messagesFrequency;                    // frequency of messages (approxed time in seconds btw one message and the next).
+        std::vector<std::string> m_rules;
         unsigned int m_nextMessage;                 // index of the next message to send.
         bool m_acceptQuakeClients;                  // tells if we should accept a quake client too or if accept pure UrT clients only.
         int m_advancedChecks;                       // level of advanced checks

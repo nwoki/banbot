@@ -112,6 +112,7 @@
     #define H_PLAYERSINFO "^2!pinfo ^1: mostra alcune informazioni dei giocatori online (rcon status).\n"
     #define H_TEAMS "^2!teams ^1: sistema il numero di giocatori per squadra.\n"
     #define H_CYCLE "^2!cycle ^1: carica la mappa successiva.\n"
+    #define H_RULES "^2!rules ^1: mostra le regole del server.\n"
 #else
     #define COMMANDLIST "^1You can use these commands:\n"
     #define H_LEVEL "^1Your level is ^2"
@@ -146,6 +147,7 @@
     #define H_PLAYERSINFO "^2!pinfo ^1: shows infos of ingame players (rcon status).\n"
     #define H_TEAMS "^2!teams ^1: fixes the number of players per team.\n"
     #define H_CYCLE "^2!cycle ^1: load the next map.\n"
+    #define H_RULES "^2!rules ^1: shows server's rules.\n"
 #endif
 
 class Analyzer
@@ -205,6 +207,7 @@ private:
     void playersInfos(char* line);
     void cyclemap(char* line);
     void advancedChecks(char* line);
+    void rules(char* line);
 
 protected:
     bool isA(const char* line,const std::string &regex);          //testa se la riga soddisfa il regex.

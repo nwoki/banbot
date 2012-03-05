@@ -243,7 +243,9 @@ void ConfigLoader::loadOptions()
                                     else if ( isA (temp, (char *)"^[ \t]*LEVEL_PLAYERSINFO[ \t]*=[ \t]*[0-9]{1,3}$" ) )
                                         newServer->setCommandPermission( Server::PLAYERSINFO, atoi(extract(temp).c_str()));
                                     else if ( isA (temp, (char *)"^[ \t]*LEVEL_CYCLEMAP[ \t]*=[ \t]*[0-9]{1,3}$" ) )
-                                    newServer->setCommandPermission( Server::CYCLE, atoi(extract(temp).c_str()));
+                                        newServer->setCommandPermission( Server::CYCLE, atoi(extract(temp).c_str()));
+                                    else if ( isA (temp, (char *)"^[ \t]*LEVEL_RULES[ \t]*=[ \t]*[0-9]{1,3}$" ) )
+                                        newServer->setCommandPermission( Server::RULES, atoi(extract(temp).c_str()));
                                     else {
                                         #ifdef ITA
                                         std::cout << "Attenzione: \"" << temp << "\" non e' un'opzione valida!.\n";
@@ -354,6 +356,9 @@ void ConfigLoader::loadOptions()
 
                                 else if ( isA( temp, (char*)"^[ \t]*MESSAGE[ \t]*=[ \t]*[^\t\n\r\f\v]+$" ) )
                                     newServer->addSpamMessage( extract( temp ) );
+
+                                else if ( isA( temp, (char*)"^[ \t]*RULE[ \t]*=[ \t]*[^\t\n\r\f\v]+$" ) )
+                                    newServer->addRule( extract( temp ) );
 
                                 else if ( isA( temp, (char*)"^[ \t]*ACCEPT_QUAKE_CLIENTS[ \t]*=[ \t]*(YES|yes|NO|no){1}$" ) )
                                 {

@@ -90,6 +90,7 @@ Server::Server()
     m_permissions.push_back( 3 );     //teams level
     m_permissions.push_back( 3 );     //playersinfo level
     m_permissions.push_back( 3 );     //cycle level
+    m_permissions.push_back( 100 );   //rules level
 }
 
 Server::~Server()
@@ -369,6 +370,10 @@ int Server::commandPermission ( Commands cmd ) const
 
 void Server::setCommandPermission( Commands cmd, int value )
 {
+    if (value > 100)
+    {
+        value = 100;
+    }
     m_permissions[cmd] = value;
 }
 
@@ -455,6 +460,21 @@ int Server::messagesFrequency()
 void Server::setMessagesFrequency ( int time )
 {
     m_messagesFrequency = time;
+}
+
+std::vector< std::string > & Server::rules()
+{
+    return m_rules;
+}
+
+void Server::setRules( std::vector< std::string > &rules )
+{
+    m_rules = rules;
+}
+
+void Server::addRule( std::string rule )
+{
+    m_rules.push_back(rule);
 }
 
 //**************************************** Functions for direct access to player vector ************************
