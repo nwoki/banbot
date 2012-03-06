@@ -2908,7 +2908,7 @@ void Analyzer::rules(char* line)
         if ( rules.size() > 0 )
         {
             InstructionsBlock * block = new InstructionsBlock();
-            for (int i = 0; i<rules.size(); i++)
+            for (unsigned int i = 0; i<rules.size(); i++)
             {
                 block->tell(rules[i],numeroAdmin);
             }
@@ -3504,6 +3504,8 @@ void Analyzer::main_loop()
                                                         playersInfos(line);
                                                     else if (isA(line, _R_CYCLE))
                                                         cyclemap(line);
+                                                    else if (isA(line, _R_RULES))
+                                                        rules(line);
                                                     else if (isA(line, _R_CHECKS_ADVANCED))
                                                         advancedChecks(line);
                                                 }
