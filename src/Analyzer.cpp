@@ -2228,17 +2228,16 @@ void Analyzer::nextmap(char* line)
         if (listIndex>=0)
         {
             block->nextmap(m_dati->currentServer()->map(listIndex));
+            m_scheduler->addInstructionBlock( block, Server::MEDIUM );
         }
         else
         {
             #ifdef ITA
-            block->tell("^0BanBot: ^1Attenzione: mappa richiesta non trovata, autocompletamento non eseguito.",numeroAdmin);
+            block->tell("^0BanBot: ^1Errore: mappa non trovata.",numeroAdmin);
             #else
-            block->tell("^0BanBot: ^1Warning: can't find the requested map, autocompletion not done.",numeroAdmin);
+            block->tell("^0BanBot: ^1Error: map not found.",numeroAdmin);
             #endif
-            block->nextmap(map);
         }
-        m_scheduler->addInstructionBlock( block, Server::MEDIUM );
     }
 }
 
