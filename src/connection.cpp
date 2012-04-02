@@ -120,7 +120,7 @@ void Connection::say( std::string phrase, int server )
     comando.append( " say \"" );
     comando.append( phrase );
     comando.append( "\"" );
-    #ifdef DEBUG_MODE
+    #ifdef DEBUG_NETWORK
     std::cout << "Sending command: " << comando << "\n";
     #endif
     std::vector< char > command = makeCmd( comando );
@@ -154,7 +154,7 @@ void Connection::tell( std::string phrase, std::string player, int server )
     comando.append( " \"" );
     comando.append( phrase );
     comando.append( "\"" );
-    #ifdef DEBUG_MODE
+    #ifdef DEBUG_NETWORK
         std::cout << "Sending command: " << comando << "\n";
     #endif
     std::vector< char > command = makeCmd( comando );
@@ -361,7 +361,7 @@ std::string Connection::status( int server )
     
     std::vector< char > command = makeCmd( comando );
     
-    #ifdef DEBUG_MODE
+    #ifdef DEBUG_NETWORK
     std::cout<<">>"<<comando<<"\n";
     #endif
     
@@ -453,24 +453,24 @@ void Connection::receive(Packets * container){
     int t1 = 1;
     int t2 = 0;
     while ( wait_packets(t1,t2) > 0 ){
-        #ifdef DEBUG_MODE
+        #ifdef DEBUG_NETWORK
         std::cout<<"Receiving a packet!\n";
         #endif
-        t1=0;	     // timeout in seconds
+        t1=1;	     // timeout in seconds
         t2=150000;   // timeout in nanoseconds
         char buf [2000];
         socklen_t adrSize = sizeof(serverAdd);
         int rec = recvfrom( socketID, buf, sizeof buf, 0, &(sockaddr &)serverAdd, &adrSize );
         if (rec > 0){
             container->addPacket(std::string (buf).substr(0,rec));
-            #ifdef DEBUG_MODE
+            #ifdef DEBUG_NETWORK
             std::cout<<"Received:\n"<<std::string (buf).substr(0,rec)<<"stop!\n";
             #endif
         }
     }
     //return to blocking
     //fcntl(socketID, F_SETFL, flags);
-    #ifdef DEBUG_MODE
+    #ifdef DEBUG_NETWORK
         std::cout<<"Result:\n"<<container->rebuild()<<"stop!\n";
         (*m_options->errors)<<"Result:\n"<<container->rebuild()<<"stop!\n";
     #endif
