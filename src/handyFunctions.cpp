@@ -36,7 +36,7 @@
 #include <regex.h>
 #include <limits>
 
-#define _R_STATUS_RESPONSE "^map:.*\n.*\n.*-{5}\n([ \t]*[0-9]+[ \t]+-{0,1}[0-9]+[ \t]+[0-9]+[ \t]+[^\n]+\\^7[ \t]+[0-9]+[ \t]+[0-9]{1,3}.[0-9]{1,3}.[0-9]{1,3}.[0-9]{1,3}:[0-9]+[ \t]+[0-9]+[ \t]+[0-9]+.*\n)+\n.*$"
+#define _R_STATUS_RESPONSE "^map:.*\n.*\n.*-{5}\n([ \t]*[0-9]+[ \t]+-{0,1}[0-9]+[ \t]+[0-9]+[ \t]+[^\n]+\\^7[ \t]+[0-9]+[ \t]+[0-9]{1,3}.[0-9]{1,3}.[0-9]{1,3}.[0-9]{1,3}(:[0-9]+){0,1}[ \t]+[0-9]+[ \t]+[0-9]+.*\n)+\n.*$"
 
 namespace fs = boost::filesystem;
 
@@ -196,6 +196,9 @@ namespace handyFunctions{
     }
 
     bool extractFromStatus( std::string msg, std::vector< stats >* datas ){
+        #ifdef DEBUG_NETWORK
+        std::cout<<"Received:\n "<< msg <<"\n";
+        #endif
         if ( isA(msg.c_str(),_R_STATUS_RESPONSE) ){
 
             std::vector< std::string > rows;
@@ -207,7 +210,7 @@ namespace handyFunctions{
                 std::vector< std::string > infos;
                 stringExplode(rows[i]," ",&infos);
                 if (infos.size() < 8){
-                    #ifdef DEBUG_MODE
+                    #ifdef DEBUG_NETWORK
                     std::cout<<"error (is not a player) on: "<< infos.data()->c_str() <<"\n";
                     #endif
                     return false;
@@ -220,9 +223,9 @@ namespace handyFunctions{
                 temp.qport = infos[infos.size()-2];
                 std::vector<std::string> address;
                 stringExplode(infos[infos.size()-3], ":", &address);
-                if (address.size() < 2) return false;
                 temp.ip = address[0];
-                temp.port = address[1];
+                if (address.size() == 2) temp.port = address[1];
+                else temp.port = "27960";
                 std::string nick = infos[3];
                 for (unsigned int i = 4; i < infos.size() - 3; i++){
                     nick += " ";
@@ -231,7 +234,7 @@ namespace handyFunctions{
                 unsigned int pos = nick.rfind("^7");
                 if ( pos >= nick.size() ) return false;
                 temp.nick = nick.substr(0,pos);
-                #ifdef DEBUG_MODE
+                #ifdef DEBUG_NETWORK
                 std::cout<<"extracted:"<<temp.toString()<<"\n";
                 #endif
                 datas->push_back(temp);
