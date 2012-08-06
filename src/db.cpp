@@ -1066,9 +1066,8 @@ std::vector<Db::idNickMotiveAuthorStruct> Db::findPreciseIdMotiveAuthorViaNickBa
 
     std::cout << "ANSWER SIZE IS -> " << m_data.size() << std::endl;
 
-    /* SHOULD I ASSUME THAT THERE ARE NO DOUBLES?  YES FOR NOW */
-    if (m_data.size() > 0) {
-        structs.push_back(idNickMotiveAuthorStruct(m_data[0], m_data[1], m_data[2], m_data[3]));    /* insert in order, id, nick, motive, author */
+    for (unsigned int i = 0; i < m_data.size()/4; i++) {
+        structs.push_back(idNickMotiveAuthorStruct(m_data.at(4*i + 0), m_data.at(4*i + 1), m_data.at(4*i + 2), m_data.at(4*i + 3)));
     }
 
     return structs;
@@ -1103,7 +1102,7 @@ std::vector<Db::idNickStruct> Db::findAproxIdNickViaNickOp(const std::string& ni
 
 std::vector<Db::idNickStruct> Db::findPreciseIdNickViaNickOp(const std::string& nick)
 {
-    std::string query("select id,nick from oplist where nick='");
+    std::string query("select id,nick,level from oplist where nick='");
     query.append(nick);
     query.append("' limit 7;");
 
@@ -1121,9 +1120,8 @@ std::vector<Db::idNickStruct> Db::findPreciseIdNickViaNickOp(const std::string& 
     }
     #endif
 
-    /* SHOULD I ASSUME THAT THERE ARE NO DOUBLES?  YES FOR NOW */
-    if (m_data.size() > 0) {
-        structs.push_back(idNickStruct(m_data[0], m_data[1], m_data[2]));
+    for (unsigned int i = 0; i < m_data.size()/3; i++) {
+        structs.push_back(idNickStruct(m_data[3*i + 0], m_data[3*i + 1], m_data[3*i + 2]));
     }
 
     return structs;

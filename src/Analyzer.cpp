@@ -282,7 +282,7 @@ void Analyzer::clientUserInfoChanged(char* line)
     pos=temp.find_first_not_of(' ',pos+22);
     int end=temp.find_first_of(' ',pos);
     std::string numero=temp.substr(pos,end-pos);
-    pos=temp.find(" n");
+    pos=temp.find(" n\\");
     pos=temp.find_first_not_of("\\",pos+2);
     end=temp.find_first_of("\\ ",pos);
     std::string nick=temp.substr(pos,end-pos);
@@ -381,7 +381,7 @@ void Analyzer::clientUserInfo(char* line)
                     std::string motivo("auto-ban 4 cheats.");
                     getDateAndTime(data,ora);
                     //non prendo la guid attuale, ma quella precedente (che spesso è quella vera e propria dell'utente prima che attivi i cheat)
-                    database->ban(handyFunctions::correggi(nick),ip,data,ora,handyFunctions::correggi((*m_dati)[m_dati->serverNumber][i]->GUID),handyFunctions::correggi(motivo),std::string());
+                    database->ban(handyFunctions::correggi(nick),ip,data,ora,handyFunctions::correggi((*m_dati)[m_dati->serverNumber][i]->GUID),handyFunctions::correggi(motivo),"BanBot");
                     block->kick(numero);
                 }
                 else
@@ -414,7 +414,7 @@ void Analyzer::clientUserInfo(char* line)
     }
     else
     {
-        //if the player is not in memory (bot just started, missed line on the server's log, etc.) add him right now.
+        //if the player is not in memory (both just started, missed line on the server's log, etc.) add him right now.
         Server::Player * gioc=new Server::Player();
         gioc->number=numero;
         gioc->GUID=guid;
@@ -460,9 +460,9 @@ void Analyzer::clientUserInfo(char* line)
             getDateAndTime(data,ora);
             //guardo se aveva una guid impostata precedentemente, in caso la banno.
             if (!(*m_dati)[m_dati->serverNumber][i]->GUID.empty())
-                database->ban(handyFunctions::correggi(nick),ip,data,ora,handyFunctions::correggi((*m_dati)[m_dati->serverNumber][i]->GUID),handyFunctions::correggi(motivo),std::string());
+                database->ban(handyFunctions::correggi(nick),ip,data,ora,handyFunctions::correggi((*m_dati)[m_dati->serverNumber][i]->GUID),handyFunctions::correggi(motivo),"BanBot");
             //altrimenti banno solo in nickIsBanned
-            else database->insertNewBanned(handyFunctions::correggi(nick),ip,data,ora,handyFunctions::correggi(motivo),std::string());
+            else database->insertNewBanned(handyFunctions::correggi(nick),ip,data,ora,handyFunctions::correggi(motivo),"BanBot");
             block->kick(numero);
         }
         else
@@ -523,7 +523,9 @@ void Analyzer::clientUserInfo(char* line)
                         std::string data;
                         std::string motivo("auto-ban 4 cheats.");
                         getDateAndTime(data,ora);
-                        database->ban(handyFunctions::correggi(nick),ip,data,ora,handyFunctions::correggi(guid),handyFunctions::correggi(motivo),std::string());
+                        if (!(*m_dati)[m_dati->serverNumber][i]->GUID.empty())
+                            database->ban(handyFunctions::correggi(nick),ip,data,ora,handyFunctions::correggi(guid),handyFunctions::correggi(motivo),"BanBot");
+                        else database->insertNewBanned(handyFunctions::correggi(nick),ip,data,ora,handyFunctions::correggi(motivo),"BanBot");
                         block->kick(numero);
                     }
                     else
